@@ -1,0 +1,16 @@
+namespace: servicenow
+name: itsm
+version: 0.1.0
+readme: README.md
+authors:
+  - XLAB Steampunk <steampunk@xlab.si>
+description: Ansible Collection for interacting with ServiceNow
+license_file: LICENSE
+tags:
+  - servicenow
+repository: https://github.com/ansible-collections/servicenow.itsm
+homepage: https://github.com/ansible-collections/servicenow.itsm
+issues: https://github.com/ansible-collections/servicenow.itsm/issues
+build_ignore:
+  - .gitignore
+  - changelogs/.plugin-cache.yaml
