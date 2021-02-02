@@ -103,17 +103,19 @@ class Client:
 
         return Response(raw_resp.status, raw_resp.read(), raw_resp.getheaders())
 
-    def request(self, method, path, data=None):
+    def request(self, method, path, query=None, data=None):
         escaped_path = quote(path.rstrip("/"))
         url = "{0}/api/now/{1}".format(self.host, escaped_path)
+        if query:
+            url = "{0}?{1}".format(url, urlencode(query))
         headers = dict(Accept="application/json", **self.auth_header)
         if data is not None:
             data = json.dumps(data, separators=(",", ":"))
             headers["Content-type"] = "application/json"
         return self._request(method, url, data=data, headers=headers)
 
-    def get(self, path):
-        resp = self.request("GET", path)
+    def get(self, path, query=None):
+        resp = self.request("GET", path, query=query)
         if resp.status in (200, 404):
             return resp
         raise UnexpectedAPIResponse(resp.status, resp.data)

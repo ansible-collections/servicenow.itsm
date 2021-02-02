@@ -13,6 +13,7 @@ import sys
 import pytest
 
 from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
+from ansible.module_utils.six.moves.urllib.parse import urlparse, parse_qs
 
 from ansible_collections.servicenow.itsm.plugins.module_utils import client, errors
 
@@ -137,7 +138,7 @@ class TestClientRequest:
         request_mock = mocker.patch.object(c, "_request")
         request_mock.return_value = mock_response
 
-        resp = c.request("PUT", "some/path", {"some": "data"})
+        resp = c.request("PUT", "some/path", data={"some": "data"})
 
         request_mock.assert_called_once_with(
             "PUT",
@@ -190,6 +191,40 @@ class TestClientRequest:
         request_mock.open.assert_called_once()
         path_arg = request_mock.open.call_args.args[1]
         assert path_arg == "instance.com/api/now/some%20path"
+
+    @pytest.mark.parametrize("query", [None, {}])
+    def test_path_without_query(self, mocker, query):
+        request_mock = mocker.patch.object(client, "Request").return_value
+        raw_request = mocker.MagicMock(status=200)
+        raw_request.read.return_value = "{}"
+
+        c = client.Client("instance.com", "user", "pass")
+        c.request("GET", "some/path", query=query)
+
+        request_mock.open.assert_called_once()
+        path_arg = request_mock.open.call_args.args[1]
+        assert path_arg == "instance.com/api/now/some/path"
+
+    @pytest.mark.parametrize(
+        "query",
+        [
+            dict(a="b"),
+            dict(a="b", c=1),
+            dict(a="hello world"),
+        ],
+    )
+    def test_path_with_query(self, mocker, query):
+        request_mock = mocker.patch.object(client, "Request").return_value
+        raw_request = mocker.MagicMock(status=200)
+        raw_request.read.return_value = "{}"
+
+        c = client.Client("instance.com", "user", "pass")
+        c.request("GET", "some/path", query=query)
+
+        request_mock.open.assert_called_once()
+        path_arg = request_mock.open.call_args.args[1]
+        parsed_query = parse_qs(urlparse(path_arg).query)
+        assert parsed_query == dict((k, [str(v)]) for k, v in query.items())
 
 
 class TestClientGet:
