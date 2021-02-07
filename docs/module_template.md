@@ -12,6 +12,7 @@ modules:
     # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
     from __future__ import absolute_import, division, print_function
+
     __metaclass__ = type
 
     ANSIBLE_METADATA = {
@@ -33,8 +34,10 @@ modules:
     extends_documentation_fragment:
       - servicenow.itsm.fragment1
       - servicenow.itsm.fragment2
+      # More fragments here
     seealso:
       - module: servicenow.itsm.module_name_info
+      # More references here
     options:
       check:
         description:
@@ -43,41 +46,42 @@ modules:
             check position.
         type: str
         required: true
+      # More options here
     """
 
     EXAMPLES = """
     - name: Sample 1 (always use FQCN)
       servicenow.itsm.module_name:
         check: check-disk
+
+    # More examples here
     """
 
     RETURN = """
-    response:
-      description: API response
+    record:
+      description:
+        - Created/updated ServiceNow record.
       returned: success
       type: dict
       sample:
         check: 123
-    '''
+    """
 
     from ansible.module_utils.basic import AnsibleModule
 
-    from ..module_utils import local_module
+    from ..module_utils import arguments, client, utils
+    # More local imports here (if needed).
 
 
     # Add module-specific helpers here
 
 
-    def run(module).
-        # Main workhorse of the module. Add business logic here. Return back
-        # changed indicator, API response (or mocked response in check mode),
-        # and diff information.
+    def run(module):
+        snow_client = client.Client(**module.params["instance"])
 
-        # In case of any kind of error, module should raise ServiceNow error
-        # and set an appropriate error message that main method will return
-        # back to the playbook user.
+        # Implementation here.
 
-        return changed, response, dict(before=a, after=b)
+        return changed, record, dict(before=a, after=b)
 
 
     def main():
@@ -92,24 +96,120 @@ modules:
         # Any validation that does not require accessing remote also goes
         # here.
 
-        # The second part is a wrapper around the run method that exits
-        # gracefully on expected errors. Unexpected errors should be left
-        # unhandled - stack trace is good in that case because we have a bug
-        # somewhere.
-        #
-        # We should probably split this into a separate helper method, but
-        # we will do that once we have more than two modules.
         try:
-            changed, response, diff = run(module)
-            module.exit_json(changed=changed, response=response, diff=diff)
-        except errors.ServiceNowError as e:
+            changed, record, diff = run(module)
+            module.exit_json(changed=changed, record=record, diff=diff)
+        except ServiceNowError as e:
             module.fail_json(msg=str(e))
 
 
-    if __name__ == '__main__':
+    if __name__ == "__main__":
         main()
 
 There are a few reasons for this kind of structure, but the main one is ease of
 testing. Such structure minimizes the amount of mocking required when unit
 testing modules, which is great news since we will unit test a lot once we fix
 our API.
+
+We should structure info modules a bit differently since they by definition do
+not modify the instance state. The documentation part should still follow the
+same structure, but the `run` method and the last part of the `main` method are
+a bit simpler:
+
+    def run(module):
+        snow_client = client.Client(**module.params["instance"])
+
+        # Implementation here thar produces a list of records. Most of the
+        # time, this will be the `result` part of the API response.
+
+        return records
+
+
+    def main():
+        # The first part of main method is dedicated to parsing and validating
+        # module parameters.
+        module = AnsibleModule(
+            supports_check_mode=True,
+            argument_spec=dict(
+                check=dict(),
+            # Other stuff here
+        )
+        # Any validation that does not require accessing remote also goes
+        # here.
+
+        try:
+            records = run(module)
+            module.exit_json(changed=False, records=records)
+        except ServiceNowError as e:
+            module.fail_json(msg=str(e))
+
+
+    if __name__ == "__main__":
+        main()
+
+Another difference in ins the return value. All info modules must return a list
+of records in the `records` return field:
+
+    RETURN = """
+    records:
+      description:
+        - Matching ServiceNow records.
+      returned: success
+      type: list
+      elements: dict
+      sample:
+        - check: 123
+    """
+
+
+## The `main` function
+
+The main method has one real purpose: static validation of module parameters.
+This is where we define module's public API and enforce the parameter
+correctness before we start talking with the backend services.
+
+The vast majority of validation comes bundled with the `AnsibleModule`
+constructor, which means we just need to properly define the argument
+specification. But we can also add custom validation that does not require
+access to remote services.
+
+Once the validation is over, the `main` method must call the `run` method
+wrapped in a `try: ... except ServiceNowError` block and call `exit_json` or
+`fail_json` as appropriate. No other exceptions should be handled here because
+they indicate a bug in our code.
+
+
+## The `run` function
+
+The `run` function is the main workhorse of the module. Its main task is to
+construct a ServiceNow HTTP client and delegate the real work to more
+specialized functions if required.
+
+The only parameter the `run` function receives is an `AnsibleModule` instance.
+Why do we need a module instance and not just parameters and check mode
+boolean? Most of the time, the answer to that question is "we do not". But
+there is one area where module instance is still needed: deprecations and
+warnings. And while most of those things can be handled in the main method,
+some of the (the ones that depend on the state of the backend) cannot.
+
+In practice, we should only access four things on the module parameter:
+
+ 1. `module.params` when we need to access the module parameters.
+ 2. `module.check_mode` when we nned to determine if we are running in check
+    mode.
+ 3. `module.warn()` when we need to emit a warning to the user.
+ 4. `module.deprecate()` for dynamic deprecation messages.
+
+If no error occurs during the module execution, the `run` method should return
+three pieces of information:
+
+ 1. A boolean indication a change.
+ 2. A dictionary with the record data.
+ 3. A diff dictionary, containing states before and after the change.
+
+Info modules are a bit simpler and their `run` method should just return back
+the list of records retrieved from the ServiceNow API.
+
+Errors should raise a `ServiceNowError` (or its descendant) with a clear
+message about the error. The utility wrapper will catch this exception and
+convert it to an appropriate `fail_json` call.
