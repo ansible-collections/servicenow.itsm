@@ -33,6 +33,8 @@ description:
 
 extends_documentation_fragment:
   - servicenow.itsm.instance
+  - servicenow.itsm.sys_id.info
+  - servicenow.itsm.number.info
 
 options:
   state:
@@ -41,16 +43,17 @@ options:
       - If I(state) value is C(on_hold), I(on_hold_reason) parameter must be filled in.
     choices: [ new, in_progress, on_hold, resolved, closed, canceled, absent ]
     type: str
-  on_hold_reason:
+  hold_reason:
     description:
       - Reason why incident is on hold.
       - Required if I(state) value is C(on_hold).
     choices: [ awaiting_caller, awaiting_change, awaiting_problem, awaiting_vendor ]
     type: str
-  caller_id:
+  caller:
     description:
       - A person who reported or is affected by this incident.
-      - Expected value for I(caller_id) is user id.
+      - Expected value for I(caller) is user id (usually in the form of
+        C(first_name.last_name)).
       - Required if the incident does not exist yet.
     type: str
   short_description:
@@ -72,6 +75,18 @@ options:
       - The extent to which resolution of an incident can bear delay.
     choices: [ low, medium, high ]
     type: str
+  close_code:
+    description:
+      - Provide information on how the incident was resolved.
+    choices: [ Solved (Work Around), Solved (Permanently),
+               Solved Remotely (Work Around), Solved Remotely (Permanently),
+               Not Solved (Not Reproducible), Not Solved (Too Costly),
+               Closed/Resolved by Caller ]
+    type: str
+  close_notes:
+    description:
+      - Resolution notes added by the user who closed the incident.
+    type: str
   other:
     description:
       - Optional remaining parameters.
@@ -85,12 +100,12 @@ EXAMPLES = """
 - name: Create incident
   servicenow.itsm.incident:
     instance:
-      host: instance_id.service-now.com
+      host: https://instance_id.service-now.com
       username: user
       password: pass
 
     state: new
-    caller_id: some.user
+    caller: some.user
     short_description: User is not receiving email
     description: User has been unable to receive email for the past 15 minutes
     impact: low
@@ -102,7 +117,7 @@ EXAMPLES = """
 - name: Change state of the incident
   servicenow.itsm.incident:
     instance:
-      host: instance_id.service-now.com
+      host: https://instance_id.service-now.com
       username: user
       password: pass
 
@@ -112,7 +127,7 @@ EXAMPLES = """
 - name: Close incident
   servicenow.itsm.incident:
     instance:
-      host: instance_id.service-now.com
+      host: https://instance_id.service-now.com
       username: user
       password: pass
 
@@ -122,7 +137,7 @@ EXAMPLES = """
 - name: Delete incident
   servicenow.servicenow.incident:
     instance:
-      host: instance_id.service-now.com
+      host: https://instance_id.service-now.com
       username: user
       password: pass
 
@@ -132,12 +147,108 @@ EXAMPLES = """
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments
+from ..module_utils import arguments, client, errors, table, utils
+
+DIRECT_PAYLOAD_FIELDS = (
+    "state",
+    "hold_reason",
+    "short_description",
+    "description",
+    "impact",
+    "urgency",
+    "close_code",
+    "close_notes",
+)
+
+PAYLOAD_FIELDS_MAPPING = dict(
+    impact=[("1", "high"), ("2", "medium"), ("3", "low")],
+    urgency=[("1", "high"), ("2", "medium"), ("3", "low")],
+    state=[
+        ("1", "new"),
+        ("2", "in_progress"),
+        ("3", "on_hold"),
+        ("6", "resolved"),
+        ("7", "closed"),
+        ("8", "canceled"),
+    ],
+    hold_reason=[
+        ("", ""),  # Reason not set
+        ("1", "awaiting_caller"),
+        ("3", "awaiting_problem"),
+        ("4", "awaiting_vendor"),
+        ("5", "awaiting_change"),
+    ],
+)
+
+
+def ensure_absent(module, table_client):
+    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING)
+    query = utils.filter_dict(module.params, "sys_id", "number")
+    incident = table_client.get_record("incident", query)
+
+    if incident:
+        table_client.delete_record("incident", incident, module.check_mode)
+        return True, None, dict(before=mapper.to_ansible(incident), after=None)
+
+    return False, None, dict(before=None, after=None)
+
+
+def build_payload(module, table_client):
+    payload = (module.params["other"] or {}).copy()
+    payload.update(utils.filter_dict(module.params, *DIRECT_PAYLOAD_FIELDS))
+
+    if "caller" in module.params:
+        user = table.find_user(table_client, module.params["caller"])
+        payload["caller_id"] = user["sys_id"]
+
+    return payload
+
+
+def ensure_present(module, table_client):
+    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING)
+    query = utils.filter_dict(module.params, "sys_id", "number")
+    payload = build_payload(module, table_client)
+
+    if not query:
+        # User did not specify existing incident, so we need to create a new one.
+        new = mapper.to_ansible(
+            table_client.create_record(
+                "incident", mapper.to_snow(payload), module.check_mode
+            )
+        )
+        return True, new, dict(before=None, after=new)
+
+    old = mapper.to_ansible(table_client.get_record("incident", query, must_exist=True))
+    if utils.is_superset(old, payload):
+        # No change in parameters we are interested in - nothing to do.
+        return False, old, dict(before=old, after=old)
+
+    if module.params["state"] in ("resolved", "closed"):
+        close_code = old["close_code"] or module.params["close_code"]
+        close_notes = old["close_notes"] or module.params["close_notes"]
+
+        if not close_code or not close_notes:
+            raise errors.ServiceNowError(
+                "Missing parameters {0} and {1}.".format("close_code", "close_notes")
+            )
+
+    new = mapper.to_ansible(
+        table_client.update_record(
+            "incident", mapper.to_snow(old), mapper.to_snow(payload), module.check_mode
+        )
+    )
+    return True, new, dict(before=old, after=new)
+
+
+def run(module, table_client):
+    if module.params["state"] == "absent":
+        return ensure_absent(module, table_client)
+    return ensure_present(module, table_client)
 
 
 def main():
     module_args = dict(
-        arguments.get_spec("instance"),
+        arguments.get_spec("instance", "sys_id", "number"),
         state=dict(
             type="str",
             choices=[
@@ -150,7 +261,7 @@ def main():
                 "absent",
             ],
         ),
-        on_hold_reason=dict(
+        hold_reason=dict(
             type="str",
             choices=[
                 "awaiting_caller",
@@ -159,7 +270,7 @@ def main():
                 "awaiting_vendor",
             ],
         ),
-        caller_id=dict(
+        caller=dict(
             type="str",
         ),
         short_description=dict(
@@ -184,6 +295,21 @@ def main():
                 "high",
             ],
         ),
+        close_code=dict(
+            type="str",
+            choices=[
+                "Solved (Work Around)",
+                "Solved (Permanently)",
+                "Solved Remotely (Work Around)",
+                "Solved Remotely (Permanently)",
+                "Not Solved (Not Reproducible)",
+                "Not Solved (Too Costly)",
+                "Closed/Resolved by Caller",
+            ],
+        ),
+        close_notes=dict(
+            type="str",
+        ),
         other=dict(
             type="dict",
         ),
@@ -192,9 +318,20 @@ def main():
     module = AnsibleModule(
         argument_spec=module_args,
         supports_check_mode=True,
+        required_if=[
+            ("state", "absent", ("sys_id", "number"), True),
+            ("state", "on_hold", ("hold_reason",)),
+        ],
+        # Če ni sys id ali number kreiraj nov ticket
     )
 
-    module.exit_json(changed=False, object=None)
+    try:
+        snow_client = client.Client(**module.params["instance"])
+        table_client = table.TableClient(snow_client)
+        changed, record, diff = run(module, table_client)
+        module.exit_json(changed=changed, record=record, diff=diff)
+    except errors.ServiceNowError as e:
+        module.fail_json(msg=str(e))
 
 
 if __name__ == "__main__":
