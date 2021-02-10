@@ -32,4 +32,14 @@ options:
           - Password used for authentication.
         required: true
         type: str
+      client_id:
+        description:
+          - ID of the client application used for OAuth authentication.
+          - If provided, it requires I(client_secret).
+        type: str
+      client_secret:
+        description:
+          - Secret associated with I(client_id). Used for OAuth authentication.
+          - If provided, it requires I(client_id).
+        type: str
 """
