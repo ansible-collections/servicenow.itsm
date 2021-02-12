@@ -31,19 +31,10 @@ description:
 version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
+  - servicenow.itsm.sys_id.info
+  - servicenow.itsm.number.info
 seealso:
   - module: servicenow.itsm.incident
-options:
-  sys_id:
-    description:
-      - Unique identifier of the incident to retrieve.
-    type: str
-  number:
-    description:
-      - Number of the incident to retrieve.
-      - Note that contrary to I(sys_id), I(number) may not uniquely
-        identify an incident.
-    type: str
 """
 
 EXAMPLES = """
