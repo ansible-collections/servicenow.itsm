@@ -12,7 +12,7 @@ import sys
 
 import pytest
 
-from ansible_collections.servicenow.itsm.plugins.modules import incident_ticket_info
+from ansible_collections.servicenow.itsm.plugins.modules import incident_info
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -24,7 +24,7 @@ class TestMain:
         params = dict(
             instance=dict(host="my.host.name", username="user", password="pass"),
         )
-        success, result = run_main(incident_ticket_info, params)
+        success, result = run_main(incident_info, params)
 
         assert success is True
 
@@ -34,12 +34,12 @@ class TestMain:
             sys_id="id",
             number="INC001",
         )
-        success, result = run_main(incident_ticket_info, params)
+        success, result = run_main(incident_info, params)
 
         assert success is True
 
     def test_fail(self, run_main):
-        success, result = run_main(incident_ticket_info)
+        success, result = run_main(incident_info)
 
         assert success is False
         assert "instance" in result["msg"]
@@ -54,12 +54,10 @@ class TestRun:
                 number="INC001",
             )
         )
-        client_mock = mocker.patch.object(
-            incident_ticket_info.client, "Client"
-        ).return_value
+        client_mock = mocker.patch.object(incident_info.client, "Client").return_value
         client_mock.get.return_value.json = {"result": [1, 2, 3]}
 
-        records = incident_ticket_info.run(module)
+        records = incident_info.run(module)
 
         client_mock.get.assert_called_once_with(
             "table/incident", query=dict(number="INC001")

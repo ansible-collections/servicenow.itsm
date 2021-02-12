@@ -17,47 +17,47 @@ ANSIBLE_METADATA = {
 }
 
 DOCUMENTATION = """
-module: incident_ticket_info
+module: incident_info
 
 author:
   - Manca Bizjak (@mancabizjak)
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
-short_description: List ServiceNow incident tickets
+short_description: List ServiceNow incidents
 description:
-  - Retrieve information about ServiceNow incident tickets.
+  - Retrieve information about ServiceNow incidents.
   - For more information, refer to the ServiceNow incident management documentation at
     U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/concept/c_IncidentManagement.html).
 version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
 seealso:
-  - module: servicenow.itsm.incident_ticket
+  - module: servicenow.itsm.incident
 options:
   sys_id:
     description:
-      - Unique identifier of the incident ticket to retrieve.
+      - Unique identifier of the incident to retrieve.
     type: str
   number:
     description:
-      - Number of the incident ticket to retrieve.
+      - Number of the incident to retrieve.
       - Note that contrary to I(sys_id), I(number) may not uniquely
-        identify an incident ticket.
+        identify an incident.
     type: str
 """
 
 EXAMPLES = """
-- name: Retrieve all incident tickets
-  servicenow.itsm.incident_ticket_info:
+- name: Retrieve all incidents
+  servicenow.itsm.incident_info:
   register: result
 
-- name: Retrieve a specific incident ticket by its sys_id
-  servicenow.itsm.incident_ticket_info:
+- name: Retrieve a specific incident by its sys_id
+  servicenow.itsm.incident_info:
     sys_id: 471bfbc7a9fe198101e77a3e10e5d47f
   register: result
 
-- name: Retrieve incident tickets by number
-  servicenow.itsm.incident_ticket_info:
+- name: Retrieve incidents by number
+  servicenow.itsm.incident_info:
     number: INC0000039
   register: result
 """
@@ -65,7 +65,7 @@ EXAMPLES = """
 RETURN = """
 records:
   description:
-    - A list of incident ticket records, as returned by the ServiceNow API.
+    - A list of incident records, as returned by the ServiceNow API.
   returned: success
   type: list
   sample: [

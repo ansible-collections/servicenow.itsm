@@ -17,17 +17,17 @@ ANSIBLE_METADATA = {
 }
 
 DOCUMENTATION = """
-module: incident_ticket
+module: incident
 
 author:
   - Manca Bizjak (@mancabizjak)
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
 
-short_description: Manage ServiceNow incident tickets
+short_description: Manage ServiceNow incidents
 
 description:
-  - Create, delete or update ServiceNow incident ticket.
+  - Create, delete or update a ServiceNow incident.
   - For more information, refer to the ServiceNow incident management documentation at
     U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/concept/c_IncidentManagement.html).
 
@@ -37,7 +37,7 @@ extends_documentation_fragment:
 options:
   state:
     description:
-      - State of incident ticket.
+      - State of incident.
       - If I(state) value is C(on_hold), I(on_hold_reason) parameter must be filled in.
     choices: [ new, in_progress, on_hold, resolved, closed, canceled, absent ]
     type: str
@@ -51,12 +51,12 @@ options:
     description:
       - A person who reported or is affected by this incident.
       - Expected value for I(caller_id) is user id.
-      - Required if the incident ticket does not exist yet.
+      - Required if the incident does not exist yet.
     type: str
   short_description:
     description:
       - Short description of the incident.
-      - Required if the incident ticket does not exist yet.
+      - Required if the incident does not exist yet.
     type: str
   description:
     description:
@@ -83,7 +83,7 @@ options:
 
 EXAMPLES = """
 - name: Create incident
-  servicenow.servicenow.incident_ticket:
+  servicenow.itsm.incident:
     instance:
       host: instance_id.service-now.com
       username: user
@@ -100,7 +100,7 @@ EXAMPLES = """
       expected_start: 2021-02-12
 
 - name: Change state of the incident
-  servicenow.servicenow.incident_ticket:
+  servicenow.itsm.incident:
     instance:
       host: instance_id.service-now.com
       username: user
@@ -110,7 +110,7 @@ EXAMPLES = """
     number: INC0000001
 
 - name: Close incident
-  servicenow.servicenow.incident_ticket:
+  servicenow.itsm.incident:
     instance:
       host: instance_id.service-now.com
       username: user
@@ -120,7 +120,7 @@ EXAMPLES = """
     number: INC0000001
 
 - name: Delete incident
-  servicenow.servicenow.incident_ticket:
+  servicenow.servicenow.incident:
     instance:
       host: instance_id.service-now.com
       username: user
