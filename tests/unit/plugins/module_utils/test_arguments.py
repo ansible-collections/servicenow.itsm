@@ -21,37 +21,9 @@ pytestmark = pytest.mark.skipif(
 
 class TestGetSpec:
     def test_get_params_valid_parameter(self):
-        result = arguments.get_spec("instance")
+        result = arguments.get_spec("sys_id")
 
-        assert result == dict(
-            instance=dict(
-                type="dict",
-                apply_defaults=True,
-                options=dict(
-                    host=dict(
-                        type="str",
-                        required=True,
-                    ),
-                    username=dict(
-                        type="str",
-                        required=True,
-                    ),
-                    password=dict(
-                        type="str",
-                        required=True,
-                        no_log=True,
-                    ),
-                    client_id=dict(
-                        type="str",
-                    ),
-                    client_secret=dict(
-                        type="str",
-                        no_log=True,
-                    ),
-                ),
-                required_together=[("client_id", "client_secret")],
-            ),
-        )
+        assert result == dict(sys_id=dict(type="str"))
 
     def test_get_params_no_parameter(self):
         result = arguments.get_spec()

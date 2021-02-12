@@ -210,9 +210,7 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            arguments.get_spec("instance"),
-            sys_id=dict(),
-            number=dict(),
+            arguments.get_spec("instance", "sys_id", "number"),
         ),
     )
 

@@ -36,7 +36,9 @@ SHARED_SPECS = dict(
             ),
         ),
         required_together=[("client_id", "client_secret")],
-    )
+    ),
+    sys_id=dict(type="str"),
+    number=dict(type="str"),
 )
 
 
