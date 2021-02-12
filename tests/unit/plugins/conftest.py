@@ -15,6 +15,13 @@ import pytest
 from ansible.module_utils import basic
 from ansible.module_utils._text import to_bytes
 
+from ansible_collections.servicenow.itsm.plugins.module_utils.client import Client
+
+
+@pytest.fixture
+def client(mocker):
+    return mocker.Mock(spec=Client)
+
 
 @pytest.fixture
 def create_module(mocker):
@@ -53,7 +60,7 @@ def fail_json_mock(self, **result):
     raise AnsibleRunEnd(False, result)
 
 
-def run_mock(module):
+def run_mock(module, client):
     return False, {}, dict(before={}, after={})
 
 

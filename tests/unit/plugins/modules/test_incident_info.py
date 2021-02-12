@@ -46,7 +46,7 @@ class TestMain:
 
 
 class TestRun:
-    def test_run(self, create_module, mocker):
+    def test_run(self, create_module, client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -54,12 +54,11 @@ class TestRun:
                 number="INC001",
             )
         )
-        client_mock = mocker.patch.object(incident_info.client, "Client").return_value
-        client_mock.get.return_value.json = {"result": [1, 2, 3]}
+        client.get.return_value.json = {"result": [1, 2, 3]}
 
-        records = incident_info.run(module)
+        records = incident_info.run(module, client)
 
-        client_mock.get.assert_called_once_with(
+        client.get.assert_called_once_with(
             "table/incident", query=dict(number="INC001")
         )
         assert records == [1, 2, 3]

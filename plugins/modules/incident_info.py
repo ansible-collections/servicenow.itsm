@@ -197,9 +197,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ..module_utils import arguments, client, errors
 
 
-def run(module):
-    snow_client = client.Client(**module.params["instance"])
-
+def run(module, snow_client):
     query = {}
     if module.params["sys_id"] is not None:
         query["sys_id"] = module.params["sys_id"]
@@ -223,7 +221,9 @@ def main():
     )
 
     try:
-        module.exit_json(changed=False, records=run(module))
+        snow_client = client.Client(**module.params["instance"])
+        records = run(module, snow_client)
+        module.exit_json(changed=False, records=records)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
 

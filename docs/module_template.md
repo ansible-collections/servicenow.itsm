@@ -76,9 +76,7 @@ modules:
     # Add module-specific helpers here
 
 
-    def run(module):
-        snow_client = client.Client(**module.params["instance"])
-
+    def run(module, snow_client):
         # Implementation here.
 
         return changed, record, dict(before=a, after=b)
@@ -97,7 +95,10 @@ modules:
         # here.
 
         try:
-            changed, record, diff = run(module)
+            # HTTP client construction
+            snow_client = client.Client(**module.params["instance"])
+
+            changed, record, diff = run(module, snow_client)
             module.exit_json(changed=changed, record=record, diff=diff)
         except ServiceNowError as e:
             module.fail_json(msg=str(e))
@@ -116,9 +117,7 @@ not modify the instance state. The documentation part should still follow the
 same structure, but the `run` method and the last part of the `main` method are
 a bit simpler:
 
-    def run(module):
-        snow_client = client.Client(**module.params["instance"])
-
+    def run(module, snow_client):
         # Implementation here thar produces a list of records. Most of the
         # time, this will be the `result` part of the API response.
 
@@ -138,7 +137,10 @@ a bit simpler:
         # here.
 
         try:
-            records = run(module)
+            # HTTP client construction
+            snow_client = client.Client(**module.params["instance"])
+
+            records = run(module, client)
             module.exit_json(changed=False, records=records)
         except ServiceNowError as e:
             module.fail_json(msg=str(e))
@@ -147,7 +149,7 @@ a bit simpler:
     if __name__ == "__main__":
         main()
 
-Another difference in ins the return value. All info modules must return a list
+Another difference is in the return value. All info modules must return a list
 of records in the `records` return field:
 
     RETURN = """
@@ -164,28 +166,41 @@ of records in the `records` return field:
 
 ## The `main` function
 
-The main method has one real purpose: static validation of module parameters.
-This is where we define module's public API and enforce the parameter
-correctness before we start talking with the backend services.
+The purpose of the main method is two-fold:
+1. __Static validation of module parameters__. This is where we define
+   module's public API and enforce the parameter correctness before we
+   start talking with the backend services.
 
-The vast majority of validation comes bundled with the `AnsibleModule`
-constructor, which means we just need to properly define the argument
-specification. But we can also add custom validation that does not require
-access to remote services.
+   The vast majority of validation comes bundled with the `AnsibleModule`
+   constructor, which means we just need to properly define the argument
+   specification. But we can also add custom validation that does not require
+   access to remote services.
 
-Once the validation is over, the `main` method must call the `run` method
-wrapped in a `try: ... except ServiceNowError` block and call `exit_json` or
-`fail_json` as appropriate. No other exceptions should be handled here because
-they indicate a bug in our code.
+2. __Construction of the HTTP client__. Once the validation is over, the
+   `main` method must construct the HTTP client.
+
+Once the `main` method constructs the Ansible module and validates its
+parameters, it needs to create the HTTP client. After that, it
+delegates further work to the `run` method, passing it the previously
+constructed module and client instances.
+
+An important thing to note is that from parameter validation onwards,
+all the code (including HTTP client construction) is wrapped in
+a `try: ... except ServiceNowError` block. The `main` method will call
+`exit_json` or `fail_json` as appropriate. No other exceptions should be
+handled here because they indicate a bug in our code.
 
 
 ## The `run` function
 
-The `run` function is the main workhorse of the module. Its main task is to
-construct a ServiceNow HTTP client and delegate the real work to more
-specialized functions if required.
+The `run` function is the main workhorse of the module. Its main task
+is to delegate the real work to more specialized functions if required.
 
-The only parameter the `run` function receives is an `AnsibleModule` instance.
+The `run` function receives two parameters:
+
+1. an `AnsibleModule` instance;
+2. a `Client` instance.
+
 Why do we need a module instance and not just parameters and check mode
 boolean? Most of the time, the answer to that question is "we do not". But
 there is one area where module instance is still needed: deprecations and
