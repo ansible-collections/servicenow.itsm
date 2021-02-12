@@ -8,6 +8,8 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+from ansible.module_utils.basic import env_fallback
+
 
 SHARED_SPECS = dict(
     instance=dict(
@@ -17,22 +19,27 @@ SHARED_SPECS = dict(
             host=dict(
                 type="str",
                 required=True,
+                fallback=(env_fallback, ["SN_HOST"]),
             ),
             username=dict(
                 type="str",
                 required=True,
+                fallback=(env_fallback, ["SN_USERNAME"]),
             ),
             password=dict(
                 type="str",
                 required=True,
                 no_log=True,
+                fallback=(env_fallback, ["SN_PASSWORD"]),
             ),
             client_id=dict(
                 type="str",
+                fallback=(env_fallback, ["SN_CLIENT_ID"]),
             ),
             client_secret=dict(
                 type="str",
                 no_log=True,
+                fallback=(env_fallback, ["SN_CLIENT_SECRET"]),
             ),
         ),
         required_together=[("client_id", "client_secret")],

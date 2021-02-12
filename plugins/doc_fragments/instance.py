@@ -20,26 +20,36 @@ options:
       host:
         description:
           - The ServiceNow host name.
+          - If not set, the value of the C(SN_HOST) environment
+            variable will be used.
         required: true
         type: str
       username:
         description:
           - Username used for authentication.
+          - If not set, the value of the C(SN_USERNAME) environment
+            variable will be used.
         required: true
         type: str
       password:
         description:
           - Password used for authentication.
+          - If not set, the value of the C(SN_PASSWORD) environment
+            variable will be used.
         required: true
         type: str
       client_id:
         description:
           - ID of the client application used for OAuth authentication.
+          - If not set, the value of the C(SN_CLIENT_ID) environment
+            variable will be used.
           - If provided, it requires I(client_secret).
         type: str
       client_secret:
         description:
           - Secret associated with I(client_id). Used for OAuth authentication.
+          - If not set, the value of the C(SN_CLIENT_SECRET) environment
+            variable will be used.
           - If provided, it requires I(client_id).
         type: str
 """
