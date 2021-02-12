@@ -25,12 +25,14 @@ SHARED_SPECS = dict(
             password=dict(
                 type="str",
                 required=True,
+                no_log=True,
             ),
             client_id=dict(
                 type="str",
             ),
             client_secret=dict(
                 type="str",
+                no_log=True,
             ),
         ),
         required_together=[("client_id", "client_secret")],
