@@ -54,11 +54,11 @@ class TestRun:
                 number="INC001",
             )
         )
-        client.get.return_value.json = {"result": [1, 2, 3]}
+        client.get.return_value.json = {"result": [dict(p=1), dict(q=2), dict(r=3)]}
 
         records = incident_info.run(module, client)
 
         client.get.assert_called_once_with(
             "table/incident", query=dict(number="INC001")
         )
-        assert records == [1, 2, 3]
+        assert records == [dict(p=1), dict(q=2), dict(r=3)]
