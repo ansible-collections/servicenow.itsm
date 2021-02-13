@@ -30,3 +30,27 @@ class TestFilterDict:
         assert dict(a=1, c="str") == utils.filter_dict(
             dict(a=1, b=2, c="str", d=None), "a", "c", "d"
         )
+
+
+class TestIsSupertset:
+    @pytest.mark.parametrize(
+        "superset,candidate",
+        [
+            (dict(), dict()),
+            (dict(a=1), dict()),
+            (dict(a=1), dict(a=1)),
+            (dict(a=1, b=2), dict(b=2)),
+        ],
+    )
+    def test_valid_superset(self, superset, candidate):
+        assert utils.is_superset(superset, candidate) is True
+
+    @pytest.mark.parametrize(
+        "superset,candidate",
+        [
+            (dict(), dict(a=1)),  # superset is missing a key
+            (dict(a=1), dict(a=2)),  # key value is different
+        ],
+    )
+    def test_not_a_superset(self, superset, candidate):
+        assert utils.is_superset(superset, candidate) is False

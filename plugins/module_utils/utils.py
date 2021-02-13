@@ -18,3 +18,11 @@ def filter_dict(input, *field_names):
             output[field_name] = value
 
     return output
+
+
+def is_superset(superset, candidate):
+    for k, v in candidate.items():
+        if k not in superset or superset[k] != v:
+            return False
+
+    return True
