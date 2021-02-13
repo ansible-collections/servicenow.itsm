@@ -194,15 +194,11 @@ records:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors
+from ..module_utils import arguments, client, errors, utils
 
 
 def run(module, snow_client):
-    query = {}
-    if module.params["sys_id"] is not None:
-        query["sys_id"] = module.params["sys_id"]
-    if module.params["number"] is not None:
-        query["number"] = module.params["number"]
+    query = utils.filter_dict(module.params, "sys_id", "number")
 
     resp = snow_client.get("table/incident", query=query)
     incidents = resp.json["result"]
