@@ -279,6 +279,27 @@ class TestClientPost:
             c.post("table/incident", {"some": "data"})
 
 
+class TestClientPatch:
+    def test_ok(self, mocker):
+        c = client.Client("instance.com", "user", "pass")
+        mock_response = client.Response(200, '{"incident": 1}')
+        request_mock = mocker.patch.object(c, "request")
+        request_mock.return_value = mock_response
+
+        resp = c.patch("table/incident/1", {"some": "data"})
+
+        assert resp == mock_response
+        assert resp.json == {"incident": 1}
+
+    def test_error(self, mocker):
+        c = client.Client("instance.com", "user", "pass")
+        request_mock = mocker.patch.object(c, "request")
+        request_mock.return_value = client.Response(400, "bad request")
+
+        with pytest.raises(errors.UnexpectedAPIResponse, match="bad request"):
+            c.patch("table/incident/1", {"some": "data"})
+
+
 class TestClientPut:
     def test_ok(self, mocker):
         c = client.Client("instance.com", "user", "pass")

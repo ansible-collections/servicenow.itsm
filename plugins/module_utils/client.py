@@ -127,6 +127,12 @@ class Client:
             return resp
         raise UnexpectedAPIResponse(resp.status, resp.data)
 
+    def patch(self, path, data):
+        resp = self.request("PATCH", path, data=data)
+        if resp.status == 200:
+            return resp
+        raise UnexpectedAPIResponse(resp.status, resp.data)
+
     def put(self, path, data):
         resp = self.request("PUT", path, data=data)
         if resp.status == 200:
