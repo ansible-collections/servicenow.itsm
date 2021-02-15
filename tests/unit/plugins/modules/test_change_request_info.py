@@ -1,0 +1,64 @@
+# -*- coding: utf-8 -*-
+# # Copyright: (c) 2021, XLAB Steampunk <steampunk@xlab.si>
+#
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import absolute_import, division, print_function
+
+__metaclass__ = type
+
+import sys
+
+import pytest
+
+from ansible_collections.servicenow.itsm.plugins.modules import change_request_info
+
+pytestmark = pytest.mark.skipif(
+    sys.version_info < (2, 7), reason="requires python2.7 or higher"
+)
+
+
+class TestMain:
+    def test_minimal_set_of_params(self, run_main):
+        params = dict(
+            instance=dict(host="my.host.name", username="user", password="pass"),
+        )
+        success, result = run_main(change_request_info, params)
+
+        assert success is True
+
+    def test_all_params(self, run_main):
+        params = dict(
+            instance=dict(host="my.host.name", username="user", password="pass"),
+            sys_id="id",
+            number="n",
+        )
+        success, result = run_main(change_request_info, params)
+
+        assert success is True
+
+    def test_fail(self, run_main):
+        success, result = run_main(change_request_info)
+
+        assert success is False
+        assert "instance" in result["msg"]
+
+
+class TestRun:
+    def test_run(self, create_module, client):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                sys_id=None,
+                number="n",
+            )
+        )
+        client.get.return_value.json = {"result": [dict(p=1), dict(q=2), dict(r=3)]}
+
+        change_requests = change_request_info.run(module, client)
+
+        client.get.assert_called_once_with(
+            "table/change_request", query=dict(number="n")
+        )
+        assert change_requests == [dict(p=1), dict(q=2), dict(r=3)]
