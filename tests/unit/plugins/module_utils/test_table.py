@@ -149,3 +149,12 @@ class TestTableDeleteRecord:
         t.delete_record("my_table", dict(sys_id="id"), True)
 
         client.delete.assert_not_called()
+
+
+class TestFindUser:
+    def test_user_name_lookup(self, table_client):
+        table_client.get_record.return_value = dict(sys_id="1234", user_name="test")
+
+        user = table.find_user(table_client, "test")
+
+        assert dict(sys_id="1234", user_name="test") == user

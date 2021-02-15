@@ -63,3 +63,8 @@ class TableClient:
     def delete_record(self, table, record, check_mode):
         if not check_mode:
             self.client.delete(_path(table, record["sys_id"]))
+
+
+def find_user(table_client, user_id):
+    # TODO: Maybe add a lookup-by-email option too?
+    return table_client.get_record("sys_user", dict(user_name=user_id), must_exist=True)
