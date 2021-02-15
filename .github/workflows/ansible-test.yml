@@ -3,6 +3,9 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  schedule:
+    # Run test on Monday and Thursday at 4:23 UTC
+    - cron: "23 4 * * 1,4"
 
 jobs:
   sanity:
