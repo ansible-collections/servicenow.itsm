@@ -121,25 +121,25 @@ class Client:
             return resp
         raise UnexpectedAPIResponse(resp.status, resp.data)
 
-    def post(self, path, data):
-        resp = self.request("POST", path, data=data)
+    def post(self, path, data, query=None):
+        resp = self.request("POST", path, data=data, query=query)
         if resp.status == 201:
             return resp
         raise UnexpectedAPIResponse(resp.status, resp.data)
 
-    def patch(self, path, data):
-        resp = self.request("PATCH", path, data=data)
+    def patch(self, path, data, query=None):
+        resp = self.request("PATCH", path, data=data, query=query)
         if resp.status == 200:
             return resp
         raise UnexpectedAPIResponse(resp.status, resp.data)
 
-    def put(self, path, data):
-        resp = self.request("PUT", path, data=data)
+    def put(self, path, data, query=None):
+        resp = self.request("PUT", path, data=data, query=query)
         if resp.status == 200:
             return resp
         raise UnexpectedAPIResponse(resp.status, resp.data)
 
-    def delete(self, path):
-        resp = self.request("DELETE", path)
+    def delete(self, path, query=None):
+        resp = self.request("DELETE", path, query=query)
         if resp.status != 204:
             raise UnexpectedAPIResponse(resp.status, resp.data)
