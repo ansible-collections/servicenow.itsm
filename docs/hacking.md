@@ -9,9 +9,9 @@ environment.
 There are a few things we will need to have installed on our workstation. They
 are, in no particular order:
 
-  * a python 3 interpreter with virtual environment support,
+  * a Python 3 interpreter with virtual environment support,
   * git, and
-  * a functioning docker installation.
+  * a functioning Docker installation.
 
 It should be relatively straightforward to get those things installed on our
 machine. Once we have them ready, we can start customizing our environment for
@@ -27,13 +27,13 @@ code:
 
     $ mkdir -p ansible_collections/servicenow
     $ cd ansible_collections/servicenow
-    $ git clone git@github.com:xlab-steampunk/servicenow.itsm.git itsm
+    $ git clone git@github.com:ansible-collections/servicenow.itsm.git itsm
     $ cd itsm
 
 It is vitally important that we:
 
  1. create two parent directories before checking out the code, and
- 2. that we clone the code into the `itsm` directory.
+ 2. clone the code into the `itsm` directory.
 
 Ansible development tools often assume that we are working from the
 `ansible_collections/<namespace>/<collection>` directory and complain loudly

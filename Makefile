@@ -1,5 +1,5 @@
 # Make sure we have ansible_collections/servicenow/itsm as a prefix. This is
-# ugly as heck, but it works. I suggest all future developer to treat next few
+# ugly as hack, but it works. I suggest all future developer to treat next few
 # lines as an opportunity to learn a thing or two about GNU make ;)
 collection := $(notdir $(realpath $(CURDIR)      ))
 namespace  := $(notdir $(realpath $(CURDIR)/..   ))
