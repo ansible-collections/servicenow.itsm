@@ -257,6 +257,15 @@ class TestClientGet:
         with pytest.raises(errors.UnexpectedAPIResponse, match="forbidden"):
             c.get("table/incident/1")
 
+    def test_query(self, mocker):
+        c = client.Client("instance.com", "user", "pass")
+        request_mock = mocker.patch.object(c, "request")
+        request_mock.return_value = client.Response(200, '{"incident": 1}', None)
+
+        c.get("table/incident/1", query=dict(a="1"))
+
+        request_mock.assert_called_with("GET", "table/incident/1", query=dict(a="1"))
+
 
 class TestClientPost:
     def test_ok(self, mocker):
@@ -277,6 +286,17 @@ class TestClientPost:
 
         with pytest.raises(errors.UnexpectedAPIResponse, match="bad request"):
             c.post("table/incident", {"some": "data"})
+
+    def test_query(self, mocker):
+        c = client.Client("instance.com", "user", "pass")
+        request_mock = mocker.patch.object(c, "request")
+        request_mock.return_value = client.Response(201, '{"incident": 1}')
+
+        c.post("table/incident", {"some": "data"}, query={"b": "3"})
+
+        request_mock.assert_called_with(
+            "POST", "table/incident", data=dict(some="data"), query=dict(b="3")
+        )
 
 
 class TestClientPatch:
@@ -299,6 +319,17 @@ class TestClientPatch:
         with pytest.raises(errors.UnexpectedAPIResponse, match="bad request"):
             c.patch("table/incident/1", {"some": "data"})
 
+    def test_query(self, mocker):
+        c = client.Client("instance.com", "user", "pass")
+        request_mock = mocker.patch.object(c, "request")
+        request_mock.return_value = client.Response(200, '{"incident": 1}')
+
+        c.patch("table/incident/1", {"some": "data"}, query={"g": "f"})
+
+        request_mock.assert_called_with(
+            "PATCH", "table/incident/1", data=dict(some="data"), query=dict(g="f")
+        )
+
 
 class TestClientPut:
     def test_ok(self, mocker):
@@ -320,6 +351,17 @@ class TestClientPut:
         with pytest.raises(errors.UnexpectedAPIResponse, match="bad request"):
             c.put("table/incident/1", {"some": "data"})
 
+    def test_query(self, mocker):
+        c = client.Client("instance.com", "user", "pass")
+        request_mock = mocker.patch.object(c, "request")
+        request_mock.return_value = client.Response(200, '{"incident": 1}')
+
+        c.put("table/incident/1", {"some": "data"}, query={"j": "i"})
+
+        request_mock.assert_called_with(
+            "PUT", "table/incident/1", data=dict(some="data"), query=dict(j="i")
+        )
+
 
 class TestClientDelete:
     def test_ok(self, mocker):
@@ -336,3 +378,12 @@ class TestClientDelete:
 
         with pytest.raises(errors.UnexpectedAPIResponse, match="not found"):
             c.delete("table/resource/1")
+
+    def test_query(self, mocker):
+        c = client.Client("instance.com", "user", "pass")
+        request_mock = mocker.patch.object(c, "request")
+        request_mock.return_value = client.Response(204, {})
+
+        c.delete("table/resource/1", query=dict(x="y"))
+
+        request_mock.assert_called_with("DELETE", "table/resource/1", query=dict(x="y"))
