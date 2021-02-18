@@ -20,120 +20,132 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-class TestListRecords:
+class TestTableListRecords:
     def test_empty_response(self, client):
         client.get.return_value = Response(200, '{"result": []}')
+        t = table.TableClient(client)
 
-        records = table.list_records(client, "my_table")
+        records = t.list_records("my_table")
 
         assert [] == records
-        client.get.assert_called_with("table/my_table", query=None)
-
-    def test_non_empty_response(self, client):
-        client.get.return_value = Response(
-            200, '{"result": [{"a": 3, "b": {"link": "l", "value": "sys_id"}}]}'
+        client.get.assert_called_with(
+            "table/my_table", query=dict(sysparm_exclude_reference_link="true")
         )
 
-        records = table.list_records(client, "my_table")
+    def test_non_empty_response(self, client):
+        client.get.return_value = Response(200, '{"result": [{"a": 3, "b": "sys_id"}]}')
+        t = table.TableClient(client)
+
+        records = t.list_records("my_table")
 
         assert [dict(a=3, b="sys_id")] == records
 
     def test_query_passing(self, client):
         client.get.return_value = Response(200, '{"result": []}')
+        t = table.TableClient(client)
 
-        table.list_records(client, "my_table", dict(a="b"))
+        t.list_records("my_table", dict(a="b"))
 
-        client.get.assert_called_with("table/my_table", query=dict(a="b"))
-
-
-class TestGetRecord:
-    def test_single_match(self, client):
-        client.get.return_value = Response(
-            200, '{"result": [{"a": 3, "b": {"link": "l", "value": "sys_id"}}]}'
+        client.get.assert_called_with(
+            "table/my_table", query=dict(sysparm_exclude_reference_link="true", a="b")
         )
 
-        record = table.get_record(client, "my_table", dict(our="query"))
+
+class TestTableGetRecord:
+    def test_single_match(self, client):
+        client.get.return_value = Response(200, '{"result": [{"a": 3, "b": "sys_id"}]}')
+        t = table.TableClient(client)
+
+        record = t.get_record("my_table", dict(our="query"))
 
         assert dict(a=3, b="sys_id") == record
-        client.get.assert_called_with("table/my_table", query=dict(our="query"))
+        client.get.assert_called_with(
+            "table/my_table",
+            query=dict(sysparm_exclude_reference_link="true", our="query"),
+        )
 
     def test_multiple_matches(self, client):
         client.get.return_value = Response(200, '{"result": [{"a": 3}, {"b": 4}]}')
+        t = table.TableClient(client)
 
         with pytest.raises(errors.ServiceNowError, match="2"):
-            table.get_record(client, "my_table", dict(our="query"))
+            t.get_record("my_table", dict(our="query"))
 
     def test_zero_matches(self, client):
         client.get.return_value = Response(200, '{"result": []}')
+        t = table.TableClient(client)
 
-        assert table.get_record(client, "my_table", dict(our="query")) is None
+        assert t.get_record("my_table", dict(our="query")) is None
 
     def test_zero_matches_fail(self, client):
         client.get.return_value = Response(200, '{"result": []}')
+        t = table.TableClient(client)
 
         with pytest.raises(errors.ServiceNowError, match="No"):
-            table.get_record(client, "my_table", dict(our="query"), must_exist=True)
+            t.get_record("my_table", dict(our="query"), must_exist=True)
 
 
-class TestCreateRecord:
+class TestTableCreateRecord:
     def test_normal_mode(self, client):
-        client.post.return_value = Response(
-            201, '{"result": {"a": 3, "b": {"link": "l", "value": "sys_id"}}}'
-        )
+        client.post.return_value = Response(201, '{"result": {"a": 3, "b": "sys_id"}}')
+        t = table.TableClient(client)
 
-        record = table.create_record(client, "my_table", dict(a=4), False)
+        record = t.create_record("my_table", dict(a=4), False)
 
         assert dict(a=3, b="sys_id") == record
-        client.post.assert_called_with("table/my_table", dict(a=4))
-
-    def test_check_mode(self, client):
-        client.post.return_value = Response(
-            201, '{"result": {"a": 3, "b": {"link": "l", "value": "sys_id"}}}'
+        client.post.assert_called_with(
+            "table/my_table",
+            dict(a=4),
+            query=dict(sysparm_exclude_reference_link="true"),
         )
 
-        record = table.create_record(client, "my_table", dict(a=4), True)
+    def test_check_mode(self, client):
+        client.post.return_value = Response(201, '{"result": {"a": 3, "b": "sys_id"}}')
+        t = table.TableClient(client)
+
+        record = t.create_record("my_table", dict(a=4), True)
 
         assert dict(a=4) == record
         client.post.assert_not_called()
 
 
-class TestUpdateRecord:
+class TestTableUpdateRecord:
     def test_normal_mode(self, client):
-        client.patch.return_value = Response(
-            200, '{"result": {"a": 3, "b": {"link": "l", "value": "sys_id"}}}'
-        )
+        client.patch.return_value = Response(200, '{"result": {"a": 3, "b": "sys_id"}}')
+        t = table.TableClient(client)
 
-        record = table.update_record(
-            client, "my_table", dict(sys_id="id"), dict(a=4), False
-        )
+        record = t.update_record("my_table", dict(sys_id="id"), dict(a=4), False)
 
         assert dict(a=3, b="sys_id") == record
-        client.patch.assert_called_with("table/my_table/id", dict(a=4))
+        client.patch.assert_called_with(
+            "table/my_table/id",
+            dict(a=4),
+            query=dict(sysparm_exclude_reference_link="true"),
+        )
 
     def test_check_mode(self, client):
-        client.patch.return_value = Response(
-            200, '{"result": {"a": 3, "b": {"link": "l", "value": "sys_id"}}}'
-        )
+        client.patch.return_value = Response(200, '{"result": {"a": 3, "b": "sys_id"}}')
+        t = table.TableClient(client)
 
-        record = table.update_record(
-            client, "my_table", dict(sys_id="id"), dict(a=4), True
-        )
+        record = t.update_record("my_table", dict(sys_id="id"), dict(a=4), True)
 
         assert dict(sys_id="id", a=4) == record
         client.patch.assert_not_called()
 
 
-class TestDeleteRecord:
+class TestTableDeleteRecord:
     def test_normal_mode(self, client):
         client.delete.return_value = Response(204, "")
+        t = table.TableClient(client)
 
-        table.delete_record(client, "my_table", dict(sys_id="id"), False)
+        t.delete_record("my_table", dict(sys_id="id"), False)
 
         client.delete.assert_called_with("table/my_table/id")
 
     def test_check_mode(self, client):
         client.delete.return_value = Response(204, "")
+        t = table.TableClient(client)
 
-        table.delete_record(client, "my_table", dict(sys_id="id"), True)
+        t.delete_record("my_table", dict(sys_id="id"), True)
 
         client.delete.assert_not_called()
