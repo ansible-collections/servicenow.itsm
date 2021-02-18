@@ -1,3 +1,7 @@
 /tests/output/
 /changelogs/.plugin-cache.yaml
 __pycache__
+
+# integration_config.yml contains connection info for the
+# developer instance, including credentials
+/tests/integration/integration_config.yml

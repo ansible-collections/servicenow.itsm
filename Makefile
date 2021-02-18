@@ -21,6 +21,7 @@ python_version := $(shell \
 )
 
 unit_test_targets := $(shell find tests/unit -name '*.py')
+integration_test_targets := $(shell ls tests/integration/targets)
 
 
 .PHONY: help
@@ -42,6 +43,9 @@ clean:  ## Remove all auto-generated files
 $(unit_test_targets):
 	ansible-test units --requirements --python $(python_version) $@
 
+.PHONY: $(integration_test_targets)
+$(integration_test_targets):
+	ansible-test integration --requirements --python $(python_version) --diff $@
 
 # Things also used in CI/CD
 
@@ -58,3 +62,7 @@ units:  ## Run unit tests
 	ansible-test units --docker --coverage
 	ansible-test coverage html --requirements
 	ansible-test coverage report --omit 'tests/*' --show-missing
+
+.PHONY: integration
+integration:  ## Run integration tests
+	ansible-test integration --docker --diff
