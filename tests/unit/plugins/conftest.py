@@ -16,11 +16,17 @@ from ansible.module_utils import basic
 from ansible.module_utils._text import to_bytes
 
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Client
+from ansible_collections.servicenow.itsm.plugins.module_utils.table import TableClient
 
 
 @pytest.fixture
 def client(mocker):
     return mocker.Mock(spec=Client)
+
+
+@pytest.fixture
+def table_client(mocker):
+    return mocker.Mock(spec=TableClient)
 
 
 @pytest.fixture
