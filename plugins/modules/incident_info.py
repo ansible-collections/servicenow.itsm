@@ -156,9 +156,10 @@ from ansible.module_utils.basic import AnsibleModule
 from ..module_utils import arguments, client, errors, table, utils
 
 
-def run(module, snow_client):
+def run(module, table_client):
     query = utils.filter_dict(module.params, "sys_id", "number")
-    return table.list_records(snow_client, "incident", query=query)
+
+    return table_client.list_records("incident", query)
 
 
 def main():
@@ -171,7 +172,8 @@ def main():
 
     try:
         snow_client = client.Client(**module.params["instance"])
-        records = run(module, snow_client)
+        table_client = table.TableClient(snow_client)
+        records = run(module, table_client)
         module.exit_json(changed=False, records=records)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))

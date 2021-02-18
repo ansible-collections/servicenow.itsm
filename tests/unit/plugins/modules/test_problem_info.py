@@ -46,7 +46,7 @@ class TestMain:
 
 
 class TestRun:
-    def test_run(self, create_module, client):
+    def test_run(self, create_module, table_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -54,9 +54,9 @@ class TestRun:
                 number="n",
             )
         )
-        client.get.return_value.json = {"result": [dict(p=1), dict(q=2), dict(r=3)]}
+        table_client.list_records.return_value = [dict(p=1), dict(q=2), dict(r=3)]
 
-        problems = problem_info.run(module, client)
+        problems = problem_info.run(module, table_client)
 
-        client.get.assert_called_once_with("table/problem", query=dict(number="n"))
+        table_client.list_records.assert_called_once_with("problem", dict(number="n"))
         assert problems == [dict(p=1), dict(q=2), dict(r=3)]
