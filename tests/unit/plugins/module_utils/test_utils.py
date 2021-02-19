@@ -54,3 +54,23 @@ class TestIsSupertset:
     )
     def test_not_a_superset(self, superset, candidate):
         assert utils.is_superset(superset, candidate) is False
+
+
+class TestPayloadMapper:
+    def test_to_ansible(self):
+        mapper = utils.PayloadMapper(dict(a=[(1, 2), (3, 4)], b=[(5, 6)]))
+
+        assert dict(a=4, b=6, c=7) == mapper.to_ansible(dict(a=3, b=5, c=7))
+
+    def test_to_snow(self):
+        mapper = utils.PayloadMapper(dict(a=[(1, 2), (3, 4)], b=[(5, 6)]))
+
+        assert dict(a=1, b=5, c=7) == mapper.to_snow(dict(a=2, b=6, c=7))
+
+    @pytest.mark.parametrize(
+        "data", [dict(), dict(a=1), dict(a=1, b=2), dict(c=3), dict(a=2, c=5)]
+    )
+    def test_to_ansible_is_inverse_of_to_snow(self, data):
+        mapper = utils.PayloadMapper(dict(a=[(1, "a1"), (2, "a2")], b=[(2, "b2")]))
+
+        assert data == mapper.to_snow(mapper.to_ansible(data))
