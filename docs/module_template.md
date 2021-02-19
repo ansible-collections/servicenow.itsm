@@ -76,7 +76,7 @@ modules:
     # Add module-specific helpers here
 
 
-    def run(module, snow_client):
+    def run(module, table_client):
         # Implementation here.
 
         return changed, record, dict(before=a, after=b)
@@ -97,8 +97,9 @@ modules:
         try:
             # HTTP client construction
             snow_client = client.Client(**module.params["instance"])
+            table_client = table.TableClient(snow_client)
 
-            changed, record, diff = run(module, snow_client)
+            changed, record, diff = run(module, table_client)
             module.exit_json(changed=changed, record=record, diff=diff)
         except ServiceNowError as e:
             module.fail_json(msg=str(e))
@@ -117,7 +118,7 @@ not modify the instance state. The documentation part should still follow the
 same structure, but the `run` method and the last part of the `main` method are
 a bit simpler:
 
-    def run(module, snow_client):
+    def run(module, table_client):
         # Implementation here thar produces a list of records. Most of the
         # time, this will be the `result` part of the API response.
 
@@ -139,8 +140,9 @@ a bit simpler:
         try:
             # HTTP client construction
             snow_client = client.Client(**module.params["instance"])
+            table_client = table.TableClient(snow_client)
 
-            records = run(module, client)
+            records = run(module, table_client)
             module.exit_json(changed=False, records=records)
         except ServiceNowError as e:
             module.fail_json(msg=str(e))
@@ -177,7 +179,7 @@ The purpose of the main method is two-fold:
    access to remote services.
 
 2. __Construction of the HTTP client__. Once the validation is over, the
-   `main` method must construct the HTTP client.
+   `main` method must construct the HTTP and/or table client.
 
 Once the `main` method constructs the Ansible module and validates its
 parameters, it needs to create the HTTP client. After that, it
@@ -199,7 +201,7 @@ is to delegate the real work to more specialized functions if required.
 The `run` function receives two parameters:
 
 1. an `AnsibleModule` instance;
-2. a `Client` instance.
+2. a `Client` or `TableClient` instance.
 
 Why do we need a module instance and not just parameters and check mode
 boolean? Most of the time, the answer to that question is "we do not". But

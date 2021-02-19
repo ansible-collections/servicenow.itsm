@@ -49,7 +49,7 @@ general, each test file should have the following structure:
 
 
     class TestRun:
-        def test_run_state_absent(self, create_module, client):
+        def test_run_state_absent(self, create_module, table_client):
             module = create_module(
                 params=dict(
                     instance=dict(host="my.host.name", username="user", password="pass"),
@@ -57,7 +57,7 @@ general, each test file should have the following structure:
                 )
             )
             # Configure the client mock as appropriate
-            client.get.return_value.json = {"result": "data"}
+            table_client.get_record.return_value = {"record": "data"}
 
             changed, response, diff = my_mod.run(module, client)
 
@@ -132,7 +132,7 @@ a look at existing tests.
 
 ## Testing methods that require an HTTP client instance
 
-If we need to mock HTTP client responses or make assertions about the
-client's methods that were called (and their arguments), we can use the
-`client` fixture. The fixture returns a `Mock` instance with the same
-spec as our `Client`'s.
+If we need to mock HTTP client responses or make assertions about the client's
+methods that were called (and their arguments), we can use the `client` and
+`table_client` fixtures. The fixtures return a `Mock` instance with the same
+spec as the client class they substitute.
