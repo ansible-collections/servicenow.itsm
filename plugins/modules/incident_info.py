@@ -154,12 +154,17 @@ records:
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table, utils
+from ..module_utils.incident import PAYLOAD_FIELDS_MAPPING
 
 
 def run(module, table_client):
     query = utils.filter_dict(module.params, "sys_id", "number")
+    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING)
 
-    return table_client.list_records("incident", query)
+    return [
+        mapper.to_ansible(record)
+        for record in table_client.list_records("incident", query)
+    ]
 
 
 def main():
