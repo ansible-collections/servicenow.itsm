@@ -144,6 +144,7 @@ EXAMPLES = r"""
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table, utils
+from ..module_utils.incident import PAYLOAD_FIELDS_MAPPING
 
 DIRECT_PAYLOAD_FIELDS = (
     "state",
@@ -154,26 +155,6 @@ DIRECT_PAYLOAD_FIELDS = (
     "urgency",
     "close_code",
     "close_notes",
-)
-
-PAYLOAD_FIELDS_MAPPING = dict(
-    impact=[("1", "high"), ("2", "medium"), ("3", "low")],
-    urgency=[("1", "high"), ("2", "medium"), ("3", "low")],
-    state=[
-        ("1", "new"),
-        ("2", "in_progress"),
-        ("3", "on_hold"),
-        ("6", "resolved"),
-        ("7", "closed"),
-        ("8", "canceled"),
-    ],
-    hold_reason=[
-        ("", ""),  # Reason not set
-        ("1", "awaiting_caller"),
-        ("3", "awaiting_problem"),
-        ("4", "awaiting_vendor"),
-        ("5", "awaiting_change"),
-    ],
 )
 
 
