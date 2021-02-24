@@ -92,7 +92,7 @@ records:
       "fix_notes": ""
       "follow_up": ""
       "group_list": ""
-      "impact": "3"
+      "impact": "low"
       "knowledge": "false"
       "known_error": "false"
       "location": ""
@@ -104,7 +104,7 @@ records:
       "order": ""
       "parent": ""
       "priority": "5"
-      "problem_state": "101"
+      "problem_state": "new"
       "reassignment_count": "0"
       "related_incidents": "0"
       "reopen_count": "0"
@@ -119,7 +119,7 @@ records:
       "service_offering": ""
       "short_description": "Unable to send or receive emails."
       "sla_due": ""
-      "state": "101"
+      "state": "new"
       "subcategory": "email"
       "sys_class_name": "problem"
       "sys_created_by": "admin"
@@ -136,7 +136,7 @@ records:
       "universal_request": ""
       "upon_approval": "proceed"
       "upon_reject": "cancel"
-      "urgency": "3"
+      "urgency": "low"
       "user_input": ""
       "watch_list": ""
       "work_end": ""
@@ -152,12 +152,17 @@ records:
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, utils, table
+from ..module_utils.problem import PAYLOAD_FIELDS_MAPPING
 
 
 def run(module, table_client):
     query = utils.filter_dict(module.params, "sys_id", "number")
+    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING)
 
-    return table_client.list_records("problem", query)
+    return [
+        mapper.to_ansible(record)
+        for record in table_client.list_records("problem", query)
+    ]
 
 
 def main():
