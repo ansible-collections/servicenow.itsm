@@ -2,21 +2,14 @@
 # -*- coding: utf-8 -*-
 # Copyright: (c) 2021, XLAB Steampunk <steampunk@xlab.si>
 #
-# GNU General Public License v3.0+
-# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-ANSIBLE_METADATA = {
-    "metadata_version": "1.1",
-    "status": ["stableinterface"],
-    "supported_by": "certified",
-}
-
-DOCUMENTATION = """
+DOCUMENTATION = r"""
 module: problem_info
 
 author:
@@ -37,7 +30,7 @@ seealso:
   - module: servicenow.itsm.problem
 """
 
-EXAMPLES = """
+EXAMPLES = r"""
 - name: Retrieve all problems
   servicenow.itsm.problem_info:
   register: result
@@ -53,7 +46,7 @@ EXAMPLES = """
   register: result
 """
 
-RETURN = """
+RETURN = r"""
 records:
   description:
     - A list of problem records.

@@ -8,20 +8,13 @@ modules:
     # -*- coding: utf-8 -*-
     # Copyright: (c) 2021, XLAB Steampunk <steampunk@xlab.si>
     #
-    # GNU General Public License v3.0+
-    # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+    # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
     from __future__ import absolute_import, division, print_function
 
     __metaclass__ = type
 
-    ANSIBLE_METADATA = {
-        "metadata_version": "1.1",
-        "status": ["stableinterface"],
-        "supported_by": "certified",
-    }
-
-    DOCUMENTATION = """
+    DOCUMENTATION = r"""
     module: module_name
     author:
       - John Doe (@johndoe)
@@ -49,7 +42,7 @@ modules:
       # More options here
     """
 
-    EXAMPLES = """
+    EXAMPLES = r"""
     - name: Sample 1 (always use FQCN)
       servicenow.itsm.module_name:
         check: check-disk
@@ -57,7 +50,7 @@ modules:
     # More examples here
     """
 
-    RETURN = """
+    RETURN = r"""
     record:
       description:
         - Created/updated ServiceNow record.
@@ -154,7 +147,7 @@ a bit simpler:
 Another difference is in the return value. All info modules must return a list
 of records in the `records` return field:
 
-    RETURN = """
+    RETURN = r"""
     records:
       description:
         - Matching ServiceNow records.
@@ -212,7 +205,7 @@ some of the (the ones that depend on the state of the backend) cannot.
 In practice, we should only access four things on the module parameter:
 
  1. `module.params` when we need to access the module parameters.
- 2. `module.check_mode` when we nned to determine if we are running in check
+ 2. `module.check_mode` when we need to determine if we are running in check
     mode.
  3. `module.warn()` when we need to emit a warning to the user.
  4. `module.deprecate()` for dynamic deprecation messages.

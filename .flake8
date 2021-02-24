@@ -1,5 +1,5 @@
 [flake8]
-max-line-length = 88
+max-line-length = 160
 extend-ignore =
     # E203: whitespace before ':'. Black laces spaces around ':' as suggested
     # by PEP8.

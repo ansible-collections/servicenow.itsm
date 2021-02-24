@@ -2,21 +2,15 @@
 # -*- coding: utf-8 -*-
 # Copyright: (c) 2021, XLAB Steampunk <steampunk@xlab.si>
 #
-# GNU General Public License v3.0+
-# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-ANSIBLE_METADATA = {
-    "metadata_version": "0.1.0",
-    "status": ["stableinterface"],
-    "supported_by": "certified",
-}
 
-DOCUMENTATION = """
+DOCUMENTATION = r"""
 module: incident
 
 author:
@@ -96,7 +90,7 @@ options:
     type: dict
 """
 
-EXAMPLES = """
+EXAMPLES = r"""
 - name: Create incident
   servicenow.itsm.incident:
     instance:
@@ -135,7 +129,7 @@ EXAMPLES = """
     number: INC0000001
 
 - name: Delete incident
-  servicenow.servicenow.incident:
+  servicenow.itsm.incident:
     instance:
       host: https://instance_id.service-now.com
       username: user
