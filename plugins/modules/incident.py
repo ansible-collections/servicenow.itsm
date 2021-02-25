@@ -127,6 +127,8 @@ EXAMPLES = r"""
 
     state: closed
     number: INC0000001
+    close_code: "Solved (Permanently)"
+    close_notes: "Closed"
 
 - name: Delete incident
   servicenow.itsm.incident:
