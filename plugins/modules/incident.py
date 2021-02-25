@@ -193,7 +193,7 @@ def build_payload(module, table_client):
     payload = (module.params["other"] or {}).copy()
     payload.update(utils.filter_dict(module.params, *DIRECT_PAYLOAD_FIELDS))
 
-    if "caller" in module.params:
+    if module.params["caller"]:
         user = table.find_user(table_client, module.params["caller"])
         payload["caller_id"] = user["sys_id"]
 
@@ -318,7 +318,7 @@ def main():
             ("state", "absent", ("sys_id", "number"), True),
             ("state", "on_hold", ("hold_reason",)),
         ],
-        # Če ni sys id ali number kreiraj nov ticket
+        # If there is no sys id or number create a new ticket
     )
 
     try:
