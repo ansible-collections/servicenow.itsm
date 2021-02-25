@@ -191,7 +191,7 @@ def build_payload(module, table_client):
     payload = (module.params["other"] or {}).copy()
     payload.update(utils.filter_dict(module.params, *DIRECT_PAYLOAD_FIELDS))
 
-    if "caller" in module.params and module.params["caller"]:
+    if module.params["caller"]:
         user = table.find_user(table_client, module.params["caller"])
         payload["caller_id"] = user["sys_id"]
 
