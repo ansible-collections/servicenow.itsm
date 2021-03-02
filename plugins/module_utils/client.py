@@ -97,7 +97,7 @@ class Client:
                 )
             # Other HTTP error codes do not necessarily mean errors.
             # This is for the caller to decide.
-            return Response(e.code, e.reason)
+            return Response(e.code, e.read(), e.headers)
         except URLError as e:
             raise ServiceNowError(e.reason)
 

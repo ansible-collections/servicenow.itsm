@@ -7,10 +7,12 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import io
 import sys
 
 import pytest
 
+from ansible.module_utils.common.text.converters import to_text
 from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
 from ansible.module_utils.six.moves.urllib.parse import urlparse, parse_qs
 
@@ -87,12 +89,14 @@ class TestClientAuthHeader:
 
     def test_oauth_failure(self, mocker):
         request_mock = mocker.patch.object(client, "Request").return_value
-        request_mock.open.side_effect = HTTPError("", 403, "Forbidden", {}, None)
+        request_mock.open.side_effect = HTTPError(
+            "", 403, "Forbidden", {}, io.StringIO(to_text("Error message"))
+        )
 
         c = client.Client(
             "instance.com", "user", "pass", client_id="id", client_secret="secret"
         )
-        with pytest.raises(errors.UnexpectedAPIResponse, match="Forbidden"):
+        with pytest.raises(errors.UnexpectedAPIResponse, match="Error message"):
             c.auth_header
 
     def test_header_is_cached(self, mocker):
@@ -161,13 +165,15 @@ class TestClientRequest:
 
     def test_http_error(self, mocker):
         request_mock = mocker.patch.object(client, "Request").return_value
-        request_mock.open.side_effect = HTTPError("", 404, "Not Found", {}, None)
+        request_mock.open.side_effect = HTTPError(
+            "", 404, "Not Found", {}, io.StringIO(to_text("My Error"))
+        )
 
         c = client.Client("instance.com", "user", "pass")
         resp = c.request("GET", "some/path")
 
         assert resp.status == 404
-        assert resp.data == "Not Found"
+        assert resp.data == "My Error"
         assert resp.headers == {}
 
     def test_url_error(self, mocker):
