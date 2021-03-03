@@ -67,3 +67,9 @@ class TableClient:
 def find_user(table_client, user_id):
     # TODO: Maybe add a lookup-by-email option too?
     return table_client.get_record("sys_user", dict(user_name=user_id), must_exist=True)
+
+
+def find_assignment_group(table_client, assignment_id):
+    return table_client.get_record(
+        "sys_user_group", dict(name=assignment_id), must_exist=True
+    )
