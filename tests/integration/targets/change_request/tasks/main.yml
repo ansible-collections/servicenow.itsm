@@ -1,0 +1,295 @@
+- environment:
+    SN_HOST: "{{ sn_host }}"
+    SN_USERNAME: "{{ sn_username }}"
+    SN_PASSWORD: "{{ sn_password }}"
+
+  block:
+    - name: Retrieve all change_requests
+      servicenow.itsm.change_request_info:
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records != []
+          - result.records | length != 0
+
+
+    - name: Create test change_request - check mode
+      servicenow.itsm.change_request: &create-change_request
+        requested_by: admin
+        state: new
+        type: standard
+        short_description: Test change_request
+        priority: low
+        risk: low
+        impact: low
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &create-change_request-result
+        that:
+          - result is changed
+          - result.record.state == "new"
+          - result.record.priority == "low"
+          - result.record.risk == "low"
+          - result.record.impact == "low"
+
+
+    - name: Create test change_request
+      servicenow.itsm.change_request: *create-change_request
+      register: test_result
+
+    - ansible.builtin.assert: *create-change_request-result
+
+
+    - name: Make sure change_request exists
+      servicenow.itsm.change_request_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].number == test_result.record.number
+          - result.records[0].priority == "low"
+          - result.records[0].risk == "low"
+          - result.records[0].impact == "low"
+
+
+    - name: Update change_request with same priority, risk and impact - unchanged
+      servicenow.itsm.change_request:
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        priority: low
+        risk: low
+        impact: low
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Update state to scheduled without assignment_group - should throw an error
+      servicenow.itsm.change_request:
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        state: scheduled
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'state is scheduled but all of the following are missing: assignment_group' in result.msg"
+
+
+    - name: Update change_request - check mode
+      servicenow.itsm.change_request: &update-change_request
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        state: scheduled
+        assignment_group: network
+        priority: high
+        risk: high
+        impact: high
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &update-change_request-result
+        that:
+          - result is changed
+          - result.record.state == "scheduled"
+          - result.record.priority == "high"
+          - result.record.risk == "high"
+          - result.record.impact == "high"
+
+
+    - name: Update change_request
+      servicenow.itsm.change_request: *update-change_request
+
+    - ansible.builtin.assert: *update-change_request-result
+
+
+    - name: Make sure change_request was updated
+      servicenow.itsm.change_request_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].number == test_result.record.number
+          - result.records[0].state == "scheduled" 
+          - result.records[0].priority == "high"
+          - result.records[0].risk == "high"
+          - result.records[0].impact == "high"
+
+
+    - name: Update change_request with same params - unchanged
+      servicenow.itsm.change_request: *update-change_request
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Update change_request state to implement - check mode
+      servicenow.itsm.change_request: &update-change_request-state-implement
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        state: implement
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &update-change_request-state-result-implement
+        that:
+          - result is changed
+          - result.record.state == "implement"
+
+
+    - name: Update change_request state to implement
+      servicenow.itsm.change_request: *update-change_request-state-implement
+
+    - ansible.builtin.assert: *update-change_request-state-result-implement
+
+
+    - name: Make sure state of change_request was updated
+      servicenow.itsm.change_request_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].number == test_result.record.number
+          - result.records[0].state == "implement" 
+
+
+    - name: Update change_request with same state - unchanged
+      servicenow.itsm.change_request: *update-change_request-state-implement
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Update change_request state to review - check mode
+      servicenow.itsm.change_request: &update-change_request-state-review
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        state: review
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &update-change_request-state-result-review
+        that:
+          - result is changed
+          - result.record.state == "review"
+
+
+    - name: Update change_request state to review
+      servicenow.itsm.change_request: *update-change_request-state-review
+
+    - ansible.builtin.assert: *update-change_request-state-result-review
+
+
+    - name: Make sure state of change_request was updated
+      servicenow.itsm.change_request_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].number == test_result.record.number
+          - result.records[0].state == "review" 
+
+
+    - name: Update change_request with same state - unchanged
+      servicenow.itsm.change_request: *update-change_request-state-review
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Update change_request state to closed - check mode
+      servicenow.itsm.change_request: &update-change_request-state-closed
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        state: closed
+        close_code: successful
+        close_notes: Done testing
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &update-change_request-state-result-closed
+        that:
+          - result is changed
+          - result.record.state == "closed"
+
+
+    - name: Update change_request state to closed
+      servicenow.itsm.change_request: *update-change_request-state-closed
+
+    - ansible.builtin.assert: *update-change_request-state-result-closed
+
+
+    - name: Make sure change_request state was updated and is in closed state
+      servicenow.itsm.change_request_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].number == test_result.record.number
+          - result.records[0].state == "closed"
+          - result.records[0].close_code == "successful"
+          - result.records[0].close_notes == "Done testing"
+
+
+    - name: Update change_request with same state - unchanged
+      servicenow.itsm.change_request: *update-change_request-state-closed
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Delete change_request - check mode
+      servicenow.itsm.change_request: &delete-change_request
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        state: absent
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &delete-change_request-result
+        that:
+          - result is changed
+
+
+    - name: Delete change_request
+      servicenow.itsm.change_request: *delete-change_request
+
+    - ansible.builtin.assert: *delete-change_request-result
+
+
+    - name: Make sure change_request is absent
+      servicenow.itsm.change_request_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 0
+
+
+    - name: Delete change_request - unchanged
+      servicenow.itsm.change_request: *delete-change_request
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
