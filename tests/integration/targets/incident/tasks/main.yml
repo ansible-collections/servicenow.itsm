@@ -115,6 +115,19 @@
           - result is not changed
 
 
+    - name: Fail closing incident without required data
+      servicenow.itsm.incident:
+        number: "{{ test_result.record.number }}"
+        state: closed
+      ignore_errors: true
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'close_code' in result.msg"
+          - "'close_notes' in result.msg"
+
+
     - name: Update incident state - check mode
       servicenow.itsm.incident: &update-incident-state
         caller: admin
