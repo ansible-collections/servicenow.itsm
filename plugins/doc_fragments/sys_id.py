@@ -9,6 +9,14 @@ __metaclass__ = type
 
 
 class ModuleDocFragment(object):
+    DOCUMENTATION = r"""
+options:
+  sys_id:
+    description:
+      - Unique identifier of the record to operate on.
+    type: str
+"""
+
     INFO = r"""
 options:
   sys_id:
