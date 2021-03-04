@@ -27,8 +27,8 @@ description:
 
 extends_documentation_fragment:
   - servicenow.itsm.instance
-  - servicenow.itsm.sys_id.info
-  - servicenow.itsm.number.info
+  - servicenow.itsm.sys_id
+  - servicenow.itsm.number
 
 options:
   state:
