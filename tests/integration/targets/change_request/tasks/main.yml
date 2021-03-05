@@ -216,6 +216,19 @@
           - result is not changed
 
 
+    - name: Fail to close the change
+      servicenow.itsm.change_request:
+        number: "{{ test_result.record.number }}"
+        state: closed
+      ignore_errors: true
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'close_code' in result.msg"
+          - "'close_notes' in result.msg"
+
+
     - name: Update change_request state to closed - check mode
       servicenow.itsm.change_request: &update-change_request-state-closed
         requested_by: admin
