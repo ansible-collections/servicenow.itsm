@@ -1,11 +1,11 @@
-.. _servicenow.itsm.incident_module:
+.. _servicenow.itsm.change_request_module:
 
 
-************************
-servicenow.itsm.incident
-************************
+******************************
+servicenow.itsm.change_request
+******************************
 
-**Manage ServiceNow incidents**
+**Manage ServiceNow change requests**
 
 
 
@@ -16,8 +16,8 @@ servicenow.itsm.incident
 
 Synopsis
 --------
-- Create, delete or update a ServiceNow incident.
-- For more information, refer to the ServiceNow incident management documentation at https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/concept/c_IncidentManagement.html.
+- Create, delete or update a ServiceNow change request.
+- For more information, refer to the ServiceNow change management documentation at https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html.
 
 
 
@@ -36,7 +36,7 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>caller</b>
+                    <b>assignment_group</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -45,9 +45,34 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A person who reported or is affected by this incident.</div>
-                        <div>Expected value for <em>caller</em> is user id (usually in the form of <code>first_name.last_name</code>).</div>
-                        <div>Required if the incident does not exist yet.</div>
+                        <div>The group that the change request is assigned to.</div>
+                        <div>Required if <em>state</em> value is <code>assess</code> or <code>authorize</code> or <code>scheduled</code> or <code>implement</code> or <code>review</code> or <code>closed</code>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>category</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>hardware</li>
+                                    <li>software</li>
+                                    <li>service</li>
+                                    <li>system_software</li>
+                                    <li>aplication_software</li>
+                                    <li>network</li>
+                                    <li>telecom</li>
+                                    <li>documentation</li>
+                                    <li>other</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>The category of the change request.</div>
                 </td>
             </tr>
             <tr>
@@ -61,17 +86,14 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>Solved (Work Around)</li>
-                                    <li>Solved (Permanently)</li>
-                                    <li>Solved Remotely (Work Around)</li>
-                                    <li>Solved Remotely (Permanently)</li>
-                                    <li>Not Solved (Not Reproducible)</li>
-                                    <li>Not Solved (Too Costly)</li>
-                                    <li>Closed/Resolved by Caller</li>
+                                    <li>successful</li>
+                                    <li>successful_issues</li>
+                                    <li>unsuccessful</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Provide information on how the incident was resolved.</div>
+                        <div>Provide information on how the change request was resolved.</div>
+                        <div>The change request must have this parameter set prior to transitioning to the <code>closed</code> state.</div>
                 </td>
             </tr>
             <tr>
@@ -86,7 +108,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Resolution notes added by the user who closed the incident.</div>
+                        <div>Resolution notes added by the user who closed the change request.</div>
+                        <div>The change request must have this parameter set prior to transitioning to the <code>closed</code> state.</div>
                 </td>
             </tr>
             <tr>
@@ -101,7 +124,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Long description of the incident with some more details.</div>
+                        <div>A detailed description of the change request.</div>
                 </td>
             </tr>
             <tr>
@@ -114,16 +137,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>awaiting_caller</li>
-                                    <li>awaiting_change</li>
-                                    <li>awaiting_problem</li>
-                                    <li>awaiting_vendor</li>
-                        </ul>
                 </td>
                 <td>
-                        <div>Reason why incident is on hold.</div>
-                        <div>Required if <em>state</em> value is <code>on_hold</code>.</div>
+                        <div>Reason why change request is on hold.</div>
+                        <div>Required if change request&#x27;s <em>on_hold</em> value will be <code>true</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -137,13 +154,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>low</li>
-                                    <li>medium</li>
                                     <li>high</li>
+                                    <li>medium</li>
+                                    <li>low</li>
                         </ul>
                 </td>
                 <td>
-                        <div>The measure of the business criticality of the affected service.</div>
+                        <div>Impact is a measure of the effect of an incident, problem, or change on business processes.</div>
                 </td>
             </tr>
             <tr>
@@ -271,6 +288,25 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>on_hold</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>A change request can be put on hold when <em>state</em> is not in the <code>new</code>, <code>canceled</code>, or <code>closed</code>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>other</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -281,7 +317,63 @@ Parameters
                 </td>
                 <td>
                         <div>Optional remaining parameters.</div>
-                        <div>For more information on optional parameters, refer to the ServiceNow create incident documentation at <a href='https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/task/create-an-incident.html'>https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/task/create-an-incident.html</a>.</div>
+                        <div>For more information on optional parameters, refer to the ServiceNow change request documentation at <a href='https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/task/t_CreateAChange.html'>https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/task/t_CreateAChange.html</a>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>priority</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>critical</li>
+                                    <li>high</li>
+                                    <li>moderate</li>
+                                    <li>low</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Priority is based on impact and urgency, and it identifies how quickly the service desk should address the task.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>requested_by</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>User who requested the change.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>risk</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>high</li>
+                                    <li>moderate</li>
+                                    <li>low</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>The risk level for the change.</div>
                 </td>
             </tr>
             <tr>
@@ -296,8 +388,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Short description of the incident.</div>
-                        <div>Required if the incident does not exist yet.</div>
+                        <div>A summary of the change request.</div>
                 </td>
             </tr>
             <tr>
@@ -312,17 +403,20 @@ Parameters
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>new</li>
-                                    <li>in_progress</li>
-                                    <li>on_hold</li>
-                                    <li>resolved</li>
+                                    <li>assess</li>
+                                    <li>authorize</li>
+                                    <li>scheduled</li>
+                                    <li>implement</li>
+                                    <li>review</li>
                                     <li>closed</li>
                                     <li>canceled</li>
                                     <li>absent</li>
                         </ul>
                 </td>
                 <td>
-                        <div>State of incident.</div>
-                        <div>If <em>state</em> value is <code>on_hold</code>, <em>on_hold_reason</em> parameter must be filled in.</div>
+                        <div>The state of the change request.</div>
+                        <div>If <em>state</em> value is <code>assess</code> or <code>authorize</code> or <code>scheduled</code> or <code>implement</code> or <code>review</code> or <code>closed</code>, <em>assignment_group</em> parameter must be filled in.</div>
+                        <div>For more information on state model and transition, refere to the ServiceNow documentation at <a href='https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ChangeStateModel.html'>https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ChangeStateModel.html</a></div>
                 </td>
             </tr>
             <tr>
@@ -343,6 +437,26 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>type</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>standard</li>
+                                    <li>normal</li>
+                                    <li>emergency</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Specify what type of change is required.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>urgency</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -357,7 +471,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The extent to which resolution of an incident can bear delay.</div>
+                        <div>The extent to which resolution of an change request can bear delay.</div>
                 </td>
             </tr>
     </table>
@@ -365,60 +479,72 @@ Parameters
 
 
 
+See Also
+--------
+
+.. seealso::
+
+   :ref:`servicenow.itsm.change_request_info_module`
+      The official documentation on the **servicenow.itsm.change_request_info** module.
+
 
 Examples
 --------
 
 .. code-block:: yaml+jinja
 
-    - name: Create incident
-      servicenow.itsm.incident:
+    - name: Create change request
+      servicenow.itsm.change_request:
         instance:
           host: https://instance_id.service-now.com
           username: user
           password: pass
 
+        type: standard
         state: new
-        caller: some.user
-        short_description: User is not receiving email
-        description: User has been unable to receive email for the past 15 minutes
+        requested_by: some.user
+        short_description: Install new Cisco
+        description: Please install new Cat. 6500 in Data center 01
+        priority: moderate
+        risk: low
         impact: low
-        urgency: low
 
         other:
           expected_start: 2021-02-12
 
-    - name: Change state of the incident
-      servicenow.itsm.incident:
+    - name: Change state of the change request
+      servicenow.itsm.change_request:
         instance:
           host: https://instance_id.service-now.com
           username: user
           password: pass
 
-        state: in_progress
-        number: INC0000001
+        state: assess
+        assignment_group: some.group
+        number: CHG0000001
 
-    - name: Close incident
-      servicenow.itsm.incident:
+    - name: Close change_request
+      servicenow.itsm.change_request:
         instance:
           host: https://instance_id.service-now.com
           username: user
           password: pass
 
         state: closed
-        number: INC0000001
-        close_code: "Solved (Permanently)"
+        close_code: "successful"
         close_notes: "Closed"
+        assignment_group: some.group
+        number: CHG0000001
 
-    - name: Delete incident
-      servicenow.itsm.incident:
+    - name: Delete change_request
+      servicenow.itsm.change_request:
         instance:
           host: https://instance_id.service-now.com
           username: user
           password: pass
 
         state: absent
-        number: INC0000001
+        number: CHG0000001
 
 
 

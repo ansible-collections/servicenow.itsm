@@ -1,11 +1,11 @@
-.. _servicenow.itsm.incident_module:
+.. _servicenow.itsm.problem_module:
 
 
-************************
-servicenow.itsm.incident
-************************
+***********************
+servicenow.itsm.problem
+***********************
 
-**Manage ServiceNow incidents**
+**Manage ServiceNow problems**
 
 
 
@@ -16,8 +16,8 @@ servicenow.itsm.incident
 
 Synopsis
 --------
-- Create, delete or update a ServiceNow incident.
-- For more information, refer to the ServiceNow incident management documentation at https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/concept/c_IncidentManagement.html.
+- Create, delete or update a ServiceNow problem.
+- For more information, refer to the ServiceNow problem management documentation at https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html.
 
 
 
@@ -36,7 +36,7 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>caller</b>
+                    <b>assigned_to</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -45,33 +45,26 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A person who reported or is affected by this incident.</div>
-                        <div>Expected value for <em>caller</em> is user id (usually in the form of <code>first_name.last_name</code>).</div>
-                        <div>Required if the incident does not exist yet.</div>
+                        <div>A person who will assess this problem.</div>
+                        <div>Expected value for <em>assigned_to</em> is user id (usually in the form of <code>first_name.last_name</code>).</div>
+                        <div>This field is required when creating new problems for all problem <em>state</em>s except <code>new</code>.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>close_code</b>
+                    <b>cause_notes</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>Solved (Work Around)</li>
-                                    <li>Solved (Permanently)</li>
-                                    <li>Solved Remotely (Work Around)</li>
-                                    <li>Solved Remotely (Permanently)</li>
-                                    <li>Not Solved (Not Reproducible)</li>
-                                    <li>Not Solved (Too Costly)</li>
-                                    <li>Closed/Resolved by Caller</li>
-                        </ul>
                 </td>
                 <td>
-                        <div>Provide information on how the incident was resolved.</div>
+                        <div>Provide information on what caused the problem.</div>
+                        <div>Required if <em>state</em> is <code>in_progress</code>.</div>
+                        <div>Required if <em>state</em> is <code>resolved</code> or <code>closed</code> and <em>resolution_code</em> is <code>fix_applied</code> or <code>risk_accepted</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -86,7 +79,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Resolution notes added by the user who closed the incident.</div>
+                        <div>The reason for closing the problem.</div>
+                        <div>Required if <em>state</em> is <code>resolved</code> or <code>closed</code> and <em>resolution_code</em> is <code>risk_accepted</code> or <code>canceled</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -101,29 +95,40 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Long description of the incident with some more details.</div>
+                        <div>Detailed description of the problem.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>hold_reason</b>
+                    <b>duplicate_of</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>awaiting_caller</li>
-                                    <li>awaiting_change</li>
-                                    <li>awaiting_problem</li>
-                                    <li>awaiting_vendor</li>
-                        </ul>
                 </td>
                 <td>
-                        <div>Reason why incident is on hold.</div>
-                        <div>Required if <em>state</em> value is <code>on_hold</code>.</div>
+                        <div>Number of the problem of which this problem is a duplicate of.</div>
+                        <div>Required if <em>state</em> is <code>resolved</code> or <code>closed</code> and <em>resolution_code</em> is <code>duplicate</code>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>fix_notes</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Notes on how the problem was fixed.</div>
+                        <div>Required if <em>state</em> is <code>in_progress</code>.</div>
+                        <div>Required if <em>state</em> is <code>resolved</code> or <code>closed</code> and <em>resolution_code</em> is <code>fix_applied</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -143,7 +148,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The measure of the business criticality of the affected service.</div>
+                        <div>Effect that the problem has on business.</div>
                 </td>
             </tr>
             <tr>
@@ -281,7 +286,28 @@ Parameters
                 </td>
                 <td>
                         <div>Optional remaining parameters.</div>
-                        <div>For more information on optional parameters, refer to the ServiceNow create incident documentation at <a href='https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/task/create-an-incident.html'>https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/task/create-an-incident.html</a>.</div>
+                        <div>For more information on optional parameters, refer to the ServiceNow documentation on creating problems at <a href='https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/task/create-a-problem-v2.html'>https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/task/create-a-problem-v2.html</a>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>resolution_code</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>fix_applied</li>
+                                    <li>risk_accepted</li>
+                                    <li>duplicate</li>
+                                    <li>canceled</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>The reason for problem resolution.</div>
                 </td>
             </tr>
             <tr>
@@ -296,8 +322,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Short description of the incident.</div>
-                        <div>Required if the incident does not exist yet.</div>
+                        <div>Short description of the problem that the problem-solving team should address.</div>
+                        <div>Required if the problem does not exist yet.</div>
                 </td>
             </tr>
             <tr>
@@ -312,17 +338,17 @@ Parameters
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>new</li>
-                                    <li>in_progress</li>
-                                    <li>on_hold</li>
+                                    <li>assess</li>
+                                    <li>root_cause_analysis</li>
+                                    <li>fix_in_progress</li>
                                     <li>resolved</li>
                                     <li>closed</li>
-                                    <li>canceled</li>
                                     <li>absent</li>
                         </ul>
                 </td>
                 <td>
-                        <div>State of incident.</div>
-                        <div>If <em>state</em> value is <code>on_hold</code>, <em>on_hold_reason</em> parameter must be filled in.</div>
+                        <div>State of the problem.</div>
+                        <div>If a problem does not yet exist, all states except for <code>new</code> require setting of <em>assigned_to</em> parameter.</div>
                 </td>
             </tr>
             <tr>
@@ -357,7 +383,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The extent to which resolution of an incident can bear delay.</div>
+                        <div>The extent to which the problem resolution can bear delay.</div>
                 </td>
             </tr>
     </table>
@@ -365,62 +391,109 @@ Parameters
 
 
 
+See Also
+--------
+
+.. seealso::
+
+   :ref:`servicenow.itsm.problem_info_module`
+      The official documentation on the **servicenow.itsm.problem_info** module.
+
 
 Examples
 --------
 
 .. code-block:: yaml+jinja
 
-    - name: Create incident
-      servicenow.itsm.incident:
-        instance:
-          host: https://instance_id.service-now.com
-          username: user
-          password: pass
-
+    - name: Create a problem
+      servicenow.itsm.problem:
         state: new
-        caller: some.user
-        short_description: User is not receiving email
-        description: User has been unable to receive email for the past 15 minutes
-        impact: low
+        short_description: Issue with the network printer
+        description: Since this morning, all printer jobs are stuck.
+        impact: medium
         urgency: low
-
         other:
-          expected_start: 2021-02-12
+          user_input: notes
 
-    - name: Change state of the incident
-      servicenow.itsm.incident:
-        instance:
-          host: https://instance_id.service-now.com
-          username: user
-          password: pass
+    - name: Assign a problem to a user for assessment
+      servicenow.itsm.problem:
+        number: PRB0000010
+        state: assess
+        assigned_to: problem.manager
 
-        state: in_progress
-        number: INC0000001
+    - name: Mark a problem for root cause analysis
+      servicenow.itsm.problem:
+        number: PRB0000010
+        state: root_cause_analysis
 
-    - name: Close incident
-      servicenow.itsm.incident:
-        instance:
-          host: https://instance_id.service-now.com
-          username: user
-          password: pass
+    - name: Work on fixing a problem
+      servicenow.itsm.problem:
+        number: PRB0000010
+        state: fix_in_progress
+        cause_notes: I identified the issue.
+        fix_notes: Fix here.
 
+
+    - name: Close a problem as fixed
+      servicenow.itsm.problem:
+        number: PRB0000010
         state: closed
-        number: INC0000001
-        close_code: "Solved (Permanently)"
-        close_notes: "Closed"
+        resolution_code: fix_applied
+        cause_notes: I found that this doesn't work.
+        fix_notes: I solved it like this.
 
-    - name: Delete incident
-      servicenow.itsm.incident:
-        instance:
-          host: https://instance_id.service-now.com
-          username: user
-          password: pass
+    - name: Close a problem as duplicate
+      servicenow.itsm.problem:
+        number: PRB0000010
+        state: closed
+        resolution_code: duplicate
+        duplicate_of: PRB0000001
 
+    - name: Cancel a problem
+      servicenow.itsm.problem:
+        number: PRB0000010
+        state: closed
+        resolution_code: canceled
+        close_notes: The problem seems to have resolved itself.
+
+    - name: Delete a problem
+      servicenow.itsm.problem:
+        number: PRB0000010
         state: absent
-        number: INC0000001
 
 
+
+Return Values
+-------------
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
+
+.. raw:: html
+
+    <table border=0 cellpadding=0 class="documentation-table">
+        <tr>
+            <th colspan="1">Key</th>
+            <th>Returned</th>
+            <th width="100%">Description</th>
+        </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>record</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The problem record.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;active&#x27;: &#x27;true&#x27;, &#x27;activity_due&#x27;: &#x27;&#x27;, &#x27;additional_assignee_list&#x27;: &#x27;&#x27;, &#x27;approval&#x27;: &#x27;not requested&#x27;, &#x27;approval_history&#x27;: &#x27;&#x27;, &#x27;approval_set&#x27;: &#x27;&#x27;, &#x27;assigned_to&#x27;: &#x27;73ab3f173b331300ad3cc9bb34efc4df&#x27;, &#x27;assignment_group&#x27;: &#x27;&#x27;, &#x27;business_duration&#x27;: &#x27;&#x27;, &#x27;business_service&#x27;: &#x27;&#x27;, &#x27;calendar_duration&#x27;: &#x27;&#x27;, &#x27;category&#x27;: &#x27;software&#x27;, &#x27;cause_notes&#x27;: &#x27;&#x27;, &#x27;close_notes&#x27;: &#x27;&#x27;, &#x27;closed_at&#x27;: &#x27;&#x27;, &#x27;closed_by&#x27;: &#x27;&#x27;, &#x27;cmdb_ci&#x27;: &#x27;27d32778c0a8000b00db970eeaa60f16&#x27;, &#x27;comments&#x27;: &#x27;&#x27;, &#x27;comments_and_work_notes&#x27;: &#x27;&#x27;, &#x27;company&#x27;: &#x27;&#x27;, &#x27;confirmed_at&#x27;: &#x27;&#x27;, &#x27;confirmed_by&#x27;: &#x27;&#x27;, &#x27;contact_type&#x27;: &#x27;&#x27;, &#x27;contract&#x27;: &#x27;&#x27;, &#x27;correlation_display&#x27;: &#x27;&#x27;, &#x27;correlation_id&#x27;: &#x27;&#x27;, &#x27;delivery_plan&#x27;: &#x27;&#x27;, &#x27;delivery_task&#x27;: &#x27;&#x27;, &#x27;description&#x27;: &#x27;Unable to send or receive emails.&#x27;, &#x27;due_date&#x27;: &#x27;&#x27;, &#x27;duplicate_of&#x27;: &#x27;&#x27;, &#x27;escalation&#x27;: &#x27;0&#x27;, &#x27;expected_start&#x27;: &#x27;&#x27;, &#x27;first_reported_by_task&#x27;: &#x27;&#x27;, &#x27;fix_communicated_at&#x27;: &#x27;&#x27;, &#x27;fix_communicated_by&#x27;: &#x27;&#x27;, &#x27;fix_notes&#x27;: &#x27;&#x27;, &#x27;follow_up&#x27;: &#x27;&#x27;, &#x27;group_list&#x27;: &#x27;&#x27;, &#x27;impact&#x27;: &#x27;low&#x27;, &#x27;knowledge&#x27;: &#x27;false&#x27;, &#x27;known_error&#x27;: &#x27;false&#x27;, &#x27;location&#x27;: &#x27;&#x27;, &#x27;made_sla&#x27;: &#x27;true&#x27;, &#x27;major_problem&#x27;: &#x27;false&#x27;, &#x27;number&#x27;: &#x27;PRB0007601&#x27;, &#x27;opened_at&#x27;: &#x27;2018-08-30 08:08:39&#x27;, &#x27;opened_by&#x27;: &#x27;6816f79cc0a8016401c5a33be04be441&#x27;, &#x27;order&#x27;: &#x27;&#x27;, &#x27;parent&#x27;: &#x27;&#x27;, &#x27;priority&#x27;: &#x27;5&#x27;, &#x27;problem_state&#x27;: &#x27;new&#x27;, &#x27;reassignment_count&#x27;: &#x27;0&#x27;, &#x27;related_incidents&#x27;: &#x27;0&#x27;, &#x27;reopen_count&#x27;: &#x27;0&#x27;, &#x27;reopened_at&#x27;: &#x27;&#x27;, &#x27;reopened_by&#x27;: &#x27;&#x27;, &#x27;resolution_code&#x27;: &#x27;&#x27;, &#x27;resolved_at&#x27;: &#x27;&#x27;, &#x27;resolved_by&#x27;: &#x27;&#x27;, &#x27;review_outcome&#x27;: &#x27;&#x27;, &#x27;rfc&#x27;: &#x27;&#x27;, &#x27;route_reason&#x27;: &#x27;&#x27;, &#x27;service_offering&#x27;: &#x27;&#x27;, &#x27;short_description&#x27;: &#x27;Unable to send or receive emails.&#x27;, &#x27;sla_due&#x27;: &#x27;&#x27;, &#x27;state&#x27;: &#x27;new&#x27;, &#x27;subcategory&#x27;: &#x27;email&#x27;, &#x27;sys_class_name&#x27;: &#x27;problem&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2018-08-30 08:09:05&#x27;, &#x27;sys_domain&#x27;: &#x27;global&#x27;, &#x27;sys_domain_path&#x27;: &#x27;/&#x27;, &#x27;sys_id&#x27;: &#x27;62304320731823002728660c4cf6a7e8&#x27;, &#x27;sys_mod_count&#x27;: &#x27;1&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;admin&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2018-12-12 07:16:57&#x27;, &#x27;task_effective_number&#x27;: &#x27;PRB0007601&#x27;, &#x27;time_worked&#x27;: &#x27;&#x27;, &#x27;universal_request&#x27;: &#x27;&#x27;, &#x27;upon_approval&#x27;: &#x27;proceed&#x27;, &#x27;upon_reject&#x27;: &#x27;cancel&#x27;, &#x27;urgency&#x27;: &#x27;low&#x27;, &#x27;user_input&#x27;: &#x27;&#x27;, &#x27;watch_list&#x27;: &#x27;&#x27;, &#x27;work_end&#x27;: &#x27;&#x27;, &#x27;work_notes&#x27;: &#x27;&#x27;, &#x27;work_notes_list&#x27;: &#x27;&#x27;, &#x27;work_start&#x27;: &#x27;&#x27;, &#x27;workaround&#x27;: &#x27;&#x27;, &#x27;workaround_applied&#x27;: &#x27;false&#x27;, &#x27;workaround_communicated_at&#x27;: &#x27;&#x27;, &#x27;workaround_communicated_by&#x27;: &#x27;&#x27;}</div>
+                </td>
+            </tr>
+    </table>
+    <br/><br/>
 
 
 Status
