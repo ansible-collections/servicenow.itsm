@@ -73,3 +73,11 @@ def find_assignment_group(table_client, assignment_id):
     return table_client.get_record(
         "sys_user_group", dict(name=assignment_id), must_exist=True
     )
+
+
+def find_standard_change_template(table_client, template_name):
+    return table_client.get_record(
+        "std_change_producer_version",
+        dict(name=template_name),
+        must_exist=True,
+    )

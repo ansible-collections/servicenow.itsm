@@ -19,7 +19,7 @@
         requested_by: admin
         state: new
         type: standard
-        short_description: Test change_request
+        template: Clear BGP sessions on a Cisco router - 1
         priority: low
         risk: low
         impact: low
@@ -30,6 +30,7 @@
         that:
           - result is changed
           - result.record.state == "new"
+          - result.record.type == "standard"
           - result.record.priority == "low"
           - result.record.risk == "low"
           - result.record.impact == "low"
@@ -50,9 +51,11 @@
     - ansible.builtin.assert:
         that:
           - result.records[0].number == test_result.record.number
+          - result.records[0].type == "standard"
           - result.records[0].priority == "low"
           - result.records[0].risk == "low"
           - result.records[0].impact == "low"
+          - "'Resend the complete BGP table to neighboring routers' in result.records[0].description"
 
 
     - name: Update change_request with same priority, risk and impact - unchanged

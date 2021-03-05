@@ -50,6 +50,13 @@ options:
       - Specify what type of change is required.
     choices: [ standard, normal, emergency ]
     type: str
+  template:
+    description:
+      - Predefined template name for standard change request.
+      - For more information on templates refer to ServiceNow documentation at
+        U(https://docs.servicenow.com/bundle/quebec-it-service-management/page/product/change-management/concept/c_StandardChangeCatalogPlugin.html)
+        or find template names on <your_service_id>.service-now.com/nav_to.do?uri=%2Fstd_change_producer_version_list.do%3F
+    type: str
   requested_by:
     description:
       - User who requested the change.
@@ -265,18 +272,30 @@ def build_payload(module, table_client):
     payload = (module.params["other"] or {}).copy()
     payload.update(utils.filter_dict(module.params, *DIRECT_PAYLOAD_FIELDS))
 
-    if module.params.get("hold_reason"):
+    # The change model is set to the same value as the change type
+    # as the standard change request requires the model to be set.
+    # For that reason change model is set for every type of change request.
+    if module.params["type"]:
+        payload["chg_model"] = payload["type"]
+
+    if module.params["hold_reason"]:
         payload["on_hold_reason"] = module.params["hold_reason"]
 
-    if module.params.get("requested_by"):
+    if module.params["requested_by"]:
         user = table.find_user(table_client, module.params["requested_by"])
         payload["requested_by"] = user["sys_id"]
 
-    if module.params.get("assignment_group"):
+    if module.params["assignment_group"]:
         assignment_group = table.find_assignment_group(
             table_client, module.params["assignment_group"]
         )
         payload["assignment_group"] = assignment_group["sys_id"]
+
+    if module.params["template"]:
+        standard_change_template = table.find_standard_change_template(
+            table_client, module.params["template"]
+        )
+        payload["std_change_producer_version"] = standard_change_template["sys_id"]
 
     return payload
 
@@ -311,6 +330,9 @@ def main():
                 "normal",
                 "emergency",
             ],
+        ),
+        template=dict(
+            type="str",
         ),
         requested_by=dict(
             type="str",
