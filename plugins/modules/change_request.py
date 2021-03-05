@@ -193,7 +193,7 @@ EXAMPLES = """
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, table, errors, utils
+from ..module_utils import arguments, client, table, errors, utils, validation
 from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
 
 
@@ -227,6 +227,21 @@ def ensure_absent(module, table_client):
     return False, None, dict(before=None, after=None)
 
 
+def validate_params(params, change_request=None):
+    missing = []
+    if params["state"] == "closed":
+        missing.extend(
+            validation.missing_from_params_and_remote(
+                ("close_code", "close_notes"), params, change_request
+            )
+        )
+
+    if missing:
+        raise errors.ServiceNowError(
+            "Missing required parameters {0}".format(", ".join(missing))
+        )
+
+
 def ensure_present(module, table_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
@@ -234,6 +249,7 @@ def ensure_present(module, table_client):
 
     if not query:
         # User did not specify existing change request, so we need to create a new one.
+        validate_params(module.params)
         new = mapper.to_ansible(
             table_client.create_record(
                 "change_request", mapper.to_snow(payload), module.check_mode
@@ -248,15 +264,7 @@ def ensure_present(module, table_client):
         # No change in parameters we are interested in - nothing to do.
         return False, old, dict(before=old, after=old)
 
-    if module.params["state"] == "closed":
-        close_code = old["close_code"] or module.params["close_code"]
-        close_notes = old["close_notes"] or module.params["close_notes"]
-
-        if not close_code or not close_notes:
-            raise errors.ServiceNowError(
-                "Missing parameters {0} and {1}.".format("close_code", "close_notes")
-            )
-
+    validate_params(module.params, old)
     new = mapper.to_ansible(
         table_client.update_record(
             "change_request",
