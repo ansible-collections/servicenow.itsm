@@ -77,6 +77,12 @@ options:
         env:
           - name: SN_CLIENT_SECRET
         type: str
+      timeout:
+        description:
+          - Timeout in seconds for the connection with the ServiceNow instance.
+        env:
+          - name: SN_TIMEOUT
+        type: float
   table:
     description: The ServiceNow table to use as the inventory source.
     type: str
@@ -428,6 +434,7 @@ class InventoryModule(BaseInventoryPlugin):
             password=os.getenv("SN_PASSWORD"),
             client_id=os.getenv("SN_CLIENT_ID"),
             client_secret=os.getenv("SN_SECRET_ID"),
+            timeout=os.getenv("SN_TIMEOUT"),
         )
 
     def _get_instance(self):

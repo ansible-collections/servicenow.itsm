@@ -51,4 +51,10 @@ options:
             variable will be used.
           - If provided, it requires I(client_id).
         type: str
+      timeout:
+        description:
+          - Timeout in seconds for the connection with the ServiceNow instance.
+          - If not set, the value of the C(SN_TIMEOUT) environment
+            variable will be used.
+        type: float
 """
