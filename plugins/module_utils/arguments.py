@@ -40,6 +40,10 @@ SHARED_SPECS = dict(
                 no_log=True,
                 fallback=(env_fallback, ["SN_CLIENT_SECRET"]),
             ),
+            timeout=dict(
+                type="float",
+                fallback=(env_fallback, ["SN_TIMEOUT"]),
+            ),
         ),
         required_together=[("client_id", "client_secret")],
     ),

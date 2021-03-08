@@ -38,12 +38,15 @@ class Response:
 
 
 class Client:
-    def __init__(self, host, username, password, client_id=None, client_secret=None):
+    def __init__(
+        self, host, username, password, client_id=None, client_secret=None, timeout=None
+    ):
         self.host = host
         self.username = username
         self.password = password
         self.client_id = client_id
         self.client_secret = client_secret
+        self.timeout = timeout
 
         self._auth_header = None
         self._client = Request()
@@ -86,7 +89,9 @@ class Client:
 
     def _request(self, method, path, data=None, headers=None):
         try:
-            raw_resp = self._client.open(method, path, data=data, headers=headers)
+            raw_resp = self._client.open(
+                method, path, data=data, headers=headers, timeout=self.timeout
+            )
         except HTTPError as e:
             # Wrong username/password, or expired access token
             if e.code == 401:
