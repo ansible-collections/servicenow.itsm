@@ -16,6 +16,7 @@ PAYLOAD_FIELDS_MAPPING = dict(
         ("Test", "test"),
     ],
     install_status=[
+        ("", ""),  # field not set
         ("0", "implementing"),
         ("1", "installed"),
         ("2", "on_order"),
@@ -28,6 +29,7 @@ PAYLOAD_FIELDS_MAPPING = dict(
         ("100", "absent"),
     ],
     operational_status=[
+        ("", ""),  # field not set
         ("1", "operational"),
         ("2", "non_operational"),
         ("3", "repair_in_progress"),

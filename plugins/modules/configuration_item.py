@@ -351,11 +351,13 @@ def main():
         ),
         install_status=dict(
             type="str",
-            choices=[i[1] for i in PAYLOAD_FIELDS_MAPPING["install_status"]],
+            choices=[i[1] for i in PAYLOAD_FIELDS_MAPPING["install_status"] if i[0]],
         ),
         operational_status=dict(
             type="str",
-            choices=[i[1] for i in PAYLOAD_FIELDS_MAPPING["operational_status"]],
+            choices=[
+                i[1] for i in PAYLOAD_FIELDS_MAPPING["operational_status"] if i[0]
+            ],
         ),
         serial_number=dict(
             type="str",
