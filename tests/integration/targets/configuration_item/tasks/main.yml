@@ -5,10 +5,9 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
-# TODO: Uncomment when configuration_item_info is available
-#    - name: Retrieve configuration item records
-#      servicenow.itsm.configuration_item_info:
-#      register: initial
+    - name: Retrieve configuration item records
+      servicenow.itsm.configuration_item_info:
+      register: initial
 
     - name: Create a base configuration item (check mode)
       servicenow.itsm.configuration_item: &ci-create
@@ -28,26 +27,24 @@
           - base_ci.record.install_status == "on_order"
           - base_ci.record.operational_status == "non_operational"
 
-# TODO: Uncomment when configuration_item_info is available
-#    - name: Verify creation in check mode did not create a record
-#      servicenow.itsm.configuration_item_info:
-#      register: result
-#    - ansible.builtin.assert:
-#        that:
-#          - result.records | length == initial.records | length
+    - name: Verify creation in check mode did not create a record
+      servicenow.itsm.configuration_item_info:
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == initial.records | length
 
     - name: Create a base configuration item
       servicenow.itsm.configuration_item: *ci-create
       register: base_ci
     - ansible.builtin.assert: *ci-create-assertions
 
-# TODO: Uncomment when configuration_item_info is available
-#    - name: Verify that a new record was created
-#      servicenow.itsm.configuration_item_info:
-#      register: result
-#    - ansible.builtin.assert:
-#        that:
-#          - result.records | length == initial.records | length + 1
+    - name: Verify that a new record was created
+      servicenow.itsm.configuration_item_info:
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == initial.records | length + 1
 
     - name: Create a base configuration item (idempotence)
       servicenow.itsm.configuration_item:
@@ -91,17 +88,16 @@
           - updated_ci.record.short_description == "short-description"
           - updated_ci.record.assigned_to != ""
 
-# TODO: Uncomment when configuration_item_info is available
-#    - name: Verify modification in check mode did not update the record
-#      servicenow.itsm.configuration_item_info:
-#        sys_id: "{{ base_ci.record.sys_id }}"
-#      register: result
-#    - ansible.builtin.assert:
-#        that:
-#          - result.records.0.name == base_ci.record.name
-#          - result.records.0.sys_class_name == base_ci.record.sys_class_name
-#          - result.records.0.environment == base_ci.record.asset_tag
-#          - result.records.0.short_description == base_ci.record.short_description
+    - name: Verify modification in check mode did not update the record
+      servicenow.itsm.configuration_item_info:
+        sys_id: "{{ base_ci.record.sys_id }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result.records.0.name == base_ci.record.name
+          - result.records.0.sys_class_name == base_ci.record.sys_class_name
+          - result.records.0.environment == base_ci.record.environment
+          - result.records.0.short_description == base_ci.record.short_description
 
     - name: Update the configuration item
       servicenow.itsm.configuration_item: *ci-update
@@ -160,14 +156,13 @@
         that:
           - result is changed
 
-# TODO: Uncomment when configuration_item_info is available
-#    - name: Verify deletion in check mode did not remove the record
-#      servicenow.itsm.configuration_item_info:
-#        sys_id: "{{ base_ci.record.sys_id }}"
-#      register: result
-#    - ansible.builtin.assert:
-#        that:
-#          - result.records | length == 1
+    - name: Verify deletion in check mode did not remove the record
+      servicenow.itsm.configuration_item_info:
+        sys_id: "{{ base_ci.record.sys_id }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 1
 
     - name: Delete a configuration item
       servicenow.itsm.configuration_item: *ci-delete
@@ -176,14 +171,13 @@
         that:
           - result is changed
 
-# TODO: Uncomment when configuration_item_info is available
-#    - name: Verify that the record was deleted
-#      servicenow.itsm.configuration_item_info:
-#        sys_id: "{{ base_ci.record.sys_id }}"
-#      register: result
-#    - ansible.builtin.assert:
-#        that:
-#          - result.records == []
+    - name: Verify that the record was deleted
+      servicenow.itsm.configuration_item_info:
+        sys_id: "{{ base_ci.record.sys_id }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result.records == []
 
     - name: Delete a configuration item (idempotency)
       servicenow.itsm.configuration_item: *ci-delete
