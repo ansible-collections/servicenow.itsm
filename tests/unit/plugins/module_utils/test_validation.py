@@ -71,5 +71,5 @@ class TestMissingFromParamsAndRemote:
         ],
     )
     def test_invalid_wrong_param_value_type(self, module_params, record):
-        with pytest.raises(errors.ServiceNowError, match="str or None"):
+        with pytest.raises(errors.ServiceNowError, match="text or None"):
             validation.missing_from_params_and_remote(["a"], module_params, record)
