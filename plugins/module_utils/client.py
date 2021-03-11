@@ -9,6 +9,7 @@ __metaclass__ = type
 
 import json
 
+from ansible.module_utils.six import PY2
 from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
 from ansible.module_utils.six.moves.urllib.parse import urlencode, quote
 from ansible.module_utils.urls import Request, basic_auth_header
@@ -106,7 +107,9 @@ class Client:
         except URLError as e:
             raise ServiceNowError(e.reason)
 
-        return Response(raw_resp.status, raw_resp.read(), raw_resp.getheaders())
+        if PY2:
+            return Response(raw_resp.getcode(), raw_resp.read(), raw_resp.info())
+        return Response(raw_resp.status, raw_resp.read(), raw_resp.headers)
 
     def request(self, method, path, query=None, data=None):
         escaped_path = quote(path.rstrip("/"))

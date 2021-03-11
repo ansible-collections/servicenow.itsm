@@ -76,8 +76,11 @@ class TestClientAuthHeader:
         assert c.auth_header == {"Authorization": b"Basic dXNlcjpwYXNz"}
 
     def test_oauth(self, mocker):
-        resp_mock = mocker.MagicMock(status=200)
+        resp_mock = mocker.MagicMock()
+        resp_mock.status = 200  # Used when testing on Python 3
+        resp_mock.getcode.return_value = 200  # Used when testing on Python 2
         resp_mock.read.return_value = '{"access_token": "token"}'
+
         request_mock = mocker.patch.object(client, "Request").return_value
         request_mock.open.return_value = resp_mock
 
@@ -100,8 +103,11 @@ class TestClientAuthHeader:
             c.auth_header
 
     def test_header_is_cached(self, mocker):
-        raw_resp_mock = mocker.MagicMock(status=200)
+        raw_resp_mock = mocker.MagicMock()
+        raw_resp_mock.status = 200  # Used when testing on Python 3
+        raw_resp_mock.getcode.return_value = 200  # Used when testing on Python 2
         raw_resp_mock.read.return_value = '{"access_token": "token"}'
+
         request_mock = mocker.patch.object(client, "Request").return_value
         request_mock.open.return_value = raw_resp_mock
 
