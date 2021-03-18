@@ -253,7 +253,7 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING)
+    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id")
     configuration_item = table_client.get_record("cmdb_ci", query)
 
@@ -283,7 +283,7 @@ def build_payload(module, table_client):
 
 
 def ensure_present(module, table_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING)
+    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id")
     payload = build_payload(module, table_client)
 
