@@ -166,7 +166,7 @@ from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
 
 def run(module, table_client):
     query = utils.filter_dict(module.params, "sys_id", "number")
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING)
+    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
 
     return [
         mapper.to_ansible(record)

@@ -287,7 +287,7 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING)
+    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id", "number")
     problem = table_client.get_record("problem", query)
 
@@ -370,7 +370,7 @@ def validate_params(params, problem=None):
 
 
 def ensure_present(module, table_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING)
+    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
 

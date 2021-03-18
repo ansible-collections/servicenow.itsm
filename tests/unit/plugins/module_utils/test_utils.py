@@ -61,10 +61,38 @@ class TestPayloadMapper:
 
         assert dict(a=4, b=6, c=7) == mapper.to_ansible(dict(a=3, b=5, c=7))
 
+    def test_to_ansible_unknown_value_is_included(self):
+        mapper = utils.PayloadMapper(dict(a=[(1, "a1")]))
+
+        assert dict(a=2) == mapper.to_ansible(dict(a=2))
+
+    def test_to_ansible_unknown_value_handler_is_invoked(self, mocker):
+        mock_handler = mocker.Mock()
+        mapper = utils.PayloadMapper(dict(a=[(1, "a1")]), mock_handler.warn)
+        mapper.to_ansible(dict(a="a2"))
+
+        mock_handler.warn.assert_called_once_with(
+            "Encountered unknown value a2 while mapping field a."
+        )
+
     def test_to_snow(self):
         mapper = utils.PayloadMapper(dict(a=[(1, 2), (3, 4)], b=[(5, 6)]))
 
         assert dict(a=1, b=5, c=7) == mapper.to_snow(dict(a=2, b=6, c=7))
+
+    def test_to_snow_unknown_value_is_included(self):
+        mapper = utils.PayloadMapper(dict(a=[(1, "a1")]))
+
+        assert dict(a="a2") == mapper.to_snow(dict(a="a2"))
+
+    def test_to_snow_unknown_value_handler_is_invoked(self, mocker):
+        mock_handler = mocker.Mock()
+        mapper = utils.PayloadMapper(dict(a=[(1, "a1")]), mock_handler.warn)
+        mapper.to_snow(dict(a=2))
+
+        mock_handler.warn.assert_called_once_with(
+            "Encountered unknown value 2 while mapping field a."
+        )
 
     @pytest.mark.parametrize(
         "data", [dict(), dict(a=1), dict(a=1, b=2), dict(c=3), dict(a=2, c=5)]

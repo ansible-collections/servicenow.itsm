@@ -28,7 +28,7 @@ def is_superset(superset, candidate):
 
 
 class PayloadMapper:
-    def __init__(self, mapping):
+    def __init__(self, mapping, unknown_value_handler=None):
         # Convert
         #   dict(a=[("s1", "a1"), ("s2", "a2")], b=[("s3", "a3")])
         # to
@@ -40,6 +40,7 @@ class PayloadMapper:
 
         self._to_ansible = {}
         self._to_snow = {}
+        self.unknown_value_handler = unknown_value_handler
 
         for key, value_map in mapping.items():
             self._to_ansible[key] = dict(value_map)
@@ -47,11 +48,23 @@ class PayloadMapper:
                 (ansible_val, snow_val) for snow_val, ansible_val in value_map
             )
 
+    def _map_key(self, key, val, mapping):
+        if val in mapping[key]:
+            return mapping[key][val]
+
+        if self.unknown_value_handler:
+            self.unknown_value_handler(
+                "Encountered unknown value {0} while mapping field {1}.".format(
+                    val, key
+                )
+            )
+        return val
+
     def _transform(self, mapping, data):
         result = {}
         for k, v in data.items():
             if k in mapping:
-                result[k] = mapping[k][v]
+                result[k] = self._map_key(k, v, mapping)
             else:
                 result[k] = v
         return result
