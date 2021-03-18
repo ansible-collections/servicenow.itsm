@@ -20,8 +20,104 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-class TestMain:
-    pass
+class TestEnsureAbsent:
+    def test_delete_problem(self, create_module, table_client):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state="absent",
+                number="PRB0000001",
+                sys_id=None,
+            )
+        )
+        table_client.get_record.return_value = dict(state="107", number="PRB0000001")
+
+        result = problem.ensure_absent(module, table_client)
+
+        table_client.delete_record.assert_called_once()
+        assert result == (
+            True,
+            None,
+            dict(before=dict(state="closed", number="PRB0000001"), after=None),
+        )
+
+    def test_delete_problem_not_present(self, create_module, table_client):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state="absent",
+                number=None,
+                sys_id="1234",
+            ),
+        )
+        table_client.get_record.return_value = None
+
+        result = problem.ensure_absent(module, table_client)
+
+        table_client.delete_record.assert_not_called()
+        assert result == (False, None, dict(before=None, after=None))
+
+
+class TestBuildPayload:
+    def test_build_payload(self, create_module, table_client):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state="closed",
+                short_description="Test problem",
+                description=None,
+                impact="low",
+                urgency="low",
+                assigned_to="some user",
+                resolution_code="duplicate",
+                fix_notes=None,
+                cause_notes=None,
+                close_notes=None,
+                duplicate_of="PRB0000010",
+                other=None,
+            ),
+        )
+        table_client.get_record.side_effect = [
+            {"sys_id": "681ccaf9c0a8016400b98a06818d57c7"},
+            {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
+        ]
+
+        result = problem.build_payload(module, table_client)
+
+        assert result["assigned_to"] == "681ccaf9c0a8016400b98a06818d57c7"
+        assert result["problem_state"] == "closed"
+        assert result["short_description"] == "Test problem"
+        assert result["impact"] == "low"
+        assert result["urgency"] == "low"
+        assert result["resolution_code"] == "duplicate"
+        assert result["duplicate_of"] == "6816f79cc0a8016401c5a33be04be441"
+
+    def test_build_payload_with_other_option(self, create_module, table_client):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state=None,
+                short_description="Test problem",
+                description=None,
+                impact="low",
+                urgency="low",
+                assigned_to=None,
+                resolution_code=None,
+                fix_notes=None,
+                cause_notes=None,
+                close_notes=None,
+                duplicate_of=None,
+                other=dict(user_input="notes"),
+            ),
+        )
+
+        result = problem.build_payload(module, table_client)
+
+        assert "problem_state" not in result
+        assert result["short_description"] == "Test problem"
+        assert result["impact"] == "low"
+        assert result["urgency"] == "low"
+        assert result["user_input"] == "notes"
 
 
 class TestValidateParams:
@@ -95,5 +191,178 @@ class TestValidateParams:
             problem.validate_params(params)
 
 
-class TestRun:
-    pass
+class TestEnsurePresent:
+    def test_ensure_present_create_new(self, create_module, table_client):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state="new",
+                number=None,
+                sys_id=None,
+                short_description="Test problem",
+                description=None,
+                impact="low",
+                urgency="low",
+                assigned_to=None,
+                resolution_code=None,
+                fix_notes=None,
+                cause_notes=None,
+                close_notes=None,
+                duplicate_of=None,
+                other=None,
+            ),
+        )
+        table_client.create_record.return_value = dict(
+            state="101",
+            number="PRB0000001",
+            short_description="Test problem",
+            impact="3",
+            urgency="3",
+        )
+
+        result = problem.ensure_present(module, table_client)
+
+        table_client.create_record.assert_called_once()
+        assert result == (
+            True,
+            dict(
+                state="new",
+                number="PRB0000001",
+                short_description="Test problem",
+                impact="low",
+                urgency="low",
+            ),
+            dict(
+                before=None,
+                after=dict(
+                    state="new",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    impact="low",
+                    urgency="low",
+                ),
+            ),
+        )
+
+    def test_ensure_present_nothing_to_do(self, create_module, table_client):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state="new",
+                number="PRB0000001",
+                sys_id=None,
+                caller=None,
+                short_description="Test problem",
+                description=None,
+                impact=None,
+                urgency=None,
+                assigned_to=None,
+                resolution_code=None,
+                fix_notes=None,
+                cause_notes=None,
+                close_notes=None,
+                duplicate_of=None,
+                other=None,
+            ),
+        )
+        table_client.get_record.return_value = dict(
+            state="101",
+            problem_state="101",
+            number="PRB0000001",
+            short_description="Test problem",
+        )
+
+        result = problem.ensure_present(module, table_client)
+
+        table_client.get_record.assert_called_once()
+        assert result == (
+            False,
+            dict(
+                state="new",
+                problem_state="new",
+                number="PRB0000001",
+                short_description="Test problem",
+            ),
+            dict(
+                before=dict(
+                    state="new",
+                    problem_state="new",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                ),
+                after=dict(
+                    state="new",
+                    problem_state="new",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                ),
+            ),
+        )
+
+    def test_ensure_present_update(self, mocker, create_module, table_client):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state="assess",
+                number="PRB0000001",
+                sys_id=None,
+                caller=None,
+                short_description="Test problem",
+                description=None,
+                impact=None,
+                urgency=None,
+                assigned_to=None,
+                resolution_code=None,
+                fix_notes=None,
+                cause_notes=None,
+                close_notes=None,
+                duplicate_of=None,
+                other=None,
+            ),
+        )
+        payload_mocker = mocker.patch.object(problem, "build_payload")
+        payload_mocker.return_value = dict(
+            state="assess",
+            problem_state="assess",
+            number="PRB0000001",
+            short_description="Test problem",
+        )
+        table_client.get_record.return_value = dict(
+            state="101",
+            problem_state="101",
+            number="PRB0000001",
+            short_description="Test problem",
+        )
+        table_client.update_record.return_value = dict(
+            state="102",
+            problem_state="102",
+            number="PRB0000001",
+            short_description="Test problem",
+        )
+
+        result = problem.ensure_present(module, table_client)
+
+        table_client.update_record.assert_called_once()
+        assert result == (
+            True,
+            dict(
+                state="assess",
+                problem_state="assess",
+                number="PRB0000001",
+                short_description="Test problem",
+            ),
+            dict(
+                before=dict(
+                    state="new",
+                    problem_state="new",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                ),
+                after=dict(
+                    state="assess",
+                    problem_state="assess",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                ),
+            ),
+        )
