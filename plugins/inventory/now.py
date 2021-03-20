@@ -102,7 +102,7 @@ options:
     description:
       - The column to use for inventory hostnames.
     default: name
-  groups:
+  named_groups:
     description:
       - Group hosts in the provided groups, according to the specified criteria.
       - Only the specified groups will be created.
@@ -142,7 +142,7 @@ options:
       - Group hosts automatically, according to the values of the specified columns.
       - You can include or exclude records from being added to the inventory
         by limiting the column values with I(include) or I(exclude).
-      - Mutually exclusive with I(groups).
+      - Mutually exclusive with I(named_groups).
     type: dict
     default: {}
     suboptions:
@@ -219,7 +219,7 @@ group_by:
 # Group hosts into named groups, according to the specified criteria.
 # Below example creates a single group containing hosts that match
 # all the criteria.
-groups:
+named_groups:
   non_windows_prod_servers:
     classification:
       includes: [ Production ]
@@ -314,8 +314,8 @@ class InventoryModule(BaseInventoryPlugin):
                 "Invalid configuration: 'includes' and 'excludes' are mutually exclusive."
             )
 
-    def validate_grouping_conditions(self, groups, group_by):
-        for group, column in groups.items():
+    def validate_grouping_conditions(self, named_groups, group_by):
+        for group, column in named_groups.items():
             for conditions in column.values():
                 self._verify_includes_and_excludes(conditions)
         for column, conditions in group_by.items():
@@ -397,16 +397,16 @@ class InventoryModule(BaseInventoryPlugin):
                         self.inventory.add_group(group_name)
                         self.inventory.add_host(host, group=group_name)
                     else:
-                        self.display.warning(
-                            "Encountered invalid group name '{1}' for host {0}. Group will not be created.".format(
-                                group_name, host
-                            )
-                        )
+                        msg = (
+                            "Encountered invalid group name '{1}' for host {0}. "
+                            "Group will not be created."
+                        ).format(group_name, host)
+                        self.display.warning(msg)
 
                 self.set_hostvars(host, record)
 
-    def fill_desired_groups(self, table_client, table, groups):
-        for group_name, group_conditions in groups.items():
+    def fill_desired_groups(self, table_client, table, named_groups):
+        for group_name, group_conditions in named_groups.items():
             self.inventory.add_group(group_name)
 
             records = table_client.list_records(
@@ -447,22 +447,23 @@ class InventoryModule(BaseInventoryPlugin):
 
         self._read_config_data(path)
 
-        groups = self.get_option("groups")
+        named_groups = self.get_option("named_groups")
         group_by = self.get_option("group_by")
-        if groups and group_by:
+        if named_groups and group_by:
             raise AnsibleParserError(
-                "Invalid configuration: 'groups' and 'group_by' are mutually exclusive."
+                "Invalid configuration: 'named_groups' and 'group_by' are mutually "
+                "exclusive."
             )
 
-        self.validate_grouping_conditions(groups, group_by)
+        self.validate_grouping_conditions(named_groups, group_by)
 
         client = Client(**self._get_instance())
         table_client = TableClient(client)
 
         table = self.get_option("table")
-        if groups:
+        if named_groups:
             # Creates exactly the specified groups (which might be empty).
             # Leaves nothing ungrouped.
-            self.fill_desired_groups(table_client, table, groups)
+            self.fill_desired_groups(table_client, table, named_groups)
         else:
             self.fill_auto_groups(table_client, table, group_by)
