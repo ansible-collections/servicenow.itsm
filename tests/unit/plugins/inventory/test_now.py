@@ -113,3 +113,58 @@ class TestInventoryModuleValidateGroupingConditions:
                     col=dict(includes=[4, 5], excludes=["test"]),
                 ),
             )
+
+
+class TestInventoryModuleAddHost:
+    def test_valid(self, inventory_plugin):
+        host = inventory_plugin.add_host(
+            dict(host_source="1.2.3.4", name_source="dummy_host", sys_id="123"),
+            "table_name",
+            "host_source",
+            "name_source",
+        )
+
+        assert host == "dummy_host"
+        hostvars = inventory_plugin.inventory.get_host("dummy_host").vars
+        assert hostvars["ansible_host"] == "1.2.3.4"
+
+    def test_valid_empty_host(self, inventory_plugin):
+        host = inventory_plugin.add_host(
+            dict(host_source="", name_source="dummy_host", sys_id="123"),
+            "table_name",
+            "host_source",
+            "name_source",
+        )
+
+        assert host == "dummy_host"
+        hostvars = inventory_plugin.inventory.get_host("dummy_host").vars
+        assert "ansible_host" not in hostvars
+
+    def test_valid_empty_name(self, inventory_plugin):
+        host = inventory_plugin.add_host(
+            dict(host_source="1.2.3.4", name_source="", sys_id="123"),
+            "table_name",
+            "host_source",
+            "name_source",
+        )
+
+        assert host is None
+        assert inventory_plugin.inventory.get_host("dummy_host") is None
+
+    def test_invalid_host(self, inventory_plugin):
+        with pytest.raises(AnsibleParserError, match="invalid_host"):
+            inventory_plugin.add_host(
+                dict(host_source="1.2.3.4", name_source="dummy_host", sys_id="123"),
+                "table_name",
+                "invalid_host",
+                "name_source",
+            )
+
+    def test_invalid_name(self, inventory_plugin):
+        with pytest.raises(AnsibleParserError, match="invalid_name"):
+            inventory_plugin.add_host(
+                dict(host_source="1.2.3.4", name_source="dummy_host", sys_id="123"),
+                "table_name",
+                "host_source",
+                "invalid_name",
+            )
