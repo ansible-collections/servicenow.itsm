@@ -205,3 +205,33 @@ class TestInventoryModuleQuery:
         )
         assert result["sysparm_display_value"] is True
         assert result["sysparm_query"] == "cname=b"
+
+
+class TestInventoryModuleFillDesiredGroups:
+    def test_inventory_construction(self, inventory_plugin, table_client):
+        table_client.list_records.return_value = [
+            dict(sys_id="1", host="1.1.1.1", name="a1", material="wood"),
+            dict(sys_id="2", host="1.1.1.2", name="a2", material="metal"),
+        ]
+
+        inventory_plugin.fill_desired_groups(
+            table_client,
+            "cmdb_ci_abacuses",
+            "host",
+            "name",
+            ("material", "sys_id"),
+            dict(g1=dict(material={})),
+        )
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        assert a1.vars["sys_id"] == "1"
+        assert a1.vars["material"] == "wood"
+        assert a1.vars["ansible_host"] == "1.1.1.1"
+
+        a2 = inventory_plugin.inventory.get_host("a2")
+        assert a2.vars["sys_id"] == "2"
+        assert a2.vars["material"] == "metal"
+        assert a2.vars["ansible_host"] == "1.1.1.2"
+
+        groups = inventory_plugin.inventory.get_groups_dict()
+        assert set(groups["g1"]) == set(("a1", "a2"))
