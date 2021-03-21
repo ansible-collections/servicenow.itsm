@@ -343,26 +343,20 @@ class InventoryModule(BaseInventoryPlugin):
 
         return query
 
-    def add_host(self, record):
-        ansible_host_source = self.get_option("ansible_host_source")
-        inventory_hostname_source = self.get_option("inventory_hostname_source")
+    def add_host(self, record, table, host_source, name_source):
+        if host_source not in record:
+            msg = "Ansible host source column '{0}' is not present in table {1}."
+            raise AnsibleParserError(msg.format(host_source, table))
 
-        if inventory_hostname_source not in record:
-            # The user specified an invalid column
-            raise AnsibleParserError(
-                "Inventory hostname source column '{0}'"
-                " is not present in table {1}.".format(
-                    inventory_hostname_source, self.get_option("table")
-                )
-            )
+        if name_source not in record:
+            msg = "Inventory hostname source column '{0}' is not present in table {1}."
+            raise AnsibleParserError(msg.format(name_source, table))
 
-        inventory_hostname = record[inventory_hostname_source]
+        inventory_hostname = record[name_source]
         if inventory_hostname:
             host = self.inventory.add_host(inventory_hostname)
-            if ansible_host_source in record and record[ansible_host_source]:
-                self.inventory.set_variable(
-                    host, "ansible_host", record[ansible_host_source]
-                )
+            if record[host_source]:
+                self.inventory.set_variable(host, "ansible_host", record[host_source])
             else:
                 self.display.warning(
                     "The ansible_host variable for host {0} is empty.".format(host)
@@ -371,9 +365,7 @@ class InventoryModule(BaseInventoryPlugin):
             return host
 
         self.display.warning(
-            "Skipping host {0} due to empty {1}".format(
-                record["sys_id"], inventory_hostname_source
-            )
+            "Skipping host {0} due to empty {1}".format(record["sys_id"], name_source)
         )
         return None
 
@@ -384,10 +376,12 @@ class InventoryModule(BaseInventoryPlugin):
                 self.inventory.set_variable(host, k, v)
 
     def fill_auto_groups(self, table_client, table, group_by):
+        host_source = self.get_option("ansible_host_source")
+        name_source = self.get_option("inventory_hostname_source")
         records = table_client.list_records(table, query=self._query(group_by))
 
         for record in records:
-            host = self.add_host(record)
+            host = self.add_host(record, table, host_source, name_source)
             if host:
                 for category in group_by.keys():
                     group_name = to_safe_group_name(record[category])
@@ -406,6 +400,9 @@ class InventoryModule(BaseInventoryPlugin):
                 self.set_hostvars(host, record)
 
     def fill_desired_groups(self, table_client, table, named_groups):
+        host_source = self.get_option("ansible_host_source")
+        name_source = self.get_option("inventory_hostname_source")
+
         for group_name, group_conditions in named_groups.items():
             self.inventory.add_group(group_name)
 
@@ -413,7 +410,7 @@ class InventoryModule(BaseInventoryPlugin):
                 table, query=self._query(group_conditions)
             )
             for r in records:
-                host = self.add_host(r)
+                host = self.add_host(r, table, host_source, name_source)
                 self.inventory.add_host(host, group=group_name)
                 self.set_hostvars(host, r)
 
