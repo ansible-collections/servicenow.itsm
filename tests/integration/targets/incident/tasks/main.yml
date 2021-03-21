@@ -4,18 +4,13 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
-    # Commented because of KeyError "2" in an incident number: INC0000048
-    # with sys_id: a9e428cac61122760075710592216c58
-    # as it has hold_reason: 2 which is not valid mapping
-    # Uncomment when this will be handled
-    # - name: Retrieve all incidents
-    #   servicenow.itsm.incident_info:
-    #   register: result
+    - name: Retrieve all incidents
+      servicenow.itsm.incident_info:
+      register: result
 
-    # - ansible.builtin.assert:
-    #     that:
-    #       - result.records != []
-    #       - result.records | length != 0
+    - ansible.builtin.assert:
+        that:
+          - result.records != []
 
 
     - name: Create test incident - check mode
