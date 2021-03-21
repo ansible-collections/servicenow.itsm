@@ -321,19 +321,11 @@ class InventoryModule(BaseInventoryPlugin):
         for column, conditions in group_by.items():
             self._verify_includes_and_excludes(conditions)
 
-    def _query(self, conditions):
-        columns = self.get_option("columns")
-        ansible_host_source = self.get_option("ansible_host_source")
-        inventory_hostname_source = self.get_option("inventory_hostname_source")
-
-        requested_fields = set(
-            columns
-            + ["sys_id", ansible_host_source, inventory_hostname_source]
-            + list(conditions.keys())
-        )
+    def query(self, conditions, host_source, name_source, columns):
+        fields = set(columns).union(("sys_id", host_source, name_source), conditions)
         query = dict(
             # Request only the table columns we're interested in
-            sysparm_fields=",".join(requested_fields),
+            sysparm_fields=",".join(fields),
             # Make references and choice fields human-readable
             sysparm_display_value=True,
         )
@@ -383,7 +375,9 @@ class InventoryModule(BaseInventoryPlugin):
         host_source = self.get_option("ansible_host_source")
         name_source = self.get_option("inventory_hostname_source")
         columns = self.get_option("columns")
-        records = table_client.list_records(table, query=self._query(group_by))
+        records = table_client.list_records(
+            table, query=self.query(group_by, host_source, name_source, columns)
+        )
 
         for record in records:
             host = self.add_host(record, table, host_source, name_source)
@@ -413,7 +407,8 @@ class InventoryModule(BaseInventoryPlugin):
             self.inventory.add_group(group_name)
 
             records = table_client.list_records(
-                table, query=self._query(group_conditions)
+                table,
+                query=self.query(group_conditions, host_source, name_source, columns),
             )
             for r in records:
                 host = self.add_host(r, table, host_source, name_source)
