@@ -168,3 +168,27 @@ class TestInventoryModuleAddHost:
                 "host_source",
                 "invalid_name",
             )
+
+
+class TestInventoryModuleSetHostvars:
+    def test_valid(self, inventory_plugin):
+        inventory_plugin.inventory.add_host("dummy_host")
+
+        inventory_plugin.set_hostvars(
+            "dummy_host",
+            dict(sys_id="123", platform="demo", unused="column"),
+            ("sys_id", "platform"),
+        )
+
+        hostvars = inventory_plugin.inventory.get_host("dummy_host").vars
+        assert hostvars["sys_id"] == "123"
+        assert hostvars["platform"] == "demo"
+        assert "unused" not in hostvars
+
+    def test_invalid_column(self, inventory_plugin):
+        with pytest.raises(AnsibleParserError, match="bad_column"):
+            inventory_plugin.set_hostvars(
+                "dummy_host",
+                dict(sys_id="123", platform="demo", unused="column"),
+                ("sys_id", "platform", "bad_column"),
+            )
