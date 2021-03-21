@@ -1,0 +1,13 @@
+---
+plugin: servicenow.itsm.now
+
+table: cmdb_ci_vm_instance
+columns:
+  - state
+
+named_groups:
+  active_OS0_servers:
+    guest_os_fullname:
+      includes: [ OS0 ]
+    state:
+      excludes: [ "off" ]

@@ -1,0 +1,14 @@
+---
+plugin: servicenow.itsm.now
+
+table: cmdb_ci_ec2_instance
+columns:
+  - name
+  - ip_address
+  - vm_inst_id
+
+group_by:
+  environment:
+  guest_os_fullname:
+    includes:
+      - OS1
