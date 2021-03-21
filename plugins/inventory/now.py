@@ -369,15 +369,20 @@ class InventoryModule(BaseInventoryPlugin):
         )
         return None
 
-    def set_hostvars(self, host, record):
-        for k, v in record.items():
-            if k in self.get_option("columns"):
-                # Set all the columns that user desired as hostvars.
-                self.inventory.set_variable(host, k, v)
+    def set_hostvars(self, host, record, columns):
+        missing = set(columns).difference(record)
+        if missing:
+            raise AnsibleParserError(
+                "Invalid column names: {0}.".format(", ".join(missing))
+            )
+
+        for k in columns:
+            self.inventory.set_variable(host, k, record[k])
 
     def fill_auto_groups(self, table_client, table, group_by):
         host_source = self.get_option("ansible_host_source")
         name_source = self.get_option("inventory_hostname_source")
+        columns = self.get_option("columns")
         records = table_client.list_records(table, query=self._query(group_by))
 
         for record in records:
@@ -397,11 +402,12 @@ class InventoryModule(BaseInventoryPlugin):
                         ).format(group_name, host)
                         self.display.warning(msg)
 
-                self.set_hostvars(host, record)
+                self.set_hostvars(host, record, columns)
 
     def fill_desired_groups(self, table_client, table, named_groups):
         host_source = self.get_option("ansible_host_source")
         name_source = self.get_option("inventory_hostname_source")
+        columns = self.get_option("columns")
 
         for group_name, group_conditions in named_groups.items():
             self.inventory.add_group(group_name)
@@ -412,7 +418,7 @@ class InventoryModule(BaseInventoryPlugin):
             for r in records:
                 host = self.add_host(r, table, host_source, name_source)
                 self.inventory.add_host(host, group=group_name)
-                self.set_hostvars(host, r)
+                self.set_hostvars(host, r, columns)
 
     def _merge_instance_config(self, instance_config, instance_env):
         # Pulls the values from the environment, and if necessary, overrides
