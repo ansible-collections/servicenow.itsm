@@ -235,3 +235,40 @@ class TestInventoryModuleFillDesiredGroups:
 
         groups = inventory_plugin.inventory.get_groups_dict()
         assert set(groups["g1"]) == set(("a1", "a2"))
+
+
+class TestInventoryModuleFillAutoGroups:
+    def test_inventory_construction(self, inventory_plugin, table_client):
+        table_client.list_records.return_value = [
+            dict(sys_id="3", host_source="1.1.1.3", name_source="a3", material="b-a-d"),
+            dict(sys_id="4", host_source="1.1.1.4", name_source="a4", material="glass"),
+            dict(sys_id="5", host_source="1.1.1.5", name_source="a5", material=""),
+        ]
+
+        inventory_plugin.fill_auto_groups(
+            table_client,
+            "cmdb_ci_abacuses",
+            "host_source",
+            "name_source",
+            ("material", "sys_id"),
+            dict(material={}),
+        )
+
+        a3 = inventory_plugin.inventory.get_host("a3")
+        assert a3.vars["sys_id"] == "3"
+        assert a3.vars["material"] == "b-a-d"
+        assert a3.vars["ansible_host"] == "1.1.1.3"
+
+        a4 = inventory_plugin.inventory.get_host("a4")
+        assert a4.vars["sys_id"] == "4"
+        assert a4.vars["material"] == "glass"
+        assert a4.vars["ansible_host"] == "1.1.1.4"
+
+        a5 = inventory_plugin.inventory.get_host("a5")
+        assert a5.vars["sys_id"] == "5"
+        assert a5.vars["material"] == ""
+        assert a5.vars["ansible_host"] == "1.1.1.5"
+
+        groups = inventory_plugin.inventory.get_groups_dict()
+        assert set(groups["b_a_d"]) == set(("a3",))
+        assert set(groups["glass"]) == set(("a4",))

@@ -371,10 +371,9 @@ class InventoryModule(BaseInventoryPlugin):
         for k in columns:
             self.inventory.set_variable(host, k, record[k])
 
-    def fill_auto_groups(self, table_client, table, group_by):
-        host_source = self.get_option("ansible_host_source")
-        name_source = self.get_option("inventory_hostname_source")
-        columns = self.get_option("columns")
+    def fill_auto_groups(
+        self, table_client, table, host_source, name_source, columns, group_by
+    ):
         records = table_client.list_records(
             table, query=self.query(group_by, host_source, name_source, columns)
         )
@@ -468,4 +467,6 @@ class InventoryModule(BaseInventoryPlugin):
                 table_client, table, host_source, name_source, columns, named_groups
             )
         else:
-            self.fill_auto_groups(table_client, table, group_by)
+            self.fill_auto_groups(
+                table_client, table, host_source, name_source, columns, group_by
+            )
