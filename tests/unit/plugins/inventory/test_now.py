@@ -192,3 +192,16 @@ class TestInventoryModuleSetHostvars:
                 dict(sys_id="123", platform="demo", unused="column"),
                 ("sys_id", "platform", "bad_column"),
             )
+
+
+class TestInventoryModuleQuery:
+    def test_construction(self, inventory_plugin):
+        result = inventory_plugin.query(
+            dict(cname=dict(includes="b")), "host", "name", ("col1", "col2")
+        )
+
+        assert set(result["sysparm_fields"].split(",")) == set(
+            ("col1", "col2", "host", "name", "sys_id", "cname")
+        )
+        assert result["sysparm_display_value"] is True
+        assert result["sysparm_query"] == "cname=b"
