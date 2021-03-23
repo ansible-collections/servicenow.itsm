@@ -30,6 +30,7 @@ Name | Description
 [servicenow.itsm.incident_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.incident_info_module.rst)|List ServiceNow incidents
 [servicenow.itsm.problem](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.problem_module.rst)|Manage ServiceNow problems
 [servicenow.itsm.problem_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.problem_info_module.rst)|List ServiceNow problems
+[servicenow.itsm.table_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.table_info_module.rst)|List ServiceNow tables and related information
 
 ### Inventory plugins
 Name | Description
