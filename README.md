@@ -1,7 +1,7 @@
 #  Ansible Collection for ServiceNow ITSM
 
 The Ansible Collection for ServiceNow IT Service Management ([ITSM](https://www.servicenow.com/products/itsm.html)) includes a variety of Ansible content to help automate the management of ServiceNow IT Service Management.
-# Testing
+
 <!--start requires_ansible-->
 ## Ansible version compatibility
 
