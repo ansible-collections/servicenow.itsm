@@ -8,6 +8,7 @@ servicenow.itsm.problem
 **Manage ServiceNow problems**
 
 
+Version added: 1.0.0
 
 .. contents::
    :local:

@@ -8,6 +8,7 @@ servicenow.itsm.change_request
 **Manage ServiceNow change requests**
 
 
+Version added: 1.0.0
 
 .. contents::
    :local:

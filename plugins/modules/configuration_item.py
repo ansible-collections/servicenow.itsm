@@ -23,7 +23,7 @@ description:
   - Create, delete or update a ServiceNow configuration item.
   - For more information, refer to the ServiceNow configuration management documentation at
     U(https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
-
+version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id

@@ -1,10 +1,11 @@
 namespace: servicenow
 name: itsm
-version: 0.1.0
+version: 1.0.0
 readme: README.md
 authors:
   - XLAB Steampunk <steampunk@xlab.si>
-description: Ansible Collection for interacting with ServiceNow
+  - Abhijeet Kasurde <akasurde@redhat.com>
+description: Ansible Collection for interacting with ServiceNow ITSM
 license_file: LICENSE
 tags:
   - servicenow

@@ -23,7 +23,7 @@ description:
   - Create, delete or update a ServiceNow change request.
   - For more information, refer to the ServiceNow change management documentation at
     U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html).
-
+version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id

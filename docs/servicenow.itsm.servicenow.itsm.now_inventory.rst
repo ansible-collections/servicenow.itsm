@@ -8,6 +8,7 @@ servicenow.itsm.servicenow.itsm.now
 **Inventory source for ServiceNow table records.**
 
 
+Version added: 1.0.0
 
 .. contents::
    :local:
@@ -88,7 +89,7 @@ Parameters
                 <td>
                         <div>Group hosts automatically, according to the values of the specified columns.</div>
                         <div>You can include or exclude records from being added to the inventory by limiting the column values with <em>include</em> or <em>exclude</em>.</div>
-                        <div>Mutually exclusive with <em>groups</em>.</div>
+                        <div>Mutually exclusive with <em>named_groups</em>.</div>
                 </td>
             </tr>
                                 <tr>
@@ -154,114 +155,6 @@ Parameters
                         <div>Mutually exclusive with <em>excludes</em>.</div>
                 </td>
             </tr>
-
-
-            <tr>
-                <td colspan="4">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>groups</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Group hosts in the provided groups, according to the specified criteria.</div>
-                        <div>Only the specified groups will be created.</div>
-                        <div>Mutually exclusive with <em>group_by</em>.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="3">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b><group_name></b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>The group to create.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b><column></b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Criteria for including a host in this group.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>excludes</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"None"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Add a host to the group if &lt;column&gt; matches any value except the ones specified in this list.</div>
-                        <div>For reference fields, you need to provide <code>sys_id</code>.</div>
-                        <div>Mutually exclusive with <em>includes</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>includes</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"None"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Add a host to the group only if &lt;column&gt; matches any of the values specified in this list.</div>
-                        <div>For reference fields, you need to provide <code>sys_id</code>.</div>
-                        <div>Mutually exclusive with <em>excludes</em>.</div>
-                </td>
-            </tr>
-
 
 
             <tr>
@@ -423,6 +316,114 @@ Parameters
             <tr>
                 <td colspan="4">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>named_groups</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">{}</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Group hosts in the provided groups, according to the specified criteria.</div>
+                        <div>Only the specified groups will be created.</div>
+                        <div>Mutually exclusive with <em>group_by</em>.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b><group_name></b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">{}</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>The group to create.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b><column></b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">{}</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Criteria for including a host in this group.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>excludes</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"None"</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Add a host to the group if &lt;column&gt; matches any value except the ones specified in this list.</div>
+                        <div>For reference fields, you need to provide <code>sys_id</code>.</div>
+                        <div>Mutually exclusive with <em>includes</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>includes</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"None"</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Add a host to the group only if &lt;column&gt; matches any of the values specified in this list.</div>
+                        <div>For reference fields, you need to provide <code>sys_id</code>.</div>
+                        <div>Mutually exclusive with <em>excludes</em>.</div>
+                </td>
+            </tr>
+
+
+
+            <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>plugin</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -520,7 +521,7 @@ Examples
     # Group hosts into named groups, according to the specified criteria.
     # Below example creates a single group containing hosts that match
     # all the criteria.
-    groups:
+    named_groups:
       non_windows_prod_servers:
         classification:
           includes: [ Production ]
