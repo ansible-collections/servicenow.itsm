@@ -24,7 +24,7 @@ description:
   - Retrieve information about ServiceNow configuration item.
   - For more information, refer to the ServiceNow configuration item management documentation at
     U(https://docs.servicenow.com/bundle/quebec-servicenow-platform/page/product/configuration-management/concept/c_ITILConfigurationManagement.html).
-
+version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id.info

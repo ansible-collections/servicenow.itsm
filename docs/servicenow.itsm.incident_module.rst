@@ -8,6 +8,7 @@ servicenow.itsm.incident
 **Manage ServiceNow incidents**
 
 
+Version added: 1.0.0
 
 .. contents::
    :local:

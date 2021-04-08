@@ -24,7 +24,7 @@ description:
   - Create, delete or update a ServiceNow incident.
   - For more information, refer to the ServiceNow incident management documentation at
     U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/concept/c_IncidentManagement.html).
-
+version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id

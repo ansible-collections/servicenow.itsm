@@ -1,0 +1,39 @@
+ancestor: null
+releases:
+  1.0.0:
+    changes:
+      release_summary:
+      - Initial release for ServiceNow ITSM collection v1.0.0.
+    fragments:
+    - initial.release.yml
+    modules:
+    - description: Manage ServiceNow change requests
+      name: change_request
+      namespace: ''
+    - description: List ServiceNow change requests
+      name: change_request_info
+      namespace: ''
+    - description: Manage ServiceNow configuration items
+      name: configuration_item
+      namespace: ''
+    - description: List ServiceNow configuration item
+      name: configuration_item_info
+      namespace: ''
+    - description: Manage ServiceNow incidents
+      name: incident
+      namespace: ''
+    - description: List ServiceNow incidents
+      name: incident_info
+      namespace: ''
+    - description: Manage ServiceNow problems
+      name: problem
+      namespace: ''
+    - description: List ServiceNow problems
+      name: problem_info
+      namespace: ''
+    plugins:
+      inventory:
+      - description: Inventory source for ServiceNow table records.
+        name: now
+        namespace: ''
+    release_date: '2021-04-07'

@@ -8,6 +8,7 @@ servicenow.itsm.configuration_item_info
 **List ServiceNow configuration item**
 
 
+Version added: 1.0.0
 
 .. contents::
    :local:

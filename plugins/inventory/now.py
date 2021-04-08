@@ -28,6 +28,7 @@ description:
   - Builds inventory from ServiceNow table records.
   - Requires a configuration file ending in C(now.yml) or C(now.yaml).
   - The plugin sets host variables denoted by I(columns).
+version_added: 1.0.0
 options:
   plugin:
     description:
