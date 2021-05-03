@@ -202,6 +202,28 @@ Parameters
                     <td class="elbow-placeholder"></td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>grant_type</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.1.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>password</b>&nbsp;&larr;</div></li>
+                                    <li>refresh_token</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Grant type used for OAuth authentication.</div>
+                        <div>If not set, the value of the <code>SN_GRANT_TYPE</code> environment variable will be used.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>host</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -224,7 +246,6 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
@@ -232,6 +253,26 @@ Parameters
                 <td>
                         <div>Password used for authentication.</div>
                         <div>If not set, the value of the <code>SN_PASSWORD</code> environment variable will be used.</div>
+                        <div>Required when using basic authentication or when <em>grant_type=password</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>refresh_token</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.1.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Refresh token used for OAuth authentication.</div>
+                        <div>If not set, the value of the <code>SN_REFRESH_TOKEN</code> environment variable will be used.</div>
+                        <div>Required when <em>grant_type=refresh_token</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -259,7 +300,6 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
@@ -267,6 +307,7 @@ Parameters
                 <td>
                         <div>Username used for authentication.</div>
                         <div>If not set, the value of the <code>SN_USERNAME</code> environment variable will be used.</div>
+                        <div>Required when using basic authentication or when <em>grant_type=password</em>.</div>
                 </td>
             </tr>
 
@@ -387,7 +428,7 @@ Parameters
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create incident
       servicenow.itsm.incident:
