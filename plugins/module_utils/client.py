@@ -40,13 +40,16 @@ class Response:
 
 class Client:
     def __init__(
-        self, host, username, password, client_id=None, client_secret=None, timeout=None
+        self, host, username=None, password=None, grant_type=None,
+        refresh_token=None, client_id=None, client_secret=None, timeout=None
     ):
         self.host = host
         self.username = username
         self.password = password
+        self.grant_type = grant_type
         self.client_id = client_id
         self.client_secret = client_secret
+        self.refresh_token = refresh_token
         self.timeout = timeout
 
         self._auth_header = None
@@ -67,15 +70,26 @@ class Client:
         return dict(Authorization=basic_auth_header(self.username, self.password))
 
     def _login_oauth(self):
-        auth_data = urlencode(
-            dict(
-                grant_type="password",
-                username=self.username,
-                password=self.password,
-                client_id=self.client_id,
-                client_secret=self.client_secret,
+        if self.grant_type == 'refresh_token':
+            auth_data = urlencode(
+                dict(
+                    grant_type=self.grant_type,
+                    refresh_token=self.refresh_token,
+                    client_id=self.client_id,
+                    client_secret=self.client_secret,
+                )
             )
-        )
+        # Only other possible value for grant_type is "password"
+        else:
+            auth_data = urlencode(
+                dict(
+                    grant_type=self.grant_type,
+                    username=self.username,
+                    password=self.password,
+                    client_id=self.client_id,
+                    client_secret=self.client_secret,
+                )
+            )
         resp = self._request(
             "POST",
             "{0}/oauth_token.do".format(self.host),

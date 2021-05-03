@@ -25,7 +25,7 @@
           - result is failed
           - "'Failed to authenticate with the instance' in result.msg"
 
-    - name: OAuth authentication success
+    - name: OAuth authentication success with password
       servicenow.itsm.incident_info:
       environment:
         SN_USERNAME: "{{ sn_username }}"
@@ -58,6 +58,47 @@
         SN_PASSWORD: bad-password
         SN_CLIENT_ID: "{{ sn_client_id }}"
         SN_CLIENT_SECRET: "{{ sn_client_id }}"
+      register: result
+      ignore_errors: true
+    - assert:
+        that:
+          - result is failed
+          - "'Failed to authenticate with the instance' in result.msg"
+
+    - name: Get a refresh token to test with
+      ansible.builtin.uri:
+        url: "{{ sn_host }}/oauth_token.do"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          grant_type: password
+          username: "{{ sn_username }}"
+          password: "{{ sn_password }}"
+          client_id: "{{ sn_client_id }}"
+          client_secret: "{{ sn_client_secret }}"
+      register: result
+    - ansible.builtin.set_fact:
+        sn_refresh_token: "{{ result.json.refresh_token }}"
+
+    - name: OAuth authentication success with refresh_token
+      servicenow.itsm.incident_info:
+      environment:
+        SN_GRANT_TYPE: refresh_token
+        SN_REFRESH_TOKEN: "{{ sn_refresh_token }}"
+        SN_CLIENT_ID: "{{ sn_client_id }}"
+        SN_CLIENT_SECRET: "{{ sn_client_secret }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is success
+
+    - name: OAuth authentication failure with bad refresh token
+      servicenow.itsm.incident_info:
+      environment:
+        SN_GRANT_TYPE: refresh_token
+        SN_REFRESH_TOKEN: bad-token
+        SN_CLIENT_ID: "{{ sn_client_id }}"
+        SN_CLIENT_SECRET: "{{ sn_client_secret }}"
       register: result
       ignore_errors: true
     - assert:
