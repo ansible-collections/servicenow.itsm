@@ -470,7 +470,7 @@ Parameters
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # A trivial example that creates a host from every record of the
     # ServiceNow cmdb_ci_server table. The ip_address column is used for

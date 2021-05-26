@@ -28,15 +28,23 @@ options:
           - Username used for authentication.
           - If not set, the value of the C(SN_USERNAME) environment
             variable will be used.
-        required: true
+          - Required when using basic authentication or when I(grant_type=password).
         type: str
       password:
         description:
           - Password used for authentication.
           - If not set, the value of the C(SN_PASSWORD) environment
             variable will be used.
-        required: true
+          - Required when using basic authentication or when I(grant_type=password).
         type: str
+      grant_type:
+        description:
+          - Grant type used for OAuth authentication.
+          - If not set, the value of the C(SN_GRANT_TYPE) environment variable will be used.
+        choices: [ 'password', 'refresh_token' ]
+        default: password
+        type: str
+        version_added: '1.1.0'
       client_id:
         description:
           - ID of the client application used for OAuth authentication.
@@ -51,6 +59,14 @@ options:
             variable will be used.
           - If provided, it requires I(client_id).
         type: str
+      refresh_token:
+        description:
+          - Refresh token used for OAuth authentication.
+          - If not set, the value of the C(SN_REFRESH_TOKEN) environment
+            variable will be used.
+          - Required when I(grant_type=refresh_token).
+        type: str
+        version_added: '1.1.0'
       timeout:
         description:
           - Timeout in seconds for the connection with the ServiceNow instance.
