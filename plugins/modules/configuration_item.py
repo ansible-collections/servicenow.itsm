@@ -119,7 +119,7 @@ EXAMPLES = r"""
     short_description: HPE ProLiant Server G7
     serial_number: ECE-164-E10834-NO
     asset_tag: P1000613
-    class: cmdb_ci_server
+    sys_class_name: cmdb_ci_server
     assigned_to: some.user
     environment: production
     category: Hardware
