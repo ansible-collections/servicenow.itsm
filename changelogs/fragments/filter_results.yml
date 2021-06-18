@@ -2,3 +2,4 @@ minor_changes:
 - Added new query module utility to filter results in info modules (https://github.com/ansible-collections/servicenow.itsm/issues/66).
 - Added query parameter to change request info module
 - Added query parameter to configuration item info module
+- Added query parameter to incident info module

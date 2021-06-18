@@ -147,6 +147,26 @@
     - ansible.builtin.assert: *update-incident-state-result
 
 
+    - name: Get specific incident info by sysparm query
+      servicenow.itsm.incident_info:
+        query:
+         - caller: = admin
+           number: = {{ test_result.record.number }}
+           state: = resolved
+           close_code: = Solved Remotely (Permanently)
+           close_notes: = Done testing
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 1
+          - result.records[0].caller_id != ""
+          - result.records[0].number == test_result.record.number
+          - result.records[0].state == "resolved"
+          - result.records[0].close_code == "Solved Remotely (Permanently)"
+          - result.records[0].close_notes == "Done testing"
+
+
     - name: Make sure incident state was updated
       servicenow.itsm.incident_info:
         number: "{{ test_result.record.number }}"
@@ -158,6 +178,19 @@
           - result.records[0].state == "resolved"
           - result.records[0].close_code == "Solved Remotely (Permanently)"
           - result.records[0].close_notes == "Done testing"
+
+
+    - name: Get incident info by sysparm query - close_notes and state
+      servicenow.itsm.incident_info:
+        query:
+         - close_notes: LIKE Done testing
+           state: = resolved
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].close_notes == "Done testing"
+          - result.records[0].state == "resolved"
 
 
     - name: Update incident with same state - unchanged
@@ -196,3 +229,41 @@
     - ansible.builtin.assert:
         that:
           - result.records | length == 0
+
+
+    - name: Test bad parameter combinator (number + query)
+      servicenow.itsm.incident_info:
+        number: "{{ test_result.record.number }}"
+        query:
+         - short_description: LIKE SAP
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'parameters are mutually exclusive: number|query' in result.msg"
+
+
+    - name: Test invalid operator detection
+      servicenow.itsm.incident_info:
+        query:
+         - short_description: LIKEE SAP
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Invalid condition' in result.msg"
+
+
+    - name: Get incident info by sysparm query - short_description
+      servicenow.itsm.incident_info:
+        query:
+         - short_description: LIKE SAP
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - "'SAP' in result.records[0].short_description"
