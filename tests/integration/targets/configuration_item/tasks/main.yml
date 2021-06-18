@@ -111,6 +111,38 @@
         that:
           - result is not changed
 
+    - name: Get specific configuration item info by sysparm query
+      servicenow.itsm.configuration_item_info:
+        query:
+         - sys_id: = {{ base_ci.record.sys_id }}
+           sys_class_name: = cmdb_ci_computer
+           name: = my-computer
+           short_description: = short-description
+           asset_tag: = P22896
+           install_status: = installed
+           operational_status: = ready
+           serial_number: = abc123
+           ip_address: = 192.168.250.23
+           mac_address: = a1:b2:c3:d4:e5
+           assigned_to: = admin
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 1
+          - result.records.0.sys_id == base_ci.record.sys_id
+          - result.records.0.sys_class_name == "cmdb_ci_computer"
+          - result.records.0.name == "my-computer"
+          - result.records.0.asset_tag == "P22896"
+          - result.records.0.install_status == "installed"
+          - result.records.0.operational_status == "ready"
+          - result.records.0.serial_number == "abc123"
+          - result.records.0.model_number == "7700-AEG"
+          - result.records.0.ip_address == "192.168.250.23"
+          - result.records.0.mac_address == "a1:b2:c3:d4:e5"
+          - result.records.0.short_description == "short-description"
+          - result.records.0.assigned_to != ""
+
     - name: Update the fields specific to configuration item's class
       servicenow.itsm.configuration_item:
         sys_id: "{{ base_ci.record.sys_id }}"
@@ -134,6 +166,18 @@
           - server is changed
           - server.record.name == "test-server"
           - server.record.classification == "Development"
+
+    - name: Get configuration item info by sysparm query - sys_class_name and name
+      servicenow.itsm.configuration_item_info:
+        query:
+         - sys_class_name: = cmdb_ci_server
+           name: = test-server
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records.0.name == "test-server"
+          - result.records.0.sys_class_name == "cmdb_ci_server"
 
     - name: Assign the configuration item to a non-existent user
       servicenow.itsm.configuration_item:
@@ -185,3 +229,41 @@
     - ansible.builtin.assert:
         that:
           - result is not changed
+
+
+    - name: Test bad parameter combinator (sys_id + query)
+      servicenow.itsm.configuration_item_info:
+        sys_id: "{{ base_ci.record.sys_id }}"
+        query:
+         - name: = lnux101
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'parameters are mutually exclusive: sys_id|query' in result.msg"
+
+
+    - name: Test invalid operator detection
+      servicenow.itsm.configuration_item_info:
+        query:
+         - name: == lnux101
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Invalid condition' in result.msg"
+
+
+    - name: Get configuration item info by sysparm query - name
+      servicenow.itsm.configuration_item_info:
+        query:
+         - name: = lnux101
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - "'lnux101' in result.records[0].name"
