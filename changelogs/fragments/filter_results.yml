@@ -1,0 +1,2 @@
+minor_changes:
+- Added new query module utility to filter results in info modules (https://github.com/ansible-collections/servicenow.itsm/issues/66).

@@ -74,6 +74,7 @@ SHARED_SPECS = dict(
     ),
     sys_id=dict(type="str"),
     number=dict(type="str"),
+    query=dict(type="list", elements="dict"),
 )
 
 
