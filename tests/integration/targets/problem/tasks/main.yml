@@ -234,6 +234,41 @@
           - risk_accepted_problem.record.cause_notes == "cause"
           - risk_accepted_problem.record.close_notes == "close"
 
+    - name: Get specific problem info by sysparm query
+      servicenow.itsm.problem_info:
+        query:
+         - number: = {{ risk_accepted_problem.record.number }}
+           state: = resolved
+           short_description: = accepted-problem
+           assigned_to: = problem.manager
+           resolution_code: = risk_accepted
+           cause_notes: = cause
+           close_notes: = close
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 1
+          - result.records.0.number == risk_accepted_problem.record.number
+          - result.records.0.state == "resolved"
+          - result.records.0.short_description == "accepted-problem"
+          - result.records.0.assigned_to != ""
+          - result.records.0.resolution_code == "risk_accepted"
+          - result.records.0.cause_notes == "cause"
+          - result.records.0.close_notes == "close"
+
+    - name: Get problem info by sysparm query - state and short_description
+      servicenow.itsm.problem_info:
+        query:
+         - state: = resolved
+           short_description: = accepted-problem
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records.0.state == "resolved"
+          - result.records.0.short_description == "accepted-problem"
+
 # FIXME: The task below causes '403 - Data Policy Exception: The following fields are mandatory: Resolution code'
 # despite resolution_code being present in the request.
 #
@@ -293,3 +328,41 @@
     - ansible.builtin.assert:
         that:
           - result is not changed
+
+
+    - name: Test bad parameter combinator (sys_id + query)
+      servicenow.itsm.problem_info:
+        sys_id: "{{ first_problem.record.sys_id }}"
+        query:
+         - subcategory: = email
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'parameters are mutually exclusive: sys_id|query' in result.msg"
+
+
+    - name: Test invalid operator detection
+      servicenow.itsm.problem_info:
+        query:
+         - subcategory: == email
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Invalid condition' in result.msg"
+
+
+    - name: Get problem info by sysparm query - subcategory
+      servicenow.itsm.problem_info:
+        query:
+         - subcategory: = email
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - "'email' in result.records[0].subcategory"

@@ -26,6 +26,7 @@ extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id.info
   - servicenow.itsm.number.info
+  - servicenow.itsm.query
 seealso:
   - module: servicenow.itsm.problem
 """
@@ -44,6 +45,20 @@ EXAMPLES = r"""
   servicenow.itsm.problem_info:
     number: PRB0007601
   register: result
+
+- name: Retrieve problems that do not contain SAP in its short description
+  servicenow.itsm.problem_info:
+    query:
+      - short_description: NOT LIKE SAP
+  register: result
+
+- name: Retrieve new problems assigned to abel.tuter or bertie.luby
+  servicenow.itsm.problem_info:
+    query:
+      - state: = new
+        assigned_to: = abel.tuter
+      - state: = new
+        assigned_to: = bertie.luby
 """
 
 RETURN = r"""
@@ -151,13 +166,51 @@ records:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors, utils, table
+from ..module_utils import arguments, client, errors, query, utils, table
 from ..module_utils.problem import PAYLOAD_FIELDS_MAPPING
 
 
+def remap_params(query, table_client):
+    query_load = []
+
+    for item in query:
+        q = dict()
+        for k, v in item.items():
+            if k == "assigned_to":
+                user = table.find_user(table_client, v[1])
+                q["assigned_to"] = (v[0], user["sys_id"])
+
+            elif k == "duplicate_of":
+                problem = table_client.get_record(
+                    "problem", query=dict(number=v[1]), must_exist=True
+                )
+                q["duplicate_of"] = (v[0], problem["sys_id"])
+
+            else:
+                q[k] = v
+
+        query_load.append(q)
+
+    return query_load
+
+
+def sysparms_query(module, table_client, mapper):
+    parsed, err = query.parse_query(module.params["query"])
+    if err:
+        raise errors.ServiceNowError(err)
+
+    remap_query = remap_params(parsed, table_client)
+
+    return query.serialize_query(query.map_query_values(remap_query, mapper))
+
+
 def run(module, table_client):
-    query = utils.filter_dict(module.params, "sys_id", "number")
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+
+    if module.params["query"]:
+        query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
+    else:
+        query = utils.filter_dict(module.params, "sys_id", "number")
 
     return [
         mapper.to_ansible(record)
@@ -169,8 +222,9 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            arguments.get_spec("instance", "sys_id", "number"),
+            arguments.get_spec("instance", "sys_id", "number", "query"),
         ),
+        mutually_exclusive=[("sys_id", "query"), ("number", "query")],
     )
 
     try:

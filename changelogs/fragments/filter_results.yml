@@ -3,3 +3,4 @@ minor_changes:
 - Added query parameter to change request info module
 - Added query parameter to configuration item info module
 - Added query parameter to incident info module
+- Added query parameter to problem info module
