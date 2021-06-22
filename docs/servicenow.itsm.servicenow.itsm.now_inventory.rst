@@ -529,7 +529,7 @@ Examples
         includes:
           - Linux Red Hat
           
- # `ansible-inventory -i inventory.now.yaml --graph` output:
+    # `ansible-inventory -i inventory.now.yaml --graph` output:
     # @all:
     #  |--@Installed:
     #  |  |--DatabaseServer1
