@@ -517,8 +517,8 @@ Examples
     #  |  |--INSIGHT-NY-03
     #  |--@ungrouped:
     
-    #Extended filtering on group hosts can be done, however not all options are added using real names, an example are grouping by install_status and OS. 
-    #A filter would look the following way: `install_status=1^os=Linux Red Hat`
+    # Extended filtering on group hosts can be done, however not all options are added using real names, an example are grouping by install_status and OS. 
+    # A filter would look the following way in sysparm_query: `install_status=1^os=Linux Red Hat`
     # 1 = Installed
     plugin: servicenow.itsm.now
     group_by:
