@@ -516,7 +516,29 @@ Examples
     #  |  |--FileServerFloor2
     #  |  |--INSIGHT-NY-03
     #  |--@ungrouped:
-
+    
+    #Extended filtering on group hosts can be done, however not all options are added using real names, an example are grouping by install_status and OS. 
+    #A filter would look the following way: `install_status=1^os=Linux Red Hat`
+    # 1 = Installed
+    plugin: servicenow.itsm.now
+    group_by:
+      install_status:
+        includes:
+          - 1 
+      os:
+        includes:
+          - Linux Red Hat
+          
+ # `ansible-inventory -i inventory.now.yaml --graph` output:
+    # @all:
+    #  |--@Installed:
+    #  |  |--DatabaseServer1
+    #  |  |--DatabaseServer2
+    #  |--@Linux_Red_Hat:
+    #  |  |--DatabaseServer1
+    #  |  |--DatabaseServer2
+    #  |--@ungrouped:
+  
 
     # Group hosts into named groups, according to the specified criteria.
     # Below example creates a single group containing hosts that match
