@@ -18,6 +18,28 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+class TestRemapCaller:
+    def test_remap_params(self, table_client):
+        query = [
+            {
+                "hold_reason": ("=", "Some reason"),
+                "assigned_to": ("=", "some.user"),
+            }
+        ]
+        table_client.get_record.return_value = {
+            "sys_id": "681ccaf9c0a8016400b98a06818d57c7"
+        }
+
+        result = configuration_item_info.remap_assignment(query, table_client)
+
+        assert result == [
+            {
+                "hold_reason": ("=", "Some reason"),
+                "assigned_to": ("=", "681ccaf9c0a8016400b98a06818d57c7"),
+            }
+        ]
+
+
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
         params = dict(
@@ -51,6 +73,7 @@ class TestRun:
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci",
+                query=None,
             )
         )
         table_client.list_records.return_value = [dict(p=1), dict(q=2), dict(r=3)]

@@ -26,6 +26,7 @@ extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id.info
   - servicenow.itsm.number.info
+  - servicenow.itsm.query
 seealso:
   - module: servicenow.itsm.incident
 """
@@ -44,6 +45,20 @@ EXAMPLES = r"""
   servicenow.itsm.incident_info:
     number: INC0000039
   register: result
+
+- name: Retrieve all incidents that contain SAP in its short description
+  servicenow.itsm.incident_info:
+    query:
+      - short_description: LIKE SAP
+  register: result
+
+- name: Retrieve new incidents reported by abel.tuter or bertie.luby
+  servicenow.itsm.incident_info:
+    query:
+      - state: = new
+        caller: = abel.tuter
+      - state: = new
+        caller: = bertie.luby
 """
 
 RETURN = r"""
@@ -146,13 +161,43 @@ records:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors, table, utils
+from ..module_utils import arguments, client, errors, query, table, utils
 from ..module_utils.incident import PAYLOAD_FIELDS_MAPPING
 
 
+def remap_caller(query, table_client):
+    query_load = []
+
+    for item in query:
+        q = dict()
+        for k, v in item.items():
+            if k == "caller":
+                user = table.find_user(table_client, v[1])
+                q["caller_id"] = (v[0], user["sys_id"])
+            else:
+                q[k] = v
+        query_load.append(q)
+
+    return query_load
+
+
+def sysparms_query(module, table_client, mapper):
+    parsed, err = query.parse_query(module.params["query"])
+    if err:
+        raise errors.ServiceNowError(err)
+
+    remap_query = remap_caller(parsed, table_client)
+
+    return query.serialize_query(query.map_query_values(remap_query, mapper))
+
+
 def run(module, table_client):
-    query = utils.filter_dict(module.params, "sys_id", "number")
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+
+    if module.params["query"]:
+        query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
+    else:
+        query = utils.filter_dict(module.params, "sys_id", "number")
 
     return [
         mapper.to_ansible(record)
@@ -164,8 +209,9 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            arguments.get_spec("instance", "sys_id", "number"),
+            arguments.get_spec("instance", "sys_id", "number", "query"),
         ),
+        mutually_exclusive=[("sys_id", "query"), ("number", "query")],
     )
 
     try:

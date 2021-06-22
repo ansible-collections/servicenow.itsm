@@ -18,6 +18,23 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+class TestRemapCaller:
+    def test_remap_caller(self, table_client):
+        query = [{"caller": ("=", "some.user"), "state": ("=", "new")}]
+        table_client.get_record.return_value = {
+            "sys_id": "681ccaf9c0a8016400b98a06818d57c7"
+        }
+
+        result = incident_info.remap_caller(query, table_client)
+
+        assert result == [
+            {
+                "caller_id": ("=", "681ccaf9c0a8016400b98a06818d57c7"),
+                "state": ("=", "new"),
+            }
+        ]
+
+
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
         params = dict(
@@ -51,6 +68,7 @@ class TestRun:
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 sys_id=None,
                 number="INC001",
+                query=None,
             )
         )
         table_client.list_records.return_value = [dict(p=1), dict(q=2), dict(r=3)]

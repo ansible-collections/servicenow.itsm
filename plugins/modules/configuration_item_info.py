@@ -28,6 +28,7 @@ version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id.info
+  - servicenow.itsm.query
 
 seealso:
   - module: servicenow.itsm.configuration_item
@@ -54,6 +55,20 @@ EXAMPLES = r"""
   servicenow.itsm.configuration_item_info:
     sys_id: 01a9ec0d3790200044e0bfc8bcbe5dc3
   register: result
+
+- name: Retrieve all hardare configuration items
+  servicenow.itsm.configuration_item_info:
+    query:
+      - category: = Hardware
+  register: result
+
+- name: Retrieve configuration items in hardware category assigned to abel.tuter or bertie.luby
+  servicenow.itsm.configuration_item_info:
+    query:
+      - category: = hardware
+        assigned_to: = abel.tuter
+      - category: = hardware
+        assigned_to: = bertie.luby
 """
 
 RETURN = r"""
@@ -149,14 +164,45 @@ record:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors, table, utils
+from ..module_utils import arguments, client, errors, query, table, utils
 from ..module_utils.configuration_item import PAYLOAD_FIELDS_MAPPING
+
+
+def remap_assignment(query, table_client):
+    query_load = []
+
+    for item in query:
+        q = dict()
+        for k, v in item.items():
+            if k == "assigned_to":
+                user = table.find_user(table_client, v[1])
+                q["assigned_to"] = (v[0], user["sys_id"])
+            else:
+                q[k] = v
+        query_load.append(q)
+
+    return query_load
+
+
+def sysparms_query(module, table_client, mapper):
+    parsed, err = query.parse_query(module.params["query"])
+    if err:
+        raise errors.ServiceNowError(err)
+
+    remap_query = remap_assignment(parsed, table_client)
+
+    return query.serialize_query(query.map_query_values(remap_query, mapper))
 
 
 def run(module, table_client):
     query = utils.filter_dict(module.params, "sys_id")
     cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+
+    if module.params["query"]:
+        query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
+    else:
+        query = utils.filter_dict(module.params, "sys_id")
 
     return [
         mapper.to_ansible(record)
@@ -168,11 +214,12 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            arguments.get_spec("instance", "sys_id"),
+            arguments.get_spec("instance", "sys_id", "query"),
             sys_class_name=dict(
                 type="str",
             ),
         ),
+        mutually_exclusive=[("sys_id", "query")],
     )
 
     try:

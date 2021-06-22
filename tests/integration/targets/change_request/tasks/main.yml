@@ -251,6 +251,19 @@
     - ansible.builtin.assert: *update-change_request-state-result-closed
 
 
+    - name: Get change_request info by sysparm query - state and close_notes
+      servicenow.itsm.change_request_info:
+        query:
+         - state: = closed
+           close_notes: = Done testing
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].state == "closed"
+          - result.records[0].close_notes == "Done testing"
+
+
     - name: Make sure change_request state was updated and is in closed state
       servicenow.itsm.change_request_info:
         number: "{{ test_result.record.number }}"
@@ -258,6 +271,24 @@
 
     - ansible.builtin.assert:
         that:
+          - result.records[0].number == test_result.record.number
+          - result.records[0].state == "closed"
+          - result.records[0].close_code == "successful"
+          - result.records[0].close_notes == "Done testing"
+
+
+    - name: Get specific change request info by sysparm query
+      servicenow.itsm.change_request_info:
+        query:
+         - number: = {{ test_result.record.number }}
+           state: = closed
+           close_code: = successful
+           close_notes: = Done testing
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 1
           - result.records[0].number == test_result.record.number
           - result.records[0].state == "closed"
           - result.records[0].close_code == "successful"
@@ -309,3 +340,41 @@
     - ansible.builtin.assert:
         that:
           - result is not changed
+
+
+    - name: Test bad parameter combinator (number + query)
+      servicenow.itsm.change_request_info:
+        number: "{{ test_result.record.number }}"
+        query:
+         - short_description: LIKE Oracle
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'parameters are mutually exclusive: number|query' in result.msg"
+
+
+    - name: Test invalid operator detection
+      servicenow.itsm.change_request_info:
+        query:
+         - short_description: LIKEE Oracle
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Invalid condition' in result.msg"
+
+
+    - name: Get change_request info by sysparm query - short_description
+      servicenow.itsm.change_request_info:
+        query:
+         - short_description: LIKE Oracle
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - "'Oracle' in result.records[0].short_description"

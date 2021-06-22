@@ -18,6 +18,39 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+class TestRemapCaller:
+    def test_remap_params(self, table_client):
+        query = [
+            {"type": ("=", "normal")},
+            {"hold_reason": ("=", "Some reason")},
+            {"requested_by": ("=", "some.user")},
+            {"assignment_group": ("=", "Network")},
+            {"template": ("=", "Some template")},
+            {"impact": ("=", "low")},
+        ]
+        table_client.get_record.side_effect = [
+            {"sys_id": "681ccaf9c0a8016400b98a06818d57c7"},
+            {"sys_id": "d625dccec0a8016700a222a0f7900d06"},
+            {"sys_id": "deb8544047810200e90d87e8dee490af"},
+        ]
+
+        result = change_request_info.remap_params(query, table_client)
+
+        assert result == [
+            {"chg_model": ("=", "normal")},
+            {"on_hold_reason": ("=", "Some reason")},
+            {"requested_by": ("=", "681ccaf9c0a8016400b98a06818d57c7")},
+            {"assignment_group": ("=", "d625dccec0a8016700a222a0f7900d06")},
+            {
+                "std_change_producer_version": (
+                    "=",
+                    "deb8544047810200e90d87e8dee490af",
+                )
+            },
+            {"impact": ("=", "low")},
+        ]
+
+
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
         params = dict(
@@ -51,6 +84,7 @@ class TestRun:
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 sys_id=None,
                 number="n",
+                query=None,
             )
         )
         table_client.list_records.return_value = [dict(p=1), dict(q=2), dict(r=3)]

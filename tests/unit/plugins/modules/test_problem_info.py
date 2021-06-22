@@ -18,6 +18,27 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+class TestRemapCaller:
+    def test_remap_params(self, table_client):
+        query = [
+            {"assigned_to": ("=", "some.user")},
+            {"duplicate_of": ("=", "PRB0000010")},
+            {"impact": ("=", "low")},
+        ]
+        table_client.get_record.side_effect = [
+            {"sys_id": "681ccaf9c0a8016400b98a06818d57c7"},
+            {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
+        ]
+
+        result = problem_info.remap_params(query, table_client)
+
+        assert result == [
+            {"assigned_to": ("=", "681ccaf9c0a8016400b98a06818d57c7")},
+            {"duplicate_of": ("=", "6816f79cc0a8016401c5a33be04be441")},
+            {"impact": ("=", "low")},
+        ]
+
+
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
         params = dict(
@@ -51,6 +72,7 @@ class TestRun:
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 sys_id=None,
                 number="n",
+                query=None,
             )
         )
         table_client.list_records.return_value = [dict(p=1), dict(q=2), dict(r=3)]
