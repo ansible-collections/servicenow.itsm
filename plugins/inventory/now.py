@@ -14,6 +14,7 @@ from ansible.plugins.inventory import BaseInventoryPlugin, to_safe_group_name
 
 from ..module_utils.client import Client
 from ..module_utils.table import TableClient
+from ..module_utils.errors import ServiceNowError
 
 
 DOCUMENTATION = r"""
@@ -453,7 +454,10 @@ class InventoryModule(BaseInventoryPlugin):
 
         self.validate_grouping_conditions(named_groups, group_by)
 
-        client = Client(**self._get_instance())
+        try:
+            client = Client(**self._get_instance())
+        except ServiceNowError as e:
+            raise AnsibleParserError(e)
         table_client = TableClient(client)
 
         table = self.get_option("table")

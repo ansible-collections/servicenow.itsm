@@ -43,7 +43,7 @@ class TestRemapCaller:
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
         params = dict(
-            instance=dict(host="my.host.name", username="user", password="pass"),
+            instance=dict(host="https://my.host.name", username="user", password="pass"),
         )
         success, result = run_main(configuration_item_info, params)
 
@@ -51,7 +51,7 @@ class TestMain:
 
     def test_all_params(self, run_main):
         params = dict(
-            instance=dict(host="my.host.name", username="user", password="pass"),
+            instance=dict(host="https://my.host.name", username="user", password="pass"),
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
             sys_class_name="cmdb_ci",
         )
@@ -70,7 +70,7 @@ class TestRun:
     def test_run(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name", username="user", password="pass"),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci",
                 query=None,

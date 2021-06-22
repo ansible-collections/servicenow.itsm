@@ -43,6 +43,10 @@ class Client:
         self, host, username=None, password=None, grant_type=None,
         refresh_token=None, client_id=None, client_secret=None, timeout=None
     ):
+        if not (host or "").startswith(('https://', 'http://')):
+            raise ServiceNowError("Invalid instance host value: '{0}'. "
+                                  "Value must start with 'https://' or 'http://'".format(host))
+
         self.host = host
         self.username = username
         self.password = password
