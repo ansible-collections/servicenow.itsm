@@ -1,0 +1,3 @@
+---
+bugfixes:
+- now - check instance host value before making REST call from the Client (https://github.com/ansible-collections/servicenow.itsm/pull/79).
