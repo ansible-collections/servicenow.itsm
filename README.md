@@ -19,6 +19,11 @@ This collection requires Python 2.7 or greater.
 ## Included content
 
 <!--start collection content-->
+### Inventory plugins
+Name | Description
+--- | ---
+[servicenow.itsm.servicenow.itsm.now](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.servicenow.itsm.now_inventory.rst)|Inventory source for ServiceNow table records.
+
 ### Modules
 Name | Description
 --- | ---
@@ -30,11 +35,6 @@ Name | Description
 [servicenow.itsm.incident_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.incident_info_module.rst)|List ServiceNow incidents
 [servicenow.itsm.problem](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.problem_module.rst)|Manage ServiceNow problems
 [servicenow.itsm.problem_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.problem_info_module.rst)|List ServiceNow problems
-
-### Inventory plugins
-Name | Description
---- | ---
-[servicenow.itsm.servicenow.itsm.now](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.servicenow.itsm.now_inventory.rst)|Inventory source for ServiceNow table records.
 
 <!--end collection content-->
 

@@ -217,6 +217,23 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>query</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Provides a set of operators for use with filters, condition builders, and encoded queries.</div>
+                        <div>The data type of a field determines what operators are available for it. Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>sys_id</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -261,6 +278,20 @@ Examples
       servicenow.itsm.incident_info:
         number: INC0000039
       register: result
+
+    - name: Retrieve all incidents that contain SAP in its short description
+      servicenow.itsm.incident_info:
+        query:
+          - short_description: LIKE SAP
+      register: result
+
+    - name: Retrieve new incidents reported by abel.tuter or bertie.luby
+      servicenow.itsm.incident_info:
+        query:
+          - state: = new
+            caller: = abel.tuter
+          - state: = new
+            caller: = bertie.luby
 
 
 

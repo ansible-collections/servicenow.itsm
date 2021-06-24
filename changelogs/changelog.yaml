@@ -1,9 +1,6 @@
 ancestor: null
 releases:
   1.0.0:
-    changes:
-      release_summary:
-      - Initial release for ServiceNow ITSM collection v1.0.0.
     fragments:
     - initial.release.yml
     modules:
@@ -35,5 +32,23 @@ releases:
       inventory:
       - description: Inventory source for ServiceNow table records.
         name: now
-        namespace: ''
+        namespace: null
     release_date: '2021-04-07'
+  1.1.0:
+    changes:
+      bugfixes:
+      - now - check instance host value before making REST call from the Client (https://github.com/ansible-collections/servicenow.itsm/pull/79).
+      minor_changes:
+      - Added new query module utility to filter results in info modules (https://github.com/ansible-collections/servicenow.itsm/issues/66).
+      - Added query parameter to change request info module
+      - Added query parameter to configuration item info module
+      - Added query parameter to incident info module
+      - Added query parameter to problem info module
+      - Added support for ``refresh_token`` in login mechanism (https://github.com/ansible-collections/servicenow.itsm/issues/63).
+      release_summary: v1.1.0 release for ServiceNow ITSM collection.
+    fragments:
+    - filter_results.yml
+    - inventory_host.yml
+    - refresh_token.yml
+    - release_1_1_0.yml
+    release_date: '2021-06-23'
