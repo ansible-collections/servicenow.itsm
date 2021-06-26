@@ -20,11 +20,30 @@ def _query(original=None):
 
 
 class TableClient:
-    def __init__(self, client):
+    def __init__(self, client, batch_size=1000):
+        # 1000 records is default batch size for ServiceNow REST API, so we also use it
+        # as a default.
         self.client = client
+        self.batch_size = batch_size
 
     def list_records(self, table, query=None):
-        return self.client.get(_path(table), query=_query(query)).json["result"]
+        base_query = _query(query)
+        base_query["sysparm_limit"] = self.batch_size
+
+        offset = 0
+        total = 1  # Dummy value that ensures loop executes at least once
+        result = []
+
+        while offset < total:
+            response = self.client.get(
+                _path(table), query=dict(base_query, sysparm_offset=offset)
+            )
+
+            result.extend(response.json["result"])
+            total = int(response.headers["X-Total-Count"])
+            offset += self.batch_size
+
+        return result
 
     def get_record(self, table, query, must_exist=False):
         records = self.list_records(table, query)
