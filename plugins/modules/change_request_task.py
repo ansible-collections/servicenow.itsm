@@ -13,6 +13,9 @@ module: change_request_task
 
 author:
   - Matej Pevec (@mysteriouswolf)
+  - Manca Bizjak (@mancabizjak)
+  - Miha Dolinar (@mdolin)
+  - Tadej Borovsak (@tadeboro)
 
 short_description: Manage ServiceNow change request tasks
 

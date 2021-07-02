@@ -14,6 +14,9 @@ module: change_request_task_info
 
 author:
   - Matej Pevec (@mysteriouswolf)
+  - Manca Bizjak (@mancabizjak)
+  - Miha Dolinar (@mdolin)
+  - Tadej Borovsak (@tadeboro)
   
 short_description: List ServiceNow change request tasks
 description:
