@@ -33,7 +33,7 @@ seealso:
   - module: servicenow.itsm.change_request_task_info
 
 options:
-  cmdb_ci:
+  configuration_item:
     description:
       - The configuration item (CI) or service that the change task applies to.
     type: str
@@ -70,7 +70,7 @@ options:
         is not in the C(pending), C(canceled), or C(closed).
       - Provide an On hold reason if a change task is placed on hold.
     type: bool
-  on_hold_reason:
+  hold_reason:
     description:
       - Reason why change task is on hold.
       - Required if change task's I(on_hold) value will be C(true).
