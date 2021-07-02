@@ -21,18 +21,27 @@ pytestmark = pytest.mark.skipif(
 
 class TestTableListRecords:
     def test_empty_response(self, client):
-        client.get.return_value = Response(200, '{"result": []}')
+        client.get.return_value = Response(
+            200, '{"result": []}', {"X-Total-Count": "0"}
+        )
         t = table.TableClient(client)
 
         records = t.list_records("my_table")
 
         assert [] == records
-        client.get.assert_called_with(
-            "table/my_table", query=dict(sysparm_exclude_reference_link="true")
+        client.get.assert_called_once_with(
+            "table/my_table",
+            query=dict(
+                sysparm_exclude_reference_link="true",
+                sysparm_limit=1000,
+                sysparm_offset=0,
+            ),
         )
 
     def test_non_empty_response(self, client):
-        client.get.return_value = Response(200, '{"result": [{"a": 3, "b": "sys_id"}]}')
+        client.get.return_value = Response(
+            200, '{"result": [{"a": 3, "b": "sys_id"}]}', {"X-Total-Count": "1"}
+        )
         t = table.TableClient(client)
 
         records = t.list_records("my_table")
@@ -40,19 +49,57 @@ class TestTableListRecords:
         assert [dict(a=3, b="sys_id")] == records
 
     def test_query_passing(self, client):
-        client.get.return_value = Response(200, '{"result": []}')
+        client.get.return_value = Response(
+            200, '{"result": []}', {"X-Total-Count": "0"}
+        )
         t = table.TableClient(client)
 
         t.list_records("my_table", dict(a="b"))
 
-        client.get.assert_called_with(
-            "table/my_table", query=dict(sysparm_exclude_reference_link="true", a="b")
+        client.get.assert_called_once_with(
+            "table/my_table",
+            query=dict(
+                sysparm_exclude_reference_link="true",
+                a="b",
+                sysparm_limit=1000,
+                sysparm_offset=0,
+            ),
+        )
+
+    def test_pagination(self, client):
+        client.get.side_effect = (
+            Response(
+                200, '{"result": [{"a": 3, "b": "sys_id"}]}', {"X-Total-Count": "2"}
+            ),
+            Response(
+                200, '{"result": [{"a": 2, "b": "sys_ie"}]}', {"X-Total-Count": "2"}
+            ),
+        )
+        t = table.TableClient(client, batch_size=1)
+
+        records = t.list_records("my_table")
+
+        assert [dict(a=3, b="sys_id"), dict(a=2, b="sys_ie")] == records
+        assert 2 == len(client.get.mock_calls)
+        client.get.assert_any_call(
+            "table/my_table",
+            query=dict(
+                sysparm_exclude_reference_link="true", sysparm_limit=1, sysparm_offset=0
+            ),
+        )
+        client.get.assert_any_call(
+            "table/my_table",
+            query=dict(
+                sysparm_exclude_reference_link="true", sysparm_limit=1, sysparm_offset=1
+            ),
         )
 
 
 class TestTableGetRecord:
     def test_single_match(self, client):
-        client.get.return_value = Response(200, '{"result": [{"a": 3, "b": "sys_id"}]}')
+        client.get.return_value = Response(
+            200, '{"result": [{"a": 3, "b": "sys_id"}]}', {"X-Total-Count": "1"}
+        )
         t = table.TableClient(client)
 
         record = t.get_record("my_table", dict(our="query"))
@@ -60,24 +107,35 @@ class TestTableGetRecord:
         assert dict(a=3, b="sys_id") == record
         client.get.assert_called_with(
             "table/my_table",
-            query=dict(sysparm_exclude_reference_link="true", our="query"),
+            query=dict(
+                sysparm_exclude_reference_link="true",
+                our="query",
+                sysparm_limit=1000,
+                sysparm_offset=0,
+            ),
         )
 
     def test_multiple_matches(self, client):
-        client.get.return_value = Response(200, '{"result": [{"a": 3}, {"b": 4}]}')
+        client.get.return_value = Response(
+            200, '{"result": [{"a": 3}, {"b": 4}]}', {"X-Total-Count": "1"}
+        )
         t = table.TableClient(client)
 
         with pytest.raises(errors.ServiceNowError, match="2"):
             t.get_record("my_table", dict(our="query"))
 
     def test_zero_matches(self, client):
-        client.get.return_value = Response(200, '{"result": []}')
+        client.get.return_value = Response(
+            200, '{"result": []}', {"X-Total-Count": "0"}
+        )
         t = table.TableClient(client)
 
         assert t.get_record("my_table", dict(our="query")) is None
 
     def test_zero_matches_fail(self, client):
-        client.get.return_value = Response(200, '{"result": []}')
+        client.get.return_value = Response(
+            200, '{"result": []}', {"X-Total-Count": "0"}
+        )
         t = table.TableClient(client)
 
         with pytest.raises(errors.ServiceNowError, match="No"):
