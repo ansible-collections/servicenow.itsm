@@ -108,6 +108,13 @@ options:
       - The change task must have this parameter set prior to
         transitioning to the C(closed) state.
     type: str
+  other:
+    description:
+      - Optional remaining parameters.
+      - For more information on optional parameters, refer to the ServiceNow
+        change task documentation at
+        U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/task/create-a-change-task.html).
+    type: dict
 """
 
 EXAMPLES = """
@@ -130,6 +137,8 @@ EXAMPLES = """
     hold_reason: "Waiting for a report from the hardware team"
     planned_start_date: 2021-07-15 08:00:00
     planned_end_date: 2021-07-21 16:00:00
+    other:
+      approval: approved
   
 - name: Change state of the change task
   servicenow.itsm.change_request_task:
