@@ -113,8 +113,8 @@ OPERATORS_NUMERIC = set(
     (
         "=",
         "!=",
-        "EMPTY",
-        "NOTEMPTY",
+        "ISEMPTY",  # EMPTY changed to ISEMPTY based on example query in the upstream docs
+        "ISNOTEMPTY",  # NOTEMPTY changed to ISNOTEMPTY based on example query in the upstream docs
         "<",
         ">",
         "<=",
@@ -142,6 +142,18 @@ OPERATORS_BOOLEAN = set(
 )
 OPERATORS_EMAIL = set(("VALCHANGES", "CHANGESFROM", "CHANGESTO"))
 
+UNARY_OPERATORS = set(
+    (
+        "ISEMPTY",
+        "ISNOTEMPTY",
+        "ANYTHING",
+        "EMPTYSTRING",
+        "ONToday",
+        "NOTONToday",
+        "VALCHANGES",
+    )
+)
+
 OPERATORS = (
     OPERATORS_STRING
     | OPERATORS_REFERENCE
@@ -157,7 +169,10 @@ OPERATORS = (
 def get_operator_and_value(condition):
     # Return operator and value
     for o in OPERATORS:
-        if condition.startswith(o) and condition[len(o)] == " ":
+        if condition == o:
+            return (o, "")
+
+        elif condition.startswith(o) and condition[len(o)] == " ":
             return (o, condition[len(o) + 1:])
 
     return None, None
@@ -172,14 +187,21 @@ def parse_query(query):
         new_subquery = dict()
         for column, condition in old_subquery.items():
             oper, field = get_operator_and_value(condition)
-            if oper:
-                new_subquery[column] = (oper, field)
-            else:
+
+            if not oper:
                 errors.append(
                     "Invalid condition '{0}' for column '{1}'.".format(
                         condition, column
                     )
                 )
+                continue
+
+            if oper in UNARY_OPERATORS and field:
+                errors.append("Operator {0} does not take any arguments".format(oper))
+                continue
+
+            new_subquery[column] = (oper, field)
+
         if new_subquery:
             parsed_query.append(new_subquery)
 

@@ -24,6 +24,11 @@ class TestGetOperatorAndValue:
 
         assert result == ("=", "new")
 
+    def test_unary_operator(self):
+        result = query.get_operator_and_value("ISEMPTY")
+
+        assert result == ("ISEMPTY", "")
+
     def test_invalid_operator(self):
         result = query.get_operator_and_value("== new")
 
@@ -83,6 +88,15 @@ class TestParseQuery:
         )
 
         assert result == ([], ["Invalid condition '== new' for column 'state'."])
+
+    def test_error_parse_unary_query(self):
+        result = query.parse_query(
+            [
+                {"state": "ISEMPTY new"},
+            ]
+        )
+
+        assert result == ([], ["Operator ISEMPTY does not take any arguments"])
 
 
 class TestSerializeQuery:
