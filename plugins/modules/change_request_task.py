@@ -37,6 +37,16 @@ options:
     description:
       - The configuration item (CI) or service that the change task applies to.
     type: str
+  change_request_id:
+    description:
+      - I(sys_id) of the change request this task belongs to.
+      - Mutually exclusive with I(change_request_number).
+    type: str
+  change_request_number:
+    description:
+      - I(number) of the change request this task belongs to.
+      - Mutually exclusive with I(change_request_id).
+    type: str
   type:
     description:
       - The type of change task.
@@ -46,7 +56,7 @@ options:
   state:
     description:
       - The state of the change request task.
-    choices: [ pending, open, in_progress, closed, canceled ]
+    choices: [ pending, open, in_progress, closed, canceled, absent ]
     type: str
   assigned_to:
     description:
@@ -85,31 +95,72 @@ options:
       - If the task I(type) is C(implementation), the I(planned_start_date) and I(planned_end_date) values 
       must fall within the planned start and end dates specified in the I(change_request).
     type: datetime
-  
+  close_code:
+    description:
+      - Provide information on how the change task was resolved.
+      - The change task must have this parameter set prior to
+        transitioning to the C(closed) state.
+    choices: [ successful, successful_issues, unsuccessful ]
+    type: str
+  close_notes:
+    description:
+      - Resolution notes added by the user who closed the change task.
+      - The change task must have this parameter set prior to
+        transitioning to the C(closed) state.
+    type: str
 """
 
-# TODO Check whether datetime type exists
-# TODO Check for more potentially useful fields
-
 EXAMPLES = """
-- name: Create change request
-  servicenow.itsm.change_request:
+- name: Create a change task
+  servicenow.itsm.change_request_task:
     instance:
       host: https://instance_id.service-now.com
       username: user
       password: pass
 
-    type: standard
-    state: new
-    requested_by: some.user
-    short_description: Install new Cisco
-    description: Please install new Cat. 6500 in Data center 01
-    priority: moderate
-    risk: low
-    impact: low
+    configuration_item: Rogue Squadron Launcher
+    change_request_number: CHG0000001
+    type: planning
+    state: open
+    assigned_to: fred.luddy
+    assignment_group: robot.embedded
+    short_description: Implement collision avoidance
+    description: "Implement collision avoidance based on the newly installed TOF sensor arrays."
+    on_hold: true
+    hold_reason: "Waiting for a report from the hardware team"
+    planned_start_date: 2021-07-15 08:00:00
+    planned_end_date: 2021-07-21 16:00:00
+  
+- name: Change state of the change task
+  servicenow.itsm.change_request_task:
+    instance:
+      host: https://instance_id.service-now.com
+      username: user
+      password: pass
 
-    other:
-      expected_start: 2021-02-12
+    state: in_progress
+    on_hold: false
+    number: CTASK0000001
+
+- name: Close a change task
+  servicenow.itsm.change_request_task:
+    instance:
+      host: https://instance_id.service-now.com
+      username: user
+      password: pass
+
+    state: closed
+    close_code: "successful"
+    close_notes: "Closed"
+    number: CTASK0000001
+
+- name: Delete a change task
+  servicenow.itsm.change_request_task:
+    instance:
+      host: https://instance_id.service-now.com
+      username: user
+      password: pass
+
+    state: absent
+    number: CTASK0000001
 """
-
-# TODO Add actual examples

@@ -45,7 +45,7 @@ EXAMPLES = r"""
 
 - name: Retrieve change request tasks by number
   servicenow.itsm.change_request_task_info:
-    number: TASK0000001
+    number: CTASK0000001
   register: result
 
 - name: Retrieve change request tasks that contain SAP in their short description
@@ -66,7 +66,7 @@ EXAMPLES = r"""
 RETURN = r"""
 records:
   description:
-    - A list of change request records.
+    - A list of change task records.
   returned: success
   type: list
   sample:
