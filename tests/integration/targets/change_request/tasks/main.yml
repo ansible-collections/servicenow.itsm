@@ -378,3 +378,27 @@
     - ansible.builtin.assert:
         that:
           - "'Oracle' in result.records[0].short_description"
+
+
+    - name: Test unary operator with argument detection
+      servicenow.itsm.change_request_info:
+        query:
+         - short_description: ISEMPTY SAP
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Operator ISEMPTY does not take any arguments' in result.msg"
+
+
+    - name: Test sysparm query unary operator - short_description
+      servicenow.itsm.change_request_info:
+        query:
+         - short_description: ISNOTEMPTY
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].short_description != ""
