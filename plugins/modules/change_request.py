@@ -427,7 +427,7 @@ def main():
             ("state", "authorize", ("assignment_group",)),
             ("state", "scheduled", ("assignment_group",)),
             ("state", "assess", ("assignment_group",)),
-            ("state", "on_hold", ("hold_reason",)),
+            ("on_hold", True, ("hold_reason",)),
         ],
     )
 
