@@ -40,6 +40,10 @@
       servicenow.itsm.change_request: *create-change_request
       register: test_result
 
+    - name: Copy test_result into result
+      set_fact:
+        result: "{{ test_result }}"
+
     - ansible.builtin.assert: *create-change_request-result
 
 
