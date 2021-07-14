@@ -90,6 +90,19 @@
           - "'state is scheduled but all of the following are missing: assignment_group' in result.msg"
 
 
+    - name: Attempt to put the change request on hold without specifying the reason
+      servicenow.itsm.change_request:
+        number: "{{ test_result.record.number }}"
+        on_hold: true
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'on_hold is True but all of the following are missing: hold_reason'"
+
+
     - name: Update change_request - check mode
       servicenow.itsm.change_request: &update-change_request
         requested_by: admin

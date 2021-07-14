@@ -1,0 +1,2 @@
+bugfixes:
+  - change_request - validates on_hold with its respective field instead of a non-existent "on_hold" state when requiring a hold_reason (https://github.com/ansible-collections/servicenow.itsm/pull/86).
