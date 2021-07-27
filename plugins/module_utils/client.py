@@ -140,6 +140,15 @@ class Client:
             headers["Content-type"] = "application/json"
         return self._request(method, url, data=data, headers=headers)
 
+    def request_binary(self, method, path, bin_data, payload, mime_type):
+        escaped_path = quote(path.rstrip("/"))
+        url = "{0}/api/now/{1}?{2}".format(self.host, escaped_path, urlencode(payload))
+        headers = dict(
+            {"Accept": "application/json", "Content-type": mime_type},
+            **self.auth_header
+        )
+        return self._request(method, url, data=bin_data, headers=headers)
+
     def get(self, path, query=None):
         resp = self.request("GET", path, query=query)
         if resp.status in (200, 404):
