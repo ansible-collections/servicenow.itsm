@@ -14,7 +14,8 @@ options:
   attachments:
     description:
       - ServiceNow attachments.
-    type: dict
+    type: list
+    elements: dict
     suboptions:
       path:
         description:
@@ -25,12 +26,10 @@ options:
         description:
           - Name of the file to be uploaded without the file extension.
           - If not specified, the name is extracted from the path.
-        required: false
         type: str
       type:
         description:
           - MIME type of the file to be attached.
           - If not specified, type is guessed from the file.
-        required: false
         type: str
 """
