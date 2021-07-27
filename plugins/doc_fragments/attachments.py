@@ -18,19 +18,19 @@ options:
     suboptions:
       path:
         description:
-          - The ServiceNow host name.
-          - If not set, the value of the C(SN_HOST) environment
-            variable will be used.
+          - Path to the file to be uploaded.
         required: true
         type: str
       name:
         description:
           - Name of the file to be uploaded without the file extension.
+          - If not specified, the name is extracted from the path.
         required: false
         type: str
       type:
         description:
           - MIME type of the file to be attached.
+          - If not specified, type is guessed from the file.
         required: false
         type: str
 """
