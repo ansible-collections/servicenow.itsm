@@ -98,7 +98,7 @@ class AttachmentClient:
     def upload_records(self, payload, file_dict_list, check_mode):
         return [
             self.upload_record(payload, file_dict, check_mode)
-            for file_dict in file_dict_list
+            for file_dict in (file_dict_list or [])
         ]
 
     def delete_record(self, record, check_mode):
