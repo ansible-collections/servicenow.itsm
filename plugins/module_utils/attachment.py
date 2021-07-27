@@ -93,7 +93,13 @@ class AttachmentClient:
             payload["encryption_context"] = file_dict["encryption_context"]
 
         data = open(file_dict["path"], "rb")
-        self.create_record(payload, data, check_mode, file_type)
+        return self.create_record(payload, data, check_mode, file_type)
+
+    def upload_records(self, payload, file_dict_list, check_mode):
+        return [
+            self.upload_record(payload, file_dict, check_mode)
+            for file_dict in file_dict_list
+        ]
 
     def delete_record(self, record, check_mode):
         if not check_mode:
