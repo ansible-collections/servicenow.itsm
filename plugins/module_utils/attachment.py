@@ -77,22 +77,24 @@ class AttachmentClient:
         #
         # "file_dict" is a dict with a mandatory key "path" and optional "name", "type" and "encryption_context".
         # These properties can be read directly from the yaml attachment list and can be set by the user.
-        if "name" in file_dict:
+        if "name" in file_dict and file_dict["name"] is not None:
             payload["file_name"] = file_dict["name"]
         else:
             payload["file_name"] = os.path.splitext(
                 os.path.basename(file_dict["path"])
             )[0]
 
-        if "type" in file_dict:
+        if "type" in file_dict and file_dict["type"] is not None:
             file_type = file_dict["type"]
         else:
-            file_type = mimetypes.guess_type(payload.file_name)
+            file_type = mimetypes.guess_type(file_dict["path"])[0]
 
-        if "encryption_context" in file_dict:
+        if "encryption_context" in file_dict and file_dict["encryption_context"] is not None:
             payload["encryption_context"] = file_dict["encryption_context"]
 
-        data = open(file_dict["path"], "rb")
+        file_obj = open(file_dict["path"], "rb")
+        data = file_obj.read()
+        file_obj.close()
         return self.create_record(payload, data, check_mode, file_type)
 
     def upload_records(self, payload, file_dict_list, check_mode):
