@@ -29,7 +29,7 @@ class AttachmentClient:
         self.client = client
         self.batch_size = batch_size
 
-    def list_records(self, query=None, sys_id=None, file=True):
+    def list_records(self, query=None, sys_id=None, file=False):
         base_query = _query(query)
         base_query["sysparm_limit"] = self.batch_size
 
@@ -72,6 +72,13 @@ class AttachmentClient:
             "POST", _path("file"), data, _query(payload), mime_type
         ).json["result"]
 
+    def delete_record(self, record, check_mode, silent=False):
+        if not check_mode:
+            if record is None and silent:
+                return {"changed": False, "msg": "Skipped. Record doesn't exist."}
+            else:
+                self.client.delete(_path(record["sys_id"]))
+
     def upload_record(self, payload, file_dict, check_mode):
         # "payload" is a dict with defined "table_name", "table_sys_id". This is defined by the module directly.
         #
@@ -102,7 +109,10 @@ class AttachmentClient:
                 self.get_record(build_query(payload, file_dict)), check_mode, True
             )
             return dict(
-                {"changed": True, "msg": "Changes detected, hash doesn't match remote."},
+                {
+                    "changed": True,
+                    "msg": "Changes detected, hash doesn't match remote.",
+                },
                 **self.upload_record(payload, file_dict, check_mode)
             )
         else:
@@ -117,12 +127,11 @@ class AttachmentClient:
             for file_dict in (file_dict_list or [])
         ]
 
-    def delete_record(self, record, check_mode, silent=False):
-        if not check_mode:
-            if record is None and silent:
-                return {"changed": False, "msg": "Skipped. Record doesn't exist."}
-            else:
-                self.client.delete(_path(record["sys_id"]))
+    def delete_attached_records(self, payload, check_mode, silent=False):
+        return [
+            self.delete_record(record, check_mode, silent)
+            for record in self.list_records(payload)
+        ]
 
     def is_changed(self, payload, file_dict):
         rec = self.get_record(build_query(payload, file_dict))
