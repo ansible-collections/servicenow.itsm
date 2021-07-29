@@ -195,7 +195,16 @@ EXAMPLES = """
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, table, attachment, errors, utils, validation
+
+from ..module_utils import (
+    arguments,
+    client,
+    table,
+    attachment,
+    errors,
+    utils,
+    validation,
+)
 from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
 
 
@@ -227,7 +236,7 @@ def ensure_absent(module, table_client, attachment_client):
             dict(table_name="change_request", table_sys_id=change["sys_id"]),
             module.check_mode,
         )
-        # table_client.delete_record("change_request", change, module.check_mode)
+        table_client.delete_record("change_request", change, module.check_mode)
         return True, None, dict(before=mapper.to_ansible(change), after=None)
 
     return False, None, dict(before=None, after=None)
@@ -274,13 +283,12 @@ def ensure_present(module, table_client, attachment_client):
         table_client.get_record("change_request", query, must_exist=True)
     )
 
+    attachment_payload = dict(table_name="change_request", table_sys_id=old["sys_id"])
     if utils.is_superset(old, payload) and not any(
-        attachment_client.are_changed(
-            dict(table_name="change_request", table_sys_id=old["sys_id"]),
-            module.params["attachments"],
-        )
+        attachment_client.are_changed(attachment_payload, module.params["attachments"])
     ):
         # No change in parameters we are interested in - nothing to do.
+        old["attachments"] = attachment_client.list_records(attachment_payload)
         return False, old, dict(before=old, after=old)
 
     validate_params(module.params, old)
