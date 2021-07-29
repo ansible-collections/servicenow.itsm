@@ -1,0 +1,77 @@
+- environment:
+    SN_HOST: "{{ sn_host }}"
+    SN_USERNAME: "{{ sn_username }}"
+    SN_PASSWORD: "{{ sn_password }}"
+
+  block:
+    - name: Create test change_request with attachment - check mode
+      servicenow.itsm.change_request: &create-attachment
+        requested_by: admin
+        state: new
+        type: standard
+        template: Clear BGP sessions on a Cisco router - 1
+        priority: low
+        risk: low
+        impact: low
+        attachments:
+          - path: targets/attachment/res/sample_file.txt
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &create-attachment-result
+        that:
+          - result is changed
+          - result.record.state == "new"
+          - result.record.type == "standard"
+          - result.record.priority == "low"
+          - result.record.risk == "low"
+          - result.record.impact == "low"
+
+
+    - name: Create test change_request with attachment
+      servicenow.itsm.change_request: *create-attachment
+      register: test_result
+
+    - name: Copy test_result into result
+      set_fact:
+        result: "{{ test_result }}"
+
+    - ansible.builtin.assert: *create-attachment-result
+
+
+    - name: Update change_request with same attachment, same name, add new
+      servicenow.itsm.change_request:
+        number: "{{ result.record.number }}"
+        attachments:
+          - path: targets/attachment/res/sample_file.txt
+            name: sample_file
+          - path: targets/attachment/res/sample_file.txt
+            name: sample_file2
+      register: result
+
+    - name: Update change_request with different attachment, same name
+      servicenow.itsm.change_request:
+        number: "{{ result.record.number }}"
+        attachments:
+          - path: targets/attachment/res/sample_file_changed.txt
+            name: sample_file
+      register: result
+
+
+    - name: Delete attachment - check mode
+      servicenow.itsm.change_request: &delete-attachment
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        state: absent
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &delete-attachment-result
+        that:
+          - result is changed
+
+
+    - name: Delete attachment
+      servicenow.itsm.change_request: *delete-attachment
+
+    - ansible.builtin.assert: *delete-attachment-result
