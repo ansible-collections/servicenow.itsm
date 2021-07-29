@@ -19,7 +19,7 @@ pytestmark = pytest.mark.skipif(
 
 
 class TestEnsureAbsent:
-    def test_delete_change_request(self, create_module, table_client):
+    def test_delete_change_request(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -28,18 +28,18 @@ class TestEnsureAbsent:
                 sys_id=None,
             )
         )
-        table_client.get_record.return_value = dict(state="3", number="CHG0000001")
+        table_client.get_record.return_value = dict(state="3", number="CHG0000001", sys_id="1234")
 
-        result = change_request.ensure_absent(module, table_client)
+        result = change_request.ensure_absent(module, table_client, attachment_client)
 
         table_client.delete_record.assert_called_once()
         assert result == (
             True,
             None,
-            dict(before=dict(state="closed", number="CHG0000001"), after=None),
+            dict(before=dict(state="closed", number="CHG0000001", sys_id="1234"), after=None),
         )
 
-    def test_delete_change_request_not_present(self, create_module, table_client):
+    def test_delete_change_request_not_present(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -50,7 +50,7 @@ class TestEnsureAbsent:
         )
         table_client.get_record.return_value = None
 
-        result = change_request.ensure_absent(module, table_client)
+        result = change_request.ensure_absent(module, table_client, attachment_client)
 
         table_client.delete_record.assert_not_called()
         assert result == (False, None, dict(before=None, after=None))
@@ -72,7 +72,7 @@ class TestValidateParams:
 
 
 class TestEnsurePresent:
-    def test_ensure_present_create_new(self, create_module, table_client):
+    def test_ensure_present_create_new(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -94,6 +94,7 @@ class TestEnsurePresent:
                 hold_reason=None,
                 template=None,
                 other=None,
+                attachments=None,
             ),
         )
         table_client.create_record.return_value = dict(
@@ -102,9 +103,14 @@ class TestEnsurePresent:
             short_description="Test change request",
             risk="4",
             impact="3",
+            sys_id="1234",
         )
+        attachment_client.upload_records.return_value = []
 
-        result = change_request.ensure_present(module, table_client)
+        result = change_request.ensure_present(module, table_client, attachment_client)
+
+        print("rezultatič")
+        print(result)
 
         table_client.create_record.assert_called_once()
         assert result == (
@@ -115,6 +121,8 @@ class TestEnsurePresent:
                 short_description="Test change request",
                 risk="low",
                 impact="low",
+                sys_id="1234",
+                attachments=[],
             ),
             dict(
                 before=None,
@@ -124,11 +132,13 @@ class TestEnsurePresent:
                     short_description="Test change request",
                     risk="low",
                     impact="low",
+                    sys_id="1234",
+                    attachments=[],
                 ),
             ),
         )
 
-    def test_ensure_present_nothing_to_do(self, create_module, table_client):
+    def test_ensure_present_nothing_to_do(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -150,6 +160,7 @@ class TestEnsurePresent:
                 hold_reason=None,
                 template=None,
                 other=None,
+                attachments=None,
             ),
         )
         table_client.get_record.return_value = dict(
@@ -158,9 +169,16 @@ class TestEnsurePresent:
             number="CHG0000001",
             chg_model="normal",
             short_description="Test change request",
+            sys_id="1234",
         )
+        attachment_client.update_records.return_value = []
+        attachment_client.are_changed.return_value = []
+        attachment_client.list_records.return_value = []
 
-        result = change_request.ensure_present(module, table_client)
+        result = change_request.ensure_present(module, table_client, attachment_client)
+
+        print("poiscime")
+        print(result)
 
         table_client.get_record.assert_called_once()
         assert result == (
@@ -171,6 +189,8 @@ class TestEnsurePresent:
                 number="CHG0000001",
                 chg_model="normal",
                 short_description="Test change request",
+                sys_id="1234",
+                attachments=[],
             ),
             dict(
                 before=dict(
@@ -179,6 +199,8 @@ class TestEnsurePresent:
                     number="CHG0000001",
                     chg_model="normal",
                     short_description="Test change request",
+                    sys_id="1234",
+                    attachments=[],
                 ),
                 after=dict(
                     state="new",
@@ -186,11 +208,13 @@ class TestEnsurePresent:
                     number="CHG0000001",
                     chg_model="normal",
                     short_description="Test change request",
+                    sys_id="1234",
+                    attachments=[],
                 ),
             ),
         )
 
-    def test_ensure_present_update(self, create_module, table_client):
+    def test_ensure_present_update(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -212,6 +236,7 @@ class TestEnsurePresent:
                 hold_reason=None,
                 template=None,
                 other=None,
+                attachments=None,
             ),
         )
 
@@ -220,15 +245,20 @@ class TestEnsurePresent:
             number="CHG0000001",
             chg_model="normal",
             short_description="Test change request",
+            sys_id="1234",
+            attachments=[],
         )
         table_client.update_record.return_value = dict(
             state="-4",
             number="CHG0000001",
             chg_model="normal",
             short_description="Test change request",
+            sys_id="1234",
+            attachments=[],
         )
+        attachment_client.update_records.return_value = []
 
-        result = change_request.ensure_present(module, table_client)
+        result = change_request.ensure_present(module, table_client, attachment_client)
 
         table_client.update_record.assert_called_once()
         assert result == (
@@ -238,6 +268,8 @@ class TestEnsurePresent:
                 number="CHG0000001",
                 chg_model="normal",
                 short_description="Test change request",
+                sys_id="1234",
+                attachments=[],
             ),
             dict(
                 before=dict(
@@ -245,12 +277,16 @@ class TestEnsurePresent:
                     number="CHG0000001",
                     chg_model="normal",
                     short_description="Test change request",
+                    sys_id="1234",
+                    attachments=[],
                 ),
                 after=dict(
                     state="assess",
                     number="CHG0000001",
                     chg_model="normal",
                     short_description="Test change request",
+                    sys_id="1234",
+                    attachments=[],
                 ),
             ),
         )
@@ -279,6 +315,7 @@ class TestBuildPayload:
                 on_hold=None,
                 hold_reason="Some reason",
                 other=None,
+                attachments=None,
             ),
         )
         table_client.get_record.side_effect = [
@@ -303,7 +340,7 @@ class TestBuildPayload:
         assert result["assignment_group"] == "d625dccec0a8016700a222a0f7900d06"
         assert "assigned_to" not in result
 
-    def test_build_payload_with_other_option(self, create_module, table_client):
+    def test_build_payload_with_other_option(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -324,6 +361,7 @@ class TestBuildPayload:
                 close_notes=None,
                 on_hold=None,
                 hold_reason="Some reason",
+                attachments=None,
                 other=dict(assigned_to="some_user"),
             ),
         )
