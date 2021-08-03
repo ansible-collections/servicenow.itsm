@@ -29,6 +29,31 @@ def inventory_plugin():
     return plugin
 
 
+class TestContructSysparmQuery:
+    def test_valid_query(self):
+        assert "column=value" == now.construct_sysparm_query([dict(column="= value")])
+
+    def test_invalid_query(self):
+        with pytest.raises(AnsibleParserError, match="INVALID"):
+            now.construct_sysparm_query([dict(column="INVALID operator")])
+
+
+class TestFetchRecords:
+    def test_no_query(self, table_client):
+        now.fetch_records(table_client, "table_name", None)
+
+        table_client.list_records.assert_called_once_with(
+            "table_name", dict(sysparm_display_value=True)
+        )
+
+    def test_query(self, table_client):
+        now.fetch_records(table_client, "table_name", [dict(my="!= value")])
+
+        table_client.list_records.assert_called_once_with(
+            "table_name", dict(sysparm_display_value=True, sysparm_query="my!=value")
+        )
+
+
 class TestSysparmQueryFromConditions:
     def test_empty_conditions(self):
         assert now.sysparm_query_from_conditions({}) is None
@@ -119,7 +144,6 @@ class TestInventoryModuleAddHost:
     def test_valid(self, inventory_plugin):
         host = inventory_plugin.add_host(
             dict(host_source="1.2.3.4", name_source="dummy_host", sys_id="123"),
-            "table_name",
             "host_source",
             "name_source",
         )
@@ -131,7 +155,6 @@ class TestInventoryModuleAddHost:
     def test_valid_empty_host(self, inventory_plugin):
         host = inventory_plugin.add_host(
             dict(host_source="", name_source="dummy_host", sys_id="123"),
-            "table_name",
             "host_source",
             "name_source",
         )
@@ -143,7 +166,6 @@ class TestInventoryModuleAddHost:
     def test_valid_empty_name(self, inventory_plugin):
         host = inventory_plugin.add_host(
             dict(host_source="1.2.3.4", name_source="", sys_id="123"),
-            "table_name",
             "host_source",
             "name_source",
         )
@@ -155,7 +177,6 @@ class TestInventoryModuleAddHost:
         with pytest.raises(AnsibleParserError, match="invalid_host"):
             inventory_plugin.add_host(
                 dict(host_source="1.2.3.4", name_source="dummy_host", sys_id="123"),
-                "table_name",
                 "invalid_host",
                 "name_source",
             )
@@ -164,7 +185,6 @@ class TestInventoryModuleAddHost:
         with pytest.raises(AnsibleParserError, match="invalid_name"):
             inventory_plugin.add_host(
                 dict(host_source="1.2.3.4", name_source="dummy_host", sys_id="123"),
-                "table_name",
                 "host_source",
                 "invalid_name",
             )

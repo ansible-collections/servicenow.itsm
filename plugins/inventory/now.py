@@ -10,11 +10,17 @@ __metaclass__ = type
 import os
 
 from ansible.errors import AnsibleParserError
-from ansible.plugins.inventory import BaseInventoryPlugin, to_safe_group_name
+from ansible.inventory.group import to_safe_group_name as orig_safe
+from ansible.plugins.inventory import (
+    BaseInventoryPlugin,
+    Constructable,
+    to_safe_group_name,
+)
 
 from ..module_utils.client import Client
-from ..module_utils.table import TableClient
 from ..module_utils.errors import ServiceNowError
+from ..module_utils.query import parse_query, serialize_query
+from ..module_utils.table import TableClient
 
 
 DOCUMENTATION = r"""
@@ -30,6 +36,9 @@ description:
   - Requires a configuration file ending in C(now.yml) or C(now.yaml).
   - The plugin sets host variables denoted by I(columns).
 version_added: 1.0.0
+extends_documentation_fragment:
+  - ansible.builtin.constructed
+  - servicenow.itsm.query
 options:
   plugin:
     description:
@@ -188,6 +197,66 @@ plugin: servicenow.itsm.now
 #  |  |--VMWARE-SD-04
 
 
+# Group hosts automatically, according to values of the manufacturer column.
+plugin: servicenow.itsm.now
+keyed_groups:
+  - key: manufacturer
+    separator: ""
+
+# `ansible-inventory -i inventory.now.yaml --graph` output:
+# @all:
+#  |--@Dell Inc.:
+#  |  |--DatabaseServer1
+#  |  |--DatabaseServer2
+#  |  |--INSIGHT-NY-03
+#  |--@Lenovo:
+#  |  |--FileServerFloor1
+#  |  |--FileServerFloor2
+#  |--@ungrouped:
+
+# Group hosts automatically, according to values of the os column. Filtering ensures
+# that we only see selected operating systems.
+plugin: servicenow.itsm.now
+query:
+  - os: = Linux Red Hat
+  - os: = Windows XP
+keyed_groups:
+  - key: os
+    prefix: os
+
+# `ansible-inventory -i inventory.now.yaml --graph` output:
+#  |--@os_Linux_Red_Hat:
+#  |  |--DatabaseServer1
+#  |  |--DatabaseServer2
+#  |--@os_Windows_XP:
+#  |  |--FileServerFloor1
+#  |  |--FileServerFloor2
+#  |  |--INSIGHT-NY-03
+#  |--@ungrouped:
+
+# Group hosts into named according to the specified criteria. Here, we created a group
+# of non-Windows production servers.
+plugin: servicenow.itsm.now
+groups:
+  non_windows_prod_servers: >-
+    classification == "Production" and
+    os not in ("Windows XP", "Windows 2000", "Windows 2000 Server")
+
+# `ansible-inventory -i inventory.now.yaml --graph` output:
+# @all:
+#  |--@non_windows_prod_servers:
+#  |  |--DatabaseServer2
+#  |  |--PS LinuxApp01
+#  |  |--PS LinuxApp02
+#  |  |--lnux100
+#  |  |--lnux101
+
+# Add composed variables to hosts. In the following example, we created a cost variable
+# that contains an amount and a currency.
+plugin: servicenow.itsm.now
+compose:
+    cost: cost ~ " " ~ cost_cc
+
 # Group hosts automatically, according to values of manufacturer and os columns.
 # Include only records with the specified operating systems.
 # Groups will most likely overlap.
@@ -297,9 +366,34 @@ def sysparm_query_from_conditions(conditions):
     return None
 
 
-class InventoryModule(BaseInventoryPlugin):
+def construct_sysparm_query(query):
+    parsed, err = parse_query(query)
+    if err:
+        raise AnsibleParserError(err)
+    return serialize_query(parsed)
+
+
+def fetch_records(table_client, table, query):
+    snow_query = dict(
+        # Make references and choice fields human-readable
+        sysparm_display_value=True,
+    )
+    if query:
+        snow_query["sysparm_query"] = construct_sysparm_query(query)
+
+    return table_client.list_records(table, snow_query)
+
+
+class InventoryModule(BaseInventoryPlugin, Constructable):
 
     NAME = "servicenow.itsm.now"
+
+    # Constructable methods use the _sanityze_group_name class method to filter out
+    # invalid characters from group names. By default, characters that are not valid in
+    # python variables, are always replaced by underscores. We are overriding this with
+    # a function that respects the TRANSFORM_INVALID_GROUP_CHARS configuration option
+    # and allows users to control the behavior.
+    _sanitize_group_name = staticmethod(orig_safe)
 
     def verify_file(self, path):
         if super(InventoryModule, self).verify_file(path):
@@ -337,14 +431,14 @@ class InventoryModule(BaseInventoryPlugin):
 
         return query
 
-    def add_host(self, record, table, host_source, name_source):
+    def add_host(self, record, host_source, name_source):
         if host_source not in record:
-            msg = "Ansible host source column '{0}' is not present in table {1}."
-            raise AnsibleParserError(msg.format(host_source, table))
+            msg = "Ansible host source column '{0}' is not present in the record."
+            raise AnsibleParserError(msg.format(host_source))
 
         if name_source not in record:
-            msg = "Inventory hostname source column '{0}' is not present in table {1}."
-            raise AnsibleParserError(msg.format(name_source, table))
+            msg = "Inventory hostname source column '{0}' is not present in the record."
+            raise AnsibleParserError(msg.format(name_source))
 
         inventory_hostname = record[name_source]
         if inventory_hostname:
@@ -381,7 +475,7 @@ class InventoryModule(BaseInventoryPlugin):
         )
 
         for record in records:
-            host = self.add_host(record, table, host_source, name_source)
+            host = self.add_host(record, host_source, name_source)
             if host:
                 for category in group_by.keys():
                     group_name = to_safe_group_name(record[category])
@@ -410,9 +504,28 @@ class InventoryModule(BaseInventoryPlugin):
                 query=self.query(group_conditions, host_source, name_source, columns),
             )
             for r in records:
-                host = self.add_host(r, table, host_source, name_source)
+                host = self.add_host(r, host_source, name_source)
                 self.inventory.add_host(host, group=group_name)
                 self.set_hostvars(host, r, columns)
+
+    def fill_constructed(
+        self,
+        records,
+        columns,
+        host_source,
+        name_source,
+        compose,
+        groups,
+        keyed_groups,
+        strict,
+    ):
+        for record in records:
+            host = self.add_host(record, host_source, name_source)
+            if host:
+                self.set_hostvars(host, record, columns)
+                self._set_composite_vars(compose, record, host, strict)
+                self._add_host_to_composed_groups(groups, record, host, strict)
+                self._add_host_to_keyed_groups(keyed_groups, record, host, strict)
 
     def _merge_instance_config(self, instance_config, instance_env):
         # Pulls the values from the environment, and if necessary, overrides
@@ -471,7 +584,25 @@ class InventoryModule(BaseInventoryPlugin):
             self.fill_desired_groups(
                 table_client, table, host_source, name_source, columns, named_groups
             )
-        else:
+            return
+
+        if group_by:
             self.fill_auto_groups(
                 table_client, table, host_source, name_source, columns, group_by
             )
+            return
+
+        # TODO: Insert caching here once we remove deprecated functionality
+        records = fetch_records(
+            table_client, self.get_option("table"), self.get_option("query")
+        )
+        self.fill_constructed(
+            records,
+            self.get_option("columns"),
+            self.get_option("ansible_host_source"),
+            self.get_option("inventory_hostname_source"),
+            self.get_option("compose"),
+            self.get_option("groups"),
+            self.get_option("keyed_groups"),
+            self.get_option("strict"),
+        )
