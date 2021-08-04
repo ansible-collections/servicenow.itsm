@@ -39,6 +39,8 @@ version_added: 1.0.0
 extends_documentation_fragment:
   - ansible.builtin.constructed
   - servicenow.itsm.query
+notes:
+  - Query feature and constructed groups is added in version 2.0.0.
 options:
   plugin:
     description:
@@ -388,7 +390,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
     NAME = "servicenow.itsm.now"
 
-    # Constructable methods use the _sanityze_group_name class method to filter out
+    # Constructable methods use the _sanitize_group_name class method to filter out
     # invalid characters from group names. By default, characters that are not valid in
     # python variables, are always replaced by underscores. We are overriding this with
     # a function that respects the TRANSFORM_INVALID_GROUP_CHARS configuration option
