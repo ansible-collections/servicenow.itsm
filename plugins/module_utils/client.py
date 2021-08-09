@@ -140,12 +140,19 @@ class Client:
             headers["Content-type"] = "application/json"
         return self._request(method, url, data=data, headers=headers)
 
-    def request_binary(self, method, path, bin_data, payload, mime_type):
+    def request_binary(
+        self,
+        method,
+        path,
+        mime_type,
+        accept_type="application/json",
+        bin_data="",
+        payload="",
+    ):
         escaped_path = quote(path.rstrip("/"))
         url = "{0}/api/now/{1}?{2}".format(self.host, escaped_path, urlencode(payload))
         headers = dict(
-            {"Accept": "application/json", "Content-type": mime_type},
-            **self.auth_header
+            {"Accept": accept_type, "Content-type": mime_type}, **self.auth_header
         )
         return self._request(method, url, data=bin_data, headers=headers)
 

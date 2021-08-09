@@ -71,7 +71,7 @@ def fail_json_mock(self, **result):
     raise AnsibleRunEnd(False, result)
 
 
-def run_mock(module, client):
+def run_mock(module, client, another_client=None):
     return False, {}, dict(before={}, after={})
 
 

@@ -33,21 +33,26 @@ class AttachmentClient:
         base_query = _query(query)
         base_query["sysparm_limit"] = self.batch_size
 
-        offset = 0
-        total = 1  # Dummy value that ensures loop executes at least once
-        result = []
-
-        while offset < total:
-            response = self.client.get(
-                _path(sys_id, "file" if file else None),
-                query=dict(base_query, sysparm_offset=offset),
+        if file:
+            response = self.client.request_binary(
+                "GET", _path(sys_id, "file"), "*/*", accept_type="*/*"
             )
+            return response.data
+        else:
+            offset = 0
+            total = 1  # Dummy value that ensures loop executes at least once
+            result = []
 
-            result.extend(response.json["result"])
-            total = int(response.headers["X-Total-Count"])
-            offset += self.batch_size
+            while offset < total:
+                response = self.client.get(
+                    _path(sys_id), query=dict(base_query, sysparm_offset=offset)
+                )
 
-        return result
+                result.extend(response.json["result"])
+                total = int(response.headers["X-Total-Count"])
+                offset += self.batch_size
+
+            return result
 
     def get_record(self, query, sys_id=None, file=False, must_exist=False):
         records = self.list_records(query, sys_id, file)
@@ -64,12 +69,32 @@ class AttachmentClient:
 
         return records[0] if records else None
 
+    def list_full_records(self, query=None, sys_id=None, file_dict_list=None):
+        print("{}, {}, {}".format(query, sys_id, file_dict_list))
+        if file_dict_list is not None:
+            query.update(
+                {
+                    "file_name": "^OR".join(
+                        [get_file_name(file_dict) for file_dict in file_dict_list]
+                    )
+                }
+            )
+        if file_dict_list is None or file_dict_list:
+            meta_list = self.list_records(query, sys_id)
+            print(meta_list)
+            for meta in meta_list:
+                meta.update(
+                    {"data": self.list_records(sys_id=meta["sys_id"], file=True)}
+                )
+            return meta_list
+        return None
+
     def create_record(self, payload, data, check_mode, mime_type=None):
         if check_mode:
             # Approximate the result using the payload and data.
             return payload
         return self.client.request_binary(
-            "POST", _path("file"), data, _query(payload), mime_type
+            "POST", _path("file"), mime_type, bin_data=data, payload=_query(payload)
         ).json["result"]
 
     def delete_record(self, record, check_mode, silent=False):
@@ -88,8 +113,8 @@ class AttachmentClient:
         file_type = get_file_type(file_dict)
 
         if (
-            "encryption_context" in file_dict
-            and file_dict["encryption_context"] is not None
+                "encryption_context" in file_dict
+                and file_dict["encryption_context"] is not None
         ):
             payload["encryption_context"] = file_dict["encryption_context"]
 

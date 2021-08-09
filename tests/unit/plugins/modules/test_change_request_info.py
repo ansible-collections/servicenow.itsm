@@ -12,6 +12,7 @@ import sys
 import pytest
 
 from ansible_collections.servicenow.itsm.plugins.modules import change_request_info
+from unittest.mock import call
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -54,7 +55,9 @@ class TestRemapCaller:
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
         params = dict(
-            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
         )
         success, result = run_main(change_request_info, params)
 
@@ -62,7 +65,9 @@ class TestMain:
 
     def test_all_params(self, run_main):
         params = dict(
-            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
             sys_id="id",
             number="n",
         )
@@ -78,20 +83,53 @@ class TestMain:
 
 
 class TestRun:
-    def test_run(self, create_module, table_client):
+    SAMPLE_ATTACHMENT = {
+        "content_type": "text/plain",
+        "data": "content",
+        "file_name": "sample_file",
+        "table_name": "change_request",
+        "table_sys_id": 1234,
+        "sys_id": 4444,
+    }
+
+    def test_run(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
-                instance=dict(host="https://my.host.name", username="user", password="pass"),
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
                 sys_id=None,
                 number="n",
                 query=None,
             )
         )
-        table_client.list_records.return_value = [dict(p=1), dict(q=2), dict(r=3)]
+        table_client.list_records.return_value = [
+            dict(p=1, sys_id=1234),
+            dict(q=2, sys_id=4321),
+            dict(r=3, sys_id=1212),
+        ]
+        attachment_client.list_full_records.side_effect = [
+            [self.SAMPLE_ATTACHMENT, ], [], []
+        ]
 
-        change_requests = change_request_info.run(module, table_client)
+        change_requests = change_request_info.run(
+            module, table_client, attachment_client
+        )
 
         table_client.list_records.assert_called_once_with(
             "change_request", dict(number="n")
         )
-        assert change_requests == [dict(p=1), dict(q=2), dict(r=3)]
+
+        attachment_client.list_full_records.assert_has_calls([
+            call({'table_name': 'change_request', 'table_sys_id': 1234}),
+            call({'table_name': 'change_request', 'table_sys_id': 4321}),
+            call({'table_name': 'change_request', 'table_sys_id': 1212}),
+        ])
+
+        print(change_requests)
+
+        assert change_requests == [
+            dict(p=1, sys_id=1234, attachments=[self.SAMPLE_ATTACHMENT, ]),
+            dict(q=2, sys_id=4321, attachments=[]),
+            dict(r=3, sys_id=1212, attachments=[]),
+        ]

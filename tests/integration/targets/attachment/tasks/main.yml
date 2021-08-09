@@ -58,6 +58,17 @@
       register: result
 
 
+    - name: Read the change request with attachments
+      servicenow.itsm.change_request_info:
+        number: "{{ result.record.number }}"
+      register: result
+
+    - name: Print return information from the previous task
+      ansible.builtin.debug:
+        var: result
+    # TODO REPLACE DEBUG WITH CHECKS
+
+
     - name: Delete attachment - check mode
       servicenow.itsm.change_request: &delete-attachment
         requested_by: admin
