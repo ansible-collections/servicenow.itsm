@@ -146,11 +146,11 @@ class Client:
         path,
         mime_type,
         accept_type="application/json",
-        bin_data="",
-        payload="",
+        bin_data=None,
+        payload=None,
     ):
         escaped_path = quote(path.rstrip("/"))
-        url = "{0}/api/now/{1}?{2}".format(self.host, escaped_path, urlencode(payload))
+        url = "{0}/api/now/{1}{2}{3}".format(self.host, escaped_path, "?" if payload else "", urlencode(payload or []))
         headers = dict(
             {"Accept": accept_type, "Content-type": mime_type}, **self.auth_header
         )
