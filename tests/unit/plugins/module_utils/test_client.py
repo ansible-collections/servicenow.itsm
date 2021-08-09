@@ -253,7 +253,7 @@ class TestClientRequestBinary:
     def test_request_without_data_success(self, mocker):
         c = client.Client("https://instance.com", "user", "pass")
         mock_response = client.Response(
-            200, 'data', headers=[("Content-type", "image/apng")]
+            200, "data", headers=[("Content-type", "image/apng")]
         )
         request_mock = mocker.patch.object(c, "_request")
         request_mock.return_value = mock_response
@@ -264,24 +264,28 @@ class TestClientRequestBinary:
             "GET",
             "https://instance.com/api/now/some/path",
             data=None,
-            headers=dict({'Accept': 'image/apng', 'Content-type': 'text/plain'}, **c.auth_header),
+            headers=dict(
+                {"Accept": "image/apng", "Content-type": "text/plain"}, **c.auth_header
+            ),
         )
         assert resp == mock_response
 
     def test_request_with_data_success(self, mocker):
         c = client.Client("https://instance.com", "user", "pass")
         mock_response = client.Response(
-            200, 'some_data', headers=[("Content-type", "text/plain")]
+            200, "some_data", headers=[("Content-type", "text/plain")]
         )
         request_mock = mocker.patch.object(c, "_request")
         request_mock.return_value = mock_response
 
-        resp = c.request_binary("PUT", "some/path", "text/plain", "text/plain", bin_data="some_data")
+        resp = c.request_binary(
+            "PUT", "some/path", "text/plain", "text/plain", bin_data="some_data"
+        )
 
         request_mock.assert_called_once_with(
             "PUT",
             "https://instance.com/api/now/some/path",
-            data='some_data',
+            data="some_data",
             headers={
                 "Accept": "text/plain",
                 "Content-type": "text/plain",
