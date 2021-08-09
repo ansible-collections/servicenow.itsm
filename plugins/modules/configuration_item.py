@@ -27,6 +27,7 @@ version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id
+  - servicenow.itsm.attachments
 
 seealso:
   - module: servicenow.itsm.configuration_item_info
@@ -234,7 +235,7 @@ record:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors, table, utils
+from ..module_utils import arguments, attachment, client, errors, table, utils
 from ..module_utils.configuration_item import PAYLOAD_FIELDS_MAPPING
 
 DIRECT_PAYLOAD_FIELDS = (
@@ -252,7 +253,7 @@ DIRECT_PAYLOAD_FIELDS = (
 )
 
 
-def ensure_absent(module, table_client):
+def ensure_absent(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id")
     configuration_item = table_client.get_record("cmdb_ci", query)
@@ -261,7 +262,13 @@ def ensure_absent(module, table_client):
         cmdb_table = configuration_item["sys_class_name"]
         if cmdb_table != "cmdb_ci":
             configuration_item = table_client.get_record(cmdb_table, query)
+
+        attachment_client.delete_attached_records(
+            dict(table_name=cmdb_table, table_sys_id=configuration_item["sys_id"]),
+            module.check_mode,
+        )
         table_client.delete_record(cmdb_table, configuration_item, module.check_mode)
+
         return (
             True,
             None,
@@ -282,7 +289,7 @@ def build_payload(module, table_client):
     return payload
 
 
-def ensure_present(module, table_client):
+def ensure_present(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id")
     payload = build_payload(module, table_client)
@@ -298,6 +305,13 @@ def ensure_present(module, table_client):
                 cmdb_table, mapper.to_snow(payload), module.check_mode
             )
         )
+        if "sys_id" in new:
+            new["attachments"] = attachment_client.upload_records(
+                dict(table_name=cmdb_table, table_sys_id=new["sys_id"]),
+                module.params["attachments"],
+                module.check_mode,
+            )
+
         return True, new, dict(before=None, after=new)
 
     old = mapper.to_ansible(table_client.get_record("cmdb_ci", query, must_exist=True))
@@ -307,9 +321,13 @@ def ensure_present(module, table_client):
         old = mapper.to_ansible(
             table_client.get_record(cmdb_table, query, must_exist=True)
         )
+    attachment_payload = dict(table_name=cmdb_table, table_sys_id=old["sys_id"])
 
-    if utils.is_superset(old, payload):
+    if utils.is_superset(old, payload) and not any(
+        attachment_client.are_changed(attachment_payload, module.params["attachments"])
+    ):
         # No change in parameters we are interested in - nothing to do.
+        old["attachments"] = attachment_client.list_records(attachment_payload)
         return False, old, dict(before=old, after=old)
 
     new = mapper.to_ansible(
@@ -317,18 +335,24 @@ def ensure_present(module, table_client):
             cmdb_table, mapper.to_snow(old), mapper.to_snow(payload), module.check_mode
         )
     )
+    new["attachments"] = attachment_client.update_records(
+        dict(table_name="change_request", table_sys_id=old["sys_id"]),
+        module.params["attachments"],
+        module.check_mode,
+    )
+
     return True, new, dict(before=old, after=new)
 
 
-def run(module, table_client):
+def run(module, table_client, attachment_client):
     if module.params["state"] == "absent":
-        return ensure_absent(module, table_client)
-    return ensure_present(module, table_client)
+        return ensure_absent(module, table_client, attachment_client)
+    return ensure_present(module, table_client, attachment_client)
 
 
 def main():
     module_args = dict(
-        arguments.get_spec("instance", "sys_id"),
+        arguments.get_spec("instance", "sys_id", "attachments"),
         state=dict(
             type="str",
             choices=[
@@ -398,7 +422,8 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
-        changed, record, diff = run(module, table_client)
+        attachment_client = attachment.AttachmentClient(snow_client)
+        changed, record, diff = run(module, table_client, attachment_client)
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
