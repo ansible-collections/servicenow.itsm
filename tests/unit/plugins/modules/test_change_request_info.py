@@ -12,7 +12,6 @@ import sys
 import pytest
 
 from ansible_collections.servicenow.itsm.plugins.modules import change_request_info
-from unittest.mock import call
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -120,14 +119,10 @@ class TestRun:
             "change_request", dict(number="n")
         )
 
-        attachment_client.list_full_records.assert_has_calls([
-            call({'table_name': 'change_request', 'table_sys_id': 1234}),
-            call({'table_name': 'change_request', 'table_sys_id': 4321}),
-            call({'table_name': 'change_request', 'table_sys_id': 1212}),
-        ])
-
-        print(change_requests)
-
+        attachment_client.list_full_records.assert_any_call({'table_name': 'change_request', 'table_sys_id': 1234})
+        attachment_client.list_full_records.assert_any_call({'table_name': 'change_request', 'table_sys_id': 4321})
+        attachment_client.list_full_records.assert_any_call({'table_name': 'change_request', 'table_sys_id': 1212})
+        assert attachment_client.list_full_records.call_count == 3
         assert change_requests == [
             dict(p=1, sys_id=1234, attachments=[self.SAMPLE_ATTACHMENT, ]),
             dict(q=2, sys_id=4321, attachments=[]),

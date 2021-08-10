@@ -102,51 +102,30 @@ class AttachmentClient:
             "POST", _path("file"), mime_type, bin_data=data, payload=_query(payload)
         ).json["result"]
 
-    def upload_record(self, payload, file_dict, check_mode):
+    def upload_record(self, payload, file_dict, check_mode=False):
         # "payload" is a dict with defined "table_name", "table_sys_id". This is defined by the module directly.
         #
         # "file_dict" is a dict with a mandatory key "path" and optional "name", "type" and "encryption_context".
         # These properties can be read directly from the yaml attachment list and can be set by the user.
-        payload["file_name"] = get_file_name(file_dict)
+        new_payload = payload.copy()
+        new_payload["file_name"] = get_file_name(file_dict)
         file_type = get_file_type(file_dict)
 
         if (
             "encryption_context" in file_dict
             and file_dict["encryption_context"] is not None
         ):
-            payload["encryption_context"] = file_dict["encryption_context"]
+            new_payload["encryption_context"] = file_dict["encryption_context"]
 
-        with open(file_dict["path"], "rb") as file_obj:
-            data = file_obj.read()
-        return self.create_record(payload, data, check_mode, file_type)
+        data = None
+        if not check_mode:
+            with open(file_dict["path"], "rb") as file_obj:
+                data = file_obj.read()
+        return self.create_record(new_payload, data, check_mode, file_type)
 
     def upload_records(self, payload, file_dict_list, check_mode):
         return [
             self.upload_record(payload, file_dict, check_mode)
-            for file_dict in (file_dict_list or [])
-        ]
-
-    def update_record(self, payload, file_dict, check_mode):
-        if self.is_changed(payload, file_dict):
-            self.delete_record(
-                self.get_record(build_query(payload, file_dict)), check_mode, True
-            )
-            return dict(
-                {
-                    "changed": True,
-                    "msg": "Changes detected, hash doesn't match remote.",
-                },
-                **self.upload_record(payload, file_dict, check_mode)
-            )
-        else:
-            return dict(
-                {"changed": False, "msg": "Skipped. Hash matches remote."},
-                **self.get_record(build_query(payload, file_dict))
-            )
-
-    def update_records(self, payload, file_dict_list, check_mode):
-        return [
-            self.update_record(payload, file_dict, check_mode)
             for file_dict in (file_dict_list or [])
         ]
 
@@ -155,7 +134,11 @@ class AttachmentClient:
             if record is None and silent:
                 return {"changed": False, "msg": "Skipped. Record doesn't exist."}
             else:
-                self.client.delete(_path(record["sys_id"]))
+                try:
+                    self.client.delete(_path(record["sys_id"]))
+                    return {"changed": True}
+                except errors.UnexpectedAPIResponse:
+                    return {"changed": False}
 
     def delete_attached_records(self, payload, check_mode, silent=False):
         return [
@@ -176,6 +159,30 @@ class AttachmentClient:
                 for file_dict in (file_dict_list or [])
             ]
         return []
+
+    def update_record(self, payload, file_dict, check_mode=False):
+        if self.is_changed(payload, file_dict):
+            self.delete_record(
+                self.get_record(build_query(payload, file_dict)), check_mode, True
+            )
+            return dict(
+                {
+                    "changed": True,
+                    "msg": "Changes detected, hash doesn't match remote. Remote updated.",
+                },
+                **self.upload_record(payload, file_dict, check_mode)
+            )
+        else:
+            return dict(
+                {"changed": False, "msg": "Skipped. Hash matches remote."},
+                **self.get_record(build_query(payload, file_dict))
+            )
+
+    def update_records(self, payload, file_dict_list, check_mode=False):
+        return [
+            self.update_record(payload, file_dict, check_mode)
+            for file_dict in (file_dict_list or [])
+        ]
 
 
 def get_file_name(file_dict):
