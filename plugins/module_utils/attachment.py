@@ -54,8 +54,8 @@ class AttachmentClient:
 
             return result
 
-    def get_record(self, query, sys_id=None, file=False, must_exist=False):
-        records = self.list_records(query, sys_id, file)
+    def get_record(self, query, sys_id=None, must_exist=False):
+        records = self.list_records(query, sys_id)
 
         if len(records) > 1:
             raise errors.ServiceNowError(
@@ -70,18 +70,23 @@ class AttachmentClient:
         return records[0] if records else None
 
     def list_full_records(self, query=None, sys_id=None, file_dict_list=None):
-        print("{}, {}, {}".format(query, sys_id, file_dict_list))
         if file_dict_list is not None:
-            query.update(
-                {
+            if query is None:
+                query = {
                     "file_name": "^OR".join(
                         [get_file_name(file_dict) for file_dict in file_dict_list]
                     )
                 }
-            )
+            else:
+                query.update(
+                    {
+                        "file_name": "^OR".join(
+                            [get_file_name(file_dict) for file_dict in file_dict_list]
+                        )
+                    }
+                )
         if file_dict_list is None or file_dict_list:
             meta_list = self.list_records(query, sys_id)
-            print(meta_list)
             for meta in meta_list:
                 meta.update(
                     {"data": self.list_records(sys_id=meta["sys_id"], file=True)}
@@ -97,13 +102,6 @@ class AttachmentClient:
             "POST", _path("file"), mime_type, bin_data=data, payload=_query(payload)
         ).json["result"]
 
-    def delete_record(self, record, check_mode, silent=False):
-        if not check_mode:
-            if record is None and silent:
-                return {"changed": False, "msg": "Skipped. Record doesn't exist."}
-            else:
-                self.client.delete(_path(record["sys_id"]))
-
     def upload_record(self, payload, file_dict, check_mode):
         # "payload" is a dict with defined "table_name", "table_sys_id". This is defined by the module directly.
         #
@@ -113,8 +111,8 @@ class AttachmentClient:
         file_type = get_file_type(file_dict)
 
         if (
-                "encryption_context" in file_dict
-                and file_dict["encryption_context"] is not None
+            "encryption_context" in file_dict
+            and file_dict["encryption_context"] is not None
         ):
             payload["encryption_context"] = file_dict["encryption_context"]
 
@@ -151,6 +149,13 @@ class AttachmentClient:
             self.update_record(payload, file_dict, check_mode)
             for file_dict in (file_dict_list or [])
         ]
+
+    def delete_record(self, record, check_mode, silent=False):
+        if not check_mode:
+            if record is None and silent:
+                return {"changed": False, "msg": "Skipped. Record doesn't exist."}
+            else:
+                self.client.delete(_path(record["sys_id"]))
 
     def delete_attached_records(self, payload, check_mode, silent=False):
         return [

@@ -29,7 +29,6 @@ extends_documentation_fragment:
   - servicenow.itsm.sys_id.info
   - servicenow.itsm.number.info
   - servicenow.itsm.query
-  - servicenow.itsm.attachments_info
 seealso:
   - module: servicenow.itsm.change_request
 """
