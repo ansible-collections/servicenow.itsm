@@ -4,6 +4,8 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
+    ###### Change Request Attachment Tests ######
+
     - name: Create test change_request with attachment - check mode
       servicenow.itsm.change_request: &create-attachment
         requested_by: admin
@@ -26,13 +28,16 @@
           - result.record.priority == "low"
           - result.record.risk == "low"
           - result.record.impact == "low"
+          - result.record.attachments != []
+          - result.record.attachments | length != 0
+          - result.record.attachments[0].file_name == "sample_file"
 
 
     - name: Create test change_request with attachment
       servicenow.itsm.change_request: *create-attachment
       register: test_result
 
-    - name: Copy test_result into result
+    - name: Copy test_result into result for assertion
       set_fact:
         result: "{{ test_result }}"
 
@@ -41,7 +46,7 @@
 
     - name: Update change_request with same attachment, same name, add new
       servicenow.itsm.change_request:
-        number: "{{ result.record.number }}"
+        number: "{{ test_result.record.number }}"
         attachments:
           - path: targets/attachment/res/sample_file.txt
             name: sample_file
@@ -49,24 +54,44 @@
             name: sample_file2
       register: result
 
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.attachments[0].file_name == "sample_file"
+          - result.record.attachments[0].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+          - result.record.attachments[1].file_name == "sample_file2"
+          - result.record.attachments[1].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+
+
     - name: Update change_request with different attachment, same name
       servicenow.itsm.change_request:
-        number: "{{ result.record.number }}"
+        number: "{{ test_result.record.number }}"
         attachments:
           - path: targets/attachment/res/sample_file_changed.txt
             name: sample_file
       register: result
 
+    - ansible.builtin.assert:
+        that:
+          - result.record.attachments[0].file_name == "sample_file"
+          - result.record.attachments[0].hash == "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902"
+          - result.record.attachments[1].file_name == "sample_file2"
+          - result.record.attachments[1].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+
 
     - name: Read the change request with attachments
       servicenow.itsm.change_request_info:
-        number: "{{ result.record.number }}"
+        number: "{{ test_result.record.number }}"
       register: result
 
-    - name: Print return information from the previous task
-      ansible.builtin.debug:
-        var: result
-    # TODO REPLACE DEBUG WITH CHECKS
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].attachments != []
+          - result.records[0].attachments | length == 2
+          - result.records[0].attachments[0].file_name == "sample_file"
+          - result.records[0].attachments[0].hash == "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902"
+          - result.records[0].attachments[1].file_name == "sample_file2"
+          - result.records[0].attachments[1].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
 
 
     - name: Delete attachment - check mode

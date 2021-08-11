@@ -23,6 +23,8 @@
         priority: low
         risk: low
         impact: low
+        attachments:
+          - path: targets/change_request/res/sample_file.txt
       check_mode: true
       register: result
 
@@ -34,6 +36,9 @@
           - result.record.priority == "low"
           - result.record.risk == "low"
           - result.record.impact == "low"
+          - result.record.attachments != []
+          - result.record.attachments | length != 0
+          - result.record.attachments[0].file_name == "sample_file"
 
 
     - name: Create test change_request
