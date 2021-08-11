@@ -109,9 +109,6 @@ class TestEnsurePresent:
 
         result = change_request.ensure_present(module, table_client, attachment_client)
 
-        print("rezultatič")
-        print(result)
-
         table_client.create_record.assert_called_once()
         assert result == (
             True,
@@ -176,9 +173,6 @@ class TestEnsurePresent:
         attachment_client.list_records.return_value = []
 
         result = change_request.ensure_present(module, table_client, attachment_client)
-
-        print("poiscime")
-        print(result)
 
         table_client.get_record.assert_called_once()
         assert result == (
@@ -261,7 +255,6 @@ class TestEnsurePresent:
         result = change_request.ensure_present(module, table_client, attachment_client)
 
         table_client.update_record.assert_called_once()
-        print(result)
         assert result == (
             True,
             dict(
