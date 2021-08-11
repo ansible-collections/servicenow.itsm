@@ -61,7 +61,9 @@ class TestMergeDictListsByKey:
         ],
     )
     def test_combinations(self, base, changes, result):
-        assert result == utils.merge_dict_lists_by_key(base, changes, "a")
+        assert sorted(result, key=lambda k: k["a"]) == sorted(
+            utils.merge_dict_lists_by_key(base, changes, "a"), key=lambda k: k["a"]
+        )
 
 
 class TestIsSupertset:
