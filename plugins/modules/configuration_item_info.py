@@ -196,7 +196,6 @@ def sysparms_query(module, table_client, mapper):
 
 
 def run(module, table_client, attachment_client):
-    query = utils.filter_dict(module.params, "sys_id")
     cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
 
