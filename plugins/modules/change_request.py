@@ -271,12 +271,11 @@ def ensure_present(module, table_client, attachment_client):
             )
         )
 
-        if "sys_id" in new:
-            new["attachments"] = attachment_client.upload_records(
-                dict(table_name="change_request", table_sys_id=new["sys_id"]),
-                module.params["attachments"],
-                module.check_mode,
-            )
+        new["attachments"] = attachment_client.upload_records(
+            dict(table_name="change_request", table_sys_id=new.get("sys_id", "N/A")),
+            module.params["attachments"],
+            module.check_mode,
+        )
         return True, new, dict(before=None, after=new)
 
     old = mapper.to_ansible(
