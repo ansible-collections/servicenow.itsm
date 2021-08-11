@@ -31,6 +31,25 @@ class TestFilterDict:
         )
 
 
+class TestMergeDictListsByKey:
+    @pytest.mark.parametrize(
+        "base,changes,result",
+        [
+            ([{"a": "a", "b": "1"}, {"a": "b", "b": "2"}],
+             [{"a": "b", "b": "3"}, {"a": "c", "b": "4"}],
+             [{"a": "a", "b": "1"}, {"a": "b", "b": "3"}, {"a": "c", "b": "4"}]),
+            ([{"a": "a", "b": "1"}, {"a": "b", "b": "2"}],
+             [{"a": "c", "b": "4"}, ],
+             [{"a": "a", "b": "1"}, {"a": "b", "b": "2"}, {"a": "c", "b": "4"}]),
+            ([{"a": "a", "b": "1"}, ],
+             [{"a": "a", "b": "2"}, ],
+             [{"a": "a", "b": "2"}, ]),
+        ],
+    )
+    def test_combinations(self, base, changes, result):
+        assert result == utils.merge_dict_lists_by_key(base, changes, "a")
+
+
 class TestIsSupertset:
     @pytest.mark.parametrize(
         "superset,candidate",

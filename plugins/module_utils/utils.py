@@ -19,6 +19,17 @@ def filter_dict(input, *field_names):
     return output
 
 
+def merge_dict_lists_by_key(base, changes, key_id):
+    """
+    Given two dictionary lists, merges "changes" into "base", overriding entries in base if "key_id" matches.
+    No dict entries should be None and must have the key "key_id".
+    """
+    merged_dict = {}
+    for item in base + changes:
+        merged_dict[item[key_id]] = item
+    return list(merged_dict.values())
+
+
 def is_superset(superset, candidate):
     for k, v in candidate.items():
         if k not in superset or superset[k] != v:
