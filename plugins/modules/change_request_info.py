@@ -237,7 +237,7 @@ def run(module, table_client, attachment_client):
 
     return [
         dict(
-            attachments=attachment_client.list_full_records(
+            attachments=attachment_client.list_records(
                 dict(table_name="change_request", table_sys_id=record["sys_id"]),
             ),
             **mapper.to_ansible(record)
