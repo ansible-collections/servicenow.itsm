@@ -16,6 +16,7 @@ author:
   - Manca Bizjak (@mancabizjak)
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
+  - Matej Pevec (@mysteriouswolf)
 
 short_description: Manage ServiceNow configuration items
 
@@ -305,12 +306,12 @@ def ensure_present(module, table_client, attachment_client):
                 cmdb_table, mapper.to_snow(payload), module.check_mode
             )
         )
-        if "sys_id" in new:
-            new["attachments"] = attachment_client.upload_records(
-                dict(table_name=cmdb_table, table_sys_id=new["sys_id"]),
-                module.params["attachments"],
-                module.check_mode,
-            )
+
+        new["attachments"] = attachment_client.upload_records(
+            dict(table_name=cmdb_table, table_sys_id=new.get("sys_id", "N/A")),
+            module.params["attachments"],
+            module.check_mode,
+        )
 
         return True, new, dict(before=None, after=new)
 
@@ -321,13 +322,14 @@ def ensure_present(module, table_client, attachment_client):
         old = mapper.to_ansible(
             table_client.get_record(cmdb_table, query, must_exist=True)
         )
+
     attachment_payload = dict(table_name=cmdb_table, table_sys_id=old["sys_id"])
+    old["attachments"] = attachment_client.list_records(attachment_payload)
 
     if utils.is_superset(old, payload) and not any(
         attachment_client.are_changed(attachment_payload, module.params["attachments"])
     ):
         # No change in parameters we are interested in - nothing to do.
-        old["attachments"] = attachment_client.list_records(attachment_payload)
         return False, old, dict(before=old, after=old)
 
     new = mapper.to_ansible(
@@ -335,11 +337,12 @@ def ensure_present(module, table_client, attachment_client):
             cmdb_table, mapper.to_snow(old), mapper.to_snow(payload), module.check_mode
         )
     )
-    new["attachments"] = attachment_client.update_records(
+    attachment_client.update_records(
         dict(table_name="change_request", table_sys_id=old["sys_id"]),
         module.params["attachments"],
         module.check_mode,
     )
+    new["attachments"] = attachment_client.list_records(attachment_payload)
 
     return True, new, dict(before=old, after=new)
 
