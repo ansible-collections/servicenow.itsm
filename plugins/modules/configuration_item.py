@@ -337,12 +337,13 @@ def ensure_present(module, table_client, attachment_client):
             cmdb_table, mapper.to_snow(old), mapper.to_snow(payload), module.check_mode
         )
     )
-    attachment_client.update_records(
-        dict(table_name="change_request", table_sys_id=old["sys_id"]),
+    changed = attachment_client.update_records(
+        dict(table_name=cmdb_table, table_sys_id=old["sys_id"]),
         module.params["attachments"],
         module.check_mode,
     )
-    new["attachments"] = attachment_client.list_records(attachment_payload)
+    existing = attachment_client.list_records(attachment_payload)
+    new["attachments"] = utils.merge_dict_lists_by_key(existing, changed, "file_name")
 
     return True, new, dict(before=old, after=new)
 

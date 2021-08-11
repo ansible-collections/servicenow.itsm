@@ -21,7 +21,7 @@ pytestmark = pytest.mark.skipif(
 
 
 class TestEnsureAbsent:
-    def test_delete_configuration_item(self, create_module, table_client):
+    def test_delete_configuration_item(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="https://my.host.name", username="user", password="pass"),
@@ -35,7 +35,7 @@ class TestEnsureAbsent:
             sys_class_name="cmdb_ci", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
         )
 
-        result = configuration_item.ensure_absent(module, table_client)
+        result = configuration_item.ensure_absent(module, table_client, attachment_client)
 
         table_client.delete_record.assert_called_once()
         assert result == (
@@ -49,7 +49,7 @@ class TestEnsureAbsent:
             ),
         )
 
-    def test_delete_configuration_item_none_cmdb_ci(self, create_module, table_client):
+    def test_delete_configuration_item_none_cmdb_ci(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="https://my.host.name", username="user", password="pass"),
@@ -63,7 +63,7 @@ class TestEnsureAbsent:
             sys_class_name="cmdb_ci_computer", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
         )
 
-        result = configuration_item.ensure_absent(module, table_client)
+        result = configuration_item.ensure_absent(module, table_client, attachment_client)
 
         table_client.delete_record.assert_called_once()
         assert result == (
@@ -78,7 +78,7 @@ class TestEnsureAbsent:
             ),
         )
 
-    def test_delete_configuration_item_not_present(self, create_module, table_client):
+    def test_delete_configuration_item_not_present(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="https://my.host.name", username="user", password="pass"),
@@ -90,7 +90,7 @@ class TestEnsureAbsent:
         )
         table_client.get_record.return_value = None
 
-        result = configuration_item.ensure_absent(module, table_client)
+        result = configuration_item.ensure_absent(module, table_client, attachment_client)
 
         table_client.delete_record.assert_not_called()
         assert result == (False, None, dict(before=None, after=None))
@@ -133,7 +133,7 @@ class TestBuildPayload:
         assert result["category"] == "Hardware"
         assert result["environment"] == "production"
 
-    def test_build_payload_with_other_option(self, create_module, table_client):
+    def test_build_payload_with_other_option(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="https://my.host.name", username="user", password="pass"),
@@ -151,6 +151,7 @@ class TestBuildPayload:
                 mac_address=None,
                 category="Hardware",
                 environment="production",
+                attachments=None,
                 other=dict(subcategory="Computer"),
             ),
         )
@@ -169,7 +170,7 @@ class TestBuildPayload:
 
 
 class TestEnsurePresent:
-    def test_ensure_present_create_new(self, create_module, table_client):
+    def test_ensure_present_create_new(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="https://my.host.name", username="user", password="pass"),
@@ -189,15 +190,18 @@ class TestEnsurePresent:
                 environment=None,
                 production=None,
                 other=None,
+                attachments=None,
             ),
         )
         table_client.create_record.return_value = dict(
             name="test.name",
             short_description="Test configuration item",
             sys_class_name="cmdb_ci",
+            sys_id="1234",
         )
+        attachment_client.upload_records.return_value = []
 
-        result = configuration_item.ensure_present(module, table_client)
+        result = configuration_item.ensure_present(module, table_client, attachment_client)
 
         table_client.create_record.assert_called_once()
         assert result == (
@@ -206,6 +210,8 @@ class TestEnsurePresent:
                 name="test.name",
                 short_description="Test configuration item",
                 sys_class_name="cmdb_ci",
+                sys_id="1234",
+                attachments=[],
             ),
             dict(
                 before=None,
@@ -213,11 +219,13 @@ class TestEnsurePresent:
                     name="test.name",
                     short_description="Test configuration item",
                     sys_class_name="cmdb_ci",
+                    sys_id="1234",
+                    attachments=[],
                 ),
             ),
         )
 
-    def test_ensure_present_create_new_error(self, create_module, table_client):
+    def test_ensure_present_create_new_error(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="https://my.host.name", username="user", password="pass"),
@@ -237,15 +245,16 @@ class TestEnsurePresent:
                 environment=None,
                 production=None,
                 other=None,
+                attachments=None,
             ),
         )
 
         with pytest.raises(
             errors.ServiceNowError, match="Missing required parameter: name"
         ):
-            configuration_item.ensure_present(module, table_client)
+            configuration_item.ensure_present(module, table_client, attachment_client)
 
-    def test_ensure_present_nothing_to_do(self, create_module, table_client):
+    def test_ensure_present_nothing_to_do(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="https://my.host.name", username="user", password="pass"),
@@ -264,6 +273,7 @@ class TestEnsurePresent:
                 category=None,
                 environment=None,
                 other=None,
+                attachments=None,
             ),
         )
         table_client.get_record.return_value = dict(
@@ -272,8 +282,11 @@ class TestEnsurePresent:
             short_description="Test configuration item",
             sys_class_name="cmdb_ci_computer",
         )
+        attachment_client.update_records.return_value = []
+        attachment_client.are_changed.return_value = []
+        attachment_client.list_records.return_value = []
 
-        result = configuration_item.ensure_present(module, table_client)
+        result = configuration_item.ensure_present(module, table_client, attachment_client)
 
         table_client.get_record.assert_called()
         assert result == (
@@ -283,6 +296,7 @@ class TestEnsurePresent:
                 name="test.name",
                 short_description="Test configuration item",
                 sys_class_name="cmdb_ci_computer",
+                attachments=[],
             ),
             dict(
                 before=dict(
@@ -290,17 +304,19 @@ class TestEnsurePresent:
                     name="test.name",
                     short_description="Test configuration item",
                     sys_class_name="cmdb_ci_computer",
+                    attachments=[],
                 ),
                 after=dict(
                     sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                     name="test.name",
                     short_description="Test configuration item",
                     sys_class_name="cmdb_ci_computer",
+                    attachments=[],
                 ),
             ),
         )
 
-    def test_ensure_present_update(self, mocker, create_module, table_client):
+    def test_ensure_present_update(self, mocker, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="https://my.host.name", username="user", password="pass"),
@@ -319,6 +335,7 @@ class TestEnsurePresent:
                 category=None,
                 environment=None,
                 other=None,
+                attachments=None,
             ),
         )
         payload_mocker = mocker.patch.object(configuration_item, "build_payload")
@@ -327,21 +344,26 @@ class TestEnsurePresent:
             sys_class_name="cmdb_ci",
             install_status="installed",
             operational_status="ready",
+            attachments=[],
         )
         table_client.get_record.return_value = dict(
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
             sys_class_name="cmdb_ci",
             install_status="",
             operational_status="",
+            attachments=[],
         )
         table_client.update_record.return_value = dict(
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
             sys_class_name="cmdb_ci",
             install_status="1",
             operational_status="5",
+            attachments=[],
         )
+        attachment_client.update_records.return_value = []
+        attachment_client.list_records.return_value = []
 
-        result = configuration_item.ensure_present(module, table_client)
+        result = configuration_item.ensure_present(module, table_client, attachment_client)
 
         table_client.update_record.assert_called_once()
         assert result == (
@@ -351,6 +373,7 @@ class TestEnsurePresent:
                 sys_class_name="cmdb_ci",
                 install_status="installed",
                 operational_status="ready",
+                attachments=[],
             ),
             dict(
                 before=dict(
@@ -358,12 +381,14 @@ class TestEnsurePresent:
                     sys_class_name="cmdb_ci",
                     install_status="",
                     operational_status="",
+                    attachments=[],
                 ),
                 after=dict(
                     sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                     sys_class_name="cmdb_ci",
                     install_status="installed",
                     operational_status="ready",
+                    attachments=[],
                 ),
             ),
         )
