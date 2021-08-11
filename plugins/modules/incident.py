@@ -29,6 +29,7 @@ extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id
   - servicenow.itsm.number
+  - servicenow.itsm.attachments
 
 options:
   state:
@@ -143,7 +144,7 @@ EXAMPLES = r"""
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors, table, utils, validation
+from ..module_utils import arguments, attachment, client, errors, table, utils, validation
 from ..module_utils.incident import PAYLOAD_FIELDS_MAPPING
 
 DIRECT_PAYLOAD_FIELDS = (
@@ -158,12 +159,16 @@ DIRECT_PAYLOAD_FIELDS = (
 )
 
 
-def ensure_absent(module, table_client):
+def ensure_absent(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id", "number")
     incident = table_client.get_record("incident", query)
 
     if incident:
+        attachment_client.delete_attached_records(
+            dict(table_name="incident", table_sys_id=incident["sys_id"]),
+            module.check_mode,
+        )
         table_client.delete_record("incident", incident, module.check_mode)
         return True, None, dict(before=mapper.to_ansible(incident), after=None)
 
@@ -196,7 +201,7 @@ def validate_params(params, incident=None):
         )
 
 
-def ensure_present(module, table_client):
+def ensure_present(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
@@ -209,11 +214,24 @@ def ensure_present(module, table_client):
                 "incident", mapper.to_snow(payload), module.check_mode
             )
         )
+
+        if "sys_id" in new:
+            new["attachments"] = attachment_client.upload_records(
+                dict(table_name="incident", table_sys_id=new["sys_id"]),
+                module.params["attachments"],
+                module.check_mode,
+            )
+
         return True, new, dict(before=None, after=new)
 
     old = mapper.to_ansible(table_client.get_record("incident", query, must_exist=True))
-    if utils.is_superset(old, payload):
+    attachment_payload = dict(table_name="incident", table_sys_id=old["sys_id"])
+
+    if utils.is_superset(old, payload) and not any(
+        attachment_client.are_changed(attachment_payload, module.params["attachments"])
+    ):
         # No change in parameters we are interested in - nothing to do.
+        old["attachments"] = attachment_client.list_records(attachment_payload)
         return False, old, dict(before=old, after=old)
 
     validate_params(module.params, old)
@@ -222,18 +240,25 @@ def ensure_present(module, table_client):
             "incident", mapper.to_snow(old), mapper.to_snow(payload), module.check_mode
         )
     )
+
+    new["attachments"] = attachment_client.update_records(
+        dict(table_name="incident", table_sys_id=old["sys_id"]),
+        module.params["attachments"],
+        module.check_mode,
+    )
+
     return True, new, dict(before=old, after=new)
 
 
-def run(module, table_client):
+def run(module, table_client, attachment_client):
     if module.params["state"] == "absent":
-        return ensure_absent(module, table_client)
-    return ensure_present(module, table_client)
+        return ensure_absent(module, table_client, attachment_client)
+    return ensure_present(module, table_client, attachment_client)
 
 
 def main():
     module_args = dict(
-        arguments.get_spec("instance", "sys_id", "number"),
+        arguments.get_spec("instance", "sys_id", "number", "attachments"),
         state=dict(
             type="str",
             choices=[
@@ -313,7 +338,8 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
-        changed, record, diff = run(module, table_client)
+        attachment_client = attachment.AttachmentClient(snow_client)
+        changed, record, diff = run(module, table_client, attachment_client)
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
