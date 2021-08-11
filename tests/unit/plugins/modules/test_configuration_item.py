@@ -133,7 +133,7 @@ class TestBuildPayload:
         assert result["category"] == "Hardware"
         assert result["environment"] == "production"
 
-    def test_build_payload_with_other_option(self, create_module, table_client, attachment_client):
+    def test_build_payload_with_other_option(self, create_module, table_client):
         module = create_module(
             params=dict(
                 instance=dict(host="https://my.host.name", username="user", password="pass"),
@@ -151,7 +151,6 @@ class TestBuildPayload:
                 mac_address=None,
                 category="Hardware",
                 environment="production",
-                attachments=None,
                 other=dict(subcategory="Computer"),
             ),
         )
