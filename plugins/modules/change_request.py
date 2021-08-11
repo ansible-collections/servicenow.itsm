@@ -283,11 +283,12 @@ def ensure_present(module, table_client, attachment_client):
     )
 
     attachment_payload = dict(table_name="change_request", table_sys_id=old["sys_id"])
+    old["attachments"] = attachment_client.list_records(attachment_payload)
+
     if utils.is_superset(old, payload) and not any(
         attachment_client.are_changed(attachment_payload, module.params["attachments"])
     ):
         # No change in parameters we are interested in - nothing to do.
-        old["attachments"] = attachment_client.list_records(attachment_payload)
         return False, old, dict(before=old, after=old)
 
     validate_params(module.params, old)
@@ -299,11 +300,12 @@ def ensure_present(module, table_client, attachment_client):
             module.check_mode,
         )
     )
-    new["attachments"] = attachment_client.update_records(
+    attachment_client.update_records(
         dict(table_name="change_request", table_sys_id=old["sys_id"]),
         module.params["attachments"],
         module.check_mode,
     )
+    new["attachments"] = attachment_client.list_records(attachment_payload)
 
     return True, new, dict(before=old, after=new)
 
