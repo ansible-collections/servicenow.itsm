@@ -40,6 +40,10 @@
       servicenow.itsm.incident: *create-incident
       register: test_result
 
+    - name: Copy test_result into result for assertion
+      set_fact:
+        result: "{{ test_result }}"
+
     - ansible.builtin.assert: *create-incident-result
 
 
