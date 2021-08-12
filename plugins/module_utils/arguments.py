@@ -85,11 +85,9 @@ SHARED_SPECS = dict(
             ),
             name=dict(
                 type="str",
-                required=False,
             ),
             type=dict(
                 type="str",
-                required=False,
             ),
         ),
     ),

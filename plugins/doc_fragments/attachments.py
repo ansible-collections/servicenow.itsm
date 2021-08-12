@@ -25,11 +25,11 @@ options:
       name:
         description:
           - Name of the file to be uploaded without the file extension.
-          - If not specified, the name is extracted from the path.
+          - If not specified, the module will use I(path)'s base name.
         type: str
       type:
         description:
           - MIME type of the file to be attached.
-          - If not specified, type is guessed from the file.
+          - If not specified, the module will try to guess the file's type from its extension.
         type: str
 """
