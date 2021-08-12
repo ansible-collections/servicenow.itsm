@@ -59,12 +59,12 @@ class AttachmentClient:
 
         return records[0] if records else None
 
-    def create_record(self, payload, data, check_mode, mime_type):
+    def create_record(self, metadata, data, check_mode, mime_type):
         if check_mode:
             # Approximate the result using the payload and data.
-            return payload
+            return metadata
         return self.client.request_binary(
-            "POST", _path("file"), mime_type, bin_data=data, payload=(payload or {})
+            "POST", _path("file"), mime_type, bin_data=data, query=(metadata or {})
         ).json["result"]
 
     def upload_record(self, payload, file_dict, check_mode=False):
