@@ -16,6 +16,7 @@ author:
   - Manca Bizjak (@mancabizjak)
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
+  - Matej Pevec (@mysteriouswolf)
 short_description: List ServiceNow problems
 description:
   - Retrieve information about ServiceNow problems.
@@ -166,7 +167,7 @@ records:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors, query, utils, table
+from ..module_utils import arguments, client, errors, query, utils, table, attachment
 from ..module_utils.problem import PAYLOAD_FIELDS_MAPPING
 
 
@@ -204,7 +205,7 @@ def sysparms_query(module, table_client, mapper):
     return query.serialize_query(query.map_query_values(remap_query, mapper))
 
 
-def run(module, table_client):
+def run(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
 
     if module.params["query"]:
@@ -213,7 +214,12 @@ def run(module, table_client):
         query = utils.filter_dict(module.params, "sys_id", "number")
 
     return [
-        mapper.to_ansible(record)
+        dict(
+            attachments=attachment_client.list_records(
+                dict(table_name="problem", table_sys_id=record["sys_id"]),
+            ),
+            **mapper.to_ansible(record)
+        )
         for record in table_client.list_records("problem", query)
     ]
 
@@ -230,7 +236,8 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
-        records = run(module, table_client)
+        attachment_client = attachment.AttachmentClient(snow_client)
+        records = run(module, table_client, attachment_client)
         module.exit_json(changed=False, records=records)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))

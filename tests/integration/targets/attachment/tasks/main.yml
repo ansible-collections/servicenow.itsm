@@ -359,3 +359,112 @@
       servicenow.itsm.incident: *delete-incident-attachment
 
     - ansible.builtin.assert: *delete-incident-attachment-result
+
+    ######################################
+    ###### Problem Attachment Tests ######
+    ######################################
+
+    - name: Create test problem with attachment - check mode
+      servicenow.itsm.problem: &problem-create-attachment
+        short_description: my-problem
+        state: new
+        attachments:
+          - path: targets/attachment/res/sample_file.txt
+      register: first_problem
+      check_mode: true
+
+    - ansible.builtin.assert: &problem-create-assertions-attachment
+        that:
+          - first_problem is changed
+          - first_problem.record.state == "new"
+          - first_problem.record.short_description == "my-problem"
+          - first_problem.record.attachments != []
+          - first_problem.record.attachments | length != 0
+          - first_problem.record.attachments[0].file_name == "sample_file"
+
+
+    - name: Create the problem with attachment
+      servicenow.itsm.problem: *problem-create-attachment
+      register: first_problem
+
+    - ansible.builtin.assert: *problem-create-assertions-attachment
+
+
+    - name: Update the problem with same attachment, same name, add new (check mode)
+      servicenow.itsm.problem: &problem-update
+        sys_id: "{{ first_problem.record.sys_id }}"
+        attachments:
+          - path: targets/attachment/res/sample_file.txt
+            name: sample_file
+          - path: targets/attachment/res/sample_file.txt
+            name: sample_file2
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.attachments[0].file_name == "sample_file"
+          - result.record.attachments[1].file_name == "sample_file2"
+
+
+    - name: Update the problem with same attachment, same name, add new
+      servicenow.itsm.problem: *problem-update
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.attachments[0].file_name == "sample_file"
+          - result.record.attachments[0].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+          - result.record.attachments[1].file_name == "sample_file2"
+          - result.record.attachments[1].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+
+
+    - name: Update problem with different attachment, same name
+      servicenow.itsm.problem:
+        sys_id: "{{ first_problem.record.sys_id }}"
+        attachments:
+          - path: targets/attachment/res/sample_file_changed.txt
+            name: sample_file
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.record.attachments[0].file_name == "sample_file"
+          - result.record.attachments[0].hash == "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902"
+          - result.record.attachments[1].file_name == "sample_file2"
+          - result.record.attachments[1].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+
+
+    - name: Read the problem with attachments
+      servicenow.itsm.problem_info:
+        sys_id: "{{ first_problem.record.sys_id }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].attachments != []
+          - result.records[0].attachments | length == 2
+          - result.records[0].attachments[0].file_name == "sample_file"
+          - result.records[0].attachments[0].hash == "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902"
+          - result.records[0].attachments[1].file_name == "sample_file2"
+          - result.records[0].attachments[1].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+
+
+    - name: Delete problem attachment - check mode
+      servicenow.itsm.problem: &delete-problem-attachment
+        sys_id: "{{ first_problem.record.sys_id }}"
+        state: absent
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &delete-problem-attachment-result
+        that:
+          - result is changed
+
+
+    - name: Delete problem/attachments
+      servicenow.itsm.problem: *delete-problem-attachment
+
+    - ansible.builtin.assert: *delete-problem-attachment-result
