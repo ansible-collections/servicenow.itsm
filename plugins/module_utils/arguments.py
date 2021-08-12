@@ -88,7 +88,6 @@ SHARED_SPECS = dict(
             ),
             type=dict(
                 type="str",
-                required=False,
             ),
         ),
     ),
