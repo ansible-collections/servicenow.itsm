@@ -123,17 +123,6 @@ class TestAttachmentListRecords:
             ),
         )
 
-    def test_empty_response_file(self, client):
-        client.request_binary.return_value = Response(200, "", {"X-Total-Count": "0"})
-        a = attachment.AttachmentClient(client)
-
-        records = a.list_records(sys_id="1234", file=True)
-
-        assert "" == records
-        client.request_binary.assert_called_once_with(
-            "GET", "attachment/1234/file", "*/*", accept_type="*/*"
-        )
-
     def test_non_empty_response_meta(self, client):
         client.get.return_value = Response(
             200, '{"result": [{"a": 3, "b": "sys_id"}]}', {"X-Total-Count": "1"}
@@ -143,16 +132,6 @@ class TestAttachmentListRecords:
         records = a.list_records()
 
         assert [dict(a=3, b="sys_id")] == records
-
-    def test_non_empty_response_file(self, client):
-        client.request_binary.return_value = Response(
-            200, "binary_data", {"X-Total-Count": "1"}
-        )
-        a = attachment.AttachmentClient(client)
-
-        records = a.list_records(sys_id="1234", file=True)
-
-        assert "binary_data" == records
 
     def test_query_passing_meta(self, client):
         client.get.return_value = Response(
@@ -164,23 +143,6 @@ class TestAttachmentListRecords:
 
         client.get.assert_called_once_with(
             "attachment",
-            query=dict(
-                a="b",
-                sysparm_limit=10000,
-                sysparm_offset=0,
-            ),
-        )
-
-    def test_query_sys_id_passing_meta(self, client):
-        client.get.return_value = Response(
-            200, '{"result": []}', {"X-Total-Count": "0"}
-        )
-        a = attachment.AttachmentClient(client)
-
-        a.list_records(dict(a="b"), "1234")
-
-        client.get.assert_called_once_with(
-            "attachment/1234",
             query=dict(
                 a="b",
                 sysparm_limit=10000,
@@ -257,166 +219,6 @@ class TestAttachmentGetRecord:
 
         with pytest.raises(errors.ServiceNowError, match="No"):
             a.get_record(dict(our="query"), must_exist=True)
-
-
-class TestAttachmentListFullRecords:
-    def test_empty_file_list(self, client):
-        a = attachment.AttachmentClient(client)
-        record = a.list_full_records(file_dict_list=[])
-        assert record is None
-        client.get.assert_not_called()
-
-    def test_single_match(self, client):
-        client.get.return_value = Response(
-            200,
-            '{"result": [{"property": "something", "sys_id": "1234"}]}',
-            {"X-Total-Count": "1"},
-        )
-        client.request_binary.return_value = Response(
-            200, "file_content", {"X-Total-Count": "1"}
-        )
-        a = attachment.AttachmentClient(client)
-
-        record = a.list_full_records()
-
-        assert [
-            {"property": "something", "sys_id": "1234", "data": "file_content"}
-        ] == record
-        client.get.assert_called_with(
-            "attachment",
-            query=dict(
-                sysparm_limit=10000,
-                sysparm_offset=0,
-            ),
-        )
-        client.request_binary.assert_called_with(
-            "GET", "attachment/1234/file", "*/*", accept_type="*/*"
-        )
-
-    def test_single_match_with_query(self, client):
-        client.get.return_value = Response(
-            200,
-            '{"result": [{"property": "something", "sys_id": "1234"}]}',
-            {"X-Total-Count": "1"},
-        )
-        client.request_binary.return_value = Response(
-            200, "file_content", {"X-Total-Count": "1"}
-        )
-        a = attachment.AttachmentClient(client)
-
-        record = a.list_full_records(dict(our="query"))
-
-        assert [
-            {"property": "something", "sys_id": "1234", "data": "file_content"}
-        ] == record
-        client.get.assert_called_with(
-            "attachment",
-            query=dict(
-                our="query",
-                sysparm_limit=10000,
-                sysparm_offset=0,
-            ),
-        )
-        client.request_binary.assert_called_with(
-            "GET", "attachment/1234/file", "*/*", accept_type="*/*"
-        )
-
-    def test_single_match_with_sys_id(self, client):
-        client.get.return_value = Response(
-            200,
-            '{"result": [{"property": "something", "sys_id": "4444"}]}',
-            {"X-Total-Count": "1"},
-        )
-        client.request_binary.return_value = Response(
-            200, "file_content", {"X-Total-Count": "1"}
-        )
-        a = attachment.AttachmentClient(client)
-
-        record = a.list_full_records(sys_id="4444")
-
-        assert [
-            {"property": "something", "sys_id": "4444", "data": "file_content"}
-        ] == record
-        client.get.assert_called_with(
-            "attachment/4444",
-            query=dict(
-                sysparm_limit=10000,
-                sysparm_offset=0,
-            ),
-        )
-        client.request_binary.assert_called_with(
-            "GET", "attachment/4444/file", "*/*", accept_type="*/*"
-        )
-
-    def test_multiple_matches(self, client):
-        client.get.return_value = Response(
-            200,
-            '{"result": [{"property": "something", "sys_id": "1234"}, {"property": "something", "sys_id": "4444"}]}',
-            {"X-Total-Count": "2"},
-        )
-        client.request_binary.side_effect = [
-            Response(200, "file_content1", {"X-Total-Count": "1"}),
-            Response(200, "file_content2", {"X-Total-Count": "1"}),
-        ]
-        a = attachment.AttachmentClient(client)
-
-        record = a.list_full_records()
-
-        assert [
-            {"property": "something", "sys_id": "1234", "data": "file_content1"},
-            {"property": "something", "sys_id": "4444", "data": "file_content2"},
-        ] == record
-        client.get.assert_called_with(
-            "attachment",
-            query=dict(
-                sysparm_limit=10000,
-                sysparm_offset=0,
-            ),
-        )
-        client.request_binary.assert_called_with(
-            "GET", "attachment/4444/file", "*/*", accept_type="*/*"
-        )
-
-    def test_no_matches(self, client):
-        client.get.return_value = Response(
-            200,
-            '{"result": []}',
-            {"X-Total-Count": "1"},
-        )
-        a = attachment.AttachmentClient(client)
-
-        record = a.list_full_records()
-
-        assert [] == record
-        client.get.assert_called_with(
-            "attachment",
-            query=dict(
-                sysparm_limit=10000,
-                sysparm_offset=0,
-            ),
-        )
-        client.request_binary.assert_not_called()
-
-    def test_query_matches(self, client):
-        client.get.return_value = Response(
-            200,
-            '{"result": []}',
-            {"X-Total-Count": "1"},
-        )
-        a = attachment.AttachmentClient(client)
-
-        record = a.list_full_records(file_dict_list=FILE_DICT_LIST)
-
-        assert [] == record
-        client.get.assert_called_with(
-            "attachment",
-            query=dict(
-                file_name="attachment_name^ORanother_file_name",
-                sysparm_limit=10000,
-                sysparm_offset=0,
-            ),
-        )
-        client.request_binary.assert_not_called()
 
 
 class TestAttachmentCreateRecord:

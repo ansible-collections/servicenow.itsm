@@ -29,33 +29,27 @@ class AttachmentClient:
         self.client = client
         self.batch_size = batch_size
 
-    def list_records(self, query=None, sys_id=None, file=False):
+    def list_records(self, query=None):
         base_query = _query(query)
         base_query["sysparm_limit"] = self.batch_size
 
-        if file:
-            response = self.client.request_binary(
-                "GET", _path(sys_id, "file"), "*/*", accept_type="*/*"
+        offset = 0
+        total = 1  # Dummy value that ensures loop executes at least once
+        result = []
+
+        while offset < total:
+            response = self.client.get(
+                _path(), query=dict(base_query, sysparm_offset=offset)
             )
-            return response.data
-        else:
-            offset = 0
-            total = 1  # Dummy value that ensures loop executes at least once
-            result = []
 
-            while offset < total:
-                response = self.client.get(
-                    _path(sys_id), query=dict(base_query, sysparm_offset=offset)
-                )
+            result.extend(response.json["result"])
+            total = int(response.headers["X-Total-Count"])
+            offset += self.batch_size
 
-                result.extend(response.json["result"])
-                total = int(response.headers["X-Total-Count"])
-                offset += self.batch_size
+        return result
 
-            return result
-
-    def get_record(self, query, sys_id=None, must_exist=False):
-        records = self.list_records(query, sys_id)
+    def get_record(self, query, must_exist=False):
+        records = self.list_records(query)
 
         if len(records) > 1:
             raise errors.ServiceNowError(
@@ -68,31 +62,6 @@ class AttachmentClient:
             )
 
         return records[0] if records else None
-
-    def list_full_records(self, query=None, sys_id=None, file_dict_list=None):
-        if file_dict_list is not None:
-            if query is None:
-                query = {
-                    "file_name": "^OR".join(
-                        [get_file_name(file_dict) for file_dict in file_dict_list]
-                    )
-                }
-            else:
-                query.update(
-                    {
-                        "file_name": "^OR".join(
-                            [get_file_name(file_dict) for file_dict in file_dict_list]
-                        )
-                    }
-                )
-        if file_dict_list is None or file_dict_list:
-            meta_list = self.list_records(query, sys_id)
-            for meta in meta_list:
-                meta.update(
-                    {"data": self.list_records(sys_id=meta["sys_id"], file=True)}
-                )
-            return meta_list
-        return None
 
     def create_record(self, payload, data, check_mode, mime_type=None):
         if check_mode:
