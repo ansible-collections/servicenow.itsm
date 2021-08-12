@@ -63,7 +63,7 @@ class AttachmentClient:
 
         return records[0] if records else None
 
-    def create_record(self, payload, data, check_mode, mime_type=None):
+    def create_record(self, payload, data, check_mode, mime_type):
         if check_mode:
             # Approximate the result using the payload and data.
             return payload
