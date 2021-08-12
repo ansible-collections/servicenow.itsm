@@ -243,3 +243,119 @@
       servicenow.itsm.configuration_item: *delete-configuration_item-attachment
 
     - ansible.builtin.assert: *delete-configuration_item-attachment-result
+
+    #######################################
+    ###### Incident Attachment Tests ######
+    #######################################
+
+    - name: Create test incident with attachment - check mode
+      servicenow.itsm.incident: &create-incident-attachment
+        caller: admin
+        state: new
+        short_description: Test incident
+        impact: low
+        urgency: low
+        attachments:
+          - path: targets/attachment/res/sample_file.txt
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &create-incident-attachment-result
+        that:
+          - result is changed
+          - result.record.state == "new"
+          - result.record.impact == "low"
+          - result.record.urgency == "low"
+          - result.record.attachments != []
+          - result.record.attachments | length != 0
+          - result.record.attachments[0].file_name == "sample_file"
+
+    - name: Create test incident with attachment
+      servicenow.itsm.incident: *create-incident-attachment
+      register: test_result
+
+    - name: Copy test_result into result for assertion
+      set_fact:
+        result: "{{ test_result }}"
+
+    - ansible.builtin.assert: *create-incident-attachment-result
+
+
+    - name: Update the incident with same attachment, same name, add new (check mode)
+      servicenow.itsm.incident: &incident-update
+        number: "{{ test_result.record.number }}"
+        attachments:
+          - path: targets/attachment/res/sample_file.txt
+            name: sample_file
+          - path: targets/attachment/res/sample_file.txt
+            name: sample_file2
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.attachments[0].file_name == "sample_file"
+          - result.record.attachments[1].file_name == "sample_file2"
+
+
+    - name: Update the incident with same attachment, same name, add new
+      servicenow.itsm.incident: *incident-update
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.attachments[0].file_name == "sample_file"
+          - result.record.attachments[0].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+          - result.record.attachments[1].file_name == "sample_file2"
+          - result.record.attachments[1].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+
+
+    - name: Update incident with different attachment, same name
+      servicenow.itsm.incident:
+        number: "{{ test_result.record.number }}"
+        attachments:
+          - path: targets/attachment/res/sample_file_changed.txt
+            name: sample_file
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.record.attachments[0].file_name == "sample_file"
+          - result.record.attachments[0].hash == "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902"
+          - result.record.attachments[1].file_name == "sample_file2"
+          - result.record.attachments[1].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+
+
+    - name: Read the incident with attachments
+      servicenow.itsm.incident_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].attachments != []
+          - result.records[0].attachments | length == 2
+          - result.records[0].attachments[0].file_name == "sample_file"
+          - result.records[0].attachments[0].hash == "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902"
+          - result.records[0].attachments[1].file_name == "sample_file2"
+          - result.records[0].attachments[1].hash == "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+
+
+    - name: Delete incident attachment - check mode
+      servicenow.itsm.incident: &delete-incident-attachment
+        number: "{{ test_result.record.number }}"
+        state: absent
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &delete-incident-attachment-result
+        that:
+          - result is changed
+
+
+    - name: Delete incident/attachments
+      servicenow.itsm.incident: *delete-incident-attachment
+
+    - ansible.builtin.assert: *delete-incident-attachment-result
