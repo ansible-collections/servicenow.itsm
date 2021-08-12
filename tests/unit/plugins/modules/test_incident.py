@@ -288,21 +288,18 @@ class TestEnsurePresent:
             state="in_progress",
             number="INC0000001",
             short_description="Test incident",
-            attachments=[],
             sys_id="1234",
         )
         table_client.get_record.return_value = dict(
             state="1",
             number="INC0000001",
             short_description="Test incident",
-            attachments=[],
             sys_id="1234",
         )
         table_client.update_record.return_value = dict(
             state="2",
             number="INC0000001",
             short_description="Test incident",
-            attachments=[],
             sys_id="1234",
         )
         attachment_client.update_records.return_value = []

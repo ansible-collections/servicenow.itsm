@@ -19,7 +19,9 @@ pytestmark = pytest.mark.skipif(
 
 
 class TestEnsureAbsent:
-    def test_delete_change_request(self, create_module, table_client, attachment_client):
+    def test_delete_change_request(
+        self, create_module, table_client, attachment_client
+    ):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -28,7 +30,9 @@ class TestEnsureAbsent:
                 sys_id=None,
             )
         )
-        table_client.get_record.return_value = dict(state="3", number="CHG0000001", sys_id="1234")
+        table_client.get_record.return_value = dict(
+            state="3", number="CHG0000001", sys_id="1234"
+        )
 
         result = change_request.ensure_absent(module, table_client, attachment_client)
 
@@ -36,10 +40,15 @@ class TestEnsureAbsent:
         assert result == (
             True,
             None,
-            dict(before=dict(state="closed", number="CHG0000001", sys_id="1234"), after=None),
+            dict(
+                before=dict(state="closed", number="CHG0000001", sys_id="1234"),
+                after=None,
+            ),
         )
 
-    def test_delete_change_request_not_present(self, create_module, table_client, attachment_client):
+    def test_delete_change_request_not_present(
+        self, create_module, table_client, attachment_client
+    ):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -72,7 +81,9 @@ class TestValidateParams:
 
 
 class TestEnsurePresent:
-    def test_ensure_present_create_new(self, create_module, table_client, attachment_client):
+    def test_ensure_present_create_new(
+        self, create_module, table_client, attachment_client
+    ):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -135,7 +146,9 @@ class TestEnsurePresent:
             ),
         )
 
-    def test_ensure_present_nothing_to_do(self, create_module, table_client, attachment_client):
+    def test_ensure_present_nothing_to_do(
+        self, create_module, table_client, attachment_client
+    ):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -208,7 +221,9 @@ class TestEnsurePresent:
             ),
         )
 
-    def test_ensure_present_update(self, create_module, table_client, attachment_client):
+    def test_ensure_present_update(
+        self, create_module, table_client, attachment_client
+    ):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -240,7 +255,6 @@ class TestEnsurePresent:
             chg_model="normal",
             short_description="Test change request",
             sys_id="1234",
-            attachments=[],
         )
         table_client.update_record.return_value = dict(
             state="-4",
@@ -248,7 +262,6 @@ class TestEnsurePresent:
             chg_model="normal",
             short_description="Test change request",
             sys_id="1234",
-            attachments=[],
         )
         attachment_client.update_records.return_value = []
         attachment_client.list_records.return_value = []
@@ -310,7 +323,6 @@ class TestBuildPayload:
                 on_hold=None,
                 hold_reason="Some reason",
                 other=None,
-                attachments=None,
             ),
         )
         table_client.get_record.side_effect = [
@@ -335,7 +347,7 @@ class TestBuildPayload:
         assert result["assignment_group"] == "d625dccec0a8016700a222a0f7900d06"
         assert "assigned_to" not in result
 
-    def test_build_payload_with_other_option(self, create_module, table_client, attachment_client):
+    def test_build_payload_with_other_option(self, create_module, table_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
