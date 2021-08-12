@@ -18,10 +18,6 @@ def _path(*subpaths):
     return "/".join(filter(None, ("attachment",) + subpaths))
 
 
-def _query(original=None):
-    return dict(original or {})
-
-
 class AttachmentClient:
     def __init__(self, client, batch_size=10000):
         # 10000 records is default batch size for ServiceNow Attachment REST API, so we also use it
@@ -30,7 +26,7 @@ class AttachmentClient:
         self.batch_size = batch_size
 
     def list_records(self, query=None):
-        base_query = _query(query)
+        base_query = (query or {})
         base_query["sysparm_limit"] = self.batch_size
 
         offset = 0
@@ -68,7 +64,7 @@ class AttachmentClient:
             # Approximate the result using the payload and data.
             return payload
         return self.client.request_binary(
-            "POST", _path("file"), mime_type, bin_data=data, payload=_query(payload)
+            "POST", _path("file"), mime_type, bin_data=data, payload=(payload or {})
         ).json["result"]
 
     def upload_record(self, payload, file_dict, check_mode=False):
@@ -157,7 +153,7 @@ class AttachmentClient:
 def get_file_name(file_dict):
     if "name" in file_dict and file_dict["name"] is not None:
         return file_dict["name"]
-   return os.path.splitext(os.path.basename(file_dict["path"]))[0]
+    return os.path.splitext(os.path.basename(file_dict["path"]))[0]
 
 
 def get_file_type(file_dict):
