@@ -26,7 +26,7 @@ class AttachmentClient:
         self.batch_size = batch_size
 
     def list_records(self, query=None):
-        base_query = (query or {})
+        base_query = query or {}
         base_query["sysparm_limit"] = self.batch_size
 
         offset = 0
@@ -64,7 +64,7 @@ class AttachmentClient:
             # Approximate the result using the payload and data.
             return query
         return self.client.request_binary(
-            "POST", _path("file"), mime_type, bin_data=data, query=(query or {})
+            "POST", _path("file"), mime_type, data, (query or {})
         ).json["result"]
 
     def upload_record(self, table, table_sys_id, metadata, check_mode=False):
@@ -72,7 +72,11 @@ class AttachmentClient:
         #
         # "metadata" is a dict with a mandatory key "path" and optional "name", "type" and "encryption_context".
         # These properties can be read directly from the yaml attachment list and can be set by the user.
-        query = dict(table_name=table, table_sys_id=table_sys_id, file_name=get_file_name(metadata))
+        query = dict(
+            table_name=table,
+            table_sys_id=table_sys_id,
+            file_name=get_file_name(metadata),
+        )
 
         file_type = get_file_type(metadata)
 
@@ -108,7 +112,12 @@ class AttachmentClient:
     def delete_attached_records(self, table, table_sys_id, check_mode, silent=False):
         return [
             self.delete_record(record, check_mode, silent)
-            for record in self.list_records(dict(table_name=table, table_sys_id=table_sys_id,))
+            for record in self.list_records(
+                dict(
+                    table_name=table,
+                    table_sys_id=table_sys_id,
+                )
+            )
         ]
 
     def is_changed(self, table, table_sys_id, metadata):
@@ -128,7 +137,9 @@ class AttachmentClient:
     def update_record(self, table, table_sys_id, metadata, check_mode=False):
         if self.is_changed(table, table_sys_id, metadata):
             self.delete_record(
-                self.get_record(build_query(table, table_sys_id, metadata)), check_mode, True
+                self.get_record(build_query(table, table_sys_id, metadata)),
+                check_mode,
+                True,
             )
             return dict(
                 {

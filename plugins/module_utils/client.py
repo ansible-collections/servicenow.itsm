@@ -146,7 +146,7 @@ class Client:
         path,
         mime_type,
         accept_type="application/json",
-        bin_data=None,
+        payload=None,
         query=None,
     ):
         escaped_path = quote(path.rstrip("/"))
@@ -154,7 +154,7 @@ class Client:
         headers = dict(
             {"Accept": accept_type, "Content-type": mime_type}, **self.auth_header
         )
-        return self._request(method, url, data=bin_data, headers=headers)
+        return self._request(method, url, data=payload, headers=headers)
 
     def get(self, path, query=None):
         resp = self.request("GET", path, query=query)

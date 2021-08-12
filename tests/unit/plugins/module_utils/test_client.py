@@ -279,7 +279,7 @@ class TestClientRequestBinary:
         request_mock.return_value = mock_response
 
         resp = c.request_binary(
-            "PUT", "some/path", "text/plain", "text/plain", bin_data="some_data"
+            "PUT", "some/path", "text/plain", "text/plain", "some_data"
         )
 
         request_mock.assert_called_once_with(

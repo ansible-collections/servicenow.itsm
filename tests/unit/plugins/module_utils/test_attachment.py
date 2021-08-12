@@ -232,8 +232,8 @@ class TestAttachmentCreateRecord:
             "POST",
             "attachment/file",
             "text/plain",
-            bin_data="file_content",
-            query={"some": "property"},
+            "file_content",
+            {"some": "property"},
         )
 
     def test_check_mode(self, client):
@@ -273,8 +273,8 @@ class TestAttachmentUploadRecord:
             "POST",
             "attachment/file",
             "text/markdown",
-            bin_data=b"file_content",
-            query={
+            b"file_content",
+            {
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
@@ -300,8 +300,8 @@ class TestAttachmentUploadRecord:
             "POST",
             "attachment/file",
             "text/markdown",
-            bin_data=b"file_content",
-            query={
+            b"file_content",
+            {
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
@@ -355,8 +355,8 @@ class TestAttachmentUploadRecords:
             "POST",
             "attachment/file",
             "text/markdown",
-            bin_data=b"file_content1",
-            query={
+            b"file_content1",
+            {
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
@@ -366,8 +366,8 @@ class TestAttachmentUploadRecords:
             "POST",
             "attachment/file",
             "text/plain",
-            bin_data=b"file_content2",
-            query={
+            b"file_content2",
+            {
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": os.path.splitext(os.path.basename(path2))[0],
