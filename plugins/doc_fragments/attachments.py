@@ -30,6 +30,6 @@ options:
       type:
         description:
           - MIME type of the file to be attached.
-          - If not specified, type is guessed from the file.
+          - If not specified, the module will try to guess the file's type from its extension.
         type: str
 """
