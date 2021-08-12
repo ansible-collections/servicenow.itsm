@@ -59,39 +59,39 @@ class AttachmentClient:
 
         return records[0] if records else None
 
-    def create_record(self, metadata, data, check_mode, mime_type):
+    def create_record(self, query, data, check_mode, mime_type):
         if check_mode:
             # Approximate the result using the payload and data.
-            return metadata
+            return query
         return self.client.request_binary(
-            "POST", _path("file"), mime_type, bin_data=data, query=(metadata or {})
+            "POST", _path("file"), mime_type, bin_data=data, query=(query or {})
         ).json["result"]
 
-    def upload_record(self, payload, file_dict, check_mode=False):
-        # "payload" is a dict with defined "table_name", "table_sys_id". This is defined by the module directly.
+    def upload_record(self, table, table_sys_id, metadata, check_mode=False):
+        # Table and table_sys_id parameters uniquely identify the record we will attach a file to.
         #
-        # "file_dict" is a dict with a mandatory key "path" and optional "name", "type" and "encryption_context".
+        # "metadata" is a dict with a mandatory key "path" and optional "name", "type" and "encryption_context".
         # These properties can be read directly from the yaml attachment list and can be set by the user.
-        new_payload = payload.copy()
-        new_payload["file_name"] = get_file_name(file_dict)
-        file_type = get_file_type(file_dict)
+        query = dict(table_name=table, table_sys_id=table_sys_id, file_name=get_file_name(metadata))
+
+        file_type = get_file_type(metadata)
 
         if (
-            "encryption_context" in file_dict
-            and file_dict["encryption_context"] is not None
+            "encryption_context" in metadata
+            and metadata["encryption_context"] is not None
         ):
-            new_payload["encryption_context"] = file_dict["encryption_context"]
+            query["encryption_context"] = metadata["encryption_context"]
 
         data = None
         if not check_mode:
-            with open(file_dict["path"], "rb") as file_obj:
+            with open(metadata["path"], "rb") as file_obj:
                 data = file_obj.read()
-        return self.create_record(new_payload, data, check_mode, file_type)
+        return self.create_record(query, data, check_mode, file_type)
 
-    def upload_records(self, payload, file_dict_list, check_mode):
+    def upload_records(self, table, table_sys_id, metadata_list, check_mode):
         return [
-            self.upload_record(payload, file_dict, check_mode)
-            for file_dict in (file_dict_list or [])
+            self.upload_record(table, table_sys_id, metadata, check_mode)
+            for metadata in (metadata_list or [])
         ]
 
     def delete_record(self, record, check_mode, silent=False):
@@ -105,68 +105,69 @@ class AttachmentClient:
                 except errors.UnexpectedAPIResponse:
                     return {"changed": False}
 
-    def delete_attached_records(self, payload, check_mode, silent=False):
+    def delete_attached_records(self, table, table_sys_id, check_mode, silent=False):
         return [
             self.delete_record(record, check_mode, silent)
-            for record in self.list_records(payload)
+            for record in self.list_records(dict(table_name=table, table_sys_id=table_sys_id,))
         ]
 
-    def is_changed(self, payload, file_dict):
-        rec = self.get_record(build_query(payload, file_dict))
+    def is_changed(self, table, table_sys_id, metadata):
+        rec = self.get_record(build_query(table, table_sys_id, metadata))
         if rec is not None:
-            return file_hash(file_dict["path"]) != rec["hash"]
+            return file_hash(metadata["path"]) != rec["hash"]
         return True
 
-    def are_changed(self, payload, file_dict_list):
-        if file_dict_list is not None:
+    def are_changed(self, table, table_sys_id, metadata_list):
+        if metadata_list is not None:
             return [
-                self.is_changed(payload, file_dict)
-                for file_dict in (file_dict_list or [])
+                self.is_changed(table, table_sys_id, metadata)
+                for metadata in (metadata_list or [])
             ]
         return []
 
-    def update_record(self, payload, file_dict, check_mode=False):
-        if self.is_changed(payload, file_dict):
+    def update_record(self, table, table_sys_id, metadata, check_mode=False):
+        if self.is_changed(table, table_sys_id, metadata):
             self.delete_record(
-                self.get_record(build_query(payload, file_dict)), check_mode, True
+                self.get_record(build_query(table, table_sys_id, metadata)), check_mode, True
             )
             return dict(
                 {
                     "changed": True,
                     "msg": "Changes detected, hash doesn't match remote. Remote updated.",
                 },
-                **self.upload_record(payload, file_dict, check_mode)
+                **self.upload_record(table, table_sys_id, metadata, check_mode)
             )
         else:
             return dict(
                 {"changed": False, "msg": "Skipped. Hash matches remote."},
-                **self.get_record(build_query(payload, file_dict))
+                **self.get_record(build_query(table, table_sys_id, metadata))
             )
 
-    def update_records(self, payload, file_dict_list, check_mode=False):
+    def update_records(self, table, table_sys_id, metadata_list, check_mode=False):
         return [
-            self.update_record(payload, file_dict, check_mode)
-            for file_dict in (file_dict_list or [])
+            self.update_record(table, table_sys_id, metadata, check_mode)
+            for metadata in (metadata_list or [])
         ]
 
 
-def get_file_name(file_dict):
-    if "name" in file_dict and file_dict["name"] is not None:
-        return file_dict["name"]
-    return os.path.splitext(os.path.basename(file_dict["path"]))[0]
+def get_file_name(metadata):
+    if "name" in metadata and metadata["name"] is not None:
+        return metadata["name"]
+    return os.path.splitext(os.path.basename(metadata["path"]))[0]
 
 
-def get_file_type(file_dict):
-    if "type" in file_dict and file_dict["type"] is not None:
-        return file_dict["type"]
-    return mimetypes.guess_type(file_dict["path"])[0]
+def get_file_type(metadata):
+    if "type" in metadata and metadata["type"] is not None:
+        return metadata["type"]
+    return mimetypes.guess_type(metadata["path"])[0]
 
 
-def build_query(payload, file_dict):
+def build_query(table, table_sys_id, metadata):
     return dict(
-        file_name=get_file_name(file_dict),
-        content_type=get_file_type(file_dict),
-        **payload
+        file_name=get_file_name(metadata),
+        content_type=get_file_type(metadata),
+        table_name=table,
+        table_sys_id=table_sys_id,
     )
 
 

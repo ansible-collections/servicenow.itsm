@@ -175,7 +175,8 @@ def ensure_absent(module, table_client, attachment_client):
 
     if incident:
         attachment_client.delete_attached_records(
-            dict(table_name="incident", table_sys_id=incident["sys_id"]),
+            "incident",
+            incident["sys_id"],
             module.check_mode,
         )
         table_client.delete_record("incident", incident, module.check_mode)
@@ -225,7 +226,8 @@ def ensure_present(module, table_client, attachment_client):
         )
 
         new["attachments"] = attachment_client.upload_records(
-            dict(table_name="incident", table_sys_id=new.get("sys_id", "N/A")),
+            "incident",
+            new.get("sys_id", "N/A"),
             module.params["attachments"],
             module.check_mode,
         )
@@ -250,7 +252,8 @@ def ensure_present(module, table_client, attachment_client):
         )
     )
     changed = attachment_client.update_records(
-        dict(table_name="incident", table_sys_id=old["sys_id"]),
+        "incident",
+        old["sys_id"],
         module.params["attachments"],
         module.check_mode,
     )

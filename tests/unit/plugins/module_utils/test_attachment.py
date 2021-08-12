@@ -58,39 +58,31 @@ class TestAttachmentGetFileType:
 
 class TestAttachmentBuildQuery:
     def test_name_type_specified(self):
-        assert attachment.build_query({}, FILE_DICT) == {
+        assert attachment.build_query("table", "1234", FILE_DICT) == {
             "file_name": "attachment_name",
             "content_type": "text/markdown",
+            "table_name": "table",
+            "table_sys_id": "1234",
         }
 
     def test_name_omitted(self):
         fd = FILE_DICT.copy()
         fd["name"] = None
-        assert attachment.build_query({}, fd) == {
+        assert attachment.build_query("table", "1234", fd) == {
             "file_name": "file_name",
             "content_type": "text/markdown",
+            "table_name": "table",
+            "table_sys_id": "1234",
         }
 
     def test_type_omitted(self):
         fd = FILE_DICT.copy()
         fd["type"] = None
-        assert attachment.build_query({}, fd) == {
+        assert attachment.build_query("table", "1234", fd) == {
             "file_name": "attachment_name",
             "content_type": "text/plain",
-        }
-
-    def test_additional_payload(self):
-        assert attachment.build_query(
-            {
-                "some": "data",
-                "more": "payload",
-            },
-            FILE_DICT,
-        ) == {
-            "file_name": "attachment_name",
-            "content_type": "text/markdown",
-            "some": "data",
-            "more": "payload",
+            "table_name": "table",
+            "table_sys_id": "1234",
         }
 
 
@@ -241,7 +233,7 @@ class TestAttachmentCreateRecord:
             "attachment/file",
             "text/plain",
             bin_data="file_content",
-            payload={"some": "property"},
+            query={"some": "property"},
         )
 
     def test_check_mode(self, client):
@@ -274,7 +266,7 @@ class TestAttachmentUploadRecord:
         mfd = FILE_DICT.copy()
         mfd.update({"path": path})
 
-        record = a.upload_record(dict(some="property"), mfd, check_mode=False)
+        record = a.upload_record("table", "1234", mfd, check_mode=False)
 
         assert dict(a=3, b="sys_id") == record
         client.request_binary.assert_called_with(
@@ -282,8 +274,9 @@ class TestAttachmentUploadRecord:
             "attachment/file",
             "text/markdown",
             bin_data=b"file_content",
-            payload={
-                "some": "property",
+            query={
+                "table_name": "table",
+                "table_sys_id": "1234",
                 "file_name": "attachment_name",
             },
         )
@@ -300,7 +293,7 @@ class TestAttachmentUploadRecord:
         mfd = FILE_DICT.copy()
         mfd.update({"path": path, "encryption_context": "context"})
 
-        record = a.upload_record(dict(some="property"), mfd, check_mode=False)
+        record = a.upload_record("table", "1234", mfd, check_mode=False)
 
         assert dict(a=3, b="sys_id") == record
         client.request_binary.assert_called_with(
@@ -308,8 +301,9 @@ class TestAttachmentUploadRecord:
             "attachment/file",
             "text/markdown",
             bin_data=b"file_content",
-            payload={
-                "some": "property",
+            query={
+                "table_name": "table",
+                "table_sys_id": "1234",
                 "file_name": "attachment_name",
                 "encryption_context": "context",
             },
@@ -321,11 +315,12 @@ class TestAttachmentUploadRecord:
         )
         a = attachment.AttachmentClient(client)
 
-        record = a.upload_record(dict(some="property"), FILE_DICT, check_mode=True)
+        record = a.upload_record("table", "1234", FILE_DICT, check_mode=True)
 
         assert (
             dict(
-                some="property",
+                table_name="table",
+                table_sys_id="1234",
                 file_name="attachment_name",
             )
             == record
@@ -352,7 +347,7 @@ class TestAttachmentUploadRecords:
         mfdl[0].update({"path": path1})
         mfdl[1].update({"path": path2})
 
-        record = a.upload_records(dict(some="property"), mfdl, check_mode=False)
+        record = a.upload_records("table", "1234", mfdl, check_mode=False)
 
         assert [dict(a=3, b="sys_id"), dict(a=4, b="sys_idn")] == record
         assert 2 == client.request_binary.call_count
@@ -361,8 +356,9 @@ class TestAttachmentUploadRecords:
             "attachment/file",
             "text/markdown",
             bin_data=b"file_content1",
-            payload={
-                "some": "property",
+            query={
+                "table_name": "table",
+                "table_sys_id": "1234",
                 "file_name": "attachment_name",
             },
         )
@@ -371,8 +367,9 @@ class TestAttachmentUploadRecords:
             "attachment/file",
             "text/plain",
             bin_data=b"file_content2",
-            payload={
-                "some": "property",
+            query={
+                "table_name": "table",
+                "table_sys_id": "1234",
                 "file_name": os.path.splitext(os.path.basename(path2))[0],
             },
         )
@@ -387,15 +384,17 @@ class TestAttachmentUploadRecords:
         mfdl = list(FILE_DICT_LIST)
         mfdl[1].update({"path": "some/path/to/file.txt"})
 
-        record = a.upload_records(dict(some="property"), mfdl, check_mode=True)
+        record = a.upload_records("table", "1234", mfdl, check_mode=True)
 
         assert [
             dict(
-                some="property",
+                table_name="table",
+                table_sys_id="1234",
                 file_name="attachment_name",
             ),
             dict(
-                some="property",
+                table_name="table",
+                table_sys_id="1234",
                 file_name="file",
             ),
         ] == record
@@ -440,7 +439,7 @@ class TestAttachmentDeleteRecords:
         client.delete.return_value = Response(204, "")
         a = attachment.AttachmentClient(client)
 
-        a.delete_attached_records(dict(table_name="table", table_sys_id=5555), False)
+        a.delete_attached_records("table", 5555, False)
 
         assert client.delete.call_count == 2
         client.delete.assert_any_call("attachment/1234")
@@ -455,9 +454,7 @@ class TestAttachmentDeleteRecords:
         client.delete.side_effect = errors.UnexpectedAPIResponse(404, "")
         a = attachment.AttachmentClient(client)
 
-        assert a.delete_attached_records(
-            dict(table_name="table", table_sys_id=5555), False
-        ) == [{"changed": False}, {"changed": False}]
+        assert a.delete_attached_records("table", 5555, False) == [{"changed": False}, {"changed": False}]
 
     def test_check_mode(self, client):
         client.get.return_value = Response(
@@ -468,7 +465,7 @@ class TestAttachmentDeleteRecords:
         client.delete.return_value = Response(204, "")
         a = attachment.AttachmentClient(client)
 
-        a.delete_attached_records(dict(table_name="table", table_sys_id=5555), True)
+        a.delete_attached_records("table", 5555, True)
         client.delete.assert_not_called()
 
 
@@ -488,7 +485,7 @@ class TestAttachmentIsChanged:
         mfd = FILE_DICT.copy()
         mfd.update({"path": path})
 
-        assert not a.is_changed(dict(some="payload"), mfd)
+        assert not a.is_changed("table", "1234", mfd)
 
     def test_changed(self, client):
         client.get.return_value = Response(
@@ -505,7 +502,7 @@ class TestAttachmentIsChanged:
         mfd = FILE_DICT.copy()
         mfd.update({"path": path})
 
-        assert a.is_changed(dict(some="payload"), mfd)
+        assert a.is_changed("table", "1234", mfd)
 
 
 class TestAttachmentAreChanged:
@@ -535,7 +532,7 @@ class TestAttachmentAreChanged:
         mfdl[0].update({"path": path1})
         mfdl[1].update({"path": path2})
 
-        assert a.are_changed(dict(some="payload"), mfdl) == [False, False]
+        assert a.are_changed("table", "1234", mfdl) == [False, False]
 
     def test_changed(self, client):
         client.get.side_effect = [
@@ -563,7 +560,7 @@ class TestAttachmentAreChanged:
         mfdl[0].update({"path": path1})
         mfdl[1].update({"path": path2})
 
-        assert a.are_changed(dict(some="payload"), mfdl) == [True, True]
+        assert a.are_changed("table", "1234", mfdl) == [True, True]
 
 
 class TestAttachmentUpdateRecord:
@@ -587,7 +584,7 @@ class TestAttachmentUpdateRecord:
             "msg": "Skipped. Hash matches remote.",
             "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
             "b": "sys_id",
-        } == a.update_record(dict(some="payload"), mfd)
+        } == a.update_record("table", "1234", mfd)
 
     def test_changed_normal_mode(self, client):
         client.get.return_value = Response(
@@ -613,7 +610,7 @@ class TestAttachmentUpdateRecord:
             "msg": "Changes detected, hash doesn't match remote. Remote updated.",
             "a": 3,
             "sys_id": "b",
-        } == a.update_record(dict(some="payload"), mfd)
+        } == a.update_record("table", "1234", mfd)
 
     def test_unchanged_check_mode(self, client):
         client.get.return_value = Response(
@@ -635,7 +632,7 @@ class TestAttachmentUpdateRecord:
             "msg": "Skipped. Hash matches remote.",
             "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
             "b": "sys_id",
-        } == a.update_record(dict(some="payload"), mfd, True)
+        } == a.update_record("table", "1234", mfd, True)
 
     def test_changed_check_mode(self, client):
         client.get.return_value = Response(
@@ -659,9 +656,10 @@ class TestAttachmentUpdateRecord:
         assert {
             "changed": True,
             "msg": "Changes detected, hash doesn't match remote. Remote updated.",
-            "some": "payload",
+            "table_name": "table",
+            "table_sys_id": "1234",
             "file_name": "attachment_name",
-        } == a.update_record(dict(some="payload"), mfd, True)
+        } == a.update_record("table", "1234", mfd, True)
 
 
 class TestAttachmentUpdateRecords:
@@ -702,7 +700,7 @@ class TestAttachmentUpdateRecords:
                 "msg": "Skipped. Hash matches remote.",
                 "hash": "3d849a08ee8758d7b66cc9d62b21059ac07e897084933f4c3c66f4583b5f8c94",
             },
-        ] == a.update_records(dict(some="payload"), mfdl)
+        ] == a.update_records("table", "1234", mfdl)
 
     def test_changed_normal_mode(self, client):
         rone = Response(
@@ -747,7 +745,7 @@ class TestAttachmentUpdateRecords:
                 "a": 2,
                 "sys_id": "b",
             },
-        ] == a.update_records(dict(some="payload"), mfdl)
+        ] == a.update_records("table", "1234", mfdl)
 
     def test_unchanged_check_mode(self, client):
         rone = Response(
@@ -786,7 +784,7 @@ class TestAttachmentUpdateRecords:
                 "msg": "Skipped. Hash matches remote.",
                 "hash": "3d849a08ee8758d7b66cc9d62b21059ac07e897084933f4c3c66f4583b5f8c94",
             },
-        ] == a.update_records(dict(some="payload"), mfdl, True)
+        ] == a.update_records("table", "1234", mfdl, True)
 
     def test_changed_check_mode(self, client):
         rone = Response(
@@ -822,13 +820,15 @@ class TestAttachmentUpdateRecords:
             {
                 "changed": True,
                 "msg": "Changes detected, hash doesn't match remote. Remote updated.",
-                "some": "payload",
+                "table_name": "table",
+                "table_sys_id": "1234",
                 "file_name": "attachment_name",
             },
             {
                 "changed": True,
                 "msg": "Changes detected, hash doesn't match remote. Remote updated.",
-                "some": "payload",
+                "table_name": "table",
+                "table_sys_id": "1234",
                 "file_name": os.path.splitext(os.path.basename(path2))[0],
             },
-        ] == a.update_records(dict(some="payload"), mfdl, True)
+        ] == a.update_records("table", "1234", mfdl, True)

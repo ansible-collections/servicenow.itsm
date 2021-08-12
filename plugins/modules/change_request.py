@@ -233,7 +233,8 @@ def ensure_absent(module, table_client, attachment_client):
 
     if change:
         attachment_client.delete_attached_records(
-            dict(table_name="change_request", table_sys_id=change["sys_id"]),
+            "change_request",
+            change["sys_id"],
             module.check_mode,
         )
         table_client.delete_record("change_request", change, module.check_mode)
@@ -272,7 +273,8 @@ def ensure_present(module, table_client, attachment_client):
         )
 
         new["attachments"] = attachment_client.upload_records(
-            dict(table_name="change_request", table_sys_id=new.get("sys_id", "N/A")),
+            "change_request",
+            new.get("sys_id", "N/A"),
             module.params["attachments"],
             module.check_mode,
         )
@@ -286,7 +288,7 @@ def ensure_present(module, table_client, attachment_client):
     old["attachments"] = attachment_client.list_records(attachment_payload)
 
     if utils.is_superset(old, payload) and not any(
-        attachment_client.are_changed(attachment_payload, module.params["attachments"])
+        attachment_client.are_changed("change_request", old["sys_id"], module.params["attachments"])
     ):
         # No change in parameters we are interested in - nothing to do.
         return False, old, dict(before=old, after=old)
@@ -301,7 +303,8 @@ def ensure_present(module, table_client, attachment_client):
         )
     )
     changed = attachment_client.update_records(
-        dict(table_name="change_request", table_sys_id=old["sys_id"]),
+        "change_request",
+        old["sys_id"],
         module.params["attachments"],
         module.check_mode,
     )

@@ -265,7 +265,8 @@ def ensure_absent(module, table_client, attachment_client):
             configuration_item = table_client.get_record(cmdb_table, query)
 
         attachment_client.delete_attached_records(
-            dict(table_name=cmdb_table, table_sys_id=configuration_item["sys_id"]),
+            cmdb_table,
+            configuration_item["sys_id"],
             module.check_mode,
         )
         table_client.delete_record(cmdb_table, configuration_item, module.check_mode)
@@ -308,7 +309,8 @@ def ensure_present(module, table_client, attachment_client):
         )
 
         new["attachments"] = attachment_client.upload_records(
-            dict(table_name=cmdb_table, table_sys_id=new.get("sys_id", "N/A")),
+            cmdb_table,
+            new.get("sys_id", "N/A"),
             module.params["attachments"],
             module.check_mode,
         )
@@ -338,7 +340,8 @@ def ensure_present(module, table_client, attachment_client):
         )
     )
     changed = attachment_client.update_records(
-        dict(table_name=cmdb_table, table_sys_id=old["sys_id"]),
+        cmdb_table,
+        old["sys_id"],
         module.params["attachments"],
         module.check_mode,
     )
