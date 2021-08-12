@@ -157,8 +157,7 @@ class AttachmentClient:
 def get_file_name(file_dict):
     if "name" in file_dict and file_dict["name"] is not None:
         return file_dict["name"]
-    else:
-        return os.path.splitext(os.path.basename(file_dict["path"]))[0]
+   return os.path.splitext(os.path.basename(file_dict["path"]))[0]
 
 
 def get_file_type(file_dict):
