@@ -38,7 +38,9 @@ class TestValidate:
 
     def test_invalid_type(self):
         result = configuration_item_batch.validate("a", dict(a=3), True, str)
-        assert result == ["a should be <class 'str'>"] or ["a should be <type 'str'>"]
+        assert result == ["a should be <class 'str'>"] or result == [
+            "a should be <type 'str'>"
+        ]
 
 
 class TestValidateArguments:
