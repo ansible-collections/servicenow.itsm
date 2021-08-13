@@ -15,7 +15,7 @@ from . import errors
 
 
 def _path(*subpaths):
-    return "/".join(filter(None, ("attachment",) + subpaths))
+    return "/".join(("attachment",) + subpaths)
 
 
 class AttachmentClient:
