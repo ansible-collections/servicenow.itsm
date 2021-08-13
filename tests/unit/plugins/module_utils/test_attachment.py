@@ -97,6 +97,14 @@ class TestAttachmentFileHash:
         )
 
 
+class TestAttachmentGetHash:
+    def test_hash(self):
+        assert (
+            attachment.get_hash(b"file_content")
+            == "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff"
+        )
+
+
 class TestAttachmentListRecords:
     def test_empty_response_meta(self, client):
         client.get.return_value = Response(
@@ -278,6 +286,7 @@ class TestAttachmentUploadRecord:
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
+                "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
             },
         )
 
@@ -306,6 +315,7 @@ class TestAttachmentUploadRecord:
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
                 "encryption_context": "context",
+                "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
             },
         )
 
@@ -315,13 +325,20 @@ class TestAttachmentUploadRecord:
         )
         a = attachment.AttachmentClient(client)
 
-        record = a.upload_record("table", "1234", FILE_DICT, check_mode=True)
+        fd, path = mkstemp()
+        with os.fdopen(fd, "w") as f:
+            f.write("file_content")
+        mfd = FILE_DICT.copy()
+        mfd.update({"path": path})
+
+        record = a.upload_record("table", "1234", mfd, check_mode=True)
 
         assert (
             dict(
                 table_name="table",
                 table_sys_id="1234",
                 file_name="attachment_name",
+                hash="76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
             )
             == record
         )
@@ -360,6 +377,7 @@ class TestAttachmentUploadRecords:
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
+                "hash": "290d3cdb3c4d8ba8cf79b84d2d59b15a6b6f350899f0aee9b8ccc52450457d7a",
             },
         )
         client.request_binary.assert_any_call(
@@ -371,6 +389,7 @@ class TestAttachmentUploadRecords:
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": os.path.splitext(os.path.basename(path2))[0],
+                "hash": "6aba215fac895ced736daa52a9d387dfe7ced17681b91add072136891011205d",
             },
         )
 
@@ -381,24 +400,39 @@ class TestAttachmentUploadRecords:
         ]
         a = attachment.AttachmentClient(client)
 
+        fd1, path1 = mkstemp()
+        with os.fdopen(fd1, "w") as f:
+            f.write("file_content1")
+        fd2, path2 = mkstemp()
+        with os.fdopen(fd2, "w") as f:
+            f.write("file_content2")
+
         mfdl = list(FILE_DICT_LIST)
-        mfdl[1].update({"path": "some/path/to/file.txt"})
+        mfdl[0].update({"path": path1})
+        mfdl[1].update({"path": path2})
 
         record = a.upload_records("table", "1234", mfdl, check_mode=True)
 
         assert [
-            dict(
-                table_name="table",
-                table_sys_id="1234",
-                file_name="attachment_name",
-            ),
-            dict(
-                table_name="table",
-                table_sys_id="1234",
-                file_name="file",
-            ),
+            {
+                "table_name": "table",
+                "table_sys_id": "1234",
+                "file_name": "attachment_name",
+                "hash": "290d3cdb3c4d8ba8cf79b84d2d59b15a6b6f350899f0aee9b8ccc52450457d7a",
+            },
+            {
+                "table_name": "table",
+                "table_sys_id": "1234",
+                "file_name": os.path.splitext(os.path.basename(path2))[0],
+                "hash": "6aba215fac895ced736daa52a9d387dfe7ced17681b91add072136891011205d",
+            },
         ] == record
         client.request_binary.assert_not_called()
+
+    def test_missing_file(self, client):
+        a = attachment.AttachmentClient(client)
+        with pytest.raises(errors.ServiceNowError, match="Cannot open {0}".format(FILE_DICT_LIST[0]["path"])):
+            a.upload_records("table", "1234", FILE_DICT_LIST, True)
 
 
 class TestAttachmentDeleteRecord:
@@ -408,12 +442,6 @@ class TestAttachmentDeleteRecord:
         a.delete_record(dict(sys_id="1234"), False)
 
         client.delete.assert_called_with("attachment/1234")
-
-    def test_normal_mode_missing_ignore(self, client):
-        a = attachment.AttachmentClient(client)
-        record = a.delete_record(None, False, True)
-
-        assert {"changed": False, "msg": "Skipped. Record doesn't exist."} == record
 
     def test_normal_mode_missing(self, client):
         client.delete.side_effect = errors.UnexpectedAPIResponse(404, "")
@@ -454,7 +482,10 @@ class TestAttachmentDeleteRecords:
         client.delete.side_effect = errors.UnexpectedAPIResponse(404, "")
         a = attachment.AttachmentClient(client)
 
-        assert a.delete_attached_records("table", 5555, False) == [{"changed": False}, {"changed": False}]
+        assert a.delete_attached_records("table", 5555, False) == [
+            {"changed": False},
+            {"changed": False},
+        ]
 
     def test_check_mode(self, client):
         client.get.return_value = Response(
@@ -659,6 +690,7 @@ class TestAttachmentUpdateRecord:
             "table_name": "table",
             "table_sys_id": "1234",
             "file_name": "attachment_name",
+            "hash": "bf96094e7d9020306b1b61313a7429b3b0368b992a96b673c8397c2d2a57b35b",
         } == a.update_record("table", "1234", mfd, True)
 
 
@@ -823,6 +855,7 @@ class TestAttachmentUpdateRecords:
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
+                "hash": "bf96094e7d9020306b1b61313a7429b3b0368b992a96b673c8397c2d2a57b35b",
             },
             {
                 "changed": True,
@@ -830,5 +863,6 @@ class TestAttachmentUpdateRecords:
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": os.path.splitext(os.path.basename(path2))[0],
+                "hash": "60e55075c46f4d8ade1c6dfbb120c87025ea8051add153f289b93438daf2c8d0",
             },
         ] == a.update_records("table", "1234", mfdl, True)

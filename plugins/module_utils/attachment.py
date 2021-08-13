@@ -86,10 +86,12 @@ class AttachmentClient:
         ):
             query["encryption_context"] = metadata["encryption_context"]
 
-        data = None
-        if not check_mode:
+        try:
             with open(metadata["path"], "rb") as file_obj:
                 data = file_obj.read()
+                query["hash"] = get_hash(data)
+        except (IOError, OSError):
+            raise errors.ServiceNowError("Cannot open {0}".format(metadata["path"]))
         return self.create_record(query, data, check_mode, file_type)
 
     def upload_records(self, table, table_sys_id, metadata_list, check_mode):
@@ -98,20 +100,17 @@ class AttachmentClient:
             for metadata in (metadata_list or [])
         ]
 
-    def delete_record(self, record, check_mode, silent=False):
+    def delete_record(self, record, check_mode):
         if not check_mode:
-            if record is None and silent:
-                return {"changed": False, "msg": "Skipped. Record doesn't exist."}
-            else:
-                try:
-                    self.client.delete(_path(record["sys_id"]))
-                    return {"changed": True}
-                except errors.UnexpectedAPIResponse:
-                    return {"changed": False}
+            try:
+                self.client.delete(_path(record["sys_id"]))
+                return {"changed": True}
+            except errors.UnexpectedAPIResponse:
+                return {"changed": False}
 
-    def delete_attached_records(self, table, table_sys_id, check_mode, silent=False):
+    def delete_attached_records(self, table, table_sys_id, check_mode):
         return [
-            self.delete_record(record, check_mode, silent)
+            self.delete_record(record, check_mode)
             for record in self.list_records(
                 dict(
                     table_name=table,
@@ -136,11 +135,7 @@ class AttachmentClient:
 
     def update_record(self, table, table_sys_id, metadata, check_mode=False):
         if self.is_changed(table, table_sys_id, metadata):
-            self.delete_record(
-                self.get_record(build_query(table, table_sys_id, metadata)),
-                check_mode,
-                True,
-            )
+            self.delete_record(self.get_record(build_query(table, table_sys_id, metadata)), check_mode)
             return dict(
                 {
                     "changed": True,
@@ -184,4 +179,8 @@ def build_query(table, table_sys_id, metadata):
 
 def file_hash(file):
     with open(file, "rb") as f:
-        return hashlib.sha256(f.read()).hexdigest()
+        return get_hash(f.read())
+
+
+def get_hash(data):
+    return hashlib.sha256(data).hexdigest()
