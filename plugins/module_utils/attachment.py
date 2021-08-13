@@ -15,7 +15,7 @@ from . import errors
 
 
 def _path(*subpaths):
-    return "/".join(filter(None, ("attachment",) + subpaths))
+    return "/".join(("attachment",) + subpaths)
 
 
 class AttachmentClient:
@@ -26,8 +26,7 @@ class AttachmentClient:
         self.batch_size = batch_size
 
     def list_records(self, query=None):
-        base_query = query or {}
-        base_query["sysparm_limit"] = self.batch_size
+        base_query = dict(query or {}, sysparm_limit=self.batch_size)
 
         offset = 0
         total = 1  # Dummy value that ensures loop executes at least once
