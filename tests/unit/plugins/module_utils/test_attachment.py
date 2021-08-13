@@ -223,7 +223,7 @@ class TestAttachmentGetRecord:
 
 class TestAttachmentCreateRecord:
     def test_normal_mode(self, client):
-        client.request_binary.return_value = Response(
+        client.request.return_value = Response(
             201, '{"result": {"a": 3, "b": "sys_id"}}'
         )
         a = attachment.AttachmentClient(client)
@@ -236,16 +236,16 @@ class TestAttachmentCreateRecord:
         )
 
         assert dict(a=3, b="sys_id") == record
-        client.request_binary.assert_called_with(
+        client.request.assert_called_with(
             "POST",
             "attachment/file",
-            "text/plain",
-            "file_content",
-            {"some": "property"},
+            query={"some": "property"},
+            headers={"Accept": "application/json", "Content-type": "text/plain"},
+            bytes="file_content"
         )
 
     def test_check_mode(self, client):
-        client.request_binary.return_value = Response(
+        client.request.return_value = Response(
             201, '{"result": {"a": 3, "b": "sys_id"}}'
         )
         a = attachment.AttachmentClient(client)
@@ -258,12 +258,12 @@ class TestAttachmentCreateRecord:
         )
 
         assert dict(some="property") == record
-        client.request_binary.assert_not_called()
+        client.request.assert_not_called()
 
 
 class TestAttachmentUploadRecord:
     def test_normal_mode(self, client):
-        client.request_binary.return_value = Response(
+        client.request.return_value = Response(
             201, '{"result": {"a": 3, "b": "sys_id"}}'
         )
         a = attachment.AttachmentClient(client)
@@ -277,21 +277,21 @@ class TestAttachmentUploadRecord:
         record = a.upload_record("table", "1234", mfd, check_mode=False)
 
         assert dict(a=3, b="sys_id") == record
-        client.request_binary.assert_called_with(
+        client.request.assert_called_with(
             "POST",
             "attachment/file",
-            "text/markdown",
-            b"file_content",
-            {
+            query={
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
                 "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
             },
+            headers={"Accept": "application/json", "Content-type": "text/markdown"},
+            bytes=b"file_content"
         )
 
     def test_normal_mode_passing_encryption_context(self, client):
-        client.request_binary.return_value = Response(
+        client.request.return_value = Response(
             201, '{"result": {"a": 3, "b": "sys_id"}}'
         )
         a = attachment.AttachmentClient(client)
@@ -305,22 +305,22 @@ class TestAttachmentUploadRecord:
         record = a.upload_record("table", "1234", mfd, check_mode=False)
 
         assert dict(a=3, b="sys_id") == record
-        client.request_binary.assert_called_with(
+        client.request.assert_called_with(
             "POST",
             "attachment/file",
-            "text/markdown",
-            b"file_content",
-            {
+            query={
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
                 "encryption_context": "context",
                 "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
             },
+            headers={"Accept": "application/json", "Content-type": "text/markdown"},
+            bytes=b"file_content"
         )
 
     def test_check_mode(self, client):
-        client.request_binary.return_value = Response(
+        client.request.return_value = Response(
             201, '{"result": {"a": 3, "b": "sys_id"}}'
         )
         a = attachment.AttachmentClient(client)
@@ -342,12 +342,12 @@ class TestAttachmentUploadRecord:
             )
             == record
         )
-        client.request_binary.assert_not_called()
+        client.request.assert_not_called()
 
 
 class TestAttachmentUploadRecords:
     def test_normal_mode(self, client):
-        client.request_binary.side_effect = [
+        client.request.side_effect = [
             Response(201, '{"result": {"a": 3, "b": "sys_id"}}'),
             Response(201, '{"result": {"a": 4, "b": "sys_idn"}}'),
         ]
@@ -367,34 +367,34 @@ class TestAttachmentUploadRecords:
         record = a.upload_records("table", "1234", mfdl, check_mode=False)
 
         assert [dict(a=3, b="sys_id"), dict(a=4, b="sys_idn")] == record
-        assert 2 == client.request_binary.call_count
-        client.request_binary.assert_any_call(
+        assert 2 == client.request.call_count
+        client.request.assert_any_call(
             "POST",
             "attachment/file",
-            "text/markdown",
-            b"file_content1",
-            {
+            query={
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
                 "hash": "290d3cdb3c4d8ba8cf79b84d2d59b15a6b6f350899f0aee9b8ccc52450457d7a",
             },
+            headers={"Accept": "application/json", "Content-type": "text/markdown"},
+            bytes=b"file_content1"
         )
-        client.request_binary.assert_any_call(
+        client.request.assert_any_call(
             "POST",
             "attachment/file",
-            "text/plain",
-            b"file_content2",
-            {
+            query={
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": os.path.splitext(os.path.basename(path2))[0],
                 "hash": "6aba215fac895ced736daa52a9d387dfe7ced17681b91add072136891011205d",
             },
+            headers={"Accept": "application/json", "Content-type": "text/plain"},
+            bytes=b"file_content2"
         )
 
     def test_check_mode(self, client):
-        client.request_binary.side_effect = [
+        client.request.side_effect = [
             Response(201, '{"result": {"a": 3, "b": "sys_id"}}'),
             Response(201, '{"result": {"a": 4, "b": "sys_idn"}}'),
         ]
@@ -427,7 +427,7 @@ class TestAttachmentUploadRecords:
                 "hash": "6aba215fac895ced736daa52a9d387dfe7ced17681b91add072136891011205d",
             },
         ] == record
-        client.request_binary.assert_not_called()
+        client.request.assert_not_called()
 
     def test_missing_file(self, client):
         a = attachment.AttachmentClient(client)
@@ -622,7 +622,7 @@ class TestAttachmentUpdateRecord:
             '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "sys_id": "b"}]}',
             {"X-Total-Count": "1"},
         )
-        client.request_binary.return_value = Response(
+        client.request.return_value = Response(
             201, '{"result": {"a": 3, "sys_id": "b"}}'
         )
         client.delete.return_value = Response(204, "")
@@ -670,7 +670,7 @@ class TestAttachmentUpdateRecord:
             '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "sys_id": "b"}]}',
             {"X-Total-Count": "1"},
         )
-        client.request_binary.return_value = Response(
+        client.request.return_value = Response(
             201, '{"result": {"a": 3, "sys_id": "b"}}'
         )
         client.delete.return_value = Response(204, "")
@@ -745,7 +745,7 @@ class TestAttachmentUpdateRecords:
             {"X-Total-Count": "1"},
         )
         client.get.side_effect = [rone, rone, rtwo, rtwo]
-        client.request_binary.side_effect = [
+        client.request.side_effect = [
             Response(201, '{"result": {"a": 1, "sys_id": "a"}}'),
             Response(201, '{"result": {"a": 2, "sys_id": "b"}}'),
         ]
@@ -829,7 +829,7 @@ class TestAttachmentUpdateRecords:
             {"X-Total-Count": "1"},
         )
         client.get.side_effect = [rone, rone, rtwo, rtwo]
-        client.request_binary.side_effect = [
+        client.request.side_effect = [
             Response(201, '{"result": {"a": 1, "sys_id": "a"}}'),
             Response(201, '{"result": {"a": 2, "sys_id": "b"}}'),
         ]

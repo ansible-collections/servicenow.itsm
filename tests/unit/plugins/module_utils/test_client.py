@@ -96,7 +96,11 @@ class TestClientAuthHeader:
         request_mock.open.return_value = resp_mock
 
         c = client.Client(
-            "https://instance.com", "user", "pass", client_id="id", client_secret="secret"
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
         )
 
         assert c.auth_header == {"Authorization": "Bearer token"}
@@ -108,7 +112,11 @@ class TestClientAuthHeader:
         )
 
         c = client.Client(
-            "https://instance.com", "user", "pass", client_id="id", client_secret="secret"
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
         )
         with pytest.raises(errors.UnexpectedAPIResponse, match="Error message"):
             c.auth_header
@@ -123,7 +131,11 @@ class TestClientAuthHeader:
         request_mock.open.return_value = raw_resp_mock
 
         c = client.Client(
-            "https://instance.com", "user", "pass", client_id="id", client_secret="secret"
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
         )
         c.auth_header
         c.auth_header
@@ -248,9 +260,7 @@ class TestClientRequest:
         parsed_query = parse_qs(urlparse(path_arg).query)
         assert parsed_query == dict((k, [str(v)]) for k, v in query.items())
 
-
-class TestClientRequestBinary:
-    def test_request_without_data_success(self, mocker):
+    def test_request_without_data_binary_success(self, mocker):
         c = client.Client("https://instance.com", "user", "pass")
         mock_response = client.Response(
             200, "data", headers=[("Content-type", "image/apng")]
@@ -258,7 +268,11 @@ class TestClientRequestBinary:
         request_mock = mocker.patch.object(c, "_request")
         request_mock.return_value = mock_response
 
-        resp = c.request_binary("GET", "some/path", "text/plain", "image/apng")
+        resp = c.request(
+            "GET",
+            "some/path",
+            headers={"Accept": "image/apng", "Content-type": "text/plain"},
+        )
 
         request_mock.assert_called_once_with(
             "GET",
@@ -270,7 +284,7 @@ class TestClientRequestBinary:
         )
         assert resp == mock_response
 
-    def test_request_with_data_success(self, mocker):
+    def test_request_with_data_binary_success(self, mocker):
         c = client.Client("https://instance.com", "user", "pass")
         mock_response = client.Response(
             200, "some_data", headers=[("Content-type", "text/plain")]
@@ -278,8 +292,11 @@ class TestClientRequestBinary:
         request_mock = mocker.patch.object(c, "_request")
         request_mock.return_value = mock_response
 
-        resp = c.request_binary(
-            "PUT", "some/path", "text/plain", "text/plain", "some_data"
+        resp = c.request(
+            "PUT",
+            "some/path",
+            headers={"Accept": "text/plain", "Content-type": "text/plain"},
+            bytes="some_data"
         )
 
         request_mock.assert_called_once_with(
@@ -293,82 +310,6 @@ class TestClientRequestBinary:
             },
         )
         assert resp == mock_response
-
-    def test_auth_error(self, mocker):
-        request_mock = mocker.patch.object(client, "Request").return_value
-        request_mock.open.side_effect = HTTPError("", 401, "Unauthorized", {}, None)
-
-        c = client.Client("https://instance.com", "user", "pass")
-        with pytest.raises(errors.AuthError):
-            c.request_binary("GET", "some/path", "text/plain")
-
-    def test_http_error(self, mocker):
-        request_mock = mocker.patch.object(client, "Request").return_value
-        request_mock.open.side_effect = HTTPError(
-            "", 404, "Not Found", {}, io.StringIO(to_text("My Error"))
-        )
-
-        c = client.Client("https://instance.com", "user", "pass")
-        resp = c.request_binary("GET", "some/path", "text/plain")
-
-        assert resp.status == 404
-        assert resp.data == "My Error"
-        assert resp.headers == {}
-
-    def test_url_error(self, mocker):
-        request_mock = mocker.patch.object(client, "Request").return_value
-        request_mock.open.side_effect = URLError("some error")
-
-        c = client.Client("https://instance.com", "user", "pass")
-
-        with pytest.raises(errors.ServiceNowError, match="some error"):
-            c.request_binary("GET", "some/path", "text/plain")
-
-    def test_path_escaping(self, mocker):
-        request_mock = mocker.patch.object(client, "Request").return_value
-        raw_request = mocker.MagicMock(status=200)
-        raw_request.read.return_value = "{}"
-
-        c = client.Client("https://instance.com", "user", "pass")
-        c.request_binary("GET", "some path", "text/plain")
-
-        request_mock.open.assert_called_once()
-        path_arg = request_mock.open.call_args.args[1]
-        assert path_arg == "https://instance.com/api/now/some%20path"
-
-    @pytest.mark.parametrize("query", [None, {}])
-    def test_path_without_payload(self, mocker, query):
-        request_mock = mocker.patch.object(client, "Request").return_value
-        raw_request = mocker.MagicMock(status=200)
-        raw_request.read.return_value = "{}"
-
-        c = client.Client("https://instance.com", "user", "pass")
-        c.request_binary("GET", "some/path", "text/plain", query=query)
-
-        request_mock.open.assert_called_once()
-        path_arg = request_mock.open.call_args.args[1]
-        assert path_arg == "https://instance.com/api/now/some/path"
-
-    @pytest.mark.parametrize(
-        "query",
-        [
-            dict(a="b"),
-            dict(a="b", c=1),
-            dict(a="hello world"),
-        ],
-    )
-    def test_path_with_payload(self, mocker, query):
-        request_mock = mocker.patch.object(client, "Request").return_value
-        raw_request = mocker.MagicMock(status=200)
-        raw_request.read.return_value = "{}"
-
-        c = client.Client("https://instance.com", "user", "pass")
-        c.request_binary("GET", "some/path", "text/plain", query=query)
-
-        request_mock.open.assert_called_once()
-        path_arg = request_mock.open.call_args.args[1]
-        parsed_query = parse_qs(urlparse(path_arg).query)
-        assert parsed_query == dict((k, [str(v)]) for k, v in query.items())
 
 
 class TestClientGet:

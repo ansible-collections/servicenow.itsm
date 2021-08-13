@@ -62,8 +62,12 @@ class AttachmentClient:
         if check_mode:
             # Approximate the result using the payload and data.
             return query
-        return self.client.request_binary(
-            "POST", _path("file"), mime_type, data, (query or {})
+        return self.client.request(
+            "POST",
+            _path("file"),
+            query=(query or {}),
+            headers={"Accept": "application/json", "Content-type": mime_type},
+            bytes=data
         ).json["result"]
 
     def upload_record(self, table, table_sys_id, metadata, check_mode=False):
