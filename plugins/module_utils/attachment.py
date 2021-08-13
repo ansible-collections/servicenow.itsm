@@ -102,11 +102,7 @@ class AttachmentClient:
 
     def delete_record(self, record, check_mode):
         if not check_mode:
-            try:
-                self.client.delete(_path(record["sys_id"]))
-                return {"changed": True}
-            except errors.UnexpectedAPIResponse:
-                return {"changed": False}
+            self.client.delete(_path(record["sys_id"]))
 
     def delete_attached_records(self, table, table_sys_id, check_mode):
         return [

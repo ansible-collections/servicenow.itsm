@@ -444,10 +444,11 @@ class TestAttachmentDeleteRecord:
         client.delete.assert_called_with("attachment/1234")
 
     def test_normal_mode_missing(self, client):
-        client.delete.side_effect = errors.UnexpectedAPIResponse(404, "")
+        client.delete.side_effect = errors.UnexpectedAPIResponse(404, "Record not found")
         a = attachment.AttachmentClient(client)
 
-        assert a.delete_record(dict(sys_id="1234"), False) == {"changed": False}
+        with pytest.raises(errors.UnexpectedAPIResponse, match="not found"):
+            a.delete_record(dict(sys_id="1234"), False)
 
     def test_check_mode(self, client):
         client.delete.return_value = Response(204, "")
@@ -479,13 +480,11 @@ class TestAttachmentDeleteRecords:
             '{"result": [{"a": 3, "sys_id": "1234"}, {"a": 4, "sys_id": "4321"}]}',
             {"X-Total-Count": "2"},
         )
-        client.delete.side_effect = errors.UnexpectedAPIResponse(404, "")
+        client.delete.side_effect = errors.UnexpectedAPIResponse(404, "Record not found")
         a = attachment.AttachmentClient(client)
 
-        assert a.delete_attached_records("table", 5555, False) == [
-            {"changed": False},
-            {"changed": False},
-        ]
+        with pytest.raises(errors.UnexpectedAPIResponse, match="not found"):
+            a.delete_attached_records("table", 5555, False)
 
     def test_check_mode(self, client):
         client.get.return_value = Response(
