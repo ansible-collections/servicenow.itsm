@@ -80,10 +80,11 @@ class AttachmentClient:
         )
         try:
             with open(metadata["path"], "rb") as file_obj:
-                data = file_obj.read()
+                return self.create_record(
+                    query, file_obj, check_mode, query["content_type"]
+                )
         except (IOError, OSError):
             raise errors.ServiceNowError("Cannot open {0}".format(metadata["path"]))
-        return self.create_record(query, data, check_mode, query["content_type"])
 
     def upload_records(self, table, table_sys_id, metadata_dict, check_mode):
         return [
