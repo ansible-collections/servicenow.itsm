@@ -23,18 +23,18 @@ pytestmark = pytest.mark.skipif(
 
 FILE_DICT = {
     "path": "some/path/file_name.txt",
-    "name": "attachment_name",
+    "name": "attachment_name.txt",
     "type": "text/markdown",
     "hash": "hash",
 }
 
 FILE_DICT_DICT = {
-    "attachment_name": {
+    "attachment_name.txt": {
         "path": "some/path/file_name.txt",
         "type": "text/markdown",
         "hash": "hash",
     },
-    "another_file_name": {
+    "another_file_name.txt": {
         "path": "some/path/another_file_name.txt",
         "type": "text/plain",
         "hash": "hash",
@@ -44,12 +44,12 @@ FILE_DICT_DICT = {
 
 class TestAttachmentGetFileName:
     def test_name_specified(self):
-        assert attachment.get_file_name(FILE_DICT) == "attachment_name"
+        assert attachment.get_file_name(FILE_DICT) == "attachment_name.txt"
 
     def test_name_omitted(self):
         fd = FILE_DICT.copy()
         fd["name"] = None
-        assert attachment.get_file_name(fd) == "file_name"
+        assert attachment.get_file_name(fd) == "file_name.txt"
 
 
 class TestAttachmentGetFileType:
@@ -65,7 +65,7 @@ class TestAttachmentGetFileType:
 class TestAttachmentBuildQuery:
     def test_name_type_specified(self):
         assert attachment.build_query("table", "1234", FILE_DICT) == {
-            "file_name": "attachment_name",
+            "file_name": "attachment_name.txt",
             "content_type": "text/markdown",
             "table_name": "table",
             "table_sys_id": "1234",
@@ -75,7 +75,7 @@ class TestAttachmentBuildQuery:
         fd = FILE_DICT.copy()
         fd["name"] = None
         assert attachment.build_query("table", "1234", fd) == {
-            "file_name": "file_name",
+            "file_name": "file_name.txt",
             "content_type": "text/markdown",
             "table_name": "table",
             "table_sys_id": "1234",
@@ -85,7 +85,7 @@ class TestAttachmentBuildQuery:
         fd = FILE_DICT.copy()
         fd["type"] = None
         assert attachment.build_query("table", "1234", fd) == {
-            "file_name": "attachment_name",
+            "file_name": "attachment_name.txt",
             "content_type": "text/plain",
             "table_name": "table",
             "table_sys_id": "1234",
@@ -100,7 +100,7 @@ class TestAttachmentTransformMetadataList:
         },
         {
             "path": "some/path/file_name.txt",
-            "name": "attachment_name",
+            "name": "attachment_name.txt",
             "type": "text/markdown",
         },
     ]
@@ -124,12 +124,12 @@ class TestAttachmentTransformMetadataList:
         ml[1].update({"path": path2})
 
         assert attachment.transform_metadata_list(ml, module.sha256) == {
-            os.path.splitext(os.path.basename(path1))[0]: {
+            os.path.basename(path1): {
                 "path": path1,
                 "type": "text/plain",
                 "hash": "some_hash",
             },
-            "attachment_name": {
+            "attachment_name.txt": {
                 "path": path2,
                 "type": "text/markdown",
                 "hash": "some_hash",
@@ -152,12 +152,12 @@ class TestAttachmentTransformMetadataList:
         ml[1].update({"path": path})
 
         assert attachment.transform_metadata_list(ml, module.sha256) == {
-            os.path.splitext(os.path.basename(path))[0]: {
+            os.path.basename(path): {
                 "path": path,
                 "type": "text/plain",
                 "hash": "some_hash",
             },
-            "attachment_name": {
+            "attachment_name.txt": {
                 "path": path,
                 "type": "text/markdown",
                 "hash": "some_hash",
@@ -179,7 +179,7 @@ class TestAttachmentTransformMetadataList:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_contents")
 
-        ml[0].update({"path": path1, "name": "attachment_name"})
+        ml[0].update({"path": path1, "name": "attachment_name.txt"})
         ml[1].update({"path": path2})
 
         with pytest.raises(
@@ -192,15 +192,15 @@ class TestAttachmentTransformMetadataList:
 class TestAttachmentAreChanged:
     def test_unchanged(self):
         records = [
-            {"hash": "hash", "file_name": "attachment_name"},
-            {"hash": "hash", "file_name": "another_file_name"},
+            {"hash": "hash", "file_name": "attachment_name.txt"},
+            {"hash": "hash", "file_name": "another_file_name.txt"},
         ]
         assert attachment.are_changed(records, FILE_DICT_DICT) == [False, False]
 
     def test_changed(self):
         records = [
-            {"hash": "oldhash", "file_name": "attachment_name"},
-            {"hash": "oldhash", "file_name": "another_file_name"},
+            {"hash": "oldhash", "file_name": "attachment_name.txt"},
+            {"hash": "oldhash", "file_name": "another_file_name.txt"},
         ]
         assert attachment.are_changed(records, FILE_DICT_DICT) == [True, True]
 
@@ -383,7 +383,7 @@ class TestAttachmentUploadRecord:
             query={
                 "table_name": "table",
                 "table_sys_id": "1234",
-                "file_name": "attachment_name",
+                "file_name": "attachment_name.txt",
                 "content_type": "text/markdown",
                 "hash": "hash",
             },
@@ -408,7 +408,7 @@ class TestAttachmentUploadRecord:
         assert {
             "table_name": "table",
             "table_sys_id": "1234",
-            "file_name": "attachment_name",
+            "file_name": "attachment_name.txt",
             "content_type": "text/markdown",
             "hash": "hash",
         } == record
@@ -431,8 +431,8 @@ class TestAttachmentUploadRecords:
             f.write("file_content2")
 
         mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name"].update({"path": path1})
-        mfdd["another_file_name"].update({"path": path2})
+        mfdd["attachment_name.txt"].update({"path": path1})
+        mfdd["another_file_name.txt"].update({"path": path2})
 
         record = a.upload_records("table", "1234", mfdd, check_mode=False)
 
@@ -444,7 +444,7 @@ class TestAttachmentUploadRecords:
             query={
                 "table_name": "table",
                 "table_sys_id": "1234",
-                "file_name": "attachment_name",
+                "file_name": "attachment_name.txt",
                 "content_type": "text/markdown",
                 "hash": "hash",
             },
@@ -457,7 +457,7 @@ class TestAttachmentUploadRecords:
             query={
                 "table_name": "table",
                 "table_sys_id": "1234",
-                "file_name": "another_file_name",
+                "file_name": "another_file_name.txt",
                 "content_type": "text/plain",
                 "hash": "hash",
             },
@@ -479,8 +479,8 @@ class TestAttachmentUploadRecords:
             f.write("file_content2")
 
         mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name"].update({"path": path1})
-        mfdd["another_file_name"].update({"path": path2})
+        mfdd["attachment_name.txt"].update({"path": path1})
+        mfdd["another_file_name.txt"].update({"path": path2})
 
         record = a.upload_records("table", "1234", mfdd, check_mode=True)
 
@@ -488,14 +488,14 @@ class TestAttachmentUploadRecords:
             {
                 "table_name": "table",
                 "table_sys_id": "1234",
-                "file_name": "another_file_name",
+                "file_name": "another_file_name.txt",
                 "content_type": "text/plain",
                 "hash": "hash",
             },
             {
                 "table_name": "table",
                 "table_sys_id": "1234",
-                "file_name": "attachment_name",
+                "file_name": "attachment_name.txt",
                 "content_type": "text/markdown",
                 "hash": "hash",
             },
@@ -588,12 +588,12 @@ class TestAttachmentUpdateRecords:
             f.write("another_file_content")
 
         mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name"].update({"path": path1})
-        mfdd["another_file_name"].update({"path": path2})
+        mfdd["attachment_name.txt"].update({"path": path1})
+        mfdd["another_file_name.txt"].update({"path": path2})
 
         record = [
-            {"hash": "hash", "sys_id": "1", "file_name": "attachment_name"},
-            {"hash": "hash", "sys_id": "2", "file_name": "another_file_name"},
+            {"hash": "hash", "sys_id": "1", "file_name": "attachment_name.txt"},
+            {"hash": "hash", "sys_id": "2", "file_name": "another_file_name.txt"},
         ]
 
         changes = a.update_records("table", "1234", mfdd, record)
@@ -602,12 +602,12 @@ class TestAttachmentUpdateRecords:
             {
                 "hash": "hash",
                 "sys_id": "2",
-                "file_name": "another_file_name",
+                "file_name": "another_file_name.txt",
             },
             {
                 "hash": "hash",
                 "sys_id": "1",
-                "file_name": "attachment_name",
+                "file_name": "attachment_name.txt",
             },
         ] == sorted(changes, key=lambda k: k["file_name"])
 
@@ -627,12 +627,12 @@ class TestAttachmentUpdateRecords:
             f.write("another_file_contents")
 
         mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name"].update({"path": path1})
-        mfdd["another_file_name"].update({"path": path2})
+        mfdd["attachment_name.txt"].update({"path": path1})
+        mfdd["another_file_name.txt"].update({"path": path2})
 
         record = [
-            {"hash": "oldhash", "sys_id": "1", "file_name": "attachment_name"},
-            {"hash": "oldhash", "sys_id": "2", "file_name": "another_file_name"},
+            {"hash": "oldhash", "sys_id": "1", "file_name": "attachment_name.txt"},
+            {"hash": "oldhash", "sys_id": "2", "file_name": "another_file_name.txt"},
         ]
 
         changes = a.update_records("table", "1234", mfdd, record)
@@ -659,12 +659,12 @@ class TestAttachmentUpdateRecords:
             f.write("another_file_content")
 
         mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name"].update({"path": path1})
-        mfdd["another_file_name"].update({"path": path2})
+        mfdd["attachment_name.txt"].update({"path": path1})
+        mfdd["another_file_name.txt"].update({"path": path2})
 
         record = [
-            {"hash": "hash", "sys_id": "1", "file_name": "attachment_name"},
-            {"hash": "hash", "sys_id": "2", "file_name": "another_file_name"},
+            {"hash": "hash", "sys_id": "1", "file_name": "attachment_name.txt"},
+            {"hash": "hash", "sys_id": "2", "file_name": "another_file_name.txt"},
         ]
 
         changes = a.update_records("table", "1234", mfdd, record, True)
@@ -673,12 +673,12 @@ class TestAttachmentUpdateRecords:
             {
                 "hash": "hash",
                 "sys_id": "2",
-                "file_name": "another_file_name",
+                "file_name": "another_file_name.txt",
             },
             {
                 "hash": "hash",
                 "sys_id": "1",
-                "file_name": "attachment_name",
+                "file_name": "attachment_name.txt",
             },
         ] == sorted(changes, key=lambda k: k["file_name"])
 
@@ -698,12 +698,12 @@ class TestAttachmentUpdateRecords:
             f.write("another_file_contents")
 
         mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name"].update({"path": path1})
-        mfdd["another_file_name"].update({"path": path2})
+        mfdd["attachment_name.txt"].update({"path": path1})
+        mfdd["another_file_name.txt"].update({"path": path2})
 
         record = [
-            {"hash": "oldhash", "sys_id": "1", "file_name": "attachment_name"},
-            {"hash": "oldhash", "sys_id": "2", "file_name": "another_file_name"},
+            {"hash": "oldhash", "sys_id": "1", "file_name": "attachment_name.txt"},
+            {"hash": "oldhash", "sys_id": "2", "file_name": "another_file_name.txt"},
         ]
 
         record = a.update_records("table", "1234", mfdd, record, True)
@@ -714,13 +714,13 @@ class TestAttachmentUpdateRecords:
                 "table_sys_id": "1234",
                 "content_type": "text/plain",
                 "hash": "hash",
-                "file_name": "another_file_name",
+                "file_name": "another_file_name.txt",
             },
             {
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "content_type": "text/markdown",
                 "hash": "hash",
-                "file_name": "attachment_name",
+                "file_name": "attachment_name.txt",
             },
         ] == sorted(record, key=lambda k: k["file_name"])

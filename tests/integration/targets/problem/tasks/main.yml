@@ -24,7 +24,7 @@
           - first_problem.record.short_description == "my-problem"
           - first_problem.record.attachments != []
           - first_problem.record.attachments | length != 0
-          - first_problem.record.attachments[0].file_name == "sample_file"
+          - first_problem.record.attachments[0].file_name == "sample_file.txt"
 
     - name: Verify creation in check mode did not create a record
       servicenow.itsm.problem_info:

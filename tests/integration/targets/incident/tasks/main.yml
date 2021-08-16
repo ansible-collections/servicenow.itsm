@@ -33,7 +33,7 @@
           - result.record.urgency == "low"
           - result.record.attachments != []
           - result.record.attachments | length != 0
-          - result.record.attachments[0].file_name == "sample_file"
+          - result.record.attachments[0].file_name == "sample_file.txt"
 
 
     - name: Create test incident

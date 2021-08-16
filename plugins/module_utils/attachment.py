@@ -144,7 +144,7 @@ def transform_metadata_list(metadata_list, hashing_method):
 def get_file_name(metadata):
     if "name" in metadata and metadata["name"] is not None:
         return metadata["name"]
-    return os.path.splitext(os.path.basename(metadata["path"]))[0]
+    return os.path.basename(metadata["path"])
 
 
 def get_file_type(metadata):
