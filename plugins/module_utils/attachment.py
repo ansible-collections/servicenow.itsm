@@ -59,7 +59,6 @@ class AttachmentClient:
 
     def create_record(self, query, data, check_mode, mime_type):
         if check_mode:
-            # Approximate the result using the payload and data.
             return query
         return self.client.request(
             "POST",
@@ -88,7 +87,7 @@ class AttachmentClient:
     def upload_records(self, table, table_sys_id, metadata_dict, check_mode):
         return [
             self.upload_record(
-                table, table_sys_id, dict(name=name, **metadata), check_mode
+                table, table_sys_id, dict(metadata, name=name), check_mode
             )
             for name, metadata in metadata_dict.items()
         ]
@@ -127,7 +126,7 @@ class AttachmentClient:
                         "msg": "Changes detected, hash doesn't match remote. Remote updated.",
                     },
                     **self.upload_record(
-                        table, table_sys_id, dict(name=name, **metadata), check_mode
+                        table, table_sys_id, dict(metadata, name=name), check_mode
                     )
                 )
 
