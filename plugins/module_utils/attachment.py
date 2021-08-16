@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import collections
 import mimetypes
 import os
 
@@ -75,7 +76,7 @@ class AttachmentClient:
             table_sys_id=table_sys_id,
             file_name=metadata["name"],
             content_type=metadata["type"],
-            hash=metadata["hash"]
+            hash=metadata["hash"],
         )
         try:
             with open(metadata["path"], "rb") as file_obj:
@@ -98,7 +99,7 @@ class AttachmentClient:
 
     def delete_attached_records(self, table, table_sys_id, check_mode):
         for record in self.list_records(
-                dict(table_name=table, table_sys_id=table_sys_id)
+            dict(table_name=table, table_sys_id=table_sys_id)
         ):
             self.delete_record(record, check_mode)
 
@@ -112,7 +113,9 @@ class AttachmentClient:
             if (record or {}).get("hash") != metadata["hash"]:
                 if record is not None:
                     self.delete_record(record, check_mode)
-                mapped_records[name] = self.upload_record(table, table_sys_id, dict(metadata, name=name), check_mode)
+                mapped_records[name] = self.upload_record(
+                    table, table_sys_id, dict(metadata, name=name), check_mode
+                )
 
         return list(mapped_records.values())
 
@@ -120,8 +123,8 @@ class AttachmentClient:
 def transform_metadata_list(metadata_list, hashing_method):
     metadata_dict = dict()
     dups = collections.defaultdict(list)
-    
-    for metadata in (metadata_list or []):
+
+    for metadata in metadata_list or []:
         name = get_file_name(metadata)
         dups[name].append(metadata["path"])
         metadata_dict[name] = {
@@ -129,10 +132,12 @@ def transform_metadata_list(metadata_list, hashing_method):
             "type": get_file_type(metadata),
             "hash": hashing_method(metadata["path"]),
         }
-        
+
     dup_sets = ["({0})".format(", ".join(v)) for v in dups.values() if len(v) > 1]
     if dup_sets:
-        raise errors.ServiceNowError("Found the following duplicates: {0}".format(" ".join(dup_sets))))
+        raise errors.ServiceNowError(
+            "Found the following duplicates: {0}".format(" ".join(dup_sets))
+        )
     return metadata_dict
 
 

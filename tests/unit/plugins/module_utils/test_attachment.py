@@ -184,7 +184,7 @@ class TestAttachmentTransformMetadataList:
 
         with pytest.raises(
             errors.ServiceNowError,
-            match="Found 1 duplicates - cannot upload multiple attachments with the same name.",
+            match="Found the following duplicates: (.*, .*)",
         ):
             attachment.transform_metadata_list(ml, module.sha256)
 
