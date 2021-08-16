@@ -119,20 +119,20 @@ class AttachmentClient:
 
 def transform_metadata_list(metadata_list, hashing_method):
     metadata_dict = dict()
-    meta_list = metadata_list or []
-    for metadata in meta_list:
-        metadata_dict[get_file_name(metadata)] = {
+    dups = collections.defaultdict(list)
+    
+    for metadata in (metadata_list or []):
+        name = get_file_name(metadata)
+        dups[name].append(metadata["path"])
+        metadata_dict[name] = {
             "path": metadata["path"],
             "type": get_file_type(metadata),
             "hash": hashing_method(metadata["path"]),
         }
-
-    if len(meta_list) != len(metadata_dict):
-        raise errors.ServiceNowError(
-            "Found {0} duplicates - cannot upload multiple attachments with the same name.".format(
-                len(meta_list) - len(metadata_dict)
-            )
-        )
+        
+    dup_sets = ["({0})".format(", ".join(v)) for v in dups.values() if len(v) > 1]
+    if dup_sets:
+        raise errors.ServiceNowError("Found the following duplicates: {0}".format(" ".join(dup_sets))))
     return metadata_dict
 
 
