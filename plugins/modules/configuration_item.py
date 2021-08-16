@@ -313,7 +313,8 @@ def ensure_present(module, table_client, attachment_client):
 
         new["attachments"] = attachment_client.upload_records(
             cmdb_table,
-            new.get("sys_id", "N/A"),
+            new.get("sys_id", "N/A"),  # If sys_id is not defined, default to "N/A".
+            # This can only happen in check_mode and is therefore safe.
             attachments,
             module.check_mode,
         )
