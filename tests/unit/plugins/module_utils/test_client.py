@@ -296,7 +296,7 @@ class TestClientRequest:
             "PUT",
             "some/path",
             headers={"Accept": "text/plain", "Content-type": "text/plain"},
-            bytes="some_data"
+            bytes="some_data",
         )
 
         request_mock.assert_called_once_with(

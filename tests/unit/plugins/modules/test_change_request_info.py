@@ -107,7 +107,11 @@ class TestRun:
             dict(r=3, sys_id=1212),
         ]
         attachment_client.list_records.side_effect = [
-            [self.SAMPLE_ATTACHMENT, ], [], []
+            [
+                self.SAMPLE_ATTACHMENT,
+            ],
+            [],
+            [],
         ]
 
         change_requests = change_request_info.run(
@@ -118,12 +122,24 @@ class TestRun:
             "change_request", dict(number="n")
         )
 
-        attachment_client.list_records.assert_any_call({'table_name': 'change_request', 'table_sys_id': 1234})
-        attachment_client.list_records.assert_any_call({'table_name': 'change_request', 'table_sys_id': 4321})
-        attachment_client.list_records.assert_any_call({'table_name': 'change_request', 'table_sys_id': 1212})
+        attachment_client.list_records.assert_any_call(
+            {"table_name": "change_request", "table_sys_id": 1234}
+        )
+        attachment_client.list_records.assert_any_call(
+            {"table_name": "change_request", "table_sys_id": 4321}
+        )
+        attachment_client.list_records.assert_any_call(
+            {"table_name": "change_request", "table_sys_id": 1212}
+        )
         assert attachment_client.list_records.call_count == 3
         assert change_requests == [
-            dict(p=1, sys_id=1234, attachments=[self.SAMPLE_ATTACHMENT, ]),
+            dict(
+                p=1,
+                sys_id=1234,
+                attachments=[
+                    self.SAMPLE_ATTACHMENT,
+                ],
+            ),
             dict(q=2, sys_id=4321, attachments=[]),
             dict(r=3, sys_id=1212, attachments=[]),
         ]

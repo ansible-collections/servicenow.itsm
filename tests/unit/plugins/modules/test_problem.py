@@ -30,7 +30,9 @@ class TestEnsureAbsent:
                 sys_id="1234",
             )
         )
-        table_client.get_record.return_value = dict(state="107", number="PRB0000001", sys_id="1234")
+        table_client.get_record.return_value = dict(
+            state="107", number="PRB0000001", sys_id="1234"
+        )
 
         result = problem.ensure_absent(module, table_client, attachment_client)
 
@@ -38,10 +40,15 @@ class TestEnsureAbsent:
         assert result == (
             True,
             None,
-            dict(before=dict(state="closed", number="PRB0000001", sys_id="1234"), after=None),
+            dict(
+                before=dict(state="closed", number="PRB0000001", sys_id="1234"),
+                after=None,
+            ),
         )
 
-    def test_delete_problem_not_present(self, create_module, table_client, attachment_client):
+    def test_delete_problem_not_present(
+        self, create_module, table_client, attachment_client
+    ):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -192,7 +199,9 @@ class TestValidateParams:
 
 
 class TestEnsurePresent:
-    def test_ensure_present_create_new(self, create_module, table_client, attachment_client):
+    def test_ensure_present_create_new(
+        self, create_module, table_client, attachment_client
+    ):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -251,7 +260,9 @@ class TestEnsurePresent:
             ),
         )
 
-    def test_ensure_present_nothing_to_do(self, create_module, table_client, attachment_client):
+    def test_ensure_present_nothing_to_do(
+        self, create_module, table_client, attachment_client
+    ):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -316,7 +327,9 @@ class TestEnsurePresent:
             ),
         )
 
-    def test_ensure_present_update(self, mocker, create_module, table_client, attachment_client):
+    def test_ensure_present_update(
+        self, mocker, create_module, table_client, attachment_client
+    ):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),

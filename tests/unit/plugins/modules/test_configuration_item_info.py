@@ -43,7 +43,9 @@ class TestRemapCaller:
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
         params = dict(
-            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
         )
         success, result = run_main(configuration_item_info, params)
 
@@ -51,7 +53,9 @@ class TestMain:
 
     def test_all_params(self, run_main):
         params = dict(
-            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
             sys_class_name="cmdb_ci",
         )
@@ -78,7 +82,9 @@ class TestRun:
     def test_run(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
-                instance=dict(host="https://my.host.name", username="user", password="pass"),
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci",
                 query=None,
@@ -90,7 +96,11 @@ class TestRun:
             dict(r=3, sys_id=1212),
         ]
         attachment_client.list_records.side_effect = [
-            [self.SAMPLE_ATTACHMENT, ], [], []
+            [
+                self.SAMPLE_ATTACHMENT,
+            ],
+            [],
+            [],
         ]
 
         records = configuration_item_info.run(module, table_client, attachment_client)
@@ -98,12 +108,24 @@ class TestRun:
         table_client.list_records.assert_called_once_with(
             "cmdb_ci", dict(sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3")
         )
-        attachment_client.list_records.assert_any_call({'table_name': 'cmdb_ci', 'table_sys_id': 1234})
-        attachment_client.list_records.assert_any_call({'table_name': 'cmdb_ci', 'table_sys_id': 4321})
-        attachment_client.list_records.assert_any_call({'table_name': 'cmdb_ci', 'table_sys_id': 1212})
+        attachment_client.list_records.assert_any_call(
+            {"table_name": "cmdb_ci", "table_sys_id": 1234}
+        )
+        attachment_client.list_records.assert_any_call(
+            {"table_name": "cmdb_ci", "table_sys_id": 4321}
+        )
+        attachment_client.list_records.assert_any_call(
+            {"table_name": "cmdb_ci", "table_sys_id": 1212}
+        )
         assert attachment_client.list_records.call_count == 3
         assert records == [
-            dict(p=1, sys_id=1234, attachments=[self.SAMPLE_ATTACHMENT, ]),
+            dict(
+                p=1,
+                sys_id=1234,
+                attachments=[
+                    self.SAMPLE_ATTACHMENT,
+                ],
+            ),
             dict(q=2, sys_id=4321, attachments=[]),
             dict(r=3, sys_id=1212, attachments=[]),
         ]

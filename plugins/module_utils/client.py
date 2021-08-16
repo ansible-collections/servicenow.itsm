@@ -43,12 +43,21 @@ class Response:
 
 class Client:
     def __init__(
-        self, host, username=None, password=None, grant_type=None,
-        refresh_token=None, client_id=None, client_secret=None, timeout=None
+        self,
+        host,
+        username=None,
+        password=None,
+        grant_type=None,
+        refresh_token=None,
+        client_id=None,
+        client_secret=None,
+        timeout=None,
     ):
-        if not (host or "").startswith(('https://', 'http://')):
-            raise ServiceNowError("Invalid instance host value: '{0}'. "
-                                  "Value must start with 'https://' or 'http://'".format(host))
+        if not (host or "").startswith(("https://", "http://")):
+            raise ServiceNowError(
+                "Invalid instance host value: '{0}'. "
+                "Value must start with 'https://' or 'http://'".format(host)
+            )
 
         self.host = host
         self.username = username
@@ -77,7 +86,7 @@ class Client:
         return dict(Authorization=basic_auth_header(self.username, self.password))
 
     def _login_oauth(self):
-        if self.grant_type == 'refresh_token':
+        if self.grant_type == "refresh_token":
             auth_data = urlencode(
                 dict(
                     grant_type=self.grant_type,
@@ -135,7 +144,9 @@ class Client:
     def request(self, method, path, query=None, data=None, headers=None, bytes=None):
         # Make sure we only have one kind of payload
         if data is not None and bytes is not None:
-            raise AssertionError("Cannot have JSON and binary payload in a single request.")
+            raise AssertionError(
+                "Cannot have JSON and binary payload in a single request."
+            )
 
         escaped_path = quote(path.rstrip("/"))
         url = "{0}/api/now/{1}".format(self.host, escaped_path)
