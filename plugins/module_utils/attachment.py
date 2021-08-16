@@ -99,15 +99,10 @@ class AttachmentClient:
             self.client.delete(_path(record["sys_id"]))
 
     def delete_attached_records(self, table, table_sys_id, check_mode):
-        return [
+        for record in self.list_records(
+                dict(table_name=table, table_sys_id=table_sys_id)
+        ):
             self.delete_record(record, check_mode)
-            for record in self.list_records(
-                dict(
-                    table_name=table,
-                    table_sys_id=table_sys_id,
-                )
-            )
-        ]
 
     def update_records(
         self, table, table_sys_id, metadata_dict, records, check_mode=False
