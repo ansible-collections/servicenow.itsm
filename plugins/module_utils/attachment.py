@@ -176,8 +176,6 @@ def build_query(table, table_sys_id, metadata):
 def are_changed(records, metadata_dict):
     mapped_records = dict((r["file_name"], r) for r in records)
     return [
-        metadata["hash"] != mapped_records[name]["hash"]
-        if mapped_records.get(name, None) is not None
-        else True
+        metadata["hash"] != mapped_records.get(name, {}).get("hash")
         for name, metadata in metadata_dict.items()
     ]
