@@ -111,24 +111,10 @@ class AttachmentClient:
 
         for name, metadata in metadata_dict.items():
             record = mapped_records.get(name, None)
-
-            if record is not None and record["hash"] == metadata["hash"]:
-                mapped_records[name] = dict(
-                    {"changed": False, "msg": "Skipped. Hash matches remote."}, **record
-                )
-            else:
+            if (record or {}).get("hash") != metadata["hash"]:
                 if record is not None:
                     self.delete_record(record, check_mode)
-
-                mapped_records[name] = dict(
-                    {
-                        "changed": True,
-                        "msg": "Changes detected, hash doesn't match remote. Remote updated.",
-                    },
-                    **self.upload_record(
-                        table, table_sys_id, dict(metadata, name=name), check_mode
-                    )
-                )
+                mapped_records[name] = self.upload_record(table, table_sys_id, dict(metadata, name=name), check_mode)
 
         return list(mapped_records.values())
 

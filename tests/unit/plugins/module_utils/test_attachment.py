@@ -600,15 +600,11 @@ class TestAttachmentUpdateRecords:
 
         assert [
             {
-                "changed": False,
-                "msg": "Skipped. Hash matches remote.",
                 "hash": "hash",
                 "sys_id": "2",
                 "file_name": "another_file_name",
             },
             {
-                "changed": False,
-                "msg": "Skipped. Hash matches remote.",
                 "hash": "hash",
                 "sys_id": "1",
                 "file_name": "attachment_name",
@@ -643,14 +639,10 @@ class TestAttachmentUpdateRecords:
 
         assert [
             {
-                "changed": True,
-                "msg": "Changes detected, hash doesn't match remote. Remote updated.",
                 "a": 1,
                 "sys_id": "a",
             },
             {
-                "changed": True,
-                "msg": "Changes detected, hash doesn't match remote. Remote updated.",
                 "a": 2,
                 "sys_id": "b",
             },
@@ -679,15 +671,11 @@ class TestAttachmentUpdateRecords:
 
         assert [
             {
-                "changed": False,
-                "msg": "Skipped. Hash matches remote.",
                 "hash": "hash",
                 "sys_id": "2",
                 "file_name": "another_file_name",
             },
             {
-                "changed": False,
-                "msg": "Skipped. Hash matches remote.",
                 "hash": "hash",
                 "sys_id": "1",
                 "file_name": "attachment_name",
@@ -722,8 +710,6 @@ class TestAttachmentUpdateRecords:
 
         assert [
             {
-                "changed": True,
-                "msg": "Changes detected, hash doesn't match remote. Remote updated.",
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "content_type": "text/plain",
@@ -731,8 +717,6 @@ class TestAttachmentUpdateRecords:
                 "file_name": "another_file_name",
             },
             {
-                "changed": True,
-                "msg": "Changes detected, hash doesn't match remote. Remote updated.",
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "content_type": "text/markdown",
