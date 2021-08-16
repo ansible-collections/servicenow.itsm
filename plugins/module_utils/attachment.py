@@ -71,9 +71,6 @@ class AttachmentClient:
 
     def upload_record(self, table, table_sys_id, metadata, check_mode=False):
         # Table and table_sys_id parameters uniquely identify the record we will attach a file to.
-        #
-        # "metadata" is a dict with a mandatory key "path" and optional "name", "type" and "encryption_context".
-        # These properties can be read directly from the yaml attachment list and can be set by the user.
         query = dict(table_name=table, table_sys_id=table_sys_id, **metadata)
         if "name" in query:
             query["file_name"] = query.pop("name")
