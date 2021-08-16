@@ -105,9 +105,7 @@ class AttachmentClient:
     def update_records(
         self, table, table_sys_id, metadata_dict, records, check_mode=False
     ):
-        mapped_records = dict()
-        for record in records:
-            mapped_records[record["file_name"]] = record
+        mapped_records = dict((r["file_name"], r) for r in records)
 
         for name, metadata in metadata_dict.items():
             record = mapped_records.get(name, None)
