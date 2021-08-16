@@ -164,7 +164,7 @@ class TestAttachmentTransformMetadataList:
             },
         }
 
-    def test_dupe(self, create_module):
+    def test_duplicate(self, create_module):
         module = create_module(
             params=dict(some="param"),
         )
@@ -187,6 +187,22 @@ class TestAttachmentTransformMetadataList:
             match="Found 1 duplicates - cannot upload multiple attachments with the same name.",
         ):
             attachment.transform_metadata_list(ml, module.sha256)
+
+
+class TestAttachmentAreChanged:
+    def test_unchanged(self):
+        records = [
+            {"hash": "hash", "file_name": "attachment_name"},
+            {"hash": "hash", "file_name": "another_file_name"},
+        ]
+        assert attachment.are_changed(records, FILE_DICT_DICT) == [False, False]
+
+    def test_changed(self):
+        records = [
+            {"hash": "oldhash", "file_name": "attachment_name"},
+            {"hash": "oldhash", "file_name": "another_file_name"},
+        ]
+        assert attachment.are_changed(records, FILE_DICT_DICT) == [True, True]
 
 
 class TestAttachmentListRecords:
@@ -564,100 +580,6 @@ class TestAttachmentDeleteRecords:
 
         a.delete_attached_records("table", 5555, True)
         client.delete.assert_not_called()
-
-
-class TestAttachmentIsChanged:
-    def test_unchanged(self, client):
-        client.get.return_value = Response(
-            200,
-            '{"result": [{"hash": "hash", "b": "sys_id"}]}',
-            {"X-Total-Count": "1"},
-        )
-        a = attachment.AttachmentClient(client)
-
-        fd, path = mkstemp()
-        with os.fdopen(fd, "w") as f:
-            f.write("file_content")
-
-        mfd = FILE_DICT.copy()
-        mfd.update({"path": path})
-
-        assert not a.is_changed("table", "1234", mfd)
-
-    def test_changed(self, client):
-        client.get.return_value = Response(
-            200,
-            '{"result": [{"hash": "oldhash", "b": "sys_id"}]}',
-            {"X-Total-Count": "1"},
-        )
-        a = attachment.AttachmentClient(client)
-
-        fd, path = mkstemp()
-        with os.fdopen(fd, "w") as f:
-            f.write("file_contents")
-
-        mfd = FILE_DICT.copy()
-        mfd.update({"path": path})
-
-        assert a.is_changed("table", "1234", mfd)
-
-
-class TestAttachmentAreChanged:
-    def test_unchanged(self, client):
-        client.get.side_effect = [
-            Response(
-                200,
-                '{"result": [{"hash": "hash"}]}',
-                {"X-Total-Count": "1"},
-            ),
-            Response(
-                200,
-                '{"result": [{"hash": "hash"}]}',
-                {"X-Total-Count": "1"},
-            ),
-        ]
-        a = attachment.AttachmentClient(client)
-
-        fd1, path1 = mkstemp()
-        with os.fdopen(fd1, "w") as f:
-            f.write("file_content")
-        fd2, path2 = mkstemp()
-        with os.fdopen(fd2, "w") as f:
-            f.write("another_file_content")
-
-        mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name"]["path"] = path1
-        mfdd["another_file_name"]["path"] = path2
-
-        assert a.are_changed("table", "1234", mfdd) == [False, False]
-
-    def test_changed(self, client):
-        client.get.side_effect = [
-            Response(
-                200,
-                '{"result": [{"hash": "oldhash"}]}',
-                {"X-Total-Count": "1"},
-            ),
-            Response(
-                200,
-                '{"result": [{"hash": "oldhash"}]}',
-                {"X-Total-Count": "1"},
-            ),
-        ]
-        a = attachment.AttachmentClient(client)
-
-        fd1, path1 = mkstemp()
-        with os.fdopen(fd1, "w") as f:
-            f.write("file_contents")
-        fd2, path2 = mkstemp()
-        with os.fdopen(fd2, "w") as f:
-            f.write("another_file_contents")
-
-        mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name"]["path"] = path1
-        mfdd["another_file_name"]["path"] = path2
-
-        assert a.are_changed("table", "1234", mfdd) == [True, True]
 
 
 class TestAttachmentUpdateRecords:

@@ -318,7 +318,6 @@ class TestEnsurePresent:
             sys_class_name="cmdb_ci_computer",
         )
         attachment_client.update_records.return_value = []
-        attachment_client.are_changed.return_value = []
         attachment_client.list_records.return_value = []
 
         result = configuration_item.ensure_present(

@@ -109,19 +109,9 @@ class AttachmentClient:
             )
         ]
 
-    def is_changed(self, table, table_sys_id, metadata):
-        rec = self.get_record(build_query(table, table_sys_id, metadata))
-        if rec is not None:
-            return metadata["hash"] != rec["hash"]
-        return True
-
-    def are_changed(self, table, table_sys_id, metadata_dict):
-        return [
-            self.is_changed(table, table_sys_id, dict(name=name, **metadata))
-            for name, metadata in metadata_dict.items()
-        ]
-
-    def update_records(self, table, table_sys_id, metadata_dict, records, check_mode=False):
+    def update_records(
+        self, table, table_sys_id, metadata_dict, records, check_mode=False
+    ):
         mapped_records = dict()
         for record in records:
             mapped_records[record["file_name"]] = record
@@ -188,3 +178,15 @@ def build_query(table, table_sys_id, metadata):
         table_name=table,
         table_sys_id=table_sys_id,
     )
+
+
+def are_changed(records, metadata_dict):
+    mapped_records = dict()
+    for record in records:
+        mapped_records[record["file_name"]] = record
+    return [
+        metadata["hash"] != mapped_records[name]["hash"]
+        if mapped_records.get(name, None) is not None
+        else True
+        for name, metadata in metadata_dict.items()
+    ]

@@ -333,7 +333,7 @@ def ensure_present(module, table_client, attachment_client):
     )
 
     if utils.is_superset(old, payload) and not any(
-        attachment_client.are_changed(cmdb_table, old["sys_id"], attachments)
+        attachment.are_changed(old["attachments"], attachments)
     ):
         # No change in parameters we are interested in - nothing to do.
         return False, old, dict(before=old, after=old)
