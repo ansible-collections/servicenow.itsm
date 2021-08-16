@@ -295,7 +295,9 @@ def ensure_present(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id")
     payload = build_payload(module, table_client)
-    attachments = attachment.transform_metadata_list(module.params["attachments"], module.sha256)
+    attachments = attachment.transform_metadata_list(
+        module.params["attachments"], module.sha256
+    )
 
     if not query:
         cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
@@ -326,8 +328,9 @@ def ensure_present(module, table_client, attachment_client):
             table_client.get_record(cmdb_table, query, must_exist=True)
         )
 
-    attachment_payload = dict(table_name=cmdb_table, table_sys_id=old["sys_id"])
-    old["attachments"] = attachment_client.list_records(attachment_payload)
+    old["attachments"] = attachment_client.list_records(
+        dict(table_name=cmdb_table, table_sys_id=old["sys_id"])
+    )
 
     if utils.is_superset(old, payload) and not any(
         attachment_client.are_changed(cmdb_table, old["sys_id"], attachments)
@@ -340,14 +343,13 @@ def ensure_present(module, table_client, attachment_client):
             cmdb_table, mapper.to_snow(old), mapper.to_snow(payload), module.check_mode
         )
     )
-    changed = attachment_client.update_records(
+    new["attachments"] = attachment_client.update_records(
         cmdb_table,
         old["sys_id"],
         attachments,
+        old["attachments"],
         module.check_mode,
     )
-    existing = attachment_client.list_records(attachment_payload)
-    new["attachments"] = utils.merge_dict_lists_by_key(existing, changed, "file_name")
 
     return True, new, dict(before=old, after=new)
 

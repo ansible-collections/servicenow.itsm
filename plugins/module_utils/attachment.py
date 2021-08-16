@@ -121,33 +121,33 @@ class AttachmentClient:
             for name, metadata in metadata_dict.items()
         ]
 
-    def update_record(self, table, table_sys_id, metadata, check_mode=False):
-        if self.is_changed(table, table_sys_id, metadata):
-            to_delete = self.get_record(build_query(table, table_sys_id, metadata))
-            if to_delete is not None:
-                self.delete_record(to_delete, check_mode)
-            return dict(
-                {
-                    "changed": True,
-                    "msg": "Changes detected, hash doesn't match remote. Remote updated.",
-                },
-                **self.upload_record(table, table_sys_id, metadata, check_mode)
-            )
-        else:
-            return dict(
-                {"changed": False, "msg": "Skipped. Hash matches remote."},
-                **self.get_record(build_query(table, table_sys_id, metadata))
-            )
+    def update_records(self, table, table_sys_id, metadata_dict, records, check_mode=False):
+        mapped_records = dict()
+        for record in records:
+            mapped_records[record["file_name"]] = record
 
-    def update_records(
-        self, table, table_sys_id, metadata_dict, check_mode=False
-    ):  # TODO
-        return [
-            self.update_record(
-                table, table_sys_id, dict(name=name, **metadata), check_mode
-            )
-            for name, metadata in metadata_dict.items()
-        ]
+        for name, metadata in metadata_dict.items():
+            record = mapped_records.get(name, None)
+
+            if record is not None and record["hash"] == metadata["hash"]:
+                mapped_records[name] = dict(
+                    {"changed": False, "msg": "Skipped. Hash matches remote."}, **record
+                )
+            else:
+                if record is not None:
+                    self.delete_record(record, check_mode)
+
+                mapped_records[name] = dict(
+                    {
+                        "changed": True,
+                        "msg": "Changes detected, hash doesn't match remote. Remote updated.",
+                    },
+                    **self.upload_record(
+                        table, table_sys_id, dict(name=name, **metadata), check_mode
+                    )
+                )
+
+        return list(mapped_records.values())
 
 
 def transform_metadata_list(metadata_list, hashing_method):
