@@ -54,9 +54,7 @@ class TestRemapCaller:
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
         params = dict(
-            instance=dict(
-                host="https://my.host.name", username="user", password="pass"
-            ),
+            instance=dict(host="https://my.host.name", username="user", password="pass"),
         )
         success, result = run_main(change_request_info, params)
 
@@ -64,9 +62,7 @@ class TestMain:
 
     def test_all_params(self, run_main):
         params = dict(
-            instance=dict(
-                host="https://my.host.name", username="user", password="pass"
-            ),
+            instance=dict(host="https://my.host.name", username="user", password="pass"),
             sys_id="id",
             number="n",
         )
@@ -93,9 +89,7 @@ class TestRun:
     def test_run(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 sys_id=None,
                 number="n",
                 query=None,

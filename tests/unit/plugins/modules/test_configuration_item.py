@@ -26,9 +26,7 @@ class TestEnsureAbsent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 state="absent",
                 number=None,
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
@@ -60,9 +58,7 @@ class TestEnsureAbsent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 state="absent",
                 number=None,
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
@@ -95,9 +91,7 @@ class TestEnsureAbsent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 state="absent",
                 number=None,
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
@@ -118,9 +112,7 @@ class TestBuildPayload:
     def test_build_payload(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 state="present",
                 sys_id=None,
                 name=None,
@@ -156,9 +148,7 @@ class TestBuildPayload:
     def test_build_payload_with_other_option(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 state="present",
                 sys_id=None,
                 name=None,
@@ -196,9 +186,7 @@ class TestEnsurePresent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 state="present",
                 sys_id=None,
                 name="test.name",
@@ -257,9 +245,7 @@ class TestEnsurePresent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 state="present",
                 sys_id=None,
                 name=None,
@@ -290,9 +276,7 @@ class TestEnsurePresent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 state="present",
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 name="test.name",
@@ -357,9 +341,7 @@ class TestEnsurePresent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
+                instance=dict(host="https://my.host.name", username="user", password="pass"),
                 state="present",
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 name=None,
