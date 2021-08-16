@@ -77,12 +77,14 @@ class AttachmentClient:
         query = dict(table_name=table, table_sys_id=table_sys_id, **metadata)
         if "name" in query:
             query["file_name"] = query.pop("name")
+        if "type" in query:
+            query["content_type"] = query.pop("type")
         try:
             with open(metadata["path"], "rb") as file_obj:
                 data = file_obj.read()
         except (IOError, OSError):
-            raise errors.ServiceNowError("Cannot open {0}".format(metadata["path"]))
-        return self.create_record(query, data, check_mode, metadata["type"])
+            raise errors.ServiceNowError("Cannot open {0}".format(query["path"]))
+        return self.create_record(query, data, check_mode, query["content_type"])
 
     def upload_records(self, table, table_sys_id, metadata_dict, check_mode):
         return [
