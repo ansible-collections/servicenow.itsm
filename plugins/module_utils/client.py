@@ -43,21 +43,12 @@ class Response:
 
 class Client:
     def __init__(
-        self,
-        host,
-        username=None,
-        password=None,
-        grant_type=None,
-        refresh_token=None,
-        client_id=None,
-        client_secret=None,
-        timeout=None,
+        self, host, username=None, password=None, grant_type=None,
+        refresh_token=None, client_id=None, client_secret=None, timeout=None
     ):
-        if not (host or "").startswith(("https://", "http://")):
-            raise ServiceNowError(
-                "Invalid instance host value: '{0}'. "
-                "Value must start with 'https://' or 'http://'".format(host)
-            )
+        if not (host or "").startswith(('https://', 'http://')):
+            raise ServiceNowError("Invalid instance host value: '{0}'. "
+                                  "Value must start with 'https://' or 'http://'".format(host))
 
         self.host = host
         self.username = username
@@ -86,7 +77,7 @@ class Client:
         return dict(Authorization=basic_auth_header(self.username, self.password))
 
     def _login_oauth(self):
-        if self.grant_type == "refresh_token":
+        if self.grant_type == 'refresh_token':
             auth_data = urlencode(
                 dict(
                     grant_type=self.grant_type,
