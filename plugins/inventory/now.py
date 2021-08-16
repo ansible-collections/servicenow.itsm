@@ -40,7 +40,7 @@ extends_documentation_fragment:
   - ansible.builtin.constructed
   - servicenow.itsm.query
 notes:
-  - Query feature and constructed groups is added in version 2.0.0.
+  - Query feature and constructed groups eere added in version 1.2.0.
 options:
   plugin:
     description:
