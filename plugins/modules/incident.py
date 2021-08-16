@@ -215,6 +215,7 @@ def ensure_present(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
+    attachments = attachment.transform_metadata_list(module.params["attachments"], module.sha256)
 
     if not query:
         # User did not specify existing incident, so we need to create a new one.
@@ -228,7 +229,7 @@ def ensure_present(module, table_client, attachment_client):
         new["attachments"] = attachment_client.upload_records(
             "incident",
             new.get("sys_id", "N/A"),
-            module.params["attachments"],
+            attachments,
             module.check_mode,
         )
 
@@ -240,7 +241,7 @@ def ensure_present(module, table_client, attachment_client):
     old["attachments"] = attachment_client.list_records(attachment_payload)
 
     if utils.is_superset(old, payload) and not any(
-        attachment_client.are_changed(attachment_payload, module.params["attachments"])
+        attachment_client.are_changed("incident", old["sys_id"], attachments)
     ):
         # No change in parameters we are interested in - nothing to do.
         return False, old, dict(before=old, after=old)
@@ -254,7 +255,7 @@ def ensure_present(module, table_client, attachment_client):
     changed = attachment_client.update_records(
         "incident",
         old["sys_id"],
-        module.params["attachments"],
+        attachments,
         module.check_mode,
     )
     existing = attachment_client.list_records(attachment_payload)

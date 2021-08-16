@@ -42,7 +42,7 @@ def create_module(mocker):
 
     def constructor(params=None, check_mode=False):
         return mocker.Mock(
-            spec_set=["check_mode", "deprecate", "params", "warn"],
+            spec_set=["check_mode", "deprecate", "params", "warn", "sha256"],
             params=params or {},
             check_mode=check_mode,
         )

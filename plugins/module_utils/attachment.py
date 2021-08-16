@@ -7,7 +7,6 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-import hashlib
 import mimetypes
 import os
 
@@ -67,7 +66,7 @@ class AttachmentClient:
             _path("file"),
             query=(query or {}),
             headers={"Accept": "application/json", "Content-type": mime_type},
-            bytes=data
+            bytes=data,
         ).json["result"]
 
     def upload_record(self, table, table_sys_id, metadata, check_mode=False):
@@ -75,32 +74,22 @@ class AttachmentClient:
         #
         # "metadata" is a dict with a mandatory key "path" and optional "name", "type" and "encryption_context".
         # These properties can be read directly from the yaml attachment list and can be set by the user.
-        query = dict(
-            table_name=table,
-            table_sys_id=table_sys_id,
-            file_name=get_file_name(metadata),
-        )
-
-        file_type = get_file_type(metadata)
-
-        if (
-            "encryption_context" in metadata
-            and metadata["encryption_context"] is not None
-        ):
-            query["encryption_context"] = metadata["encryption_context"]
-
+        query = dict(table_name=table, table_sys_id=table_sys_id, **metadata)
+        if "name" in query:
+            query["file_name"] = query.pop("name")
         try:
             with open(metadata["path"], "rb") as file_obj:
                 data = file_obj.read()
-                query["hash"] = get_hash(data)
         except (IOError, OSError):
             raise errors.ServiceNowError("Cannot open {0}".format(metadata["path"]))
-        return self.create_record(query, data, check_mode, file_type)
+        return self.create_record(query, data, check_mode, metadata["type"])
 
-    def upload_records(self, table, table_sys_id, metadata_list, check_mode):
+    def upload_records(self, table, table_sys_id, metadata_dict, check_mode):
         return [
-            self.upload_record(table, table_sys_id, metadata, check_mode)
-            for metadata in (metadata_list or [])
+            self.upload_record(
+                table, table_sys_id, dict(name=name, **metadata), check_mode
+            )
+            for name, metadata in metadata_dict.items()
         ]
 
     def delete_record(self, record, check_mode):
@@ -121,20 +110,20 @@ class AttachmentClient:
     def is_changed(self, table, table_sys_id, metadata):
         rec = self.get_record(build_query(table, table_sys_id, metadata))
         if rec is not None:
-            return file_hash(metadata["path"]) != rec["hash"]
+            return metadata["hash"] != rec["hash"]
         return True
 
-    def are_changed(self, table, table_sys_id, metadata_list):
-        if metadata_list is not None:
-            return [
-                self.is_changed(table, table_sys_id, metadata)
-                for metadata in (metadata_list or [])
-            ]
-        return []
+    def are_changed(self, table, table_sys_id, metadata_dict):
+        return [
+            self.is_changed(table, table_sys_id, dict(name=name, **metadata))
+            for name, metadata in metadata_dict.items()
+        ]
 
     def update_record(self, table, table_sys_id, metadata, check_mode=False):
         if self.is_changed(table, table_sys_id, metadata):
-            self.delete_record(self.get_record(build_query(table, table_sys_id, metadata)), check_mode)
+            to_delete = self.get_record(build_query(table, table_sys_id, metadata))
+            if to_delete is not None:
+                self.delete_record(to_delete, check_mode)
             return dict(
                 {
                     "changed": True,
@@ -148,11 +137,34 @@ class AttachmentClient:
                 **self.get_record(build_query(table, table_sys_id, metadata))
             )
 
-    def update_records(self, table, table_sys_id, metadata_list, check_mode=False):
+    def update_records(
+        self, table, table_sys_id, metadata_dict, check_mode=False
+    ):  # TODO
         return [
-            self.update_record(table, table_sys_id, metadata, check_mode)
-            for metadata in (metadata_list or [])
+            self.update_record(
+                table, table_sys_id, dict(name=name, **metadata), check_mode
+            )
+            for name, metadata in metadata_dict.items()
         ]
+
+
+def transform_metadata_list(metadata_list, hashing_method):
+    metadata_dict = dict()
+    meta_list = metadata_list or []
+    for metadata in meta_list:
+        metadata_dict[get_file_name(metadata)] = {
+            "path": metadata["path"],
+            "type": get_file_type(metadata),
+            "hash": hashing_method(metadata["path"]),
+        }
+
+    if len(meta_list) != len(metadata_dict):
+        raise errors.ServiceNowError(
+            "Found {0} duplicates - cannot upload multiple attachments with the same name.".format(
+                len(meta_list) - len(metadata_dict)
+            )
+        )
+    return metadata_dict
 
 
 def get_file_name(metadata):
@@ -174,12 +186,3 @@ def build_query(table, table_sys_id, metadata):
         table_name=table,
         table_sys_id=table_sys_id,
     )
-
-
-def file_hash(file):
-    with open(file, "rb") as f:
-        return get_hash(f.read())
-
-
-def get_hash(data):
-    return hashlib.sha256(data).hexdigest()

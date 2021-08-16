@@ -25,15 +25,21 @@ FILE_DICT = {
     "path": "some/path/file_name.txt",
     "name": "attachment_name",
     "type": "text/markdown",
+    "hash": "hash",
 }
 
-FILE_DICT_LIST = [
-    FILE_DICT,
-    {
+FILE_DICT_DICT = {
+    "attachment_name": {
+        "path": "some/path/file_name.txt",
+        "type": "text/markdown",
+        "hash": "hash",
+    },
+    "another_file_name": {
         "path": "some/path/another_file_name.txt",
         "type": "text/plain",
+        "hash": "hash",
     },
-]
+}
 
 
 class TestAttachmentGetFileName:
@@ -86,23 +92,98 @@ class TestAttachmentBuildQuery:
         }
 
 
-class TestAttachmentFileHash:
-    def test_hash(self):
+class TestAttachmentTransformMetadataList:
+    META_LIST = [
+        {
+            "path": "some/path/another_file_name.txt",
+            "type": "text/plain",
+        },
+        {
+            "path": "some/path/file_name.txt",
+            "name": "attachment_name",
+            "type": "text/markdown",
+        },
+    ]
+
+    def test_normal(self, create_module):
+        module = create_module(
+            params=dict(some="param"),
+        )
+        module.sha256.return_value = "some_hash"
+
+        ml = list(self.META_LIST)
+
+        fd1, path1 = mkstemp()
+        with os.fdopen(fd1, "w") as f:
+            f.write("file_contents")
+        fd2, path2 = mkstemp()
+        with os.fdopen(fd2, "w") as f:
+            f.write("another_file_contents")
+
+        ml[0].update({"path": path1})
+        ml[1].update({"path": path2})
+
+        assert attachment.transform_metadata_list(ml, module.sha256) == {
+            os.path.splitext(os.path.basename(path1))[0]: {
+                "path": path1,
+                "type": "text/plain",
+                "hash": "some_hash",
+            },
+            "attachment_name": {
+                "path": path2,
+                "type": "text/markdown",
+                "hash": "some_hash",
+            },
+        }
+
+    def test_same_file_different_name(self, create_module):
+        module = create_module(
+            params=dict(some="param"),
+        )
+        module.sha256.return_value = "some_hash"
+
+        ml = list(self.META_LIST)
+
         fd, path = mkstemp()
         with os.fdopen(fd, "w") as f:
-            f.write("file_content")
-        assert (
-            attachment.file_hash(path)
-            == "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff"
-        )
+            f.write("file_contents")
 
+        ml[0].update({"path": path})
+        ml[1].update({"path": path})
 
-class TestAttachmentGetHash:
-    def test_hash(self):
-        assert (
-            attachment.get_hash(b"file_content")
-            == "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff"
+        assert attachment.transform_metadata_list(ml, module.sha256) == {
+            os.path.splitext(os.path.basename(path))[0]: {
+                "path": path,
+                "type": "text/plain",
+                "hash": "some_hash",
+            },
+            "attachment_name": {
+                "path": path,
+                "type": "text/markdown",
+                "hash": "some_hash",
+            },
+        }
+
+    def test_dupe(self, create_module):
+        module = create_module(
+            params=dict(some="param"),
         )
+        module.sha256.return_value = "some_hash"
+
+        ml = list(self.META_LIST)
+
+        fd1, path1 = mkstemp()
+        with os.fdopen(fd1, "w") as f:
+            f.write("file_contents")
+        fd2, path2 = mkstemp()
+        with os.fdopen(fd2, "w") as f:
+            f.write("another_file_contents")
+
+        ml[0].update({"path": path1, "name": "attachment_name"})
+        ml[1].update({"path": path2})
+
+        with pytest.raises(errors.ServiceNowError, match="Found 1 duplicates - cannot upload multiple attachments with the same name."):
+            attachment.transform_metadata_list(ml, module.sha256)
 
 
 class TestAttachmentListRecords:
@@ -241,7 +322,7 @@ class TestAttachmentCreateRecord:
             "attachment/file",
             query={"some": "property"},
             headers={"Accept": "application/json", "Content-type": "text/plain"},
-            bytes="file_content"
+            bytes="file_content",
         )
 
     def test_check_mode(self, client):
@@ -284,39 +365,12 @@ class TestAttachmentUploadRecord:
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
-                "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
+                "path": path,
+                "type": "text/markdown",
+                "hash": "hash",
             },
             headers={"Accept": "application/json", "Content-type": "text/markdown"},
-            bytes=b"file_content"
-        )
-
-    def test_normal_mode_passing_encryption_context(self, client):
-        client.request.return_value = Response(
-            201, '{"result": {"a": 3, "b": "sys_id"}}'
-        )
-        a = attachment.AttachmentClient(client)
-
-        fd, path = mkstemp()
-        with os.fdopen(fd, "w") as f:
-            f.write("file_content")
-        mfd = FILE_DICT.copy()
-        mfd.update({"path": path, "encryption_context": "context"})
-
-        record = a.upload_record("table", "1234", mfd, check_mode=False)
-
-        assert dict(a=3, b="sys_id") == record
-        client.request.assert_called_with(
-            "POST",
-            "attachment/file",
-            query={
-                "table_name": "table",
-                "table_sys_id": "1234",
-                "file_name": "attachment_name",
-                "encryption_context": "context",
-                "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
-            },
-            headers={"Accept": "application/json", "Content-type": "text/markdown"},
-            bytes=b"file_content"
+            bytes=b"file_content",
         )
 
     def test_check_mode(self, client):
@@ -333,15 +387,14 @@ class TestAttachmentUploadRecord:
 
         record = a.upload_record("table", "1234", mfd, check_mode=True)
 
-        assert (
-            dict(
-                table_name="table",
-                table_sys_id="1234",
-                file_name="attachment_name",
-                hash="76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
-            )
-            == record
-        )
+        assert {
+            "table_name": "table",
+            "table_sys_id": "1234",
+            "file_name": "attachment_name",
+            "path": path,
+            "type": "text/markdown",
+            "hash": "hash",
+        } == record
         client.request.assert_not_called()
 
 
@@ -360,11 +413,11 @@ class TestAttachmentUploadRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("file_content2")
 
-        mfdl = list(FILE_DICT_LIST)
-        mfdl[0].update({"path": path1})
-        mfdl[1].update({"path": path2})
+        mfdd = dict(FILE_DICT_DICT)
+        mfdd["attachment_name"].update({"path": path1})
+        mfdd["another_file_name"].update({"path": path2})
 
-        record = a.upload_records("table", "1234", mfdl, check_mode=False)
+        record = a.upload_records("table", "1234", mfdd, check_mode=False)
 
         assert [dict(a=3, b="sys_id"), dict(a=4, b="sys_idn")] == record
         assert 2 == client.request.call_count
@@ -375,10 +428,12 @@ class TestAttachmentUploadRecords:
                 "table_name": "table",
                 "table_sys_id": "1234",
                 "file_name": "attachment_name",
-                "hash": "290d3cdb3c4d8ba8cf79b84d2d59b15a6b6f350899f0aee9b8ccc52450457d7a",
+                "path": path1,
+                "type": "text/markdown",
+                "hash": "hash",
             },
             headers={"Accept": "application/json", "Content-type": "text/markdown"},
-            bytes=b"file_content1"
+            bytes=b"file_content1",
         )
         client.request.assert_any_call(
             "POST",
@@ -386,18 +441,19 @@ class TestAttachmentUploadRecords:
             query={
                 "table_name": "table",
                 "table_sys_id": "1234",
-                "file_name": os.path.splitext(os.path.basename(path2))[0],
-                "hash": "6aba215fac895ced736daa52a9d387dfe7ced17681b91add072136891011205d",
+                "file_name": "another_file_name",
+                "path": path2,
+                "type": "text/plain",
+                "hash": "hash",
             },
             headers={"Accept": "application/json", "Content-type": "text/plain"},
-            bytes=b"file_content2"
+            bytes=b"file_content2",
         )
 
     def test_check_mode(self, client):
-        client.request.side_effect = [
-            Response(201, '{"result": {"a": 3, "b": "sys_id"}}'),
-            Response(201, '{"result": {"a": 4, "b": "sys_idn"}}'),
-        ]
+        client.request.return_value = Response(
+            201, '{"result": {"a": 1, "sys_id": "1"}}'
+        )
         a = attachment.AttachmentClient(client)
 
         fd1, path1 = mkstemp()
@@ -407,32 +463,36 @@ class TestAttachmentUploadRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("file_content2")
 
-        mfdl = list(FILE_DICT_LIST)
-        mfdl[0].update({"path": path1})
-        mfdl[1].update({"path": path2})
+        mfdd = dict(FILE_DICT_DICT)
+        mfdd["attachment_name"].update({"path": path1})
+        mfdd["another_file_name"].update({"path": path2})
 
-        record = a.upload_records("table", "1234", mfdl, check_mode=True)
+        record = a.upload_records("table", "1234", mfdd, check_mode=True)
 
         assert [
             {
                 "table_name": "table",
                 "table_sys_id": "1234",
-                "file_name": "attachment_name",
-                "hash": "290d3cdb3c4d8ba8cf79b84d2d59b15a6b6f350899f0aee9b8ccc52450457d7a",
+                "file_name": "another_file_name",
+                "path": path2,
+                "type": "text/plain",
+                "hash": "hash",
             },
             {
                 "table_name": "table",
                 "table_sys_id": "1234",
-                "file_name": os.path.splitext(os.path.basename(path2))[0],
-                "hash": "6aba215fac895ced736daa52a9d387dfe7ced17681b91add072136891011205d",
+                "file_name": "attachment_name",
+                "path": path1,
+                "type": "text/markdown",
+                "hash": "hash",
             },
-        ] == record
+        ] == sorted(record, key=lambda k: k["file_name"])
         client.request.assert_not_called()
 
     def test_missing_file(self, client):
         a = attachment.AttachmentClient(client)
-        with pytest.raises(errors.ServiceNowError, match="Cannot open {0}".format(FILE_DICT_LIST[0]["path"])):
-            a.upload_records("table", "1234", FILE_DICT_LIST, True)
+        with pytest.raises(errors.ServiceNowError, match="Cannot open"):
+            a.upload_records("table", "1234", FILE_DICT_DICT, True)
 
 
 class TestAttachmentDeleteRecord:
@@ -444,7 +504,9 @@ class TestAttachmentDeleteRecord:
         client.delete.assert_called_with("attachment/1234")
 
     def test_normal_mode_missing(self, client):
-        client.delete.side_effect = errors.UnexpectedAPIResponse(404, "Record not found")
+        client.delete.side_effect = errors.UnexpectedAPIResponse(
+            404, "Record not found"
+        )
         a = attachment.AttachmentClient(client)
 
         with pytest.raises(errors.UnexpectedAPIResponse, match="not found"):
@@ -480,7 +542,9 @@ class TestAttachmentDeleteRecords:
             '{"result": [{"a": 3, "sys_id": "1234"}, {"a": 4, "sys_id": "4321"}]}',
             {"X-Total-Count": "2"},
         )
-        client.delete.side_effect = errors.UnexpectedAPIResponse(404, "Record not found")
+        client.delete.side_effect = errors.UnexpectedAPIResponse(
+            404, "Record not found"
+        )
         a = attachment.AttachmentClient(client)
 
         with pytest.raises(errors.UnexpectedAPIResponse, match="not found"):
@@ -503,7 +567,7 @@ class TestAttachmentIsChanged:
     def test_unchanged(self, client):
         client.get.return_value = Response(
             200,
-            '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "b": "sys_id"}]}',
+            '{"result": [{"hash": "hash", "b": "sys_id"}]}',
             {"X-Total-Count": "1"},
         )
         a = attachment.AttachmentClient(client)
@@ -520,7 +584,7 @@ class TestAttachmentIsChanged:
     def test_changed(self, client):
         client.get.return_value = Response(
             200,
-            '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "b": "sys_id"}]}',
+            '{"result": [{"hash": "oldhash", "b": "sys_id"}]}',
             {"X-Total-Count": "1"},
         )
         a = attachment.AttachmentClient(client)
@@ -540,12 +604,12 @@ class TestAttachmentAreChanged:
         client.get.side_effect = [
             Response(
                 200,
-                '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff"}]}',
+                '{"result": [{"hash": "hash"}]}',
                 {"X-Total-Count": "1"},
             ),
             Response(
                 200,
-                '{"result": [{"hash": "3d849a08ee8758d7b66cc9d62b21059ac07e897084933f4c3c66f4583b5f8c94"}]}',
+                '{"result": [{"hash": "hash"}]}',
                 {"X-Total-Count": "1"},
             ),
         ]
@@ -558,22 +622,22 @@ class TestAttachmentAreChanged:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_content")
 
-        mfdl = list(FILE_DICT_LIST)
-        mfdl[0].update({"path": path1})
-        mfdl[1].update({"path": path2})
+        mfdd = dict(FILE_DICT_DICT)
+        mfdd["attachment_name"]["path"] = path1
+        mfdd["another_file_name"]["path"] = path2
 
-        assert a.are_changed("table", "1234", mfdl) == [False, False]
+        assert a.are_changed("table", "1234", mfdd) == [False, False]
 
     def test_changed(self, client):
         client.get.side_effect = [
             Response(
                 200,
-                '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff"}]}',
+                '{"result": [{"hash": "oldhash"}]}',
                 {"X-Total-Count": "1"},
             ),
             Response(
                 200,
-                '{"result": [{"hash": "3d849a08ee8758d7b66cc9d62b21059ac07e897084933f4c3c66f4583b5f8c94"}]}',
+                '{"result": [{"hash": "oldhash"}]}',
                 {"X-Total-Count": "1"},
             ),
         ]
@@ -586,18 +650,18 @@ class TestAttachmentAreChanged:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_contents")
 
-        mfdl = list(FILE_DICT_LIST)
-        mfdl[0].update({"path": path1})
-        mfdl[1].update({"path": path2})
+        mfdd = dict(FILE_DICT_DICT)
+        mfdd["attachment_name"]["path"] = path1
+        mfdd["another_file_name"]["path"] = path2
 
-        assert a.are_changed("table", "1234", mfdl) == [True, True]
+        assert a.are_changed("table", "1234", mfdd) == [True, True]
 
 
 class TestAttachmentUpdateRecord:
     def test_unchanged_normal_mode(self, client):
         client.get.return_value = Response(
             200,
-            '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "b": "sys_id"}]}',
+            '{"result": [{"hash": "hash", "sys_id": "b"}]}',
             {"X-Total-Count": "1"},
         )
         a = attachment.AttachmentClient(client)
@@ -612,14 +676,14 @@ class TestAttachmentUpdateRecord:
         assert {
             "changed": False,
             "msg": "Skipped. Hash matches remote.",
-            "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
-            "b": "sys_id",
+            "hash": "hash",
+            "sys_id": "b",
         } == a.update_record("table", "1234", mfd)
 
     def test_changed_normal_mode(self, client):
         client.get.return_value = Response(
             200,
-            '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "sys_id": "b"}]}',
+            '{"result": [{"hash": "oldhash", "sys_id": "b"}]}',
             {"X-Total-Count": "1"},
         )
         client.request.return_value = Response(
@@ -645,7 +709,7 @@ class TestAttachmentUpdateRecord:
     def test_unchanged_check_mode(self, client):
         client.get.return_value = Response(
             200,
-            '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "b": "sys_id"}]}',
+            '{"result": [{"hash": "hash", "sys_id": "b"}]}',
             {"X-Total-Count": "1"},
         )
         a = attachment.AttachmentClient(client)
@@ -660,8 +724,8 @@ class TestAttachmentUpdateRecord:
         assert {
             "changed": False,
             "msg": "Skipped. Hash matches remote.",
-            "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
-            "b": "sys_id",
+            "hash": "hash",
+            "sys_id": "b",
         } == a.update_record("table", "1234", mfd, True)
 
     def test_changed_check_mode(self, client):
@@ -688,8 +752,10 @@ class TestAttachmentUpdateRecord:
             "msg": "Changes detected, hash doesn't match remote. Remote updated.",
             "table_name": "table",
             "table_sys_id": "1234",
+            "path": path,
+            "type": "text/markdown",
+            "hash": "hash",
             "file_name": "attachment_name",
-            "hash": "bf96094e7d9020306b1b61313a7429b3b0368b992a96b673c8397c2d2a57b35b",
         } == a.update_record("table", "1234", mfd, True)
 
 
@@ -697,12 +763,12 @@ class TestAttachmentUpdateRecords:
     def test_unchanged_normal_mode(self, client):
         rone = Response(
             200,
-            '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "b": "sys_id"}]}',
+            '{"result": [{"hash": "hash", "sys_id": "1"}]}',
             {"X-Total-Count": "1"},
         )
         rtwo = Response(
             200,
-            '{"result": [{"hash": "3d849a08ee8758d7b66cc9d62b21059ac07e897084933f4c3c66f4583b5f8c94"}]}',
+            '{"result": [{"hash": "hash", "sys_id": "2"}]}',
             {"X-Total-Count": "1"},
         )
         client.get.side_effect = [rone, rone, rtwo, rtwo]
@@ -715,33 +781,36 @@ class TestAttachmentUpdateRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_content")
 
-        mfdl = list(FILE_DICT_LIST)
-        mfdl[0].update({"path": path1})
-        mfdl[1].update({"path": path2})
+        mfdd = dict(FILE_DICT_DICT)
+        mfdd["attachment_name"].update({"path": path1})
+        mfdd["another_file_name"].update({"path": path2})
+
+        changes = a.update_records("table", "1234", mfdd)
 
         assert [
             {
                 "changed": False,
                 "msg": "Skipped. Hash matches remote.",
-                "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
-                "b": "sys_id",
+                "hash": "hash",
+                "sys_id": "1",
             },
             {
                 "changed": False,
                 "msg": "Skipped. Hash matches remote.",
-                "hash": "3d849a08ee8758d7b66cc9d62b21059ac07e897084933f4c3c66f4583b5f8c94",
+                "hash": "hash",
+                "sys_id": "2",
             },
-        ] == a.update_records("table", "1234", mfdl)
+        ] == changes
 
     def test_changed_normal_mode(self, client):
         rone = Response(
             200,
-            '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "sys_id": "a"}]}',
+            '{"result": [{"hash": "oldhash", "sys_id": "a"}]}',
             {"X-Total-Count": "1"},
         )
         rtwo = Response(
             200,
-            '{"result": [{"hash": "3d849a08ee8758d7b66cc9d62b21059ac07e897084933f4c3c66f4583b5f8c94", "sys_id": "b"}]}',
+            '{"result": [{"hash": "oldhash", "sys_id": "b"}]}',
             {"X-Total-Count": "1"},
         )
         client.get.side_effect = [rone, rone, rtwo, rtwo]
@@ -759,9 +828,9 @@ class TestAttachmentUpdateRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_contents")
 
-        mfdl = list(FILE_DICT_LIST)
-        mfdl[0].update({"path": path1})
-        mfdl[1].update({"path": path2})
+        mfdd = dict(FILE_DICT_DICT)
+        mfdd["attachment_name"].update({"path": path1})
+        mfdd["another_file_name"].update({"path": path2})
 
         assert [
             {
@@ -776,17 +845,17 @@ class TestAttachmentUpdateRecords:
                 "a": 2,
                 "sys_id": "b",
             },
-        ] == a.update_records("table", "1234", mfdl)
+        ] == a.update_records("table", "1234", mfdd)
 
     def test_unchanged_check_mode(self, client):
         rone = Response(
             200,
-            '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "b": "sys_id"}]}',
+            '{"result": [{"hash": "hash", "sys_id": "1"}]}',
             {"X-Total-Count": "1"},
         )
         rtwo = Response(
             200,
-            '{"result": [{"hash": "3d849a08ee8758d7b66cc9d62b21059ac07e897084933f4c3c66f4583b5f8c94"}]}',
+            '{"result": [{"hash": "hash", "sys_id": "2"}]}',
             {"X-Total-Count": "1"},
         )
         client.get.side_effect = [rone, rone, rtwo, rtwo]
@@ -799,33 +868,34 @@ class TestAttachmentUpdateRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_content")
 
-        mfdl = list(FILE_DICT_LIST)
-        mfdl[0].update({"path": path1})
-        mfdl[1].update({"path": path2})
+        mfdd = dict(FILE_DICT_DICT)
+        mfdd["attachment_name"].update({"path": path1})
+        mfdd["another_file_name"].update({"path": path2})
 
         assert [
             {
                 "changed": False,
                 "msg": "Skipped. Hash matches remote.",
-                "hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff",
-                "b": "sys_id",
+                "hash": "hash",
+                "sys_id": "1",
             },
             {
                 "changed": False,
                 "msg": "Skipped. Hash matches remote.",
-                "hash": "3d849a08ee8758d7b66cc9d62b21059ac07e897084933f4c3c66f4583b5f8c94",
+                "hash": "hash",
+                "sys_id": "2",
             },
-        ] == a.update_records("table", "1234", mfdl, True)
+        ] == a.update_records("table", "1234", mfdd, True)
 
     def test_changed_check_mode(self, client):
         rone = Response(
             200,
-            '{"result": [{"hash": "76951a390776ef5126f5724222c912e1bb53f546ffed0fd89a758c6dcf1619ff", "sys_id": "a"}]}',
+            '{"result": [{"hash": "oldhash", "sys_id": "a"}]}',
             {"X-Total-Count": "1"},
         )
         rtwo = Response(
             200,
-            '{"result": [{"hash": "3d849a08ee8758d7b66cc9d62b21059ac07e897084933f4c3c66f4583b5f8c94", "sys_id": "b"}]}',
+            '{"result": [{"hash": "oldhash", "sys_id": "b"}]}',
             {"X-Total-Count": "1"},
         )
         client.get.side_effect = [rone, rone, rtwo, rtwo]
@@ -843,9 +913,11 @@ class TestAttachmentUpdateRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_contents")
 
-        mfdl = list(FILE_DICT_LIST)
-        mfdl[0].update({"path": path1})
-        mfdl[1].update({"path": path2})
+        mfdd = dict(FILE_DICT_DICT)
+        mfdd["attachment_name"].update({"path": path1})
+        mfdd["another_file_name"].update({"path": path2})
+
+        record = a.update_records("table", "1234", mfdd, True)
 
         assert [
             {
@@ -853,15 +925,19 @@ class TestAttachmentUpdateRecords:
                 "msg": "Changes detected, hash doesn't match remote. Remote updated.",
                 "table_name": "table",
                 "table_sys_id": "1234",
-                "file_name": "attachment_name",
-                "hash": "bf96094e7d9020306b1b61313a7429b3b0368b992a96b673c8397c2d2a57b35b",
+                "path": path2,
+                "type": "text/plain",
+                "hash": "hash",
+                "file_name": "another_file_name",
             },
             {
                 "changed": True,
                 "msg": "Changes detected, hash doesn't match remote. Remote updated.",
                 "table_name": "table",
                 "table_sys_id": "1234",
-                "file_name": os.path.splitext(os.path.basename(path2))[0],
-                "hash": "60e55075c46f4d8ade1c6dfbb120c87025ea8051add153f289b93438daf2c8d0",
+                "path": path1,
+                "type": "text/markdown",
+                "hash": "hash",
+                "file_name": "attachment_name",
             },
-        ] == a.update_records("table", "1234", mfdl, True)
+        ] == sorted(record, key=lambda k: k["file_name"])

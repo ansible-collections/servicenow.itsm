@@ -117,6 +117,7 @@ class TestEnsurePresent:
             sys_id="1234",
         )
         attachment_client.upload_records.return_value = []
+        module.sha256.return_value = ""
 
         result = change_request.ensure_present(module, table_client, attachment_client)
 
@@ -184,6 +185,7 @@ class TestEnsurePresent:
         attachment_client.update_records.return_value = []
         attachment_client.are_changed.return_value = []
         attachment_client.list_records.return_value = []
+        module.sha256.return_value = ""
 
         result = change_request.ensure_present(module, table_client, attachment_client)
 
@@ -265,6 +267,7 @@ class TestEnsurePresent:
         )
         attachment_client.update_records.return_value = []
         attachment_client.list_records.return_value = []
+        module.sha256.return_value = ""
 
         result = change_request.ensure_present(module, table_client, attachment_client)
 
