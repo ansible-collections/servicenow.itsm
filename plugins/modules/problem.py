@@ -401,10 +401,12 @@ def ensure_present(module, table_client, attachment_client):
             )
         )
 
+        # When we execute in check mode, new["sys_id"] is not defined.
+        # In order to give users back as much info as possible, we fake the sys_id in the
+        # next call.
         new["attachments"] = attachment_client.upload_records(
             "problem",
-            new.get("sys_id", "N/A"),  # If sys_id is not defined, default to "N/A".
-            # This can only happen in check_mode and is therefore safe.
+            new.get("sys_id", "N/A"),
             attachments,
             module.check_mode,
         )
