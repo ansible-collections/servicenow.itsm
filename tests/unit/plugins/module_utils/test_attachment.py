@@ -22,50 +22,75 @@ pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
 )
 
-FILE_DICT = {
-    "path": "some/path/file_name.txt",
-    "name": "attachment_name.txt",
-    "type": "text/markdown",
-    "hash": "hash",
-}
-
-FILE_DICT_DICT = {
-    "attachment_name.txt": {
-        "path": "some/path/file_name.txt",
-        "type": "text/markdown",
-        "hash": "hash",
-    },
-    "another_file_name.txt": {
-        "path": "some/path/another_file_name.txt",
-        "type": "text/plain",
-        "hash": "hash",
-    },
-}
-
 
 class TestAttachmentGetFileName:
     def test_name_specified(self):
-        assert attachment.get_file_name(FILE_DICT) == "attachment_name.txt"
+        assert (
+            attachment.get_file_name(
+                {
+                    "path": "some/path/file_name.txt",
+                    "name": "attachment_name.txt",
+                    "type": "text/markdown",
+                    "hash": "hash",
+                }
+            )
+            == "attachment_name.txt"
+        )
 
     def test_name_omitted(self):
-        fd = FILE_DICT.copy()
-        fd["name"] = None
-        assert attachment.get_file_name(fd) == "file_name.txt"
+        assert (
+            attachment.get_file_name(
+                {
+                    "path": "some/path/file_name.txt",
+                    "name": None,
+                    "type": "text/markdown",
+                    "hash": "hash",
+                }
+            )
+            == "file_name.txt"
+        )
 
 
 class TestAttachmentGetFileType:
     def test_type_specified(self):
-        assert attachment.get_file_type(FILE_DICT) == "text/markdown"
+        assert (
+            attachment.get_file_type(
+                {
+                    "path": "some/path/file_name.txt",
+                    "name": "attachment_name.txt",
+                    "type": "text/markdown",
+                    "hash": "hash",
+                }
+            )
+            == "text/markdown"
+        )
 
     def test_type_omitted(self):
-        fd = FILE_DICT.copy()
-        fd["type"] = None
-        assert attachment.get_file_type(fd) == "text/plain"
+        assert (
+            attachment.get_file_type(
+                {
+                    "path": "some/path/file_name.txt",
+                    "name": "attachment_name.txt",
+                    "type": None,
+                    "hash": "hash",
+                }
+            )
+            == "text/plain"
+        )
 
 
 class TestAttachmentBuildQuery:
     def test_name_type_specified(self):
-        assert attachment.build_query("table", "1234", FILE_DICT) == {
+        assert attachment.build_query(
+            "table",
+            "1234",
+            {
+                "path": "some/path/file_name.txt",
+                "name": "attachment_name.txt",
+                "type": "text/markdown",
+                "hash": "hash",
+            },
+        ) == {
             "file_name": "attachment_name.txt",
             "content_type": "text/markdown",
             "table_name": "table",
@@ -73,9 +98,16 @@ class TestAttachmentBuildQuery:
         }
 
     def test_name_omitted(self):
-        fd = FILE_DICT.copy()
-        fd["name"] = None
-        assert attachment.build_query("table", "1234", fd) == {
+        assert attachment.build_query(
+            "table",
+            "1234",
+            {
+                "path": "some/path/file_name.txt",
+                "name": None,
+                "type": "text/markdown",
+                "hash": "hash",
+            },
+        ) == {
             "file_name": "file_name.txt",
             "content_type": "text/markdown",
             "table_name": "table",
@@ -83,9 +115,16 @@ class TestAttachmentBuildQuery:
         }
 
     def test_type_omitted(self):
-        fd = FILE_DICT.copy()
-        fd["type"] = None
-        assert attachment.build_query("table", "1234", fd) == {
+        assert attachment.build_query(
+            "table",
+            "1234",
+            {
+                "path": "some/path/file_name.txt",
+                "name": "attachment_name.txt",
+                "type": None,
+                "hash": "hash",
+            },
+        ) == {
             "file_name": "attachment_name.txt",
             "content_type": "text/plain",
             "table_name": "table",
@@ -94,25 +133,11 @@ class TestAttachmentBuildQuery:
 
 
 class TestAttachmentTransformMetadataList:
-    META_LIST = [
-        {
-            "path": "some/path/another_file_name.txt",
-            "type": "text/plain",
-        },
-        {
-            "path": "some/path/file_name.txt",
-            "name": "attachment_name.txt",
-            "type": "text/markdown",
-        },
-    ]
-
     def test_normal(self, create_module):
         module = create_module(
             params=dict(some="param"),
         )
         module.sha256.return_value = "some_hash"
-
-        ml = list(self.META_LIST)
 
         fd1, path1 = mkstemp()
         with os.fdopen(fd1, "w") as f:
@@ -121,10 +146,20 @@ class TestAttachmentTransformMetadataList:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_contents")
 
-        ml[0].update({"path": path1})
-        ml[1].update({"path": path2})
-
-        assert attachment.transform_metadata_list(ml, module.sha256) == {
+        assert attachment.transform_metadata_list(
+            [
+                {
+                    "path": path1,
+                    "type": "text/plain",
+                },
+                {
+                    "path": path2,
+                    "name": "attachment_name.txt",
+                    "type": "text/markdown",
+                },
+            ],
+            module.sha256,
+        ) == {
             os.path.basename(path1): {
                 "path": path1,
                 "type": "text/plain",
@@ -143,16 +178,24 @@ class TestAttachmentTransformMetadataList:
         )
         module.sha256.return_value = "some_hash"
 
-        ml = list(self.META_LIST)
-
         fd, path = mkstemp()
         with os.fdopen(fd, "w") as f:
             f.write("file_contents")
 
-        ml[0].update({"path": path})
-        ml[1].update({"path": path})
-
-        assert attachment.transform_metadata_list(ml, module.sha256) == {
+        assert attachment.transform_metadata_list(
+            [
+                {
+                    "path": path,
+                    "type": "text/plain",
+                },
+                {
+                    "path": path,
+                    "name": "attachment_name.txt",
+                    "type": "text/markdown",
+                },
+            ],
+            module.sha256,
+        ) == {
             os.path.basename(path): {
                 "path": path,
                 "type": "text/plain",
@@ -171,8 +214,6 @@ class TestAttachmentTransformMetadataList:
         )
         module.sha256.return_value = "some_hash"
 
-        ml = list(self.META_LIST)
-
         fd1, path1 = mkstemp()
         with os.fdopen(fd1, "w") as f:
             f.write("file_contents")
@@ -180,30 +221,73 @@ class TestAttachmentTransformMetadataList:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_contents")
 
-        ml[0].update({"path": path1, "name": "attachment_name.txt"})
-        ml[1].update({"path": path2})
-
         with pytest.raises(
             errors.ServiceNowError,
             match="Found the following duplicates: (.*, .*)",
         ):
-            attachment.transform_metadata_list(ml, module.sha256)
+            attachment.transform_metadata_list(
+                [
+                    {
+                        "path": path1,
+                        "name": "attachment_name.txt",
+                        "type": "text/plain",
+                    },
+                    {
+                        "path": path2,
+                        "name": "attachment_name.txt",
+                        "type": "text/markdown",
+                    },
+                ],
+                module.sha256,
+            )
 
 
 class TestAttachmentAreChanged:
     def test_unchanged(self):
-        records = [
-            {"hash": "hash", "file_name": "attachment_name.txt"},
-            {"hash": "hash", "file_name": "another_file_name.txt"},
-        ]
-        assert attachment.are_changed(records, FILE_DICT_DICT) == [False, False]
+        assert (
+            attachment.are_changed(
+                [
+                    {"hash": "hash", "file_name": "attachment_name.txt"},
+                    {"hash": "hash", "file_name": "another_file_name.txt"},
+                ],
+                {
+                    "attachment_name.txt": {
+                        "path": "some/path/file_name.txt",
+                        "type": "text/markdown",
+                        "hash": "hash",
+                    },
+                    "another_file_name.txt": {
+                        "path": "some/path/another_file_name.txt",
+                        "type": "text/plain",
+                        "hash": "hash",
+                    },
+                },
+            )
+            == [False, False]
+        )
 
     def test_changed(self):
-        records = [
-            {"hash": "oldhash", "file_name": "attachment_name.txt"},
-            {"hash": "oldhash", "file_name": "another_file_name.txt"},
-        ]
-        assert attachment.are_changed(records, FILE_DICT_DICT) == [True, True]
+        assert (
+            attachment.are_changed(
+                [
+                    {"hash": "oldhash", "file_name": "attachment_name.txt"},
+                    {"hash": "oldhash", "file_name": "another_file_name.txt"},
+                ],
+                {
+                    "attachment_name.txt": {
+                        "path": "some/path/file_name.txt",
+                        "type": "text/markdown",
+                        "hash": "hash",
+                    },
+                    "another_file_name.txt": {
+                        "path": "some/path/another_file_name.txt",
+                        "type": "text/plain",
+                        "hash": "hash",
+                    },
+                },
+            )
+            == [True, True]
+        )
 
 
 class TestAttachmentListRecords:
@@ -326,10 +410,18 @@ class TestAttachmentUploadRecord:
         fd, path = mkstemp()
         with os.fdopen(fd, "w") as f:
             f.write("file_content")
-        mfd = FILE_DICT.copy()
-        mfd.update({"path": path})
 
-        record = a.upload_record("table", "1234", mfd, check_mode=False)
+        record = a.upload_record(
+            "table",
+            "1234",
+            {
+                "path": path,
+                "name": "attachment_name.txt",
+                "type": "text/markdown",
+                "hash": "hash",
+            },
+            check_mode=False,
+        )
 
         assert dict(a=3, b="sys_id") == record
         client.request.assert_called_with(
@@ -355,10 +447,18 @@ class TestAttachmentUploadRecord:
         fd, path = mkstemp()
         with os.fdopen(fd, "w") as f:
             f.write("file_content")
-        mfd = FILE_DICT.copy()
-        mfd.update({"path": path})
 
-        record = a.upload_record("table", "1234", mfd, check_mode=True)
+        record = a.upload_record(
+            "table",
+            "1234",
+            {
+                "path": path,
+                "name": "attachment_name.txt",
+                "type": "text/markdown",
+                "hash": "hash",
+            },
+            check_mode=True,
+        )
 
         assert {
             "table_name": "table",
@@ -385,11 +485,23 @@ class TestAttachmentUploadRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("file_content2")
 
-        mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name.txt"].update({"path": path1})
-        mfdd["another_file_name.txt"].update({"path": path2})
-
-        record = a.upload_records("table", "1234", mfdd, check_mode=False)
+        record = a.upload_records(
+            "table",
+            "1234",
+            {
+                "attachment_name.txt": {
+                    "path": path1,
+                    "type": "text/markdown",
+                    "hash": "hash",
+                },
+                "another_file_name.txt": {
+                    "path": path2,
+                    "type": "text/plain",
+                    "hash": "hash",
+                },
+            },
+            check_mode=False,
+        )
 
         assert [dict(a=3, b="sys_id"), dict(a=4, b="sys_idn")] == record
         assert 2 == client.request.call_count
@@ -433,11 +545,23 @@ class TestAttachmentUploadRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("file_content2")
 
-        mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name.txt"].update({"path": path1})
-        mfdd["another_file_name.txt"].update({"path": path2})
-
-        record = a.upload_records("table", "1234", mfdd, check_mode=True)
+        record = a.upload_records(
+            "table",
+            "1234",
+            {
+                "attachment_name.txt": {
+                    "path": path1,
+                    "type": "text/markdown",
+                    "hash": "hash",
+                },
+                "another_file_name.txt": {
+                    "path": path2,
+                    "type": "text/plain",
+                    "hash": "hash",
+                },
+            },
+            check_mode=True,
+        )
 
         assert [
             {
@@ -460,7 +584,23 @@ class TestAttachmentUploadRecords:
     def test_missing_file(self, client):
         a = attachment.AttachmentClient(client)
         with pytest.raises(errors.ServiceNowError, match="Cannot open"):
-            a.upload_records("table", "1234", FILE_DICT_DICT, True)
+            a.upload_records(
+                "table",
+                "1234",
+                {
+                    "attachment_name.txt": {
+                        "path": "some/path/file_name.txt",
+                        "type": "text/markdown",
+                        "hash": "hash",
+                    },
+                    "another_file_name.txt": {
+                        "path": "some/path/another_file_name.txt",
+                        "type": "text/plain",
+                        "hash": "hash",
+                    },
+                },
+                True,
+            )
 
 
 class TestAttachmentDeleteRecord:
@@ -542,16 +682,27 @@ class TestAttachmentUpdateRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_content")
 
-        mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name.txt"].update({"path": path1})
-        mfdd["another_file_name.txt"].update({"path": path2})
-
-        record = [
-            {"hash": "hash", "sys_id": "1", "file_name": "attachment_name.txt"},
-            {"hash": "hash", "sys_id": "2", "file_name": "another_file_name.txt"},
-        ]
-
-        changes = a.update_records("table", "1234", mfdd, record, False)
+        changes = a.update_records(
+            "table",
+            "1234",
+            {
+                "attachment_name.txt": {
+                    "path": path1,
+                    "type": "text/markdown",
+                    "hash": "hash",
+                },
+                "another_file_name.txt": {
+                    "path": path2,
+                    "type": "text/plain",
+                    "hash": "hash",
+                },
+            },
+            [
+                {"hash": "hash", "sys_id": "1", "file_name": "attachment_name.txt"},
+                {"hash": "hash", "sys_id": "2", "file_name": "another_file_name.txt"},
+            ],
+            False,
+        )
 
         assert [
             {
@@ -581,16 +732,31 @@ class TestAttachmentUpdateRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_contents")
 
-        mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name.txt"].update({"path": path1})
-        mfdd["another_file_name.txt"].update({"path": path2})
-
-        record = [
-            {"hash": "oldhash", "sys_id": "1", "file_name": "attachment_name.txt"},
-            {"hash": "oldhash", "sys_id": "2", "file_name": "another_file_name.txt"},
-        ]
-
-        changes = a.update_records("table", "1234", mfdd, record, False)
+        changes = a.update_records(
+            "table",
+            "1234",
+            {
+                "attachment_name.txt": {
+                    "path": path1,
+                    "type": "text/markdown",
+                    "hash": "hash",
+                },
+                "another_file_name.txt": {
+                    "path": path2,
+                    "type": "text/plain",
+                    "hash": "hash",
+                },
+            },
+            [
+                {"hash": "oldhash", "sys_id": "1", "file_name": "attachment_name.txt"},
+                {
+                    "hash": "oldhash",
+                    "sys_id": "2",
+                    "file_name": "another_file_name.txt",
+                },
+            ],
+            False,
+        )
 
         assert [
             {
@@ -613,16 +779,27 @@ class TestAttachmentUpdateRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_content")
 
-        mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name.txt"].update({"path": path1})
-        mfdd["another_file_name.txt"].update({"path": path2})
-
-        record = [
-            {"hash": "hash", "sys_id": "1", "file_name": "attachment_name.txt"},
-            {"hash": "hash", "sys_id": "2", "file_name": "another_file_name.txt"},
-        ]
-
-        changes = a.update_records("table", "1234", mfdd, record, True)
+        changes = a.update_records(
+            "table",
+            "1234",
+            {
+                "attachment_name.txt": {
+                    "path": path1,
+                    "type": "text/markdown",
+                    "hash": "hash",
+                },
+                "another_file_name.txt": {
+                    "path": path2,
+                    "type": "text/plain",
+                    "hash": "hash",
+                },
+            },
+            [
+                {"hash": "hash", "sys_id": "1", "file_name": "attachment_name.txt"},
+                {"hash": "hash", "sys_id": "2", "file_name": "another_file_name.txt"},
+            ],
+            True,
+        )
 
         assert [
             {
@@ -652,16 +829,31 @@ class TestAttachmentUpdateRecords:
         with os.fdopen(fd2, "w") as f:
             f.write("another_file_contents")
 
-        mfdd = dict(FILE_DICT_DICT)
-        mfdd["attachment_name.txt"].update({"path": path1})
-        mfdd["another_file_name.txt"].update({"path": path2})
-
-        record = [
-            {"hash": "oldhash", "sys_id": "1", "file_name": "attachment_name.txt"},
-            {"hash": "oldhash", "sys_id": "2", "file_name": "another_file_name.txt"},
-        ]
-
-        record = a.update_records("table", "1234", mfdd, record, True)
+        record = a.update_records(
+            "table",
+            "1234",
+            {
+                "attachment_name.txt": {
+                    "path": path1,
+                    "type": "text/markdown",
+                    "hash": "hash",
+                },
+                "another_file_name.txt": {
+                    "path": path2,
+                    "type": "text/plain",
+                    "hash": "hash",
+                },
+            },
+            [
+                {"hash": "oldhash", "sys_id": "1", "file_name": "attachment_name.txt"},
+                {
+                    "hash": "oldhash",
+                    "sys_id": "2",
+                    "file_name": "another_file_name.txt",
+                },
+            ],
+            True,
+        )
 
         assert [
             {
