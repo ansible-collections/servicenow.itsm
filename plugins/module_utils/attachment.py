@@ -43,21 +43,6 @@ class AttachmentClient:
 
         return result
 
-    def get_record(self, query, must_exist=False):
-        records = self.list_records(query)
-
-        if len(records) > 1:
-            raise errors.ServiceNowError(
-                "{0} attachments match the {1} query.".format(len(records), query)
-            )
-
-        if must_exist and not records:
-            raise errors.ServiceNowError(
-                "No attachments match the {0} query.".format(query)
-            )
-
-        return records[0] if records else None
-
     def create_record(self, query, data, mime_type, check_mode):
         if check_mode:
             return query

@@ -276,52 +276,6 @@ class TestAttachmentListRecords:
         )
 
 
-class TestAttachmentGetRecord:
-    def test_single_match_meta(self, client):
-        client.get.return_value = Response(
-            200, '{"result": [{"a": 3, "b": "sys_id"}]}', {"X-Total-Count": "1"}
-        )
-        a = attachment.AttachmentClient(client)
-
-        record = a.get_record(dict(our="query"))
-
-        assert dict(a=3, b="sys_id") == record
-        client.get.assert_called_with(
-            "attachment",
-            query=dict(
-                our="query",
-                sysparm_limit=10000,
-                sysparm_offset=0,
-            ),
-        )
-
-    def test_multiple_matches(self, client):
-        client.get.return_value = Response(
-            200, '{"result": [{"a": 3}, {"b": 4}]}', {"X-Total-Count": "1"}
-        )
-        a = attachment.AttachmentClient(client)
-
-        with pytest.raises(errors.ServiceNowError, match="2"):
-            a.get_record(dict(our="query"))
-
-    def test_zero_matches(self, client):
-        client.get.return_value = Response(
-            200, '{"result": []}', {"X-Total-Count": "0"}
-        )
-        a = attachment.AttachmentClient(client)
-
-        assert a.get_record(dict(our="query")) is None
-
-    def test_zero_matches_fail(self, client):
-        client.get.return_value = Response(
-            200, '{"result": []}', {"X-Total-Count": "0"}
-        )
-        a = attachment.AttachmentClient(client)
-
-        with pytest.raises(errors.ServiceNowError, match="No"):
-            a.get_record(dict(our="query"), must_exist=True)
-
-
 class TestAttachmentCreateRecord:
     def test_normal_mode(self, client):
         client.request.return_value = Response(
