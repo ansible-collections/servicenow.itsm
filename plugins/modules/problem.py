@@ -115,6 +115,8 @@ EXAMPLES = r"""
     state: new
     short_description: Issue with the network printer
     description: Since this morning, all printer jobs are stuck.
+    attachments:
+      - path: path/to/attachment.txt
     impact: medium
     urgency: low
     other:
@@ -182,6 +184,28 @@ record:
     "approval_set": ""
     "assigned_to": "73ab3f173b331300ad3cc9bb34efc4df"
     "assignment_group": ""
+    "attachments":
+      -  "average_image_color": ""
+         "chunk_size_bytes": "700000"
+         "compressed": "true"
+         "content_type": "text/plain"
+         "download_link": "https://www.example.com/api/now/attachment/31cdf4d50706301022f9ffa08c1ed07f/file"
+         "file_name": "sample_file1.txt"
+         "hash": "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+         "image_height": ""
+         "image_width": ""
+         "size_bytes": "210"
+         "size_compressed": "206"
+         "state": "pending"
+         "sys_created_by": "admin"
+         "sys_created_on": "2021-08-17 11:19:49"
+         "sys_id": "31cdf4d50706301022f9ffa08c1ed07f"
+         "sys_mod_count": "0"
+         "sys_tags": ""
+         "sys_updated_by": "admin"
+         "sys_updated_on": "2021-08-17 11:19:49"
+         "table_name": "problem"
+         "table_sys_id": "6dcdb4d50706301022f9ffa08c1ed0fb"
     "business_duration": ""
     "business_service": ""
     "calendar_duration": ""

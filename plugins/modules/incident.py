@@ -104,6 +104,8 @@ EXAMPLES = r"""
     caller: some.user
     short_description: User is not receiving email
     description: User has been unable to receive email for the past 15 minutes
+    attachments:
+      - path: path/to/attachment.txt
     impact: low
     urgency: low
 

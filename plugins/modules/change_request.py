@@ -150,6 +150,8 @@ EXAMPLES = """
     requested_by: some.user
     short_description: Install new Cisco
     description: Please install new Cat. 6500 in Data center 01
+    attachments:
+      - path: path/to/attachment.txt
     priority: moderate
     risk: low
     impact: low
