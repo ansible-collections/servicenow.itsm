@@ -1,0 +1,3 @@
+---
+bugfixes:
+- client - Lowercase all header dict keys on Response initialization for better consistency across Python versions. Fix tests and table client accordingly. (https://github.com/ansible-collections/servicenow.itsm/pull/98)
