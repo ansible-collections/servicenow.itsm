@@ -11,6 +11,7 @@ import os
 import sys
 
 import pytest
+from mock import ANY
 
 from tempfile import mkstemp
 
@@ -388,7 +389,7 @@ class TestAttachmentUploadRecord:
                 "hash": "hash",
             },
             headers={"Accept": "application/json", "Content-type": "text/markdown"},
-            bytes=b"file_content",
+            bytes=ANY,
         )
 
     def test_check_mode(self, client):
@@ -449,7 +450,7 @@ class TestAttachmentUploadRecords:
                 "hash": "hash",
             },
             headers={"Accept": "application/json", "Content-type": "text/markdown"},
-            bytes=b"file_content1",
+            bytes=ANY,
         )
         client.request.assert_any_call(
             "POST",
@@ -462,7 +463,7 @@ class TestAttachmentUploadRecords:
                 "hash": "hash",
             },
             headers={"Accept": "application/json", "Content-type": "text/plain"},
-            bytes=b"file_content2",
+            bytes=ANY,
         )
 
     def test_check_mode(self, client):
