@@ -12,6 +12,7 @@ class ModuleDocFragment(object):
     DOCUMENTATION = r"""
 options:
   attachments:
+    version_added: 1.2.0
     description:
       - ServiceNow attachments.
     type: list

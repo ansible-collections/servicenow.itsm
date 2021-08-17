@@ -64,7 +64,7 @@ class AttachmentClient:
         return self.client.request(
             "POST",
             _path("file"),
-            query=(query or {}),
+            query=query,
             headers={"Accept": "application/json", "Content-type": mime_type},
             bytes=data,
         ).json["result"]
@@ -110,9 +110,9 @@ class AttachmentClient:
         mapped_records = dict((r["file_name"], r) for r in records)
 
         for name, metadata in metadata_dict.items():
-            record = mapped_records.get(name, None)
-            if (record or {}).get("hash") != metadata["hash"]:
-                if record is not None:
+            record = mapped_records.get(name, {})
+            if record.get("hash") != metadata["hash"]:
+                if record:
                     self.delete_record(record, check_mode)
                 mapped_records[name] = self.upload_record(
                     table, table_sys_id, dict(metadata, name=name), check_mode
