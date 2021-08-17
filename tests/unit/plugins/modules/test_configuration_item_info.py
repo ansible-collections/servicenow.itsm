@@ -67,14 +67,6 @@ class TestMain:
 
 
 class TestRun:
-    SAMPLE_ATTACHMENT = {
-        "content_type": "text/plain",
-        "file_name": "sample_file",
-        "table_name": "change_request",
-        "table_sys_id": 1234,
-        "sys_id": 4444,
-    }
-
     def test_run(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
@@ -91,7 +83,13 @@ class TestRun:
         ]
         attachment_client.list_records.side_effect = [
             [
-                self.SAMPLE_ATTACHMENT,
+                {
+                    "content_type": "text/plain",
+                    "file_name": "sample_file",
+                    "table_name": "change_request",
+                    "table_sys_id": 1234,
+                    "sys_id": 4444,
+                },
             ],
             [],
             [],
@@ -117,7 +115,13 @@ class TestRun:
                 p=1,
                 sys_id=1234,
                 attachments=[
-                    self.SAMPLE_ATTACHMENT,
+                    {
+                        "content_type": "text/plain",
+                        "file_name": "sample_file",
+                        "table_name": "change_request",
+                        "table_sys_id": 1234,
+                        "sys_id": 4444,
+                    },
                 ],
             ),
             dict(q=2, sys_id=4321, attachments=[]),
