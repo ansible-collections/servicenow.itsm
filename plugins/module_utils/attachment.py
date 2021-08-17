@@ -64,7 +64,7 @@ class AttachmentClient:
         return self.client.request(
             "POST",
             _path("file"),
-            query=(query or {}),
+            query=query,
             headers={"Accept": "application/json", "Content-type": mime_type},
             bytes=data,
         ).json["result"]
