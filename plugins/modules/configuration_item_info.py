@@ -206,10 +206,10 @@ def run(module, table_client, attachment_client):
 
     return [
         dict(
+            mapper.to_ansible(record),
             attachments=attachment_client.list_records(
                 dict(table_name=cmdb_table, table_sys_id=record["sys_id"]),
-            ),
-            **mapper.to_ansible(record)
+            )
         )
         for record in table_client.list_records(cmdb_table, query)
     ]
