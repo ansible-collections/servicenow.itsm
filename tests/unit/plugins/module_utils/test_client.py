@@ -44,7 +44,7 @@ class TestResponseInit:
         )
 
         assert resp.status == 200
-        assert resp.headers == {"Content-type": "applcation/json"}
+        assert resp.headers == {"content-type": "applcation/json"}
         assert resp.data == '{"a": ["b", "c"], "d": 1}'
         assert resp.json == {"a": ["b", "c"], "d": 1}
 

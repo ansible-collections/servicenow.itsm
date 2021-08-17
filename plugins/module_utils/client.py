@@ -24,8 +24,8 @@ class Response:
     def __init__(self, status, data, headers=None):
         self.status = status
         self.data = data
-        # [('h1', 'v1'), ('h2', 'v2')] -> {'h1': 'v1', 'h2': 'v2'}
-        self.headers = dict(headers) if headers else {}
+        # [('h1', 'v1'), ('H2', 'V2')] -> {'h1': 'v1', 'h2': 'V2'}
+        self.headers = dict((k.lower(), v) for k, v in dict(headers).items()) if headers else {}
 
         self._json = None
 

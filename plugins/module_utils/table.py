@@ -40,7 +40,7 @@ class TableClient:
             )
 
             result.extend(response.json["result"])
-            total = int(response.headers["X-Total-Count"])
+            total = int(response.headers["x-total-count"])
             offset += self.batch_size
 
         return result
