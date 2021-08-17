@@ -331,8 +331,8 @@ class TestAttachmentCreateRecord:
         record = a.create_record(
             dict(some="property"),
             "file_content",
-            check_mode=False,
-            mime_type="text/plain",
+            "text/plain",
+            False,
         )
 
         assert dict(a=3, b="sys_id") == record
@@ -353,8 +353,8 @@ class TestAttachmentCreateRecord:
         record = a.create_record(
             dict(some="property"),
             "file_content",
-            check_mode=True,
-            mime_type="text/plain",
+            "text/plain",
+            True,
         )
 
         assert dict(some="property") == record
@@ -596,7 +596,7 @@ class TestAttachmentUpdateRecords:
             {"hash": "hash", "sys_id": "2", "file_name": "another_file_name.txt"},
         ]
 
-        changes = a.update_records("table", "1234", mfdd, record)
+        changes = a.update_records("table", "1234", mfdd, record, False)
 
         assert [
             {
@@ -635,7 +635,7 @@ class TestAttachmentUpdateRecords:
             {"hash": "oldhash", "sys_id": "2", "file_name": "another_file_name.txt"},
         ]
 
-        changes = a.update_records("table", "1234", mfdd, record)
+        changes = a.update_records("table", "1234", mfdd, record, False)
 
         assert [
             {

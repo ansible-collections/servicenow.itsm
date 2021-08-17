@@ -58,7 +58,7 @@ class AttachmentClient:
 
         return records[0] if records else None
 
-    def create_record(self, query, data, check_mode, mime_type):
+    def create_record(self, query, data, mime_type, check_mode):
         if check_mode:
             return query
         return self.client.request(
@@ -69,7 +69,7 @@ class AttachmentClient:
             bytes=data,
         ).json["result"]
 
-    def upload_record(self, table, table_sys_id, metadata, check_mode=False):
+    def upload_record(self, table, table_sys_id, metadata, check_mode):
         # Table and table_sys_id parameters uniquely identify the record we will attach a file to.
         query = dict(
             table_name=table,
@@ -81,7 +81,7 @@ class AttachmentClient:
         try:
             with open(metadata["path"], "rb") as file_obj:
                 return self.create_record(
-                    query, file_obj, check_mode, query["content_type"]
+                    query, file_obj, query["content_type"], check_mode
                 )
         except (IOError, OSError):
             raise errors.ServiceNowError("Cannot open {0}".format(metadata["path"]))
@@ -105,7 +105,7 @@ class AttachmentClient:
             self.delete_record(record, check_mode)
 
     def update_records(
-        self, table, table_sys_id, metadata_dict, records, check_mode=False
+        self, table, table_sys_id, metadata_dict, records, check_mode
     ):
         mapped_records = dict((r["file_name"], r) for r in records)
 
