@@ -91,93 +91,73 @@ class TestAttachmentGetFileType:
 
 
 class TestAttachmentTransformMetadataList:
-    def test_normal(self, create_module):
-        module = create_module(
-            params=dict(some="param"),
-        )
-        module.sha256.return_value = "some_hash"
-
-        fd1, path1 = mkstemp()
-        with os.fdopen(fd1, "w") as f:
-            f.write("file_contents")
-        fd2, path2 = mkstemp()
-        with os.fdopen(fd2, "w") as f:
-            f.write("another_file_contents")
+    def test_normal(self, tmp_path):
+        path1 = tmp_path / "name1.txt"
+        path1.write_text("file_contents")
+        path2 = tmp_path / "name2.txt"
+        path2.write_text("another_file_contents")
 
         assert attachment.transform_metadata_list(
             [
                 {
-                    "path": path1,
+                    "path": str(path1),
                     "type": "text/plain",
                 },
                 {
-                    "path": path2,
+                    "path": str(path2),
                     "name": "attachment_name.txt",
                     "type": "text/markdown",
                 },
             ],
-            module.sha256,
+            lambda x: "some_hash",
         ) == {
-            os.path.basename(path1): {
-                "path": path1,
+            "name1.txt": {
+                "path": str(path1),
                 "type": "text/plain",
                 "hash": "some_hash",
             },
             "attachment_name.txt": {
-                "path": path2,
+                "path": str(path2),
                 "type": "text/markdown",
                 "hash": "some_hash",
             },
         }
 
-    def test_same_file_different_name(self, create_module):
-        module = create_module(
-            params=dict(some="param"),
-        )
-        module.sha256.return_value = "some_hash"
-
-        fd, path = mkstemp()
-        with os.fdopen(fd, "w") as f:
-            f.write("file_contents")
+    def test_same_file_different_name(self, tmp_path):
+        path = tmp_path / "name.txt"
+        path.write_text("file_contents")
 
         assert attachment.transform_metadata_list(
             [
                 {
-                    "path": path,
+                    "path": str(path),
                     "type": "text/plain",
                 },
                 {
-                    "path": path,
+                    "path": str(path),
                     "name": "attachment_name.txt",
                     "type": "text/markdown",
                 },
             ],
-            module.sha256,
+            lambda x: "some_hash",
         ) == {
-            os.path.basename(path): {
-                "path": path,
+            "name.txt": {
+                "path": str(path),
                 "type": "text/plain",
                 "hash": "some_hash",
             },
             "attachment_name.txt": {
-                "path": path,
+                "path": str(path),
                 "type": "text/markdown",
                 "hash": "some_hash",
             },
         }
 
-    def test_duplicate(self, create_module):
-        module = create_module(
-            params=dict(some="param"),
-        )
-        module.sha256.return_value = "some_hash"
-
-        fd1, path1 = mkstemp()
-        with os.fdopen(fd1, "w") as f:
-            f.write("file_contents")
-        fd2, path2 = mkstemp()
-        with os.fdopen(fd2, "w") as f:
-            f.write("another_file_contents")
+    def test_duplicate(self, tmp_path):
+        path1 = tmp_path / "name1.txt"
+        path1.write_text("file_contents")
+        path2 = tmp_path / "name2.txt"
+        path2.write_text("another_file_contents")
 
         with pytest.raises(
             errors.ServiceNowError,
@@ -186,17 +166,17 @@ class TestAttachmentTransformMetadataList:
             attachment.transform_metadata_list(
                 [
                     {
-                        "path": path1,
+                        "path": str(path1),
                         "name": "attachment_name.txt",
                         "type": "text/plain",
                     },
                     {
-                        "path": path2,
+                        "path": str(path2),
                         "name": "attachment_name.txt",
                         "type": "text/markdown",
                     },
                 ],
-                module.sha256,
+                lambda x: "some_hash",
             )
 
 
@@ -359,21 +339,20 @@ class TestAttachmentCreateRecord:
 
 
 class TestAttachmentUploadRecord:
-    def test_normal_mode(self, client):
+    def test_normal_mode(self, client, tmp_path):
         client.request.return_value = Response(
             201, '{"result": {"a": 3, "b": "sys_id"}}'
         )
         a = attachment.AttachmentClient(client)
 
-        fd, path = mkstemp()
-        with os.fdopen(fd, "w") as f:
-            f.write("file_content")
+        path = tmp_path / "name.txt"
+        path.write_text("file_content")
 
         record = a.upload_record(
             "table",
             "1234",
             {
-                "path": path,
+                "path": str(path),
                 "name": "attachment_name.txt",
                 "type": "text/markdown",
                 "hash": "hash",
@@ -396,21 +375,20 @@ class TestAttachmentUploadRecord:
             bytes=b"file_content",
         )
 
-    def test_check_mode(self, client):
+    def test_check_mode(self, client, tmp_path):
         client.request.return_value = Response(
             201, '{"result": {"a": 3, "b": "sys_id"}}'
         )
         a = attachment.AttachmentClient(client)
 
-        fd, path = mkstemp()
-        with os.fdopen(fd, "w") as f:
-            f.write("file_content")
+        path = tmp_path / "name.txt"
+        path.write_text("file_contents")
 
         record = a.upload_record(
             "table",
             "1234",
             {
-                "path": path,
+                "path": str(path),
                 "name": "attachment_name.txt",
                 "type": "text/markdown",
                 "hash": "hash",
@@ -429,31 +407,29 @@ class TestAttachmentUploadRecord:
 
 
 class TestAttachmentUploadRecords:
-    def test_normal_mode(self, client):
+    def test_normal_mode(self, client, tmp_path):
         client.request.side_effect = [
             Response(201, '{"result": {"a": 3, "b": "sys_id"}}'),
             Response(201, '{"result": {"a": 4, "b": "sys_idn"}}'),
         ]
         a = attachment.AttachmentClient(client)
 
-        fd1, path1 = mkstemp()
-        with os.fdopen(fd1, "w") as f:
-            f.write("file_content1")
-        fd2, path2 = mkstemp()
-        with os.fdopen(fd2, "w") as f:
-            f.write("file_content2")
+        path1 = tmp_path / "name1.txt"
+        path1.write_text("file_content1")
+        path2 = tmp_path / "name2.txt"
+        path2.write_text("file_content2")
 
         record = a.upload_records(
             "table",
             "1234",
             {
                 "attachment_name.txt": {
-                    "path": path1,
+                    "path": str(path1),
                     "type": "text/markdown",
                     "hash": "hash",
                 },
                 "another_file_name.txt": {
-                    "path": path2,
+                    "path": str(path2),
                     "type": "text/plain",
                     "hash": "hash",
                 },
@@ -490,30 +466,28 @@ class TestAttachmentUploadRecords:
             bytes=b"file_content2",
         )
 
-    def test_check_mode(self, client):
+    def test_check_mode(self, client, tmp_path):
         client.request.return_value = Response(
             201, '{"result": {"a": 1, "sys_id": "1"}}'
         )
         a = attachment.AttachmentClient(client)
 
-        fd1, path1 = mkstemp()
-        with os.fdopen(fd1, "w") as f:
-            f.write("file_content1")
-        fd2, path2 = mkstemp()
-        with os.fdopen(fd2, "w") as f:
-            f.write("file_content2")
+        path1 = tmp_path / "name1.txt"
+        path1.write_text("file_content1")
+        path2 = tmp_path / "name2.txt"
+        path2.write_text("file_content2")
 
         record = a.upload_records(
             "table",
             "1234",
             {
                 "attachment_name.txt": {
-                    "path": path1,
+                    "path": str(path1),
                     "type": "text/markdown",
                     "hash": "hash",
                 },
                 "another_file_name.txt": {
-                    "path": path2,
+                    "path": str(path2),
                     "type": "text/plain",
                     "hash": "hash",
                 },
@@ -630,27 +604,25 @@ class TestAttachmentDeleteRecords:
 
 
 class TestAttachmentUpdateRecords:
-    def test_unchanged_normal_mode(self, client):
+    def test_unchanged_normal_mode(self, client, tmp_path):
         a = attachment.AttachmentClient(client)
 
-        fd1, path1 = mkstemp()
-        with os.fdopen(fd1, "w") as f:
-            f.write("file_content")
-        fd2, path2 = mkstemp()
-        with os.fdopen(fd2, "w") as f:
-            f.write("another_file_content")
+        path1 = tmp_path / "name1.txt"
+        path1.write_text("file_content1")
+        path2 = tmp_path / "name2.txt"
+        path2.write_text("file_content2")
 
         changes = a.update_records(
             "table",
             "1234",
             {
                 "attachment_name.txt": {
-                    "path": path1,
+                    "path": str(path1),
                     "type": "text/markdown",
                     "hash": "hash",
                 },
                 "another_file_name.txt": {
-                    "path": path2,
+                    "path": str(path2),
                     "type": "text/plain",
                     "hash": "hash",
                 },
@@ -675,7 +647,7 @@ class TestAttachmentUpdateRecords:
             },
         ] == sorted(changes, key=lambda k: k["file_name"])
 
-    def test_changed_normal_mode(self, client):
+    def test_changed_normal_mode(self, client, tmp_path):
         client.request.side_effect = [
             Response(201, '{"result": {"a": 1, "sys_id": "a"}}'),
             Response(201, '{"result": {"a": 2, "sys_id": "b"}}'),
@@ -683,24 +655,22 @@ class TestAttachmentUpdateRecords:
         client.delete.return_value = Response(204, "")
         a = attachment.AttachmentClient(client)
 
-        fd1, path1 = mkstemp()
-        with os.fdopen(fd1, "w") as f:
-            f.write("file_contents")
-        fd2, path2 = mkstemp()
-        with os.fdopen(fd2, "w") as f:
-            f.write("another_file_contents")
+        path1 = tmp_path / "name1.txt"
+        path1.write_text("file_content1")
+        path2 = tmp_path / "name2.txt"
+        path2.write_text("file_content2")
 
         changes = a.update_records(
             "table",
             "1234",
             {
                 "attachment_name.txt": {
-                    "path": path1,
+                    "path": str(path1),
                     "type": "text/markdown",
                     "hash": "hash",
                 },
                 "another_file_name.txt": {
-                    "path": path2,
+                    "path": str(path2),
                     "type": "text/plain",
                     "hash": "hash",
                 },
@@ -727,27 +697,25 @@ class TestAttachmentUpdateRecords:
             },
         ] == changes
 
-    def test_unchanged_check_mode(self, client):
+    def test_unchanged_check_mode(self, client, tmp_path):
         a = attachment.AttachmentClient(client)
 
-        fd1, path1 = mkstemp()
-        with os.fdopen(fd1, "w") as f:
-            f.write("file_content")
-        fd2, path2 = mkstemp()
-        with os.fdopen(fd2, "w") as f:
-            f.write("another_file_content")
+        path1 = tmp_path / "name1.txt"
+        path1.write_text("file_content1")
+        path2 = tmp_path / "name2.txt"
+        path2.write_text("file_content2")
 
         changes = a.update_records(
             "table",
             "1234",
             {
                 "attachment_name.txt": {
-                    "path": path1,
+                    "path": str(path1),
                     "type": "text/markdown",
                     "hash": "hash",
                 },
                 "another_file_name.txt": {
-                    "path": path2,
+                    "path": str(path2),
                     "type": "text/plain",
                     "hash": "hash",
                 },
@@ -772,7 +740,7 @@ class TestAttachmentUpdateRecords:
             },
         ] == sorted(changes, key=lambda k: k["file_name"])
 
-    def test_changed_check_mode(self, client):
+    def test_changed_check_mode(self, client, tmp_path):
         client.request.side_effect = [
             Response(201, '{"result": {"a": 1, "sys_id": "a"}}'),
             Response(201, '{"result": {"a": 2, "sys_id": "b"}}'),
@@ -780,24 +748,22 @@ class TestAttachmentUpdateRecords:
         client.delete.return_value = Response(204, "")
         a = attachment.AttachmentClient(client)
 
-        fd1, path1 = mkstemp()
-        with os.fdopen(fd1, "w") as f:
-            f.write("file_contents")
-        fd2, path2 = mkstemp()
-        with os.fdopen(fd2, "w") as f:
-            f.write("another_file_contents")
+        path1 = tmp_path / "name1.txt"
+        path1.write_text("file_content1")
+        path2 = tmp_path / "name2.txt"
+        path2.write_text("file_content2")
 
         record = a.update_records(
             "table",
             "1234",
             {
                 "attachment_name.txt": {
-                    "path": path1,
+                    "path": str(path1),
                     "type": "text/markdown",
                     "hash": "hash",
                 },
                 "another_file_name.txt": {
-                    "path": path2,
+                    "path": str(path2),
                     "type": "text/plain",
                     "hash": "hash",
                 },
