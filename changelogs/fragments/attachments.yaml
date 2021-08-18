@@ -1,0 +1,3 @@
+---
+minor_changes:
+- attachments - Add a client for attachment management. Add support for attachments in change_request, configuration_item, incident and problem modules, including their info counterparts. (https://github.com/ansible-collections/servicenow.itsm/pull/91)
