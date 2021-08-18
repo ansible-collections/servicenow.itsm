@@ -78,59 +78,6 @@ class TestAttachmentGetFileType:
         )
 
 
-class TestAttachmentBuildQuery:
-    def test_name_type_specified(self):
-        assert attachment.build_query(
-            "table",
-            "1234",
-            {
-                "path": "some/path/file_name.txt",
-                "name": "attachment_name.txt",
-                "type": "text/markdown",
-                "hash": "hash",
-            },
-        ) == {
-            "file_name": "attachment_name.txt",
-            "content_type": "text/markdown",
-            "table_name": "table",
-            "table_sys_id": "1234",
-        }
-
-    def test_name_omitted(self):
-        assert attachment.build_query(
-            "table",
-            "1234",
-            {
-                "path": "some/path/file_name.txt",
-                "name": None,
-                "type": "text/markdown",
-                "hash": "hash",
-            },
-        ) == {
-            "file_name": "file_name.txt",
-            "content_type": "text/markdown",
-            "table_name": "table",
-            "table_sys_id": "1234",
-        }
-
-    def test_type_omitted(self):
-        assert attachment.build_query(
-            "table",
-            "1234",
-            {
-                "path": "some/path/file_name.txt",
-                "name": "attachment_name.txt",
-                "type": None,
-                "hash": "hash",
-            },
-        ) == {
-            "file_name": "attachment_name.txt",
-            "content_type": "text/plain",
-            "table_name": "table",
-            "table_sys_id": "1234",
-        }
-
-
 class TestAttachmentTransformMetadataList:
     def test_normal(self, create_module):
         module = create_module(

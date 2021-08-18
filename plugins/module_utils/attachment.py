@@ -139,15 +139,6 @@ def get_file_type(metadata):
     return mimetypes.guess_type(metadata["path"])[0]
 
 
-def build_query(table, table_sys_id, metadata):
-    return dict(
-        file_name=get_file_name(metadata),
-        content_type=get_file_type(metadata),
-        table_name=table,
-        table_sys_id=table_sys_id,
-    )
-
-
 def are_changed(records, metadata_dict):
     mapped_records = dict((r["file_name"], r) for r in records)
     return [
