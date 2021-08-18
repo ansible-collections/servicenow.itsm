@@ -29,11 +29,20 @@ class TestAttachmentGetFileName:
                 {
                     "path": "some/path/file_name.txt",
                     "name": "attachment_name.txt",
-                    "type": "text/markdown",
-                    "hash": "hash",
                 }
             )
             == "attachment_name.txt"
+        )
+
+    def test_name_none(self):
+        assert (
+            attachment.get_file_name(
+                {
+                    "path": "some/path/file_name.txt",
+                    "name": None,
+                }
+            )
+            == "file_name.txt"
         )
 
     def test_name_omitted(self):
@@ -41,9 +50,6 @@ class TestAttachmentGetFileName:
             attachment.get_file_name(
                 {
                     "path": "some/path/file_name.txt",
-                    "name": None,
-                    "type": "text/markdown",
-                    "hash": "hash",
                 }
             )
             == "file_name.txt"
@@ -56,12 +62,21 @@ class TestAttachmentGetFileType:
             attachment.get_file_type(
                 {
                     "path": "some/path/file_name.txt",
-                    "name": "attachment_name.txt",
                     "type": "text/markdown",
-                    "hash": "hash",
                 }
             )
             == "text/markdown"
+        )
+
+    def test_type_none(self):
+        assert (
+            attachment.get_file_type(
+                {
+                    "path": "some/path/file_name.txt",
+                    "type": None,
+                }
+            )
+            == "text/plain"
         )
 
     def test_type_omitted(self):
@@ -69,9 +84,6 @@ class TestAttachmentGetFileType:
             attachment.get_file_type(
                 {
                     "path": "some/path/file_name.txt",
-                    "name": "attachment_name.txt",
-                    "type": None,
-                    "hash": "hash",
                 }
             )
             == "text/plain"
