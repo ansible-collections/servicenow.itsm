@@ -3,7 +3,7 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
@@ -93,9 +93,9 @@ class TestAttachmentGetFileType:
 class TestAttachmentTransformMetadataList:
     def test_normal(self, tmp_path):
         path1 = tmp_path / "name1.txt"
-        path1.write_text("file_contents")
+        path1.write_text(u"file_contents")
         path2 = tmp_path / "name2.txt"
-        path2.write_text("another_file_contents")
+        path2.write_text(u"another_file_contents")
 
         assert attachment.transform_metadata_list(
             [
@@ -125,7 +125,7 @@ class TestAttachmentTransformMetadataList:
 
     def test_same_file_different_name(self, tmp_path):
         path = tmp_path / "name.txt"
-        path.write_text("file_contents")
+        path.write_text(u"file_contents")
 
         assert attachment.transform_metadata_list(
             [
@@ -155,9 +155,9 @@ class TestAttachmentTransformMetadataList:
 
     def test_duplicate(self, tmp_path):
         path1 = tmp_path / "name1.txt"
-        path1.write_text("file_contents")
+        path1.write_text(u"file_contents")
         path2 = tmp_path / "name2.txt"
-        path2.write_text("another_file_contents")
+        path2.write_text(u"another_file_contents")
 
         with pytest.raises(
             errors.ServiceNowError,
@@ -346,7 +346,7 @@ class TestAttachmentUploadRecord:
         a = attachment.AttachmentClient(client)
 
         path = tmp_path / "name.txt"
-        path.write_text("file_content")
+        path.write_text(u"file_content")
 
         record = a.upload_record(
             "table",
@@ -382,7 +382,7 @@ class TestAttachmentUploadRecord:
         a = attachment.AttachmentClient(client)
 
         path = tmp_path / "name.txt"
-        path.write_text("file_contents")
+        path.write_text(u"file_contents")
 
         record = a.upload_record(
             "table",
@@ -415,9 +415,9 @@ class TestAttachmentUploadRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text("file_content1")
+        path1.write_text(u"file_content1")
         path2 = tmp_path / "name2.txt"
-        path2.write_text("file_content2")
+        path2.write_text(u"file_content2")
 
         record = a.upload_records(
             "table",
@@ -473,9 +473,9 @@ class TestAttachmentUploadRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text("file_content1")
+        path1.write_text(u"file_content1")
         path2 = tmp_path / "name2.txt"
-        path2.write_text("file_content2")
+        path2.write_text(u"file_content2")
 
         record = a.upload_records(
             "table",
@@ -608,9 +608,9 @@ class TestAttachmentUpdateRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text("file_content1")
+        path1.write_text(u"file_content1")
         path2 = tmp_path / "name2.txt"
-        path2.write_text("file_content2")
+        path2.write_text(u"file_content2")
 
         changes = a.update_records(
             "table",
@@ -656,9 +656,9 @@ class TestAttachmentUpdateRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text("file_content1")
+        path1.write_text(u"file_content1")
         path2 = tmp_path / "name2.txt"
-        path2.write_text("file_content2")
+        path2.write_text(u"file_content2")
 
         changes = a.update_records(
             "table",
@@ -701,9 +701,9 @@ class TestAttachmentUpdateRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text("file_content1")
+        path1.write_text(u"file_content1")
         path2 = tmp_path / "name2.txt"
-        path2.write_text("file_content2")
+        path2.write_text(u"file_content2")
 
         changes = a.update_records(
             "table",
@@ -749,9 +749,9 @@ class TestAttachmentUpdateRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text("file_content1")
+        path1.write_text(u"file_content1")
         path2 = tmp_path / "name2.txt"
-        path2.write_text("file_content2")
+        path2.write_text(u"file_content2")
 
         record = a.update_records(
             "table",
