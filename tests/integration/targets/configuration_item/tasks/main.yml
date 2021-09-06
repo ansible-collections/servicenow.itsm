@@ -16,6 +16,8 @@
         environment: development
         install_status: on_order
         operational_status: non_operational
+        attachments:
+          - path: targets/configuration_item/res/sample_file.txt
       register: base_ci
       check_mode: true
     - ansible.builtin.assert: &ci-create-assertions
@@ -26,6 +28,8 @@
           - base_ci.record.environment == "development"
           - base_ci.record.install_status == "on_order"
           - base_ci.record.operational_status == "non_operational"
+          - base_ci.record.attachments | length != 0
+          - base_ci.record.attachments[0].file_name == "sample_file.txt"
 
     - name: Verify creation in check mode did not create a record
       servicenow.itsm.configuration_item_info:

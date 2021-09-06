@@ -16,6 +16,7 @@ author:
   - Manca Bizjak (@mancabizjak)
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
+  - Matej Pevec (@mysteriouswolf)
 
 short_description: Manage ServiceNow problems
 
@@ -28,6 +29,7 @@ extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id
   - servicenow.itsm.number
+  - servicenow.itsm.attachments
 
 seealso:
   - module: servicenow.itsm.problem_info
@@ -113,6 +115,8 @@ EXAMPLES = r"""
     state: new
     short_description: Issue with the network printer
     description: Since this morning, all printer jobs are stuck.
+    attachments:
+      - path: path/to/attachment.txt
     impact: medium
     urgency: low
     other:
@@ -180,6 +184,28 @@ record:
     "approval_set": ""
     "assigned_to": "73ab3f173b331300ad3cc9bb34efc4df"
     "assignment_group": ""
+    "attachments":
+      -  "average_image_color": ""
+         "chunk_size_bytes": "700000"
+         "compressed": "true"
+         "content_type": "text/plain"
+         "download_link": "https://www.example.com/api/now/attachment/31cdf4d50706301022f9ffa08c1ed07f/file"
+         "file_name": "sample_file1.txt"
+         "hash": "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
+         "image_height": ""
+         "image_width": ""
+         "size_bytes": "210"
+         "size_compressed": "206"
+         "state": "pending"
+         "sys_created_by": "admin"
+         "sys_created_on": "2021-08-17 11:19:49"
+         "sys_id": "31cdf4d50706301022f9ffa08c1ed07f"
+         "sys_mod_count": "0"
+         "sys_tags": ""
+         "sys_updated_by": "admin"
+         "sys_updated_on": "2021-08-17 11:19:49"
+         "table_name": "problem"
+         "table_sys_id": "6dcdb4d50706301022f9ffa08c1ed0fb"
     "business_duration": ""
     "business_service": ""
     "calendar_duration": ""
@@ -270,7 +296,15 @@ record:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors, table, utils, validation
+from ..module_utils import (
+    arguments,
+    attachment,
+    client,
+    errors,
+    table,
+    utils,
+    validation,
+)
 from ..module_utils.problem import PAYLOAD_FIELDS_MAPPING
 
 DIRECT_PAYLOAD_FIELDS = (
@@ -286,12 +320,17 @@ DIRECT_PAYLOAD_FIELDS = (
 )
 
 
-def ensure_absent(module, table_client):
+def ensure_absent(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id", "number")
     problem = table_client.get_record("problem", query)
 
     if problem:
+        attachment_client.delete_attached_records(
+            "problem",
+            problem["sys_id"],
+            module.check_mode,
+        )
         table_client.delete_record("problem", problem, module.check_mode)
         return True, None, dict(before=mapper.to_ansible(problem), after=None)
 
@@ -369,10 +408,13 @@ def validate_params(params, problem=None):
         )
 
 
-def ensure_present(module, table_client):
+def ensure_present(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
+    attachments = attachment.transform_metadata_list(
+        module.params["attachments"], module.sha256
+    )
 
     if not query:
         # User did not specify existing problem, so we need to create a new one.
@@ -382,10 +424,28 @@ def ensure_present(module, table_client):
                 "problem", mapper.to_snow(payload), module.check_mode
             )
         )
+
+        # When we execute in check mode, new["sys_id"] is not defined.
+        # In order to give users back as much info as possible, we fake the sys_id in the
+        # next call.
+        new["attachments"] = attachment_client.upload_records(
+            "problem",
+            new.get("sys_id", "N/A"),
+            attachments,
+            module.check_mode,
+        )
+
         return True, new, dict(before=None, after=new)
 
     old = mapper.to_ansible(table_client.get_record("problem", query, must_exist=True))
-    if utils.is_superset(old, payload):
+
+    old["attachments"] = attachment_client.list_records(
+        dict(table_name="problem", table_sys_id=old["sys_id"])
+    )
+
+    if utils.is_superset(old, payload) and not any(
+        attachment.are_changed(old["attachments"], attachments)
+    ):
         # No change in parameters we are interested in - nothing to do.
         return False, old, dict(before=old, after=old)
 
@@ -395,18 +455,26 @@ def ensure_present(module, table_client):
             "problem", mapper.to_snow(old), mapper.to_snow(payload), module.check_mode
         )
     )
+    new["attachments"] = attachment_client.update_records(
+        "problem",
+        old["sys_id"],
+        attachments,
+        old["attachments"],
+        module.check_mode,
+    )
+
     return True, new, dict(before=old, after=new)
 
 
-def run(module, table_client):
+def run(module, table_client, attachment_client):
     if module.params["state"] == "absent":
-        return ensure_absent(module, table_client)
-    return ensure_present(module, table_client)
+        return ensure_absent(module, table_client, attachment_client)
+    return ensure_present(module, table_client, attachment_client)
 
 
 def main():
     module_args = dict(
-        arguments.get_spec("instance", "sys_id", "number"),
+        arguments.get_spec("instance", "sys_id", "number", "attachments"),
         state=dict(
             type="str",
             choices=[
@@ -481,7 +549,8 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
-        changed, record, diff = run(module, table_client)
+        attachment_client = attachment.AttachmentClient(snow_client)
+        changed, record, diff = run(module, table_client, attachment_client)
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))

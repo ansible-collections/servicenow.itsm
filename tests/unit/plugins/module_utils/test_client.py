@@ -248,6 +248,57 @@ class TestClientRequest:
         parsed_query = parse_qs(urlparse(path_arg).query)
         assert parsed_query == dict((k, [str(v)]) for k, v in query.items())
 
+    def test_request_without_data_binary_success(self, mocker):
+        c = client.Client("https://instance.com", "user", "pass")
+        mock_response = client.Response(
+            200, "data", headers=[("Content-type", "image/apng")]
+        )
+        request_mock = mocker.patch.object(c, "_request")
+        request_mock.return_value = mock_response
+
+        resp = c.request(
+            "GET",
+            "some/path",
+            headers={"Accept": "image/apng", "Content-type": "text/plain"},
+        )
+
+        request_mock.assert_called_once_with(
+            "GET",
+            "https://instance.com/api/now/some/path",
+            data=None,
+            headers=dict(
+                {"Accept": "image/apng", "Content-type": "text/plain"}, **c.auth_header
+            ),
+        )
+        assert resp == mock_response
+
+    def test_request_with_data_binary_success(self, mocker):
+        c = client.Client("https://instance.com", "user", "pass")
+        mock_response = client.Response(
+            200, "some_data", headers=[("Content-type", "text/plain")]
+        )
+        request_mock = mocker.patch.object(c, "_request")
+        request_mock.return_value = mock_response
+
+        resp = c.request(
+            "PUT",
+            "some/path",
+            headers={"Accept": "text/plain", "Content-type": "text/plain"},
+            bytes="some_data",
+        )
+
+        request_mock.assert_called_once_with(
+            "PUT",
+            "https://instance.com/api/now/some/path",
+            data="some_data",
+            headers={
+                "Accept": "text/plain",
+                "Content-type": "text/plain",
+                "Authorization": c.auth_header["Authorization"],
+            },
+        )
+        assert resp == mock_response
+
 
 class TestClientGet:
     def test_ok(self, mocker):

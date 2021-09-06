@@ -16,6 +16,9 @@ from ansible.module_utils._text import to_bytes
 
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Client
 from ansible_collections.servicenow.itsm.plugins.module_utils.table import TableClient
+from ansible_collections.servicenow.itsm.plugins.module_utils.attachment import (
+    AttachmentClient,
+)
 
 
 @pytest.fixture
@@ -29,6 +32,11 @@ def table_client(mocker):
 
 
 @pytest.fixture
+def attachment_client(mocker):
+    return mocker.Mock(spec=AttachmentClient)
+
+
+@pytest.fixture
 def create_module(mocker):
     # Fixture for creating AnsibleModule instance mocks. All instance mocks are limited
     # in what method calls they allow in order to enforce rules for writing ServiceNow
@@ -36,7 +44,7 @@ def create_module(mocker):
 
     def constructor(params=None, check_mode=False):
         return mocker.Mock(
-            spec_set=["check_mode", "deprecate", "params", "warn"],
+            spec_set=["check_mode", "deprecate", "params", "warn", "sha256"],
             params=params or {},
             check_mode=check_mode,
         )
@@ -65,7 +73,7 @@ def fail_json_mock(self, **result):
     raise AnsibleRunEnd(False, result)
 
 
-def run_mock(module, client):
+def run_mock(module, client, another_client=None):
     return False, {}, dict(before={}, after={})
 
 

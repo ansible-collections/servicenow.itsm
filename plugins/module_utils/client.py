@@ -17,6 +17,9 @@ from ansible.module_utils.urls import Request, basic_auth_header
 from .errors import ServiceNowError, AuthError, UnexpectedAPIResponse
 
 
+DEFAULT_HEADERS = dict(Accept="application/json")
+
+
 class Response:
     def __init__(self, status, data, headers=None):
         self.status = status
@@ -129,15 +132,23 @@ class Client:
             return Response(raw_resp.getcode(), raw_resp.read(), raw_resp.info())
         return Response(raw_resp.status, raw_resp.read(), raw_resp.headers)
 
-    def request(self, method, path, query=None, data=None):
+    def request(self, method, path, query=None, data=None, headers=None, bytes=None):
+        # Make sure we only have one kind of payload
+        if data is not None and bytes is not None:
+            raise AssertionError(
+                "Cannot have JSON and binary payload in a single request."
+            )
+
         escaped_path = quote(path.rstrip("/"))
         url = "{0}/api/now/{1}".format(self.host, escaped_path)
         if query:
             url = "{0}?{1}".format(url, urlencode(query))
-        headers = dict(Accept="application/json", **self.auth_header)
+        headers = dict(headers or DEFAULT_HEADERS, **self.auth_header)
         if data is not None:
             data = json.dumps(data, separators=(",", ":"))
             headers["Content-type"] = "application/json"
+        elif bytes is not None:
+            data = bytes
         return self._request(method, url, data=data, headers=headers)
 
     def get(self, path, query=None):

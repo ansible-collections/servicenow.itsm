@@ -75,6 +75,22 @@ SHARED_SPECS = dict(
     sys_id=dict(type="str"),
     number=dict(type="str"),
     query=dict(type="list", elements="dict"),
+    attachments=dict(
+        type="list",
+        elements="dict",
+        options=dict(
+            path=dict(
+                type="str",
+                required=True,
+            ),
+            name=dict(
+                type="str",
+            ),
+            type=dict(
+                type="str",
+            ),
+        ),
+    ),
 )
 
 

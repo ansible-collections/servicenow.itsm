@@ -78,7 +78,7 @@ class TestMain:
 
 
 class TestRun:
-    def test_run(self, create_module, table_client):
+    def test_run(self, create_module, table_client, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(host="https://my.host.name", username="user", password="pass"),
@@ -87,11 +87,57 @@ class TestRun:
                 query=None,
             )
         )
-        table_client.list_records.return_value = [dict(p=1), dict(q=2), dict(r=3)]
+        table_client.list_records.return_value = [
+            dict(p=1, sys_id=1234),
+            dict(q=2, sys_id=4321),
+            dict(r=3, sys_id=1212),
+        ]
+        attachment_client.list_records.side_effect = [
+            [
+                {
+                    "content_type": "text/plain",
+                    "file_name": "sample_file",
+                    "table_name": "change_request",
+                    "table_sys_id": 1234,
+                    "sys_id": 4444,
+                },
+            ],
+            [],
+            [],
+        ]
 
-        change_requests = change_request_info.run(module, table_client)
+        change_requests = change_request_info.run(
+            module, table_client, attachment_client
+        )
 
         table_client.list_records.assert_called_once_with(
             "change_request", dict(number="n")
         )
-        assert change_requests == [dict(p=1), dict(q=2), dict(r=3)]
+
+        attachment_client.list_records.assert_any_call(
+            {"table_name": "change_request", "table_sys_id": 1234}
+        )
+        attachment_client.list_records.assert_any_call(
+            {"table_name": "change_request", "table_sys_id": 4321}
+        )
+        attachment_client.list_records.assert_any_call(
+            {"table_name": "change_request", "table_sys_id": 1212}
+        )
+        assert attachment_client.list_records.call_count == 3
+        assert change_requests == [
+            dict(
+                p=1,
+                sys_id=1234,
+                attachments=[
+                    {
+                        "content_type": "text/plain",
+                        "file_name": "sample_file",
+                        "table_name": "change_request",
+                        "table_sys_id": 1234,
+                        "sys_id": 4444,
+                    },
+                ],
+            ),
+            dict(q=2, sys_id=4321, attachments=[]),
+            dict(r=3, sys_id=1212, attachments=[]),
+        ]

@@ -20,6 +20,8 @@
         short_description: Test incident
         impact: low
         urgency: low
+        attachments:
+          - path: targets/incident/res/sample_file.txt
       check_mode: true
       register: result
 
@@ -29,11 +31,17 @@
           - result.record.state == "new"
           - result.record.impact == "low"
           - result.record.urgency == "low"
+          - result.record.attachments | length != 0
+          - result.record.attachments[0].file_name == "sample_file.txt"
 
 
     - name: Create test incident
       servicenow.itsm.incident: *create-incident
       register: test_result
+
+    - name: Copy test_result into result for assertion
+      set_fact:
+        result: "{{ test_result }}"
 
     - ansible.builtin.assert: *create-incident-result
 

@@ -16,6 +16,7 @@ author:
   - Manca Bizjak (@mancabizjak)
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
+  - Matej Pevec (@mysteriouswolf)
 
 short_description: Manage ServiceNow change requests
 
@@ -28,6 +29,7 @@ extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id
   - servicenow.itsm.number
+  - servicenow.itsm.attachments
 
 seealso:
   - module: servicenow.itsm.change_request_info
@@ -148,6 +150,8 @@ EXAMPLES = """
     requested_by: some.user
     short_description: Install new Cisco
     description: Please install new Cat. 6500 in Data center 01
+    attachments:
+      - path: path/to/attachment.txt
     priority: moderate
     risk: low
     impact: low
@@ -193,7 +197,16 @@ EXAMPLES = """
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, table, errors, utils, validation
+
+from ..module_utils import (
+    arguments,
+    client,
+    table,
+    attachment,
+    errors,
+    utils,
+    validation,
+)
 from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
 
 
@@ -215,12 +228,17 @@ DIRECT_PAYLOAD_FIELDS = (
 )
 
 
-def ensure_absent(module, table_client):
+def ensure_absent(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id", "number")
     change = table_client.get_record("change_request", query)
 
     if change:
+        attachment_client.delete_attached_records(
+            "change_request",
+            change["sys_id"],
+            module.check_mode,
+        )
         table_client.delete_record("change_request", change, module.check_mode)
         return True, None, dict(before=mapper.to_ansible(change), after=None)
 
@@ -242,10 +260,13 @@ def validate_params(params, change_request=None):
         )
 
 
-def ensure_present(module, table_client):
+def ensure_present(module, table_client, attachment_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
+    attachments = attachment.transform_metadata_list(
+        module.params["attachments"], module.sha256
+    )
 
     if not query:
         # User did not specify existing change request, so we need to create a new one.
@@ -255,12 +276,29 @@ def ensure_present(module, table_client):
                 "change_request", mapper.to_snow(payload), module.check_mode
             )
         )
+
+        # When we execute in check mode, new["sys_id"] is not defined.
+        # In order to give users back as much info as possible, we fake the sys_id in the
+        # next call.
+        new["attachments"] = attachment_client.upload_records(
+            "change_request",
+            new.get("sys_id", "N/A"),
+            attachments,
+            module.check_mode,
+        )
         return True, new, dict(before=None, after=new)
 
     old = mapper.to_ansible(
         table_client.get_record("change_request", query, must_exist=True)
     )
-    if utils.is_superset(old, payload):
+
+    old["attachments"] = attachment_client.list_records(
+        dict(table_name="change_request", table_sys_id=old["sys_id"])
+    )
+
+    if utils.is_superset(old, payload) and not any(
+        attachment.are_changed(old["attachments"], attachments)
+    ):
         # No change in parameters we are interested in - nothing to do.
         return False, old, dict(before=old, after=old)
 
@@ -273,6 +311,14 @@ def ensure_present(module, table_client):
             module.check_mode,
         )
     )
+    new["attachments"] = attachment_client.update_records(
+        "change_request",
+        old["sys_id"],
+        attachments,
+        old["attachments"],
+        module.check_mode,
+    )
+
     return True, new, dict(before=old, after=new)
 
 
@@ -308,15 +354,15 @@ def build_payload(module, table_client):
     return payload
 
 
-def run(module, table_client):
+def run(module, table_client, attachment_client):
     if module.params["state"] == "absent":
-        return ensure_absent(module, table_client)
-    return ensure_present(module, table_client)
+        return ensure_absent(module, table_client, attachment_client)
+    return ensure_present(module, table_client, attachment_client)
 
 
 def main():
     module_args = dict(
-        arguments.get_spec("instance", "sys_id", "number"),
+        arguments.get_spec("instance", "sys_id", "number", "attachments"),
         state=dict(
             type="str",
             choices=[
@@ -434,7 +480,8 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
-        changed, record, diff = run(module, table_client)
+        attachment_client = attachment.AttachmentClient(snow_client)
+        changed, record, diff = run(module, table_client, attachment_client)
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
