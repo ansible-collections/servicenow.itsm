@@ -69,6 +69,75 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>attachments</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=dictionary</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.2.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>ServiceNow attachments.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>name</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Name of the file to be uploaded without the file extension.</div>
+                        <div>If not specified, the module will use <em>path</em>&#x27;s base name.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>path</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Path to the file to be uploaded.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>type</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>MIME type of the file to be attached.</div>
+                        <div>If not specified, the module will try to guess the file&#x27;s type from its extension.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>category</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -491,6 +560,8 @@ Examples
         assigned_to: some.user
         environment: production
         category: Hardware
+        attachments:
+          - path: path/to/attachment.txt
         other:
           model_number: BL465C G7
       register: server
@@ -538,7 +609,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                             <div>Note that the fields of the returned record depend on the configuration item&#x27;s <em>sys_class_name</em>.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;asset&#x27;: &#x27;05a9ec0d3790200044e0bfc8bcbe5dc2&#x27;, &#x27;asset_tag&#x27;: &#x27;P1000440&#x27;, &#x27;assigned&#x27;: &#x27;2019-02-28 08:00:00&#x27;, &#x27;assigned_to&#x27;: &#x27;8a826bf03710200044e0bfc8bcbe5d96&#x27;, &#x27;assignment_group&#x27;: &#x27;&#x27;, &#x27;attestation_score&#x27;: &#x27;&#x27;, &#x27;attested&#x27;: &#x27;false&#x27;, &#x27;attested_by&#x27;: &#x27;&#x27;, &#x27;attested_date&#x27;: &#x27;&#x27;, &#x27;attributes&#x27;: &#x27;&#x27;, &#x27;can_print&#x27;: &#x27;false&#x27;, &#x27;category&#x27;: &#x27;Hardware&#x27;, &#x27;change_control&#x27;: &#x27;&#x27;, &#x27;checked_in&#x27;: &#x27;&#x27;, &#x27;checked_out&#x27;: &#x27;&#x27;, &#x27;comments&#x27;: &#x27;&#x27;, &#x27;company&#x27;: &#x27;81fca4cbac1d55eb355b4b6db0e3c80f&#x27;, &#x27;correlation_id&#x27;: &#x27;&#x27;, &#x27;cost&#x27;: &#x27;1699.99&#x27;, &#x27;cost_cc&#x27;: &#x27;USD&#x27;, &#x27;cost_center&#x27;: &#x27;d9d01546c0a80a6403e18b82250c80a1&#x27;, &#x27;delivery_date&#x27;: &#x27;2018-07-05 07:00:00&#x27;, &#x27;department&#x27;: &#x27;a581ab703710200044e0bfc8bcbe5de8&#x27;, &#x27;discovery_source&#x27;: &#x27;&#x27;, &#x27;dns_domain&#x27;: &#x27;&#x27;, &#x27;due&#x27;: &#x27;&#x27;, &#x27;due_in&#x27;: &#x27;&#x27;, &#x27;duplicate_of&#x27;: &#x27;&#x27;, &#x27;environment&#x27;: &#x27;&#x27;, &#x27;fault_count&#x27;: &#x27;0&#x27;, &#x27;first_discovered&#x27;: &#x27;&#x27;, &#x27;fqdn&#x27;: &#x27;&#x27;, &#x27;gl_account&#x27;: &#x27;&#x27;, &#x27;install_date&#x27;: &#x27;2018-10-02 07:00:00&#x27;, &#x27;install_status&#x27;: &#x27;installed&#x27;, &#x27;invoice_number&#x27;: &#x27;&#x27;, &#x27;ip_address&#x27;: &#x27;&#x27;, &#x27;justification&#x27;: &#x27;&#x27;, &#x27;last_discovered&#x27;: &#x27;&#x27;, &#x27;lease_id&#x27;: &#x27;&#x27;, &#x27;life_cycle_stage&#x27;: &#x27;&#x27;, &#x27;life_cycle_stage_status&#x27;: &#x27;&#x27;, &#x27;location&#x27;: &#x27;8228cda2ac1d55eb7029baf443945c37&#x27;, &#x27;mac_address&#x27;: &#x27;&#x27;, &#x27;maintenance_schedule&#x27;: &#x27;&#x27;, &#x27;managed_by&#x27;: &#x27;&#x27;, &#x27;managed_by_group&#x27;: &#x27;&#x27;, &#x27;manufacturer&#x27;: &#x27;aa0a6df8c611227601cd2ed45989e0ac&#x27;, &#x27;model_id&#x27;: &#x27;0c43b858c611227501522de20c61ac75&#x27;, &#x27;model_number&#x27;: &#x27;&#x27;, &#x27;monitor&#x27;: &#x27;false&#x27;, &#x27;name&#x27;: &#x27;ThinkStation S20&#x27;, &#x27;operational_status&#x27;: &#x27;operational&#x27;, &#x27;order_date&#x27;: &#x27;2018-06-07 07:00:00&#x27;, &#x27;owned_by&#x27;: &#x27;&#x27;, &#x27;po_number&#x27;: &#x27;PO100005&#x27;, &#x27;purchase_date&#x27;: &#x27;2018-06-22&#x27;, &#x27;schedule&#x27;: &#x27;&#x27;, &#x27;serial_number&#x27;: &#x27;WCL-206-Q10853-BF&#x27;, &#x27;short_description&#x27;: &#x27;&#x27;, &#x27;skip_sync&#x27;: &#x27;false&#x27;, &#x27;start_date&#x27;: &#x27;&#x27;, &#x27;subcategory&#x27;: &#x27;Computer&#x27;, &#x27;support_group&#x27;: &#x27;&#x27;, &#x27;supported_by&#x27;: &#x27;&#x27;, &#x27;sys_class_name&#x27;: &#x27;cmdb_ci_computer&#x27;, &#x27;sys_class_path&#x27;: &#x27;/!!/!2/!(&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2012-02-18 08:14:42&#x27;, &#x27;sys_domain&#x27;: &#x27;global&#x27;, &#x27;sys_domain_path&#x27;: &#x27;/&#x27;, &#x27;sys_id&#x27;: &#x27;01a9ec0d3790200044e0bfc8bcbe5dc3&#x27;, &#x27;sys_mod_count&#x27;: &#x27;6&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;system&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2021-01-16 05:50:31&#x27;, &#x27;unverified&#x27;: &#x27;false&#x27;, &#x27;vendor&#x27;: &#x27;aa0a6df8c611227601cd2ed45989e0ac&#x27;, &#x27;warranty_expiration&#x27;: &#x27;2021-10-01&#x27;}</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;asset&#x27;: &#x27;05a9ec0d3790200044e0bfc8bcbe5dc2&#x27;, &#x27;asset_tag&#x27;: &#x27;P1000440&#x27;, &#x27;assigned&#x27;: &#x27;2019-02-28 08:00:00&#x27;, &#x27;assigned_to&#x27;: &#x27;8a826bf03710200044e0bfc8bcbe5d96&#x27;, &#x27;assignment_group&#x27;: &#x27;&#x27;, &#x27;attachments&#x27;: [{&#x27;average_image_color&#x27;: &#x27;&#x27;, &#x27;chunk_size_bytes&#x27;: &#x27;700000&#x27;, &#x27;compressed&#x27;: &#x27;true&#x27;, &#x27;content_type&#x27;: &#x27;text/plain&#x27;, &#x27;download_link&#x27;: &#x27;https://www.example.com/api/now/attachment/919d34d50706301022f9ffa08c1ed047/file&#x27;, &#x27;file_name&#x27;: &#x27;sample_file1.txt&#x27;, &#x27;hash&#x27;: &#x27;6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e&#x27;, &#x27;image_height&#x27;: &#x27;&#x27;, &#x27;image_width&#x27;: &#x27;&#x27;, &#x27;size_bytes&#x27;: &#x27;210&#x27;, &#x27;size_compressed&#x27;: &#x27;206&#x27;, &#x27;state&#x27;: &#x27;pending&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2021-08-17 11:18:58&#x27;, &#x27;sys_id&#x27;: &#x27;919d34d50706301022f9ffa08c1ed047&#x27;, &#x27;sys_mod_count&#x27;: &#x27;0&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;admin&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2021-08-17 11:18:58&#x27;, &#x27;table_name&#x27;: &#x27;cmdb_ci&#x27;, &#x27;table_sys_id&#x27;: &#x27;459d34d50706301022f9ffa08c1ed06a&#x27;}], &#x27;attestation_score&#x27;: &#x27;&#x27;, &#x27;attested&#x27;: &#x27;false&#x27;, &#x27;attested_by&#x27;: &#x27;&#x27;, &#x27;attested_date&#x27;: &#x27;&#x27;, &#x27;attributes&#x27;: &#x27;&#x27;, &#x27;can_print&#x27;: &#x27;false&#x27;, &#x27;category&#x27;: &#x27;Hardware&#x27;, &#x27;change_control&#x27;: &#x27;&#x27;, &#x27;checked_in&#x27;: &#x27;&#x27;, &#x27;checked_out&#x27;: &#x27;&#x27;, &#x27;comments&#x27;: &#x27;&#x27;, &#x27;company&#x27;: &#x27;81fca4cbac1d55eb355b4b6db0e3c80f&#x27;, &#x27;correlation_id&#x27;: &#x27;&#x27;, &#x27;cost&#x27;: &#x27;1699.99&#x27;, &#x27;cost_cc&#x27;: &#x27;USD&#x27;, &#x27;cost_center&#x27;: &#x27;d9d01546c0a80a6403e18b82250c80a1&#x27;, &#x27;delivery_date&#x27;: &#x27;2018-07-05 07:00:00&#x27;, &#x27;department&#x27;: &#x27;a581ab703710200044e0bfc8bcbe5de8&#x27;, &#x27;discovery_source&#x27;: &#x27;&#x27;, &#x27;dns_domain&#x27;: &#x27;&#x27;, &#x27;due&#x27;: &#x27;&#x27;, &#x27;due_in&#x27;: &#x27;&#x27;, &#x27;duplicate_of&#x27;: &#x27;&#x27;, &#x27;environment&#x27;: &#x27;&#x27;, &#x27;fault_count&#x27;: &#x27;0&#x27;, &#x27;first_discovered&#x27;: &#x27;&#x27;, &#x27;fqdn&#x27;: &#x27;&#x27;, &#x27;gl_account&#x27;: &#x27;&#x27;, &#x27;install_date&#x27;: &#x27;2018-10-02 07:00:00&#x27;, &#x27;install_status&#x27;: &#x27;installed&#x27;, &#x27;invoice_number&#x27;: &#x27;&#x27;, &#x27;ip_address&#x27;: &#x27;&#x27;, &#x27;justification&#x27;: &#x27;&#x27;, &#x27;last_discovered&#x27;: &#x27;&#x27;, &#x27;lease_id&#x27;: &#x27;&#x27;, &#x27;life_cycle_stage&#x27;: &#x27;&#x27;, &#x27;life_cycle_stage_status&#x27;: &#x27;&#x27;, &#x27;location&#x27;: &#x27;8228cda2ac1d55eb7029baf443945c37&#x27;, &#x27;mac_address&#x27;: &#x27;&#x27;, &#x27;maintenance_schedule&#x27;: &#x27;&#x27;, &#x27;managed_by&#x27;: &#x27;&#x27;, &#x27;managed_by_group&#x27;: &#x27;&#x27;, &#x27;manufacturer&#x27;: &#x27;aa0a6df8c611227601cd2ed45989e0ac&#x27;, &#x27;model_id&#x27;: &#x27;0c43b858c611227501522de20c61ac75&#x27;, &#x27;model_number&#x27;: &#x27;&#x27;, &#x27;monitor&#x27;: &#x27;false&#x27;, &#x27;name&#x27;: &#x27;ThinkStation S20&#x27;, &#x27;operational_status&#x27;: &#x27;operational&#x27;, &#x27;order_date&#x27;: &#x27;2018-06-07 07:00:00&#x27;, &#x27;owned_by&#x27;: &#x27;&#x27;, &#x27;po_number&#x27;: &#x27;PO100005&#x27;, &#x27;purchase_date&#x27;: &#x27;2018-06-22&#x27;, &#x27;schedule&#x27;: &#x27;&#x27;, &#x27;serial_number&#x27;: &#x27;WCL-206-Q10853-BF&#x27;, &#x27;short_description&#x27;: &#x27;&#x27;, &#x27;skip_sync&#x27;: &#x27;false&#x27;, &#x27;start_date&#x27;: &#x27;&#x27;, &#x27;subcategory&#x27;: &#x27;Computer&#x27;, &#x27;support_group&#x27;: &#x27;&#x27;, &#x27;supported_by&#x27;: &#x27;&#x27;, &#x27;sys_class_name&#x27;: &#x27;cmdb_ci_computer&#x27;, &#x27;sys_class_path&#x27;: &#x27;/!!/!2/!(&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2012-02-18 08:14:42&#x27;, &#x27;sys_domain&#x27;: &#x27;global&#x27;, &#x27;sys_domain_path&#x27;: &#x27;/&#x27;, &#x27;sys_id&#x27;: &#x27;01a9ec0d3790200044e0bfc8bcbe5dc3&#x27;, &#x27;sys_mod_count&#x27;: &#x27;6&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;system&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2021-01-16 05:50:31&#x27;, &#x27;unverified&#x27;: &#x27;false&#x27;, &#x27;vendor&#x27;: &#x27;aa0a6df8c611227601cd2ed45989e0ac&#x27;, &#x27;warranty_expiration&#x27;: &#x27;2021-10-01&#x27;}</div>
                 </td>
             </tr>
     </table>
@@ -555,3 +626,4 @@ Authors
 - Manca Bizjak (@mancabizjak)
 - Miha Dolinar (@mdolin)
 - Tadej Borovsak (@tadeboro)
+- Matej Pevec (@mysteriouswolf)

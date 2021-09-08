@@ -52,3 +52,35 @@ releases:
     - refresh_token.yml
     - release_1_1_0.yml
     release_date: '2021-06-23'
+  1.2.0:
+    changes:
+      bugfixes:
+      - change_request - validates on_hold with its respective field instead of a
+        non-existent "on_hold" state when requiring a hold_reason (https://github.com/ansible-collections/servicenow.itsm/pull/86).
+      - client - Lowercase all header dict keys on Response initialization for better
+        consistency across Python versions. Fix tests and table client accordingly
+        (https://github.com/ansible-collections/servicenow.itsm/pull/98).
+      - now - add support for constructed feature in inventory plugin (https://github.com/ansible-collections/servicenow.itsm/issues/35).
+      deprecated_features:
+      - now inventory plugin - deprecate non constructed features (https://github.com/ansible-collections/servicenow.itsm/pull/97).
+      minor_changes:
+      - attachments - Add a client for attachment management. Add support for attachments
+        in change_request, configuration_item, incident and problem modules, including
+        their info counterparts. (https://github.com/ansible-collections/servicenow.itsm/pull/91)
+      release_summary: 'This is the minor release of the ``servicenow.itsm`` collection.
+
+        This changelog contains all changes to the modules in this collection that
+
+        have been added after the release of ``servicenow.itsm`` 1.1.0.'
+    fragments:
+    - 1.2.yml
+    - attachments.yaml
+    - change-request-change-on-hold-validation.yaml
+    - deprecate_non_constructed_inventory_features.yaml
+    - lowercase-response-headers.yaml
+    - now_construct_inventory.yml
+    modules:
+    - description: Manage ServiceNow configuration items
+      name: configuration_item_batch
+      namespace: ''
+    release_date: '2021-09-08'
