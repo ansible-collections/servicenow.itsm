@@ -1,3 +1,0 @@
----
-bugfixes:
-- now - add support for constructed feature in inventory plugin (https://github.com/ansible-collections/servicenow.itsm/issues/35).

@@ -5,6 +5,38 @@ servicenow.itsm Release Notes
 .. contents:: Topics
 
 
+v1.2.0
+======
+
+Release Summary
+---------------
+
+This is the minor release of the ``servicenow.itsm`` collection.
+This changelog contains all changes to the modules in this collection that
+have been added after the release of ``servicenow.itsm`` 1.1.0.
+
+Minor Changes
+-------------
+
+- attachments - Add a client for attachment management. Add support for attachments in change_request, configuration_item, incident and problem modules, including their info counterparts. (https://github.com/ansible-collections/servicenow.itsm/pull/91)
+
+Deprecated Features
+-------------------
+
+- now inventory plugin - deprecate non constructed features (https://github.com/ansible-collections/servicenow.itsm/pull/97).
+
+Bugfixes
+--------
+
+- change_request - validates on_hold with its respective field instead of a non-existent "on_hold" state when requiring a hold_reason (https://github.com/ansible-collections/servicenow.itsm/pull/86).
+- client - Lowercase all header dict keys on Response initialization for better consistency across Python versions. Fix tests and table client accordingly (https://github.com/ansible-collections/servicenow.itsm/pull/98).
+- now - add support for constructed feature in inventory plugin (https://github.com/ansible-collections/servicenow.itsm/issues/35).
+
+New Modules
+-----------
+
+- servicenow.itsm.configuration_item_batch - Manage ServiceNow configuration items
+
 v1.1.0
 ======
 
