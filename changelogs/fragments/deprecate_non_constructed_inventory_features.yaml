@@ -1,0 +1,3 @@
+deprecated_features:
+  - now inventory plugin - deprecate non constructed features
+    (https://github.com/ansible-collections/servicenow.itsm/pull/97).
