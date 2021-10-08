@@ -17,10 +17,10 @@ author:
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
 
-short_description: Manage ServiceNow configuration items
+short_description: Manage ServiceNow configuration items in batch mode
 
 description:
-  - Create, delete or update a ServiceNow configuration item.
+  - Create, update ServiceNow configuration items in batch mode.
   - For more information, refer to the ServiceNow configuration management documentation at
     U(https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
 version_added: 1.2.0
@@ -90,6 +90,10 @@ EXAMPLES = r"""
       name: tags.Name
       ip_address: private_ip_address
 """
+
+
+RETURN = r""" # """
+
 
 from ansible.module_utils.basic import AnsibleModule
 
