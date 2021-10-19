@@ -171,9 +171,9 @@ omit the `instance` parameter entirely and end up with a much shorter playbook:
             state: absent
 
 
-## Using modules from Ansible Tower
+## Using modules from Automation Controller
 
-If we want to manage the ServiceNow instance from Ansible Tower, we need to
+If we want to manage the ServiceNow instance from Automation controller, we need to
 create a custom credential type that will hold our instance data. The minimal
 credential type has the following input configuration:
 
@@ -193,7 +193,7 @@ credential type has the following input configuration:
       - SN_USERNAME
       - SN_PASSWORD
 
-The configuration above informs Ansible Tower what pieces of data we would like
+The configuration above informs Automation controller what pieces of data we would like
 to store in our credentials. And to get the credentials to the playbook, we
 also need to have the following injector configuration:
 
@@ -202,7 +202,7 @@ also need to have the following injector configuration:
       SN_PASSWORD: '{{ SN_PASSWORD }}'
       SN_USERNAME: '{{ SN_USERNAME }}'
 
-When we assign a secret to a template, Ansible Tower will set the environment
+When we assign a secret to a template, Automation controller will set the environment
 variables from the injector configuration before running it.
 
 If we want to use OAuth for authentication, we need to add client id and secret
