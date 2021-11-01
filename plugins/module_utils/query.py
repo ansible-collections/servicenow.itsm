@@ -173,7 +173,7 @@ def get_operator_and_value(condition):
             return (o, "")
 
         elif condition.startswith(o) and condition[len(o)] == " ":
-            return (o, condition[len(o) + 1:])
+            return (o, condition[len(o) + 1 :])
 
     return None, None
 
@@ -208,7 +208,7 @@ def parse_query(query):
     return parsed_query, errors
 
 
-def serialize_query(query):
+def serialize_query(query, query_condition):
     # input: list({"caller_id": ("=", "712083754987"), "state": ("=", "3")}, {})
     # output: "caller_id=712083754987^state=3"
     subqueries = []
@@ -219,9 +219,11 @@ def serialize_query(query):
             conditions.append(column + operator + value)
         # isert AND between items
         subqueries.append("^".join(conditions))
-
-    # insert OR between items
-    return "^NQ".join(subqueries)
+    if query_condition == "and":
+        # insert OR between items
+        return "^".join(subqueries)
+    elif query_condition == "or":
+        return "^NQ".join(subqueries)
 
 
 def map_query_values(query, mapper):

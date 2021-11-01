@@ -120,6 +120,12 @@ options:
     description:
       - The column to use for inventory hostnames.
     default: name
+  query_condition:
+    type: str
+    description:
+      - The operator to use for SNOW query
+      - The options are [and, or]
+    default: or
   named_groups:
     description:
       - Group hosts in the provided groups, according to the specified criteria.
@@ -352,12 +358,12 @@ named_groups:
 
 
 def _includes_query(column, includes):
-    """ column, [v1, v2] -> 'column=v1^ORcolumn=v2' """
+    """column, [v1, v2] -> 'column=v1^ORcolumn=v2'"""
     return "^OR".join("{0}={1}".format(column, i) for i in includes)
 
 
 def _excludes_query(column, excludes):
-    """ column, [v1, v2] -> 'column!=v1^column!=v2' """
+    """column, [v1, v2] -> 'column!=v1^column!=v2'"""
     return "^".join("{0}!={1}".format(column, i) for i in excludes)
 
 
@@ -385,20 +391,20 @@ def sysparm_query_from_conditions(conditions):
     return None
 
 
-def construct_sysparm_query(query):
+def construct_sysparm_query(query, query_condition):
     parsed, err = parse_query(query)
     if err:
         raise AnsibleParserError(err)
-    return serialize_query(parsed)
+    return serialize_query(parsed, query_condition)
 
 
-def fetch_records(table_client, table, query):
+def fetch_records(table_client, table, query, query_condition):
     snow_query = dict(
         # Make references and choice fields human-readable
         sysparm_display_value=True,
     )
     if query:
-        snow_query["sysparm_query"] = construct_sysparm_query(query)
+        snow_query["sysparm_query"] = construct_sysparm_query(query, query_condition)
 
     return table_client.list_records(table, snow_query)
 
@@ -628,7 +634,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         # TODO: Insert caching here once we remove deprecated functionality
         records = fetch_records(
-            table_client, self.get_option("table"), self.get_option("query")
+            table_client,
+            self.get_option("table"),
+            self.get_option("query"),
+            self.get_option("query_condition"),
         )
         self.fill_constructed(
             records,
