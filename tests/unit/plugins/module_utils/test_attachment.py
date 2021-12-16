@@ -7,12 +7,12 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-import os
+# import os
 import sys
 
 import pytest
 
-from tempfile import mkstemp
+# from tempfile import mkstemp
 
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors, attachment
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response

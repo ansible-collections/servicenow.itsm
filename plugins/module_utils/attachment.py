@@ -89,9 +89,7 @@ class AttachmentClient:
         ):
             self.delete_record(record, check_mode)
 
-    def update_records(
-        self, table, table_sys_id, metadata_dict, records, check_mode
-    ):
+    def update_records(self, table, table_sys_id, metadata_dict, records, check_mode):
         mapped_records = dict((r["file_name"], r) for r in records)
 
         for name, metadata in metadata_dict.items():
