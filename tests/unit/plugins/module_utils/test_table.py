@@ -215,3 +215,21 @@ class TestFindUser:
         user = table.find_user(table_client, "test")
 
         assert dict(sys_id="1234", user_name="test") == user
+
+
+class TestFindChangeRequest:
+    def test_change_request_lookup(self, table_client):
+        table_client.get_record.return_value = dict(sys_id="1234", number="TST123")
+
+        user = table.find_change_request(table_client, "TST123")
+
+        assert dict(sys_id="1234", number="TST123") == user
+
+
+class TestFindConfigurationItem:
+    def test_change_request_lookup(self, table_client):
+        table_client.get_record.return_value = dict(sys_id="1234", name="TST123")
+
+        user = table.find_change_request(table_client, "TST123")
+
+        assert dict(sys_id="1234", name="TST123") == user
