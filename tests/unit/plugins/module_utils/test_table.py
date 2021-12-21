@@ -30,7 +30,7 @@ class TestTableListRecords:
 
         assert [] == records
         client.get.assert_called_once_with(
-            "table/my_table",
+            "api/now/table/my_table",
             query=dict(
                 sysparm_exclude_reference_link="true",
                 sysparm_limit=1000,
@@ -57,7 +57,7 @@ class TestTableListRecords:
         t.list_records("my_table", dict(a="b"))
 
         client.get.assert_called_once_with(
-            "table/my_table",
+            "api/now/table/my_table",
             query=dict(
                 sysparm_exclude_reference_link="true",
                 a="b",
@@ -82,13 +82,13 @@ class TestTableListRecords:
         assert [dict(a=3, b="sys_id"), dict(a=2, b="sys_ie")] == records
         assert 2 == len(client.get.mock_calls)
         client.get.assert_any_call(
-            "table/my_table",
+            "api/now/table/my_table",
             query=dict(
                 sysparm_exclude_reference_link="true", sysparm_limit=1, sysparm_offset=0
             ),
         )
         client.get.assert_any_call(
-            "table/my_table",
+            "api/now/table/my_table",
             query=dict(
                 sysparm_exclude_reference_link="true", sysparm_limit=1, sysparm_offset=1
             ),
@@ -106,7 +106,7 @@ class TestTableGetRecord:
 
         assert dict(a=3, b="sys_id") == record
         client.get.assert_called_with(
-            "table/my_table",
+            "api/now/table/my_table",
             query=dict(
                 sysparm_exclude_reference_link="true",
                 our="query",
@@ -151,7 +151,7 @@ class TestTableCreateRecord:
 
         assert dict(a=3, b="sys_id") == record
         client.post.assert_called_with(
-            "table/my_table",
+            "api/now/table/my_table",
             dict(a=4),
             query=dict(sysparm_exclude_reference_link="true"),
         )
@@ -175,7 +175,7 @@ class TestTableUpdateRecord:
 
         assert dict(a=3, b="sys_id") == record
         client.patch.assert_called_with(
-            "table/my_table/id",
+            "api/now/table/my_table/id",
             dict(a=4),
             query=dict(sysparm_exclude_reference_link="true"),
         )
@@ -197,7 +197,7 @@ class TestTableDeleteRecord:
 
         t.delete_record("my_table", dict(sys_id="id"), False)
 
-        client.delete.assert_called_with("table/my_table/id")
+        client.delete.assert_called_with("api/now/table/my_table/id")
 
     def test_check_mode(self, client):
         client.delete.return_value = Response(204, "")
