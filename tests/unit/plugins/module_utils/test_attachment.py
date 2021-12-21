@@ -11,7 +11,6 @@ import sys
 
 import pytest
 
-
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors, attachment
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
 
@@ -237,7 +236,7 @@ class TestAttachmentListRecords:
 
         assert [] == records
         client.get.assert_called_once_with(
-            "attachment",
+            "api/now/attachment",
             query=dict(
                 sysparm_limit=10000,
                 sysparm_offset=0,
@@ -263,7 +262,7 @@ class TestAttachmentListRecords:
         a.list_records(dict(a="b"))
 
         client.get.assert_called_once_with(
-            "attachment",
+            "api/now/attachment",
             query=dict(
                 a="b",
                 sysparm_limit=10000,
@@ -287,11 +286,11 @@ class TestAttachmentListRecords:
         assert [dict(a=3, b="sys_id"), dict(a=2, b="sys_ie")] == records
         assert 2 == len(client.get.mock_calls)
         client.get.assert_any_call(
-            "attachment",
+            "api/now/attachment",
             query=dict(sysparm_limit=1, sysparm_offset=0),
         )
         client.get.assert_any_call(
-            "attachment",
+            "api/now/attachment",
             query=dict(sysparm_limit=1, sysparm_offset=1),
         )
 
@@ -313,7 +312,7 @@ class TestAttachmentCreateRecord:
         assert dict(a=3, b="sys_id") == record
         client.request.assert_called_with(
             "POST",
-            "attachment/file",
+            "api/now/attachment/file",
             query={"some": "property"},
             headers={"Accept": "application/json", "Content-type": "text/plain"},
             bytes="file_content",
@@ -361,7 +360,7 @@ class TestAttachmentUploadRecord:
         assert dict(a=3, b="sys_id") == record
         client.request.assert_called_with(
             "POST",
-            "attachment/file",
+            "api/now/attachment/file",
             query={
                 "table_name": "table",
                 "table_sys_id": "1234",
@@ -439,7 +438,7 @@ class TestAttachmentUploadRecords:
         assert 2 == client.request.call_count
         client.request.assert_any_call(
             "POST",
-            "attachment/file",
+            "api/now/attachment/file",
             query={
                 "table_name": "table",
                 "table_sys_id": "1234",
@@ -452,7 +451,7 @@ class TestAttachmentUploadRecords:
         )
         client.request.assert_any_call(
             "POST",
-            "attachment/file",
+            "api/now/attachment/file",
             query={
                 "table_name": "table",
                 "table_sys_id": "1234",
@@ -539,7 +538,7 @@ class TestAttachmentDeleteRecord:
         a = attachment.AttachmentClient(client)
         a.delete_record(dict(sys_id="1234"), False)
 
-        client.delete.assert_called_with("attachment/1234")
+        client.delete.assert_called_with("api/now/attachment/1234")
 
     def test_normal_mode_missing(self, client):
         client.delete.side_effect = errors.UnexpectedAPIResponse(
@@ -571,8 +570,8 @@ class TestAttachmentDeleteRecords:
         a.delete_attached_records("table", 5555, False)
 
         assert client.delete.call_count == 2
-        client.delete.assert_any_call("attachment/1234")
-        client.delete.assert_any_call("attachment/4321")
+        client.delete.assert_any_call("api/now/attachment/1234")
+        client.delete.assert_any_call("api/now/attachment/4321")
 
     def test_normal_mode_missing(self, client):
         client.get.return_value = Response(
