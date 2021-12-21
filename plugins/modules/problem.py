@@ -33,6 +33,8 @@ extends_documentation_fragment:
 
 seealso:
   - module: servicenow.itsm.problem_info
+  - module: servicenow.itsm.problem_task
+  - module: servicenow.itsm.problem_task_info
 
 options:
   state:

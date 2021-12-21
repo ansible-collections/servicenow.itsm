@@ -100,3 +100,9 @@ def find_standard_change_template(table_client, template_name):
         dict(name=template_name),
         must_exist=True,
     )
+
+
+def find_problem(table_client, problem_number):
+    return table_client.get_record(
+        "problem", dict(number=problem_number), must_exist=True
+    )

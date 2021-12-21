@@ -10,16 +10,15 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-module: problem_info
+module: problem_task_info
 
 author:
   - Manca Bizjak (@mancabizjak)
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
-  - Matej Pevec (@mysteriouswolf)
-short_description: List ServiceNow problems
+short_description: List ServiceNow problem tasks
 description:
-  - Retrieve information about ServiceNow problems.
+  - Retrieve information about ServiceNow problem tasks.
   - For more information, refer to the ServiceNow problem management documentation at
     U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html).
 version_added: 1.0.0
@@ -29,34 +28,34 @@ extends_documentation_fragment:
   - servicenow.itsm.number.info
   - servicenow.itsm.query
 seealso:
-  - module: servicenow.itsm.problem
   - module: servicenow.itsm.problem_task
-  - module: servicenow.itsm.problem_task_info
+  - module: servicenow.itsm.problem
+  - module: servicenow.itsm.problem_info
 """
 
 EXAMPLES = r"""
-- name: Retrieve all problems
-  servicenow.itsm.problem_info:
+- name: Retrieve all problem tasks
+  servicenow.itsm.problem_task_info:
   register: result
 
-- name: Retrieve a specific problem by its sys_id
-  servicenow.itsm.problem_info:
+- name: Retrieve a specific problem task by its sys_id
+  servicenow.itsm.problem_task_info:
     sys_id: 471bfbc7a9fe198101e77a3e10e5d47f
   register: result
 
-- name: Retrieve problems by number
-  servicenow.itsm.problem_info:
-    number: PRB0007601
+- name: Retrieve problem tasks by number
+  servicenow.itsm.problem_task_info:
+    number: PTASK0007601
   register: result
 
-- name: Retrieve problems that do not contain SAP in its short description
-  servicenow.itsm.problem_info:
+- name: Retrieve problem tasks that do not contain SAP in its short description
+  servicenow.itsm.problem_task_info:
     query:
       - short_description: NOT LIKE SAP
   register: result
 
-- name: Retrieve new problems assigned to abel.tuter or bertie.luby
-  servicenow.itsm.problem_info:
+- name: Retrieve new problem tasks assigned to abel.tuter or bertie.luby
+  servicenow.itsm.problem_task_info:
     query:
       - state: = new
         assigned_to: = abel.tuter
@@ -77,122 +76,88 @@ records:
       "approval": "not requested"
       "approval_history": ""
       "approval_set": ""
-      "assigned_to": "73ab3f173b331300ad3cc9bb34efc4df"
+      "assigned_to": "7e3bbb173b331300ad3cc9bb34efc4a8"
       "assignment_group": ""
-      "attachments":
-      -  "average_image_color": ""
-         "chunk_size_bytes": "700000"
-         "compressed": "true"
-         "content_type": "text/plain"
-         "download_link": "https://www.example.com/api/now/attachment/31cdf4d50706301022f9ffa08c1ed07f/file"
-         "file_name": "sample_file1.txt"
-         "hash": "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"
-         "image_height": ""
-         "image_width": ""
-         "size_bytes": "210"
-         "size_compressed": "206"
-         "state": "pending"
-         "sys_created_by": "admin"
-         "sys_created_on": "2021-08-17 11:19:49"
-         "sys_id": "31cdf4d50706301022f9ffa08c1ed07f"
-         "sys_mod_count": "0"
-         "sys_tags": ""
-         "sys_updated_by": "admin"
-         "sys_updated_on": "2021-08-17 11:19:49"
-         "table_name": "problem"
-         "table_sys_id": "6dcdb4d50706301022f9ffa08c1ed0fb"
       "business_duration": ""
       "business_service": ""
       "calendar_duration": ""
-      "category": "software"
+      "cause_code": ""
       "cause_notes": ""
+      "close_code": ""
       "close_notes": ""
       "closed_at": ""
       "closed_by": ""
-      "cmdb_ci": "27d32778c0a8000b00db970eeaa60f16"
+      "cmdb_ci": "26da329f0a0a0bb400f69d8159bc753d"
       "comments": ""
       "comments_and_work_notes": ""
       "company": ""
-      "confirmed_at": ""
-      "confirmed_by": ""
       "contact_type": ""
       "contract": ""
       "correlation_display": ""
       "correlation_id": ""
       "delivery_plan": ""
       "delivery_task": ""
-      "description": "Unable to send or receive emails."
+      "description": ""
       "due_date": ""
-      "duplicate_of": ""
       "escalation": "0"
       "expected_start": ""
-      "first_reported_by_task": ""
-      "fix_communicated_at": ""
-      "fix_communicated_by": ""
       "fix_notes": ""
       "follow_up": ""
       "group_list": ""
       "impact": "low"
       "knowledge": "false"
-      "known_error": "false"
       "location": ""
       "made_sla": "true"
-      "major_problem": "false"
-      "number": "PRB0007601"
-      "opened_at": "2018-08-30 08:08:39"
-      "opened_by": "6816f79cc0a8016401c5a33be04be441"
+      "number": "PTASK0010005"
+      "opened_at": "2020-12-17 10:21:49"
+      "opened_by": "d3dbbf173b331300ad3cc9bb34efc466"
       "order": ""
+      "other_reason": ""
       "parent": ""
-      "priority": "5"
-      "problem_state": "new"
+      "priority": "2"
+      "problem": "d7296d02c0a801670085e737da016e70"
+      "problem_task_type": "rca"
       "reassignment_count": "0"
-      "related_incidents": "0"
-      "reopen_count": "0"
-      "reopened_at": ""
-      "reopened_by": ""
-      "resolution_code": ""
-      "resolved_at": ""
-      "resolved_by": ""
-      "review_outcome": ""
-      "rfc": ""
+      "reopen_count": "1"
+      "reopened_at": "2020-12-17 10:23:10"
+      "reopened_by": "6816f79cc0a8016401c5a33be04be441"
       "route_reason": ""
       "service_offering": ""
-      "short_description": "Unable to send or receive emails."
+      "short_description": "SAP outage, please investigate the cause"
       "sla_due": ""
-      "state": "new"
-      "subcategory": "email"
-      "sys_class_name": "problem"
+      "started_at": "2020-12-17 10:23:14"
+      "started_by": "6816f79cc0a8016401c5a33be04be441"
+      "state": "154"
+      "sys_class_name": "problem_task"
       "sys_created_by": "admin"
-      "sys_created_on": "2018-08-30 08:09:05"
+      "sys_created_on": "2020-12-17 10:22:25"
       "sys_domain": "global"
       "sys_domain_path": "/"
-      "sys_id": "62304320731823002728660c4cf6a7e8"
-      "sys_mod_count": "1"
+      "sys_id": "5f6bec57531063004247ddeeff7b1216"
+      "sys_mod_count": "5"
       "sys_tags": ""
       "sys_updated_by": "admin"
-      "sys_updated_on": "2018-12-12 07:16:57"
-      "task_effective_number": "PRB0007601"
+      "sys_updated_on": "2020-12-17 10:27:14"
+      "task_effective_number": "PTASK0010005"
       "time_worked": ""
       "universal_request": ""
       "upon_approval": "proceed"
       "upon_reject": "cancel"
       "urgency": "low"
       "user_input": ""
+      "vendor": ""
       "watch_list": ""
       "work_end": ""
       "work_notes": ""
       "work_notes_list": ""
       "work_start": ""
       "workaround": ""
-      "workaround_applied": "false"
-      "workaround_communicated_at": ""
-      "workaround_communicated_by": ""
 """
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, attachment, client, errors, query, table, utils
-from ..module_utils.problem import PAYLOAD_FIELDS_MAPPING
+from ..module_utils import arguments, client, errors, query, utils, table
+from ..module_utils.problem_task import PAYLOAD_FIELDS_MAPPING
 
 
 def remap_params(query, table_client):
@@ -229,7 +194,7 @@ def sysparms_query(module, table_client, mapper):
     return query.serialize_query(query.map_query_values(remap_query, mapper))
 
 
-def run(module, table_client, attachment_client):
+def run(module, table_client):
     mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
 
     if module.params["query"]:
@@ -238,13 +203,8 @@ def run(module, table_client, attachment_client):
         query = utils.filter_dict(module.params, "sys_id", "number")
 
     return [
-        dict(
-            mapper.to_ansible(record),
-            attachments=attachment_client.list_records(
-                dict(table_name="problem", table_sys_id=record["sys_id"]),
-            )
-        )
-        for record in table_client.list_records("problem", query)
+        mapper.to_ansible(record)
+        for record in table_client.list_records("problem_task", query)
     ]
 
 
@@ -260,8 +220,7 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
-        attachment_client = attachment.AttachmentClient(snow_client)
-        records = run(module, table_client, attachment_client)
+        records = run(module, table_client)
         module.exit_json(changed=False, records=records)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
