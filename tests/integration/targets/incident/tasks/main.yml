@@ -30,14 +30,14 @@
 
 
   block:
-    #- name: Retrieve all incidents
-    #  servicenow.itsm.incident_info:
-    #    mapping: "{{ mapping }}"
-    #  register: result
+    - name: Retrieve all incidents
+      servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
+      register: result
 
-    #- ansible.builtin.assert:
-    #    that:
-    #      - result.records != []
+    - ansible.builtin.assert:
+        that:
+          - result.records != []
 
     - name: Create test incident - check mode
       servicenow.itsm.incident: &create-incident
