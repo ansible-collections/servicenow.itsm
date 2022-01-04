@@ -43,10 +43,17 @@ class PayloadMapper:
         self.unknown_value_handler = unknown_value_handler
 
         for key, value_map in mapping.items():
-            self._to_ansible[key] = dict(value_map)
-            self._to_snow[key] = dict(
-                (ansible_val, snow_val) for snow_val, ansible_val in value_map
-            )
+            if isinstance(value_map, dict):
+                self._to_ansible[key] = value_map
+                self._to_snow[key] = dict(
+                    (ansible_val, snow_val) for snow_val, ansible_val in value_map.items()
+                )
+            else:
+                self._to_ansible[key] = dict(value_map)
+                self._to_snow[key] = dict(
+                    (ansible_val, snow_val) for snow_val, ansible_val in value_map
+                )
+
 
     def _map_key(self, key, val, mapping):
         if val in mapping[key]:

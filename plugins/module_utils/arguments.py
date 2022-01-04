@@ -91,6 +91,7 @@ SHARED_SPECS = dict(
             ),
         ),
     ),
+    mapping=dict(type="dict", required=False),
 )
 
 

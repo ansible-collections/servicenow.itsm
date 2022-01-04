@@ -214,7 +214,12 @@ def validate_params(params, incident=None):
 
 
 def ensure_present(module, table_client, attachment_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+    if "mapping" in module.params and "incident" in module.params["mapping"]:
+        choices = module.params["mapping"]["incident"]
+    else:
+        choices = PAYLOAD_FIELDS_MAPPING
+    mapper = utils.PayloadMapper(choices, module.warn)
+
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
     attachments = attachment.transform_metadata_list(
@@ -343,6 +348,10 @@ def main():
         ),
         other=dict(
             type="dict",
+        ),
+        mapping=dict(
+            type="dict",
+            required=False
         ),
     )
 

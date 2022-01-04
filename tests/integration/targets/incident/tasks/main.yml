@@ -3,18 +3,45 @@
     SN_USERNAME: "{{ sn_username }}"
     SN_PASSWORD: "{{ sn_password }}"
 
+  vars:
+    mapping:
+      incident:
+        impact:
+          1: "high"
+          2: "medium"
+          3: "low"
+        urgency:
+          1: "high"
+          2: "medium"
+          3: "low"
+        state:
+          1: "new"
+          2: "in_progress"
+          3: "on_hold"
+          6: "resolved"
+          7: "closed"
+          8: "canceled"
+        hold_reason:
+          "": ""
+          1: "awaiting_caller"
+          3: "awaiting_problem"
+          4: "awaiting_vendor"
+          5: "awaiting_change"
+
+
   block:
-    - name: Retrieve all incidents
-      servicenow.itsm.incident_info:
-      register: result
+    #- name: Retrieve all incidents
+    #  servicenow.itsm.incident_info:
+    #    mapping: "{{ mapping }}"
+    #  register: result
 
-    - ansible.builtin.assert:
-        that:
-          - result.records != []
-
+    #- ansible.builtin.assert:
+    #    that:
+    #      - result.records != []
 
     - name: Create test incident - check mode
       servicenow.itsm.incident: &create-incident
+        mapping: "{{ mapping }}"
         caller: admin
         state: new
         short_description: Test incident
@@ -48,6 +75,7 @@
 
     - name: Make sure incident exists
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         number: "{{ test_result.record.number }}"
       register: result
 
@@ -61,6 +89,7 @@
 
     - name: Update incident with same urgency and impact - unchanged
       servicenow.itsm.incident:
+        mapping: "{{ mapping }}"
         caller: admin
         number: "{{ test_result.record.number }}"
         impact: low
@@ -74,6 +103,7 @@
 
     - name: Update incident - check mode
       servicenow.itsm.incident: &update-incident
+        mapping: "{{ mapping }}"
         caller: admin
         number: "{{ test_result.record.number }}"
         state: in_progress
@@ -98,6 +128,7 @@
 
     - name: Make sure incident was updated
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         number: "{{ test_result.record.number }}"
       register: result
 
@@ -120,6 +151,7 @@
 
     - name: Fail closing incident without required data
       servicenow.itsm.incident:
+        mapping: "{{ mapping }}"
         number: "{{ test_result.record.number }}"
         state: closed
       ignore_errors: true
@@ -133,6 +165,7 @@
 
     - name: Update incident state - check mode
       servicenow.itsm.incident: &update-incident-state
+        mapping: "{{ mapping }}"
         caller: admin
         number: "{{ test_result.record.number }}"
         state: resolved
@@ -157,6 +190,7 @@
 
     - name: Get specific incident info by sysparm query
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         query:
          - caller: = admin
            number: = {{ test_result.record.number }}
@@ -177,6 +211,7 @@
 
     - name: Make sure incident state was updated
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         number: "{{ test_result.record.number }}"
       register: result
 
@@ -190,6 +225,7 @@
 
     - name: Get incident info by sysparm query - close_notes and state
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         query:
          - close_notes: LIKE Done testing
            state: = resolved
@@ -212,6 +248,7 @@
 
     - name: Delete incident - check mode
       servicenow.itsm.incident: &delete-incident
+        mapping: "{{ mapping }}"
         caller: admin
         number: "{{ test_result.record.number }}"
         state: absent
@@ -231,6 +268,7 @@
 
     - name: Make sure incident is absent
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         number: "{{ test_result.record.number }}"
       register: result
 
@@ -241,6 +279,7 @@
 
     - name: Test bad parameter combinator (number + query)
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         number: "{{ test_result.record.number }}"
         query:
          - short_description: LIKE SAP
@@ -255,6 +294,7 @@
 
     - name: Test invalid operator detection
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         query:
          - short_description: LIKEE SAP
       ignore_errors: true
@@ -268,6 +308,7 @@
 
     - name: Get incident info by sysparm query - short_description
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         query:
          - short_description: LIKE SAP
       register: result
@@ -279,6 +320,7 @@
 
     - name: Test unary operator with argument detection
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         query:
          - short_description: ISEMPTY SAP
       ignore_errors: true
@@ -292,6 +334,7 @@
 
     - name: Test sysparm query unary operator - short_description
       servicenow.itsm.incident_info:
+        mapping: "{{ mapping }}"
         query:
          - short_description: ISNOTEMPTY
       register: result

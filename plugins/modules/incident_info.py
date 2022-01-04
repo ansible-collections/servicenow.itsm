@@ -215,29 +215,36 @@ def sysparms_query(module, table_client, mapper):
 
 
 def run(module, table_client, attachment_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+    if "mapping" in module.params and "incident" in module.params["mapping"]:
+        choices = module.params["mapping"]["incident"]
+    else:
+        choices = PAYLOAD_FIELDS_MAPPING
+
+    mapper = utils.PayloadMapper(choices, module.warn) #module.fail_json)
 
     if module.params["query"]:
         query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
     else:
         query = utils.filter_dict(module.params, "sys_id", "number")
 
-    return [
+    records = table_client.list_records("incident", query)
+    result = [
         dict(
             mapper.to_ansible(record),
             attachments=attachment_client.list_records(
                 dict(table_name="incident", table_sys_id=record["sys_id"]),
             )
         )
-        for record in table_client.list_records("incident", query)
+        for record in records
     ]
+    return result
 
 
 def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            arguments.get_spec("instance", "sys_id", "number", "query"),
+            arguments.get_spec("instance", "sys_id", "number", "query", "mapping"),
         ),
         mutually_exclusive=[("sys_id", "query"), ("number", "query")],
     )
