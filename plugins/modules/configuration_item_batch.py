@@ -76,7 +76,7 @@ EXAMPLES = r"""
           Name: other_name
     map:
       vm_inst_id: instance_id
-      ip_address: public_ip_adress
+      ip_address: public_ip_address
       name: tags.Name
 
 - name: Identify CMDB item using combination of two columns
