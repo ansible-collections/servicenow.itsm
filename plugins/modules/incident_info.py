@@ -186,6 +186,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, attachment, client, errors, query, table, utils
 from ..module_utils.incident import PAYLOAD_FIELDS_MAPPING
+from ..module_utils.utils import get_mapper
 
 
 def remap_caller(query, table_client):
@@ -215,12 +216,7 @@ def sysparms_query(module, table_client, mapper):
 
 
 def run(module, table_client, attachment_client):
-    if "mapping" in module.params and "incident" in module.params["mapping"]:
-        choices = module.params["mapping"]["incident"]
-    else:
-        choices = PAYLOAD_FIELDS_MAPPING
-
-    mapper = utils.PayloadMapper(choices, module.warn) #module.fail_json)
+    mapper = get_mapper(module, "incident", PAYLOAD_FIELDS_MAPPING)
 
     if module.params["query"]:
         query = {"sysparm_query": sysparms_query(module, table_client, mapper)}

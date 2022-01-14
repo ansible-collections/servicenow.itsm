@@ -27,6 +27,26 @@ def is_superset(superset, candidate):
     return True
 
 
+def get_choices(module, mapping_field, default_payload_fields_mapping):
+    if "mapping" not in module.params:
+        return default_payload_fields_mapping
+    if mapping_field not in module.params["mapping"]:
+        return default_payload_fields_mapping
+
+    overrides = module.params["mapping"][mapping_field]
+    clone = {}
+    for key, item in default_payload_fields_mapping.items():
+        clone[key] = overrides.get(key, item)
+
+    return clone
+
+
+def get_mapper(module, mapping_field, default_payload_fields_mapping):
+    choices = get_choices(module, mapping_field, default_payload_fields_mapping)
+    mapper = PayloadMapper(choices, module.warn)
+    return mapper
+
+
 class PayloadMapper:
     def __init__(self, mapping, unknown_value_handler=None):
         # Convert
