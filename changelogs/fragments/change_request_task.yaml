@@ -1,4 +1,3 @@
 ---
 minor_changes:
-  - Adds change_request_task and change_request_task_info modules. It allows users to modify all standard parameters defined in the ServiceNow docs (https://docs.servicenow.com/bundle/quebec-it-service-management/page/product/change-management/task/create-a-change-task.html), as well as properties required to create and close tasks.
-  - table.py - add change_request and configuration item search options
+  - table.py - add change_request and configuration item search options.
