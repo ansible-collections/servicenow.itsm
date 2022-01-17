@@ -349,7 +349,9 @@ class TestClientGet:
 
         c.get("api/now/table/incident/1", query=dict(a="1"))
 
-        request_mock.assert_called_with("GET", "api/now/table/incident/1", query=dict(a="1"))
+        request_mock.assert_called_with(
+            "GET", "api/now/table/incident/1", query=dict(a="1")
+        )
 
 
 class TestClientPost:
@@ -412,7 +414,10 @@ class TestClientPatch:
         c.patch("api/now/table/incident/1", {"some": "data"}, query={"g": "f"})
 
         request_mock.assert_called_with(
-            "PATCH", "api/now/table/incident/1", data=dict(some="data"), query=dict(g="f")
+            "PATCH",
+            "api/now/table/incident/1",
+            data=dict(some="data"),
+            query=dict(g="f"),
         )
 
 
@@ -471,4 +476,6 @@ class TestClientDelete:
 
         c.delete("api/now/table/resource/1", query=dict(x="y"))
 
-        request_mock.assert_called_with("DELETE", "api/now/table/resource/1", query=dict(x="y"))
+        request_mock.assert_called_with(
+            "DELETE", "api/now/table/resource/1", query=dict(x="y")
+        )
