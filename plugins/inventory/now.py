@@ -352,12 +352,12 @@ named_groups:
 
 
 def _includes_query(column, includes):
-    """ column, [v1, v2] -> 'column=v1^ORcolumn=v2' """
+    """column, [v1, v2] -> 'column=v1^ORcolumn=v2'"""
     return "^OR".join("{0}={1}".format(column, i) for i in includes)
 
 
 def _excludes_query(column, excludes):
-    """ column, [v1, v2] -> 'column!=v1^column!=v2' """
+    """column, [v1, v2] -> 'column!=v1^column!=v2'"""
     return "^".join("{0}!={1}".format(column, i) for i in excludes)
 
 
