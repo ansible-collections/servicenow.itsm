@@ -96,7 +96,11 @@ class TestClientAuthHeader:
         request_mock.open.return_value = resp_mock
 
         c = client.Client(
-            "https://instance.com", "user", "pass", client_id="id", client_secret="secret"
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
         )
 
         assert c.auth_header == {"Authorization": "Bearer token"}
@@ -108,7 +112,11 @@ class TestClientAuthHeader:
         )
 
         c = client.Client(
-            "https://instance.com", "user", "pass", client_id="id", client_secret="secret"
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
         )
         with pytest.raises(errors.UnexpectedAPIResponse, match="Error message"):
             c.auth_header
@@ -123,7 +131,11 @@ class TestClientAuthHeader:
         request_mock.open.return_value = raw_resp_mock
 
         c = client.Client(
-            "https://instance.com", "user", "pass", client_id="id", client_secret="secret"
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
         )
         c.auth_header
         c.auth_header

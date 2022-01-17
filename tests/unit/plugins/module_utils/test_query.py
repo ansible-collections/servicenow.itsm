@@ -146,7 +146,7 @@ class TestMapQueryValues:
                 {"caller": ("=", "abel.tuter"), "state": ("=", "new")},
                 {"caller": ("=", "bertie.luby"), "state": ("=", "new")},
             ],
-            mapper
+            mapper,
         )
 
         assert result == [
