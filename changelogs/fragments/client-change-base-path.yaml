@@ -1,0 +1,3 @@
+---
+minor_changes:
+- client - Changed the base URL path of the HTTP client for all requests from `/api/now` to `/`
