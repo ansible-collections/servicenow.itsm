@@ -150,8 +150,10 @@ class Client:
                 "Cannot have JSON and binary payload in a single request."
             )
 
-        escaped_path = quote(path.rstrip("/"))
-        url = "{0}/api/now/{1}".format(self.host, escaped_path)
+        escaped_path = quote(path.strip("/"))
+        if escaped_path:
+            escaped_path = "/" + escaped_path
+        url = "{0}{1}".format(self.host, escaped_path)
         if query:
             url = "{0}?{1}".format(url, urlencode(query))
         headers = dict(headers or DEFAULT_HEADERS, **self.auth_header)

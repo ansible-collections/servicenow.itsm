@@ -11,7 +11,7 @@ from . import errors
 
 
 def _path(table, *subpaths):
-    return "/".join(("table", table) + subpaths)
+    return "/".join(("api", "now") + ("table", table) + subpaths)
 
 
 def _query(original=None):
