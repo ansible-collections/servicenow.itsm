@@ -31,7 +31,7 @@ extends_documentation_fragment:
   - servicenow.itsm.sys_id
   - servicenow.itsm.number
   - servicenow.itsm.attachments
-
+  - servicenow.itsm.mapping
 options:
   state:
     description:
