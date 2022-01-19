@@ -29,7 +29,7 @@ options:
               - Required if I(state) value is C(on_hold).
             type: dict
           impact:
-            description: 
+            description:
               - The measure of the business criticality of the affected service.
             type: dict
           state:
@@ -39,7 +39,7 @@ options:
               - Special value that can not be overridden is C(absent), which would remove an incident from ServiceNow.
             type: dict
           urgency:
-            description: 
+            description:
               - The extent to which resolution of an incident can bear delay.
             type: dict
 """
