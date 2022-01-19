@@ -10,23 +10,15 @@ __metaclass__ = type
 from ansible.module_utils.basic import env_fallback
 
 INCIDENT_MAPPING_SPEC = dict(
-        type="dict",
-        required=False,
-        options=dict(
-            state=dict(
-                type="dict"
-            ),
-            hold_reason=dict(
-                type="dict"
-            ),
-            impact=dict(
-                type="dict"
-            ),
-            urgency=dict(
-                type="dict"
-            )
-        )
-    )
+    type="dict",
+    required=False,
+    options=dict(
+        state=dict(type="dict"),
+        hold_reason=dict(type="dict"),
+        impact=dict(type="dict"),
+        urgency=dict(type="dict"),
+    ),
+)
 
 SHARED_SPECS = dict(
     instance=dict(
@@ -100,12 +92,8 @@ SHARED_SPECS = dict(
         ),
     ),
     mapping=dict(
-        type="dict",
-        required=False,
-        options=dict(
-            incident=INCIDENT_MAPPING_SPEC
-        )
-    )
+        type="dict", required=False, options=dict(incident=INCIDENT_MAPPING_SPEC)
+    ),
 )
 
 

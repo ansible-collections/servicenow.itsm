@@ -337,26 +337,20 @@ class TestEnsurePresent:
 
 
 class TestEnsurePresentWithMapping:
-    IMPACT_MAPPING = {
-        "1": "test high",
-        "2": "test medium",
-        "3": "test low"
-    }
+    IMPACT_MAPPING = {"1": "test high", "2": "test medium", "3": "test low"}
 
-    INCIDENT_MAPPING = {
-        "impact": IMPACT_MAPPING
-    }
+    INCIDENT_MAPPING = {"impact": IMPACT_MAPPING}
 
-    MAPPING = {
-        "incident": INCIDENT_MAPPING
-    }
+    MAPPING = {"incident": INCIDENT_MAPPING}
 
     def test_load_mapping_params(self, run_main):
         params = dict(
-            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
             sys_id="id",
             number="n",
-            mapping=self.MAPPING
+            mapping=self.MAPPING,
         )
         success, result = run_main(incident, params)
 
@@ -364,12 +358,12 @@ class TestEnsurePresentWithMapping:
 
     def test_load_mapping_params_fail(self, run_main):
         params = dict(
-            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
             sys_id="id",
             number="n",
-            mapping={
-                "unknown key":  None
-            }
+            mapping={"unknown key": None},
         )
         success, result = run_main(incident, params)
 
@@ -394,7 +388,7 @@ class TestEnsurePresentWithMapping:
                 hold_reason=None,
                 other=None,
                 attachments=None,
-                mapping=self.MAPPING
+                mapping=self.MAPPING,
             ),
         )
         table_client.create_record.return_value = dict(
