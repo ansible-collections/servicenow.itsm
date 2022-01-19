@@ -9,12 +9,9 @@ __metaclass__ = type
 
 import sys
 import pytest
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.common.arg_spec import ArgumentSpecValidator
 
 from ansible_collections.servicenow.itsm.plugins.modules import incident
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
-from ansible_collections.servicenow.itsm.plugins.module_utils import arguments
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
