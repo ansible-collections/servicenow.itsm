@@ -13,8 +13,8 @@ class ModuleDocFragment(object):
 options:
   mapping:
     description:
-      - Optional parameters where user can override Choice Lists values for objects
-      - Currently only values inside incident object mapping can be overridden
+      - Optional parameters where user can override Choice Lists values for objects.
+      - Currently, only values inside incident object mapping can be overridden.
     type: dict
     suboptions:
       incident:
