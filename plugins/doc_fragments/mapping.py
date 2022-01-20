@@ -12,6 +12,7 @@ class ModuleDocFragment(object):
     DOCUMENTATION = r"""
 options:
   mapping:
+    version_added: "1.3.0"
     description:
       - Optional parameters where user can override Choice Lists values for objects.
       - Currently, only values inside incident object mapping can be overridden.
