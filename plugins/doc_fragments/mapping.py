@@ -19,8 +19,8 @@ options:
     suboptions:
       incident:
         description:
-          - User mappings for Incident object
-          - Where mapping is not set, default will be use
+          - User mappings for Incident object.
+          - Where mapping is not set, the default will be used.
         type: dict
         suboptions:
           hold_reason:
