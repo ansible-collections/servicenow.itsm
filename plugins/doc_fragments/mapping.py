@@ -34,7 +34,7 @@ options:
             type: dict
           state:
             description:
-              - State of incident.
+              - State of the incident.
               - If I(state) value is C(on_hold), I(on_hold_reason) parameter must be filled in.
               - Special value that can not be overridden is C(absent), which would remove an incident from ServiceNow.
             type: dict
