@@ -10,10 +10,8 @@ __metaclass__ = type
 import sys
 import pytest
 
-
 from ansible_collections.servicenow.itsm.plugins.modules import incident
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
-
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -330,6 +328,100 @@ class TestEnsurePresent:
                     short_description="Test incident",
                     attachments=[],
                     sys_id="1234",
+                ),
+            ),
+        )
+
+
+class TestEnsurePresentWithMapping:
+    IMPACT_MAPPING = {"1": "test high", "2": "test medium", "3": "test low"}
+
+    INCIDENT_MAPPING = {"impact": IMPACT_MAPPING}
+
+    MAPPING = {"incident": INCIDENT_MAPPING}
+
+    def test_load_mapping_params(self, run_main):
+        params = dict(
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
+            sys_id="id",
+            number="n",
+            mapping=self.MAPPING,
+        )
+        success, result = run_main(incident, params)
+
+        assert success is True
+
+    def test_load_mapping_params_fail(self, run_main):
+        params = dict(
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
+            sys_id="id",
+            number="n",
+            mapping={"unknown key": None},
+        )
+        success, result = run_main(incident, params)
+
+        assert success is False
+
+    def test_ensure_present_create_new(
+        self, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state="new",
+                caller=None,
+                short_description="Test incident",
+                impact="test low",
+                urgency="test low",
+                number=None,
+                sys_id=None,
+                description=None,
+                close_code=None,
+                close_notes=None,
+                hold_reason=None,
+                other=None,
+                attachments=None,
+                mapping=self.MAPPING,
+            ),
+        )
+        table_client.create_record.return_value = dict(
+            state="1",
+            number="INC0000001",
+            short_description="Test incident",
+            impact="3",
+            urgency="3",
+            sys_id="1234",
+        )
+        attachment_client.upload_records.return_value = []
+
+        result = incident.ensure_present(module, table_client, attachment_client)
+
+        table_client.create_record.assert_called_once()
+        assert result == (
+            True,
+            dict(
+                state="new",
+                number="INC0000001",
+                short_description="Test incident",
+                impact="test low",
+                urgency="low",
+                sys_id="1234",
+                attachments=[],
+            ),
+            dict(
+                before=None,
+                after=dict(
+                    state="new",
+                    number="INC0000001",
+                    short_description="Test incident",
+                    impact="test low",
+                    urgency="low",
+                    sys_id="1234",
+                    attachments=[],
                 ),
             ),
         )
