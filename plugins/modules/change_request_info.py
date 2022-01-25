@@ -29,6 +29,7 @@ extends_documentation_fragment:
   - servicenow.itsm.sys_id.info
   - servicenow.itsm.number.info
   - servicenow.itsm.query
+  - servicenow.itsm.mapping
 seealso:
   - module: servicenow.itsm.change_request
 """
@@ -200,7 +201,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, attachment, client, errors, query, table, utils
 from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
-
+from ..module_utils.utils import get_mapper
 
 def remap_params(query, table_client):
     query_load = []
@@ -250,7 +251,7 @@ def sysparms_query(module, table_client, mapper):
 
 
 def run(module, table_client, attachment_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+    mapper = get_mapper(module, "change_request", PAYLOAD_FIELDS_MAPPING)
 
     if module.params["query"]:
         query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
@@ -272,7 +273,7 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            arguments.get_spec("instance", "sys_id", "number", "query"),
+            arguments.get_spec("instance", "sys_id", "number", "query", "mapping"),
         ),
         mutually_exclusive=[("sys_id", "query"), ("number", "query")],
     )
