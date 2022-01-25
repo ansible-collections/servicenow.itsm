@@ -203,6 +203,7 @@ from ..module_utils import arguments, attachment, client, errors, query, table, 
 from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
 from ..module_utils.utils import get_mapper
 
+
 def remap_params(query, table_client):
     query_load = []
 
