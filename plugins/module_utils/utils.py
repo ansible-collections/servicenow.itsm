@@ -30,7 +30,11 @@ def is_superset(superset, candidate):
 def get_choices(module, mapping_field, default_payload_fields_mapping):
     if "mapping" not in module.params:
         return default_payload_fields_mapping
+    if module.params["mapping"] is None:
+        return default_payload_fields_mapping
     if mapping_field not in module.params["mapping"]:
+        return default_payload_fields_mapping
+    if module.params["mapping"][mapping_field] is None:
         return default_payload_fields_mapping
 
     overrides = module.params["mapping"][mapping_field]
