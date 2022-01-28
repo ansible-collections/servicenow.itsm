@@ -5,7 +5,7 @@
 servicenow.itsm.configuration_item_batch
 ****************************************
 
-**Manage ServiceNow configuration items**
+**Manage ServiceNow configuration items in batch mode**
 
 
 Version added: 1.2.0
@@ -17,7 +17,7 @@ Version added: 1.2.0
 
 Synopsis
 --------
-- Create, delete or update a ServiceNow configuration item.
+- Create, update ServiceNow configuration items in batch mode.
 - For more information, refer to the ServiceNow configuration management documentation at https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html.
 
 
@@ -129,7 +129,7 @@ Parameters
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.1.0</div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.1.0 of servicenow.itsm</div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
@@ -187,7 +187,7 @@ Parameters
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.1.0</div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.1.0 of servicenow.itsm</div>
                 </td>
                 <td>
                 </td>
@@ -303,7 +303,7 @@ Examples
               Name: other_name
         map:
           vm_inst_id: instance_id
-          ip_address: public_ip_adress
+          ip_address: public_ip_address
           name: tags.Name
 
     - name: Identify CMDB item using combination of two columns
