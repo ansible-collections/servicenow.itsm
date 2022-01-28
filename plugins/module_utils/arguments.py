@@ -104,13 +104,8 @@ SHARED_SPECS = dict(
             ),
         ),
     ),
-    mapping=dict(
-        type="dict",
-        required=False,
-        options=dict(
-            incident=INCIDENT_MAPPING_SPEC, change_request=CHANGE_REQUEST_MAPPING_SPEC
-        ),
-    ),
+    incident_mapping=INCIDENT_MAPPING_SPEC,
+    change_request_mapping=CHANGE_REQUEST_MAPPING_SPEC,
 )
 
 

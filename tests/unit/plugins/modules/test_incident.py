@@ -338,8 +338,6 @@ class TestEnsurePresentWithMapping:
 
     INCIDENT_MAPPING = {"impact": IMPACT_MAPPING}
 
-    MAPPING = {"incident": INCIDENT_MAPPING}
-
     def test_load_mapping_params(self, run_main):
         params = dict(
             instance=dict(
@@ -347,7 +345,7 @@ class TestEnsurePresentWithMapping:
             ),
             sys_id="id",
             number="n",
-            mapping=self.MAPPING,
+            incident_mapping=self.INCIDENT_MAPPING,
         )
         success, result = run_main(incident, params)
 
@@ -360,7 +358,7 @@ class TestEnsurePresentWithMapping:
             ),
             sys_id="id",
             number="n",
-            mapping={"unknown key": None},
+            incident_mapping={"unknown key": None},
         )
         success, result = run_main(incident, params)
 
@@ -385,7 +383,7 @@ class TestEnsurePresentWithMapping:
                 hold_reason=None,
                 other=None,
                 attachments=None,
-                mapping=self.MAPPING,
+                incident_mapping=self.INCIDENT_MAPPING,
             ),
         )
         table_client.create_record.return_value = dict(
