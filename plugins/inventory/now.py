@@ -24,7 +24,7 @@ from ..module_utils.table import TableClient
 
 
 DOCUMENTATION = r"""
-name: servicenow.itsm.now
+name: now
 plugin_type: inventory
 author:
   - Manca Bizjak (@mancabizjak)
