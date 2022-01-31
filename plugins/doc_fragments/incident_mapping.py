@@ -14,7 +14,7 @@ options:
   incident_mapping:
     version_added: "1.3.0"
     description:
-      - User mapping for I(Incident) object, where user can override Choice Lists values for objects
+      - User mapping for I(Incident) object, where user can override Choice Lists values for objects.
     type: dict
     suboptions:
       hold_reason:
