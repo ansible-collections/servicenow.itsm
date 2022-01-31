@@ -14,7 +14,7 @@ options:
   change_request_mapping:
     version_added: "1.3.0"
     description:
-      - User mapping for I(Change request) object, where user can override Choice Lists values for objects
+      - User mapping for I(Change request) object, where user can override Choice Lists values for objects.
     type: dict
     suboptions:
       priority:
