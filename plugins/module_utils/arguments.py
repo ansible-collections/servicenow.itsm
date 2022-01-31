@@ -20,6 +20,19 @@ INCIDENT_MAPPING_SPEC = dict(
     ),
 )
 
+CHANGE_REQUEST_MAPPING_SPEC = dict(
+    type="dict",
+    required=False,
+    options=dict(
+        priority=dict(type="dict"),
+        risk=dict(type="dict"),
+        impact=dict(type="dict"),
+        urgency=dict(type="dict"),
+        state=dict(type="dict"),
+    ),
+)
+
+
 SHARED_SPECS = dict(
     instance=dict(
         type="dict",
@@ -91,9 +104,8 @@ SHARED_SPECS = dict(
             ),
         ),
     ),
-    mapping=dict(
-        type="dict", required=False, options=dict(incident=INCIDENT_MAPPING_SPEC)
-    ),
+    incident_mapping=INCIDENT_MAPPING_SPEC,
+    change_request_mapping=CHANGE_REQUEST_MAPPING_SPEC,
 )
 
 
