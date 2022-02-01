@@ -30,7 +30,7 @@ extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id.info
   - servicenow.itsm.query
-
+  - servicenow.itsm.configuration_item_mapping
 seealso:
   - module: servicenow.itsm.configuration_item
 
@@ -189,6 +189,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, attachment, client, errors, query, table, utils
 from ..module_utils.configuration_item import PAYLOAD_FIELDS_MAPPING
+from ..module_utils.utils import get_mapper
 
 
 def remap_assignment(query, table_client):
@@ -219,7 +220,7 @@ def sysparms_query(module, table_client, mapper):
 
 def run(module, table_client, attachment_client):
     cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+    mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
 
     if module.params["query"]:
         query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
@@ -241,7 +242,9 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            arguments.get_spec("instance", "sys_id", "query"),
+            arguments.get_spec(
+                "instance", "sys_id", "query", "configuration_item_mapping"
+            ),
             sys_class_name=dict(
                 type="str",
             ),

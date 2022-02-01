@@ -32,6 +32,16 @@ CHANGE_REQUEST_MAPPING_SPEC = dict(
     ),
 )
 
+CONFIGURATION_ITEM_MAPPING_SPEC = dict(
+    type="dict",
+    required=False,
+    options=dict(
+        environment=dict(type="dict"),
+        install_status=dict(type="dict"),
+        operational_status=dict(type="dict"),
+    ),
+)
+
 
 SHARED_SPECS = dict(
     instance=dict(
@@ -106,6 +116,7 @@ SHARED_SPECS = dict(
     ),
     incident_mapping=INCIDENT_MAPPING_SPEC,
     change_request_mapping=CHANGE_REQUEST_MAPPING_SPEC,
+    configuration_item_mapping=CONFIGURATION_ITEM_MAPPING_SPEC,
 )
 
 
