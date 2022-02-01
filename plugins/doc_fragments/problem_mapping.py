@@ -29,7 +29,7 @@ options:
           - State of the problem.
           - If a problem does not yet exist, all states except for C(new)
             require setting of I(assigned_to) parameter.
-          - This mapping can also be edited inside Chose Lists inside ServiceNow and can differ from state mapping
+          - This mapping can also be edited inside Choice Lists inside ServiceNow and can differ from state mapping.
         type: dict
       impact:
         description:
