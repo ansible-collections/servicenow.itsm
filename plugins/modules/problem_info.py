@@ -191,6 +191,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, attachment, client, errors, query, table, utils
 from ..module_utils.problem import PAYLOAD_FIELDS_MAPPING
+from ..module_utils.utils import get_mapper
 
 
 def remap_params(query, table_client):
@@ -228,7 +229,7 @@ def sysparms_query(module, table_client, mapper):
 
 
 def run(module, table_client, attachment_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
 
     if module.params["query"]:
         query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
