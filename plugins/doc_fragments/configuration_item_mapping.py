@@ -14,7 +14,7 @@ options:
   configuration_item_mapping:
     version_added: "1.3.0"
     description:
-      - User mappings for I(Configuration item) object
+      - User mappings for I(Configuration item) object.
       - Where mapping is not set, the default will be used.
     type: dict
     suboptions:
