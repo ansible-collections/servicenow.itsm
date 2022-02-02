@@ -30,7 +30,7 @@ extends_documentation_fragment:
   - servicenow.itsm.sys_id
   - servicenow.itsm.number
   - servicenow.itsm.attachments
-
+  - servicenow.itsm.problem_mapping
 seealso:
   - module: servicenow.itsm.problem_info
 
@@ -306,6 +306,7 @@ from ..module_utils import (
     validation,
 )
 from ..module_utils.problem import PAYLOAD_FIELDS_MAPPING
+from ..module_utils.utils import get_mapper
 
 DIRECT_PAYLOAD_FIELDS = (
     "state",
@@ -321,7 +322,7 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client, attachment_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     problem = table_client.get_record("problem", query)
 
@@ -409,7 +410,7 @@ def validate_params(params, problem=None):
 
 
 def ensure_present(module, table_client, attachment_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
     attachments = attachment.transform_metadata_list(
@@ -474,7 +475,9 @@ def run(module, table_client, attachment_client):
 
 def main():
     module_args = dict(
-        arguments.get_spec("instance", "sys_id", "number", "attachments"),
+        arguments.get_spec(
+            "instance", "sys_id", "number", "attachments", "problem_mapping"
+        ),
         state=dict(
             type="str",
             choices=[
