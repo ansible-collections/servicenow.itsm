@@ -21,15 +21,22 @@ from ..module_utils.client import Client
 from ..module_utils.errors import ServiceNowError
 from ..module_utils.query import parse_query, serialize_query
 from ..module_utils.table import TableClient
+from ..module_utils.relations import (
+    REL_FIELDS,
+    REL_QUERY,
+    REL_TABLE,
+    enhance_records_with_rel_groups,
+)
 
 
 DOCUMENTATION = r"""
-name: now
+name: servicenow.itsm.now
 plugin_type: inventory
 author:
   - Manca Bizjak (@mancabizjak)
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
+  - Uros Pascinski (@uscinski)
 short_description: Inventory source for ServiceNow table records.
 description:
   - Builds inventory from ServiceNow table records.
@@ -105,6 +112,12 @@ options:
       - List of I(table) columns to be included as hostvars.
     type: list
     default: [name, host_name, fqdn, ip_address]
+  enhanced:
+    description:
+      - Enable enhanced inventory which provides relationship information from CMDB.
+      - Mutually exclusive with deprecated options I(named_groups) and I(group_by).
+    type: Bool
+    default: false
   ansible_host_source:
     description:
       - Host variable to use as I(ansible_host) when generating inventory hosts.
@@ -291,6 +304,29 @@ compose:
 #  |  |  |--{cpu_type = Intel}
 #  |  |  |--{name = SAP-SD-02}
 
+# Similar to the example above, but use enhanced groups with relationship information instead.
+plugin: servicenow.itsm.now
+enhanced: true
+strict: true
+inventory_hostname_source: asset_tag
+columns:
+  - name
+  - classification
+  - cpu_type
+  - cost
+compose:
+    cost: cost ~ " " ~ cost_cc
+    ansible_host: fqdn
+
+# `ansible-inventory -i inventory.now.yaml --graph --vars` output:
+# @all:
+# |--@Blackberry_Depends_on:
+# |  |--P1000201
+# |  |  |--{ansible_host = my.server.com}
+# |  |  |--{classification = Production}
+# |  |  |--{cost = 2,160 USD}
+# |  |  |--{cpu_type = Intel}
+# |  |  |--{name = INSIGHT-NY-03}
 
 # NOTE: All examples from here on are deprecated and should not be used when writing new
 # inventory sources.
@@ -392,13 +428,16 @@ def construct_sysparm_query(query):
     return serialize_query(parsed)
 
 
-def fetch_records(table_client, table, query):
+def fetch_records(table_client, table, query, fields=None):
     snow_query = dict(
         # Make references and choice fields human-readable
         sysparm_display_value=True,
     )
     if query:
         snow_query["sysparm_query"] = construct_sysparm_query(query)
+
+    if fields:
+        snow_query["sysparm_fields"] = ",".join(fields)
 
     return table_client.list_records(table, snow_query)
 
@@ -537,6 +576,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         groups,
         keyed_groups,
         strict,
+        enhanced,
     ):
         for record in records:
             host = self.add_host(record, host_source, name_source)
@@ -545,6 +585,14 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                 self._set_composite_vars(compose, record, host, strict)
                 self._add_host_to_composed_groups(groups, record, host, strict)
                 self._add_host_to_keyed_groups(keyed_groups, record, host, strict)
+                if enhanced:
+                    self.fill_enhanced_auto_groups(record, host)
+
+    def fill_enhanced_auto_groups(self, record, host):
+        for rel_group in record["relationship_groups"]:
+            rel_group = to_safe_group_name(rel_group)
+            self.inventory.add_group(rel_group)
+            self.inventory.add_child(rel_group, host)
 
     def _merge_instance_config(self, instance_config, instance_env):
         # Pulls the values from the environment, and if necessary, overrides
@@ -605,6 +653,16 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             client = Client(**self._get_instance())
         except ServiceNowError as e:
             raise AnsibleParserError(e)
+
+        enhanced = self.get_option("enhanced")
+
+        if enhanced and (named_groups or group_by):
+            self.display.warning(
+                "Option 'enhanced' is incompatible with options 'named_groups' or "
+                "'group_by' and is therefore assumed False"
+            )
+            enhanced = False
+
         table_client = TableClient(client)
 
         table = self.get_option("table")
@@ -626,17 +684,25 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             )
             return
 
+        query = self.get_option("query")
+
         # TODO: Insert caching here once we remove deprecated functionality
-        records = fetch_records(
-            table_client, self.get_option("table"), self.get_option("query")
-        )
+        records = fetch_records(table_client, table, query)
+
+        if enhanced:
+            rel_records = fetch_records(
+                table_client, REL_TABLE, REL_QUERY, fields=REL_FIELDS
+            )
+            enhance_records_with_rel_groups(records, rel_records)
+
         self.fill_constructed(
             records,
-            self.get_option("columns"),
-            self.get_option("ansible_host_source"),
-            self.get_option("inventory_hostname_source"),
+            columns,
+            host_source,
+            name_source,
             self.get_option("compose"),
             self.get_option("groups"),
             self.get_option("keyed_groups"),
             self.get_option("strict"),
+            enhanced,
         )
