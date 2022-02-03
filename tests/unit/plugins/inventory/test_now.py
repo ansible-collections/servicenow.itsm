@@ -560,29 +560,31 @@ class TestInventoryModuleFillConstructed:
         a1_groups = (group.name for group in a1.groups)
         assert set(a1_groups) == set()
 
-        assert a1.vars == dict(
-            inventory_file=None,
-            inventory_dir=None,
-            ansible_host="1.1.1.1",
-            cost_res="82 EUR",
-            amortized_cost="41",
-            sys_updated_on_date="2021-09-17",
-            sys_updated_on_time="02:13:25",
-        )
+        raise Exception(repr(a1.vars))
 
-        a2 = inventory_plugin.inventory.get_host("a2")
-        a2_groups = (group.name for group in a2.groups)
-        assert set(a2_groups) == set()
+        # assert a1.vars == dict(
+        #     inventory_file=None,
+        #     inventory_dir=None,
+        #     ansible_host="1.1.1.1",
+        #     cost_res="82 EUR",
+        #     amortized_cost="41",
+        #     sys_updated_on_date="2021-09-17",
+        #     sys_updated_on_time="02:13:25",
+        # )
 
-        assert a2.vars == dict(
-            inventory_file=None,
-            inventory_dir=None,
-            ansible_host="1.1.1.2",
-            cost_res="94 USD",
-            amortized_cost="47",
-            sys_updated_on_date="2021-08-30",
-            sys_updated_on_time="01:47:03",
-        )
+        # a2 = inventory_plugin.inventory.get_host("a2")
+        # a2_groups = (group.name for group in a2.groups)
+        # assert set(a2_groups) == set()
+
+        # assert a2.vars == dict(
+        #     inventory_file=None,
+        #     inventory_dir=None,
+        #     ansible_host="1.1.1.2",
+        #     cost_res="94 USD",
+        #     amortized_cost="47",
+        #     sys_updated_on_date="2021-08-30",
+        #     sys_updated_on_time="01:47:03",
+        # )
 
     def test_construction_composite_vars_strict(self, inventory_plugin):
         records = [
@@ -593,7 +595,7 @@ class TestInventoryModuleFillConstructed:
         columns = []
         host_source = "ip_address"
         name_source = "fqdn"
-        compose = dict(silently_failed="non_existing + 3")
+        compose = dict(failed="non_existing + 3")
         groups = {}
         keyed_groups = []
         strict = True
