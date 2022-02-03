@@ -116,8 +116,9 @@ options:
     description:
       - Enable enhanced inventory which provides relationship information from CMDB.
       - Mutually exclusive with deprecated options I(named_groups) and I(group_by).
-    type: Bool
+    type: bool
     default: false
+    version_added: 1.3.0
   ansible_host_source:
     description:
       - Host variable to use as I(ansible_host) when generating inventory hosts.
