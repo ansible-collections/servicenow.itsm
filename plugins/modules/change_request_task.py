@@ -28,7 +28,7 @@ extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id
   - servicenow.itsm.number
-
+  - servicenow.itsm.change_request_task_mapping
 seealso:
   - module: servicenow.itsm.change_request_task_info
 
@@ -172,6 +172,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, table, errors, utils, validation
 from ..module_utils.change_request_task import PAYLOAD_FIELDS_MAPPING
+from ..module_utils.utils import get_mapper
 
 DIRECT_PAYLOAD_FIELDS = (
     "state",
@@ -186,7 +187,7 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+    mapper = get_mapper(module, "change_request_task_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     task = table_client.get_record("change_task", query)
 
@@ -220,7 +221,7 @@ def validate_params(params, change_task=None):
 
 
 def ensure_present(module, table_client):
-    mapper = utils.PayloadMapper(PAYLOAD_FIELDS_MAPPING, module.warn)
+    mapper = get_mapper(module, "change_request_task_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
 
@@ -320,7 +321,9 @@ def run(module, table_client):
 
 def main():
     module_args = dict(
-        arguments.get_spec("instance", "sys_id", "number"),
+        arguments.get_spec(
+            "instance", "sys_id", "number", "change_request_task_mapping"
+        ),
         configuration_item=dict(
             type="str",
         ),
