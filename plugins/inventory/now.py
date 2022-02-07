@@ -658,11 +658,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         enhanced = self.get_option("enhanced")
 
         if enhanced and (named_groups or group_by):
-            self.display.warning(
+            raise AnsibleParserError(
                 "Option 'enhanced' is incompatible with options 'named_groups' or "
-                "'group_by' and is therefore assumed False"
+                "'group_by'."
             )
-            enhanced = False
 
         table_client = TableClient(client)
 
