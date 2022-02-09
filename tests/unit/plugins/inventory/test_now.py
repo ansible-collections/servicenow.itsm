@@ -11,9 +11,10 @@ import sys
 
 import pytest
 
-from ansible.errors import AnsibleParserError
+from ansible.errors import AnsibleParserError, AnsibleError
 from ansible.inventory.data import InventoryData
 from ansible.module_utils.common.text.converters import to_text
+from ansible.template import Templar
 
 from ansible_collections.servicenow.itsm.plugins.inventory import now
 
@@ -26,6 +27,7 @@ pytestmark = pytest.mark.skipif(
 def inventory_plugin():
     plugin = now.InventoryModule()
     plugin.inventory = InventoryData()
+    plugin.templar = Templar(loader=None)
     return plugin
 
 
@@ -51,6 +53,13 @@ class TestFetchRecords:
 
         table_client.list_records.assert_called_once_with(
             "table_name", dict(sysparm_display_value=True, sysparm_query="my!=value")
+        )
+
+    def test_no_query_with_fields(self, table_client):
+        now.fetch_records(table_client, "table_name", None, fields=["a", "b", "c"])
+
+        table_client.list_records.assert_called_once_with(
+            "table_name", dict(sysparm_display_value=True, sysparm_fields="a,b,c")
         )
 
 
@@ -292,3 +301,578 @@ class TestInventoryModuleFillAutoGroups:
         groups = inventory_plugin.inventory.get_groups_dict()
         assert set(groups["b_a_d"]) == set(("a3",))
         assert set(groups["glass"]) == set(("a4",))
+
+
+class TestInventoryModuleFillEnhancedAutoGroups:
+    def test_construction(self, inventory_plugin):
+        record = dict(
+            sys_id="1",
+            ip_address="1.1.1.1",
+            fqdn="a1",
+            relationship_groups=set(
+                (
+                    "NY-01-01_Rack_contains",
+                    "Storage Area Network 002_Sends_data_to",
+                    "Blackberry_Depends_on",
+                    "Retail Adding Points_Depends_on",
+                )
+            ),
+        )
+
+        host = inventory_plugin.add_host(record, "ip_address", "fqdn")
+        inventory_plugin.fill_enhanced_auto_groups(record, host)
+
+        assert set(inventory_plugin.inventory.groups) == set(
+            (
+                "all",
+                "ungrouped",
+                "NY_01_01_Rack_contains",
+                "Storage_Area_Network_002_Sends_data_to",
+                "Blackberry_Depends_on",
+                "Retail_Adding_Points_Depends_on",
+            )
+        )
+
+        assert set(inventory_plugin.inventory.hosts) == set(("a1",))
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        a1_groups = (group.name for group in a1.groups)
+        assert set(a1_groups) == set(
+            (
+                "NY_01_01_Rack_contains",
+                "Storage_Area_Network_002_Sends_data_to",
+                "Blackberry_Depends_on",
+                "Retail_Adding_Points_Depends_on",
+            )
+        )
+
+        assert a1.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+        )
+
+    def test_construction_empty(self, inventory_plugin):
+        record = dict(
+            sys_id="1", ip_address="1.1.1.1", fqdn="a1", relationship_groups=set()
+        )
+
+        host = inventory_plugin.add_host(record, "ip_address", "fqdn")
+        inventory_plugin.fill_enhanced_auto_groups(record, host)
+
+        assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
+
+        assert set(inventory_plugin.inventory.hosts) == set(("a1",))
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        a1_groups = (group.name for group in a1.groups)
+        assert set(a1_groups) == set()
+
+        assert a1.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+        )
+
+
+class TestInventoryModuleFillConstructed:
+    def test_construction_empty(self, inventory_plugin):
+        records = []
+        columns = []
+        host_source = "ip_address"
+        name_source = "fqdn"
+        compose = {}
+        groups = {}
+        keyed_groups = []
+        strict = False
+        enhanced = False
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            host_source,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+        )
+
+        assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
+        assert set(inventory_plugin.inventory.hosts) == set()
+
+    def test_construction_host(self, inventory_plugin):
+        records = [
+            dict(
+                sys_id="1",
+                ip_address="1.1.1.1",
+                fqdn="a1",
+            ),
+            dict(
+                sys_id="2",
+                ip_address="1.1.1.2",
+                fqdn="a2",
+            ),
+        ]
+
+        columns = []
+        host_source = "ip_address"
+        name_source = "fqdn"
+        compose = {}
+        groups = {}
+        keyed_groups = []
+        strict = False
+        enhanced = False
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            host_source,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+        )
+
+        assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
+        assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        a1_groups = (group.name for group in a1.groups)
+        assert set(a1_groups) == set()
+
+        assert a1.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+        )
+
+        a2 = inventory_plugin.inventory.get_host("a2")
+        a2_groups = (group.name for group in a2.groups)
+        assert set(a2_groups) == set()
+
+        assert a2.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.2"
+        )
+
+    def test_construction_hostvars(self, inventory_plugin):
+        records = [
+            dict(sys_id="1", ip_address="1.1.1.1", fqdn="a1", cost="82", cost_cc="EUR"),
+            dict(sys_id="2", ip_address="1.1.1.2", fqdn="a2", cost="94", cost_cc="USD"),
+        ]
+
+        columns = ["cost", "cost_cc"]
+        host_source = "ip_address"
+        name_source = "fqdn"
+        compose = {}
+        groups = {}
+        keyed_groups = []
+        strict = False
+        enhanced = False
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            host_source,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+        )
+
+        assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
+        assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        a1_groups = (group.name for group in a1.groups)
+        assert set(a1_groups) == set()
+
+        assert a1.vars == dict(
+            inventory_file=None,
+            inventory_dir=None,
+            ansible_host="1.1.1.1",
+            cost="82",
+            cost_cc="EUR",
+        )
+
+        a2 = inventory_plugin.inventory.get_host("a2")
+        a2_groups = (group.name for group in a2.groups)
+        assert set(a2_groups) == set()
+
+        assert a2.vars == dict(
+            inventory_file=None,
+            inventory_dir=None,
+            ansible_host="1.1.1.2",
+            cost="94",
+            cost_cc="USD",
+        )
+
+    def test_construction_composite_vars(self, inventory_plugin):
+        records = [
+            dict(
+                sys_id="1",
+                ip_address="1.1.1.1",
+                fqdn="a1",
+                cost="82",
+                cost_cc="EUR",
+                sys_updated_on="2021-09-17 02:13:25",
+            ),
+            dict(
+                sys_id="2",
+                ip_address="1.1.1.2",
+                fqdn="a2",
+                cost="94",
+                cost_cc="USD",
+                sys_updated_on="2021-08-30 01:47:03",
+            ),
+        ]
+
+        columns = []
+        host_source = "ip_address"
+        name_source = "fqdn"
+        compose = dict(
+            cost_res='"%s %s" % (cost, cost_cc)',
+            amortized_cost="cost | int // 2",
+            sys_updated_on_date="sys_updated_on | slice(2) | first | join",
+            sys_updated_on_time="sys_updated_on | slice(2) | list | last | join | trim",
+            silently_failed="non_existing + 3",
+        )
+        groups = {}
+        keyed_groups = []
+        strict = False
+        enhanced = False
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            host_source,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+        )
+
+        assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
+        assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        a1_groups = (group.name for group in a1.groups)
+        assert set(a1_groups) == set()
+
+        assert a1.vars == dict(
+            inventory_file=None,
+            inventory_dir=None,
+            ansible_host="1.1.1.1",
+            cost_res="82 EUR",
+            amortized_cost="41",
+            sys_updated_on_date="2021-09-17",
+            sys_updated_on_time="02:13:25",
+        )
+
+        a2 = inventory_plugin.inventory.get_host("a2")
+        a2_groups = (group.name for group in a2.groups)
+        assert set(a2_groups) == set()
+
+        assert a2.vars == dict(
+            inventory_file=None,
+            inventory_dir=None,
+            ansible_host="1.1.1.2",
+            cost_res="94 USD",
+            amortized_cost="47",
+            sys_updated_on_date="2021-08-30",
+            sys_updated_on_time="01:47:03",
+        )
+
+    def test_construction_composite_vars_strict(self, inventory_plugin):
+        records = [
+            dict(sys_id="1", ip_address="1.1.1.1", fqdn="a1"),
+            dict(sys_id="2", ip_address="1.1.1.2", fqdn="a2"),
+        ]
+
+        columns = []
+        host_source = "ip_address"
+        name_source = "fqdn"
+        compose = dict(failed="non_existing + 3")
+        groups = {}
+        keyed_groups = []
+        strict = True
+        enhanced = False
+
+        with pytest.raises(AnsibleError, match="non_existing"):
+            inventory_plugin.fill_constructed(
+                records,
+                columns,
+                host_source,
+                name_source,
+                compose,
+                groups,
+                keyed_groups,
+                strict,
+                enhanced,
+            )
+
+    def test_construction_composed_groups(self, inventory_plugin):
+        records = [
+            dict(sys_id="1", ip_address="1.1.1.1", fqdn="a1"),
+            dict(sys_id="2", ip_address="1.1.1.2", fqdn="a2"),
+        ]
+
+        columns = []
+        host_source = "ip_address"
+        name_source = "fqdn"
+        compose = {}
+        groups = dict(
+            ip1='ip_address == "1.1.1.1"',
+            ip2='ip_address != "1.1.1.1"',
+            cost="cost_usd < 90",  # ignored due to strict = False
+        )
+        keyed_groups = []
+        strict = False
+        enhanced = False
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            host_source,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+        )
+
+        assert set(inventory_plugin.inventory.groups) == set(
+            ("all", "ungrouped", "ip1", "ip2")
+        )
+
+        assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        a1_groups = (group.name for group in a1.groups)
+        assert set(a1_groups) == set(("ip1",))
+
+        assert a1.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+        )
+
+        a2 = inventory_plugin.inventory.get_host("a2")
+        a2_groups = (group.name for group in a2.groups)
+        assert set(a2_groups) == set(("ip2",))
+
+        assert a2.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.2"
+        )
+
+    def test_construction_composed_groups_strict(self, inventory_plugin):
+        records = [
+            dict(sys_id="1", ip_address="1.1.1.1", fqdn="a1"),
+            dict(sys_id="2", ip_address="1.1.1.2", fqdn="a2"),
+        ]
+
+        columns = []
+        host_source = "ip_address"
+        name_source = "fqdn"
+        compose = {}
+        groups = dict(
+            ip1='ip_address == "1.1.1.1"',
+            ip2='ip_address != "1.1.1.1"',
+            cost="cost_usd < 90",
+        )
+        keyed_groups = []
+        strict = True
+        enhanced = False
+
+        with pytest.raises(AnsibleError, match="cost_usd"):
+            inventory_plugin.fill_constructed(
+                records,
+                columns,
+                host_source,
+                name_source,
+                compose,
+                groups,
+                keyed_groups,
+                strict,
+                enhanced,
+            )
+
+    def test_construction_keyed_groups(self, inventory_plugin):
+        records = [
+            dict(sys_id="1", ip_address="1.1.1.1", fqdn="a1", cost_cc="EUR"),
+            dict(sys_id="2", ip_address="1.1.1.2", fqdn="a2", cost_cc="USD"),
+        ]
+
+        columns = []
+        host_source = "ip_address"
+        name_source = "fqdn"
+        compose = {}
+        groups = {}
+        keyed_groups = [
+            dict(
+                key="cost_cc",
+                default_value="EUR",
+                prefix="cc",
+            )
+        ]
+        strict = False
+        enhanced = False
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            host_source,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+        )
+
+        assert set(inventory_plugin.inventory.groups) == set(
+            ("all", "ungrouped", "cc_EUR", "cc_USD")
+        )
+
+        assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        a1_groups = (group.name for group in a1.groups)
+        assert set(a1_groups) == set(("cc_EUR",))
+
+        assert a1.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+        )
+
+        a2 = inventory_plugin.inventory.get_host("a2")
+        a2_groups = (group.name for group in a2.groups)
+        assert set(a2_groups) == set(("cc_USD",))
+
+        assert a2.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.2"
+        )
+
+    def test_construction_keyed_groups_with_parent(self, inventory_plugin):
+        records = [
+            dict(sys_id="1", ip_address="1.1.1.1", fqdn="a1", cost_cc="EUR"),
+            dict(sys_id="2", ip_address="1.1.1.2", fqdn="a2", cost_cc="USD"),
+        ]
+
+        columns = []
+        host_source = "ip_address"
+        name_source = "fqdn"
+        compose = {}
+        groups = {}
+        keyed_groups = [
+            dict(
+                key="cost_cc",
+                default_value="EUR",
+                prefix="cc",
+                parent_group="ip_address",
+            )
+        ]
+        strict = False
+        enhanced = False
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            host_source,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+        )
+
+        assert set(inventory_plugin.inventory.groups) == set(
+            ("all", "ungrouped", "cc_EUR", "cc_USD", "ip_address")
+        )
+
+        assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        a1_groups = (group.name for group in a1.groups)
+        assert set(a1_groups) == set(("cc_EUR", "ip_address"))
+
+        assert a1.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+        )
+
+        a2 = inventory_plugin.inventory.get_host("a2")
+        a2_groups = (group.name for group in a2.groups)
+        assert set(a2_groups) == set(("cc_USD", "ip_address"))
+
+        assert a2.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.2"
+        )
+
+    def test_construction_enhanced(self, inventory_plugin):
+        records = [
+            dict(
+                sys_id="1",
+                ip_address="1.1.1.1",
+                fqdn="a1",
+                relationship_groups=set(("NY-01-01_Rack_contains",)),
+            ),
+            dict(
+                sys_id="2",
+                ip_address="1.1.1.2",
+                fqdn="a2",
+                relationship_groups=set(
+                    ("Storage Area Network 002_Sends_data_to", "OWA-SD-01_Runs_on")
+                ),
+            ),
+        ]
+
+        columns = []
+        host_source = "ip_address"
+        name_source = "fqdn"
+        compose = {}
+        groups = {}
+        keyed_groups = []
+        strict = False
+        enhanced = True
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            host_source,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+        )
+
+        assert set(inventory_plugin.inventory.groups) == set(
+            (
+                "all",
+                "ungrouped",
+                "NY_01_01_Rack_contains",
+                "Storage_Area_Network_002_Sends_data_to",
+                "OWA_SD_01_Runs_on",
+            )
+        )
+
+        assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        a1_groups = (group.name for group in a1.groups)
+        assert set(a1_groups) == set(("NY_01_01_Rack_contains",))
+
+        assert a1.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+        )
+
+        a2 = inventory_plugin.inventory.get_host("a2")
+        a2_groups = (group.name for group in a2.groups)
+        assert set(a2_groups) == set(
+            ("Storage_Area_Network_002_Sends_data_to", "OWA_SD_01_Runs_on")
+        )
+
+        assert a2.vars == dict(
+            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.2"
+        )

@@ -1,0 +1,3 @@
+---
+minor_changes:
+- now - Enhance inventory with additional groups from CMDB relations (https://github.com/ansible-collections/servicenow.itsm/issues/108).
