@@ -60,7 +60,7 @@ options:
   type:
     description:
       - The type of change task.
-      - Default workflow generates tasks in I(type) C(review)
+      - Default workflow generates tasks in I(type) C(review).
       - If the task I(type) is C(implementation), the I(planned_start_date) and I(planned_end_date) values
         must fall within the planned start and end dates specified in the I(change_request).
     choices: [ planning, implementation, testing, review ]
