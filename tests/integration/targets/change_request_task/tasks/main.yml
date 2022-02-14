@@ -1,0 +1,414 @@
+- environment:
+    SN_HOST: "{{ sn_host }}"
+    SN_USERNAME: "{{ sn_username }}"
+    SN_PASSWORD: "{{ sn_password }}"
+
+  block:
+    - name: Retrieve all entries in the change_task table
+      servicenow.itsm.change_request_task_info:
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records != []
+          - result.records | length != 0
+
+
+    - name: Create test change_request for refferencing in change tasks
+      servicenow.itsm.change_request:
+        requested_by: admin
+        state: new
+        type: standard
+        template: Clear BGP sessions on a Cisco router - 1
+        priority: low
+        risk: low
+        impact: low
+      register: change_request_result
+
+    - ansible.builtin.assert:
+        that:
+          - change_request_result is changed
+          - change_request_result.record.state == "new"
+          - change_request_result.record.type == "standard"
+          - change_request_result.record.priority == "low"
+          - change_request_result.record.risk == "low"
+          - change_request_result.record.impact == "low"
+
+
+    - name: Create test change_request_task - check mode
+      servicenow.itsm.change_request_task: &create-change_request_task
+        change_request_number: "{{ change_request_result.record.number }}"
+        type: planning
+        state: pending
+        short_description: "Implement collision avoidance"
+        description: "Implement collision avoidance based on the newly installed TOF sensor arrays."
+        other:
+          approval: approved
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &create-change_request_task-result
+        that:
+          - result is changed
+          - result.record.change_request == change_request_result.record.sys_id
+          - result.record.change_task_type == "planning"
+          - result.record.state == "pending"
+          - result.record.short_description == "Implement collision avoidance"
+          - result.record.description == "Implement collision avoidance based on the newly installed TOF sensor arrays."
+          - result.record.approval == "approved"
+
+
+    - name: Create test change_request_task
+      servicenow.itsm.change_request_task: *create-change_request_task
+      register: test_result
+
+    - set_fact:
+        result: "{{ test_result }}"
+
+    - ansible.builtin.assert: *create-change_request_task-result
+
+
+    - name: Make sure change_request_task exists
+      servicenow.itsm.change_request_task_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].sys_id == test_result.record.sys_id
+          - result.records[0].change_request == change_request_result.record.sys_id
+          - result.records[0].change_task_type == "planning"
+          - result.records[0].state == "pending"
+          - result.records[0].short_description == "Implement collision avoidance"
+          - result.records[0].description == "Implement collision avoidance based on the newly installed TOF sensor arrays."
+          - result.records[0].approval == "approved"
+
+
+    - name: Update change_request_task with same type, state and ID (previously set from its name)
+      servicenow.itsm.change_request_task:
+        number: "{{ test_result.record.number }}"
+        change_request_id: "{{ change_request_result.record.sys_id }}"
+        type: planning
+        state: pending
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Set on hold (should fail since the reason is not set)
+      servicenow.itsm.change_request_task:
+        number: "{{ test_result.record.number }}"
+        on_hold: true
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'on_hold is True but all of the following are missing: hold_reason'"
+
+
+    - name: Set on hold while in state pending (should fail due to on_hold and state value incompatibility)
+      servicenow.itsm.change_request_task:
+        on_hold: true
+        hold_reason: "Not enough resources for the task"
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Cannot put a task in state \"pending\" on hold'"
+
+
+    - name: Update change_request_task - check mode
+      servicenow.itsm.change_request_task: &update-change_request_task
+        number: "{{ test_result.record.number }}"
+        description: "Something changed"
+        state: in_progress
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &update-change_request_task-result
+        that:
+          - result is changed
+          - result.record.short_description == "Implement collision avoidance"
+          - result.record.state == "in_progress"
+          - result.record.description == "Something changed"
+          - result.record.change_task_type == "planning"
+
+
+    - name: Update change_request_task
+      servicenow.itsm.change_request_task: *update-change_request_task
+
+    - ansible.builtin.assert: *update-change_request_task-result
+
+
+    - name: Make sure change_request_task was updated
+      servicenow.itsm.change_request_task_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].short_description == "Implement collision avoidance"
+          - result.records[0].state == "in_progress"
+          - result.records[0].description == "Something changed"
+          - result.records[0].change_task_type == "planning"
+
+
+    - name: Update change_request_task with same params - unchanged
+      servicenow.itsm.change_request_task: *update-change_request_task
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Update change_request_task planned_end_date - check mode
+      servicenow.itsm.change_request_task: &update-change_request_task-planned_end_date
+        number: "{{ test_result.record.number }}"
+        planned_end_date: 2021-07-15 08:00:00
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &update-change_request_task-planned_end_date-result
+        that:
+          - result is changed
+          - result.record.planned_end_date == "2021-07-15T08:00:00"
+
+
+    - name: Update change_request_task planned_end_date
+      servicenow.itsm.change_request_task: *update-change_request_task-planned_end_date
+
+    - ansible.builtin.assert: *update-change_request_task-planned_end_date-result
+
+
+    - name: Make sure planned_end_date of change_request_task was updated
+      servicenow.itsm.change_request_task_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].number == test_result.record.number
+          - result.records[0].planned_end_date == "2021-07-15 08:00:00"
+
+
+    - name: Update change_request_task with same planned_end_date - unchanged
+      servicenow.itsm.change_request_task: *update-change_request_task-planned_end_date
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Put change_request on hold - check mode
+      servicenow.itsm.change_request_task: &update-change_request_task-state-review
+        number: "{{ test_result.record.number }}"
+        on_hold: true
+        hold_reason: "Not enough resources for the task"
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &update-change_request_task-state-result-review
+        that:
+          - result is changed
+          - result.record.on_hold == True
+          - result.record.on_hold_reason == "Not enough resources for the task"
+
+
+    - name: Put change_request on hold
+      servicenow.itsm.change_request_task: *update-change_request_task-state-review
+
+    - ansible.builtin.assert: *update-change_request_task-state-result-review
+
+
+    - name: Make sure the hold state of change_request was updated
+      servicenow.itsm.change_request_task_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].number == test_result.record.number
+          - result.records[0].on_hold == True
+          - result.records[0].on_hold_reason == "Not enough resources for the task"
+
+
+    - name: Update change_request with same hold state - unchanged
+      servicenow.itsm.change_request_task: *update-change_request_task-state-review
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Fail to close the task
+      servicenow.itsm.change_request_task:
+        number: "{{ test_result.record.number }}"
+        state: closed
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'close_code' in result.msg"
+          - "'close_notes' in result.msg"
+
+
+    - name: Update change_request_task state to closed - check mode
+      servicenow.itsm.change_request_task: &update-change_request_task-state-closed
+        number: "{{ test_result.record.number }}"
+        state: closed
+        close_code: successful
+        close_notes: Task done
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &update-change_request_task-state-result-closed
+        that:
+          - result is changed
+          - result.record.state == "closed"
+          - result.record.close_code == "successful"
+          - result.record.close_notes == "Task done"
+
+
+    - name: Update change_request_task state to closed
+      servicenow.itsm.change_request_task: *update-change_request_task-state-closed
+
+    - ansible.builtin.assert: *update-change_request_task-state-result-closed
+
+
+    - name: Get change_request_task info by sysparm query - state and close_notes
+      servicenow.itsm.change_request_task_info:
+        query:
+         - state: = closed
+           close_notes: = Task done
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].state == "closed"
+          - result.records[0].close_notes == "Task done"
+
+
+    - name: Make sure change_request_task state was updated and is in closed state
+      servicenow.itsm.change_request_task_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].number == test_result.record.number
+          - result.records[0].state == "closed"
+          - result.records[0].close_code == "successful"
+          - result.records[0].close_notes == "Task done"
+
+
+    - name: Get specific change request task info by sysparm query
+      servicenow.itsm.change_request_task_info:
+        query:
+         - number: = {{ test_result.record.number }}
+           state: = closed
+           close_code: = successful
+           close_notes: = Task done
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 1
+          - result.records[0].number == test_result.record.number
+          - result.records[0].state == "closed"
+          - result.records[0].close_code == "successful"
+          - result.records[0].close_notes == "Task done"
+
+
+    - name: Update change_request_task with same state - unchanged
+      servicenow.itsm.change_request_task: *update-change_request_task-state-closed
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Get change_request_task info by sysparm query - short_description
+      servicenow.itsm.change_request_task_info:
+        query:
+          - short_description: LIKE Oracle
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - "'Oracle' in result.records[0].short_description"
+
+
+    - name: Delete change_request_task - check mode
+      servicenow.itsm.change_request_task: &delete-change_request_task
+        number: "{{ test_result.record.number }}"
+        state: absent
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &delete-change_request_task-result
+        that:
+          - result is changed
+
+
+    - name: Delete change_request_task
+      servicenow.itsm.change_request_task: *delete-change_request_task
+
+    - ansible.builtin.assert: *delete-change_request_task-result
+
+
+    - name: Make sure change_request_task is absent
+      servicenow.itsm.change_request_task_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 0
+
+
+    - name: Delete change_request_task - unchanged
+      servicenow.itsm.change_request_task: *delete-change_request_task
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+
+    - name: Test bad parameter combinator (number + query)
+      servicenow.itsm.change_request_task_info:
+        number: "{{ test_result.record.number }}"
+        query:
+         - short_description: LIKE Oracle
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'parameters are mutually exclusive: number|query' in result.msg"
+
+
+    - name: Test invalid operator detection
+      servicenow.itsm.change_request_task_info:
+        query:
+         - short_description: LIKEE Oracle
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Invalid condition' in result.msg"
