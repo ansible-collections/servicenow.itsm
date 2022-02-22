@@ -25,7 +25,7 @@ description:
   - For more information, refer to the ServiceNow problem management documentation at
     U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html).
 
-version_added: 1.0.0
+version_added: 1.3.0
 
 extends_documentation_fragment:
   - servicenow.itsm.instance
