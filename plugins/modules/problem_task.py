@@ -21,7 +21,7 @@ author:
 short_description: Manage ServiceNow problem tasks
 
 description:
-  - Create, delete or update a ServiceNow problem tasks
+  - Create, delete or update ServiceNow problem tasks.
   - For more information, refer to the ServiceNow problem management documentation at
     U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html).
 
