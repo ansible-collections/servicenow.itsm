@@ -110,3 +110,9 @@ def find_change_request(table_client, change_request_number):
 
 def find_configuration_item(table_client, item_name):
     return table_client.get_record("cmdb_ci", dict(name=item_name), must_exist=True)
+
+
+def find_problem(table_client, problem_number):
+    return table_client.get_record(
+        "problem", dict(number=problem_number), must_exist=True
+    )

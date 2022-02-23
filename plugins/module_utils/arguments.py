@@ -63,6 +63,15 @@ PROBLEM_MAPPING_SPEC = dict(
     ),
 )
 
+PROBLEM_TASK_MAPPING_SPEC = dict(
+    type="dict",
+    required=False,
+    options=dict(
+        state=dict(type="dict"),
+        priority=dict(type="dict"),
+    ),
+)
+
 SHARED_SPECS = dict(
     instance=dict(
         type="dict",
@@ -139,6 +148,7 @@ SHARED_SPECS = dict(
     change_request_task_mapping=CHANGE_REQUEST_TASK_MAPPING_SPEC,
     configuration_item_mapping=CONFIGURATION_ITEM_MAPPING_SPEC,
     problem_mapping=PROBLEM_MAPPING_SPEC,
+    problem_task_mapping=PROBLEM_TASK_MAPPING_SPEC,
 )
 
 
