@@ -1,4 +1,5 @@
 coverage==4.5.4
+pytest==6.2.0
 flake8
 selinux_please_lie_to_me
 mock ; python_version < '3.5'
