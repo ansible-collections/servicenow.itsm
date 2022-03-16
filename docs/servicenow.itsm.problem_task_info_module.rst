@@ -1,14 +1,14 @@
-.. _servicenow.itsm.problem_info_module:
+.. _servicenow.itsm.problem_task_info_module:
 
 
-****************************
-servicenow.itsm.problem_info
-****************************
+*********************************
+servicenow.itsm.problem_task_info
+*********************************
 
-**List ServiceNow problems**
+**List ServiceNow problem tasks**
 
 
-Version added: 1.0.0
+Version added: 1.3.0
 
 .. contents::
    :local:
@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Retrieve information about ServiceNow problems.
+- Retrieve information about ServiceNow problem tasks.
 - For more information, refer to the ServiceNow problem management documentation at https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html.
 
 
@@ -256,12 +256,12 @@ See Also
 
 .. seealso::
 
-   :ref:`servicenow.itsm.problem_module`
-      The official documentation on the **servicenow.itsm.problem** module.
    :ref:`servicenow.itsm.problem_task_module`
       The official documentation on the **servicenow.itsm.problem_task** module.
-   :ref:`servicenow.itsm.problem_task_info_module`
-      The official documentation on the **servicenow.itsm.problem_task_info** module.
+   :ref:`servicenow.itsm.problem_module`
+      The official documentation on the **servicenow.itsm.problem** module.
+   :ref:`servicenow.itsm.problem_info_module`
+      The official documentation on the **servicenow.itsm.problem_info** module.
 
 
 Examples
@@ -269,28 +269,28 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Retrieve all problems
-      servicenow.itsm.problem_info:
+    - name: Retrieve all problem tasks
+      servicenow.itsm.problem_task_info:
       register: result
 
-    - name: Retrieve a specific problem by its sys_id
-      servicenow.itsm.problem_info:
+    - name: Retrieve a specific problem task by its sys_id
+      servicenow.itsm.problem_task_info:
         sys_id: 471bfbc7a9fe198101e77a3e10e5d47f
       register: result
 
-    - name: Retrieve problems by number
-      servicenow.itsm.problem_info:
-        number: PRB0007601
+    - name: Retrieve problem tasks by number
+      servicenow.itsm.problem_task_info:
+        number: PTASK0007601
       register: result
 
-    - name: Retrieve problems that do not contain SAP in its short description
-      servicenow.itsm.problem_info:
+    - name: Retrieve problem tasks that do not contain SAP in its short description
+      servicenow.itsm.problem_task_info:
         query:
           - short_description: NOT LIKE SAP
       register: result
 
-    - name: Retrieve new problems assigned to abel.tuter or bertie.luby
-      servicenow.itsm.problem_info:
+    - name: Retrieve new problem tasks assigned to abel.tuter or bertie.luby
+      servicenow.itsm.problem_task_info:
         query:
           - state: = new
             assigned_to: = abel.tuter
@@ -325,7 +325,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                             <div>A list of problem records.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;active&#x27;: &#x27;true&#x27;, &#x27;activity_due&#x27;: &#x27;&#x27;, &#x27;additional_assignee_list&#x27;: &#x27;&#x27;, &#x27;approval&#x27;: &#x27;not requested&#x27;, &#x27;approval_history&#x27;: &#x27;&#x27;, &#x27;approval_set&#x27;: &#x27;&#x27;, &#x27;assigned_to&#x27;: &#x27;73ab3f173b331300ad3cc9bb34efc4df&#x27;, &#x27;assignment_group&#x27;: &#x27;&#x27;, &#x27;attachments&#x27;: [{&#x27;average_image_color&#x27;: &#x27;&#x27;, &#x27;chunk_size_bytes&#x27;: &#x27;700000&#x27;, &#x27;compressed&#x27;: &#x27;true&#x27;, &#x27;content_type&#x27;: &#x27;text/plain&#x27;, &#x27;download_link&#x27;: &#x27;https://www.example.com/api/now/attachment/31cdf4d50706301022f9ffa08c1ed07f/file&#x27;, &#x27;file_name&#x27;: &#x27;sample_file1.txt&#x27;, &#x27;hash&#x27;: &#x27;6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e&#x27;, &#x27;image_height&#x27;: &#x27;&#x27;, &#x27;image_width&#x27;: &#x27;&#x27;, &#x27;size_bytes&#x27;: &#x27;210&#x27;, &#x27;size_compressed&#x27;: &#x27;206&#x27;, &#x27;state&#x27;: &#x27;pending&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2021-08-17 11:19:49&#x27;, &#x27;sys_id&#x27;: &#x27;31cdf4d50706301022f9ffa08c1ed07f&#x27;, &#x27;sys_mod_count&#x27;: &#x27;0&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;admin&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2021-08-17 11:19:49&#x27;, &#x27;table_name&#x27;: &#x27;problem&#x27;, &#x27;table_sys_id&#x27;: &#x27;6dcdb4d50706301022f9ffa08c1ed0fb&#x27;}], &#x27;business_duration&#x27;: &#x27;&#x27;, &#x27;business_service&#x27;: &#x27;&#x27;, &#x27;calendar_duration&#x27;: &#x27;&#x27;, &#x27;category&#x27;: &#x27;software&#x27;, &#x27;cause_notes&#x27;: &#x27;&#x27;, &#x27;close_notes&#x27;: &#x27;&#x27;, &#x27;closed_at&#x27;: &#x27;&#x27;, &#x27;closed_by&#x27;: &#x27;&#x27;, &#x27;cmdb_ci&#x27;: &#x27;27d32778c0a8000b00db970eeaa60f16&#x27;, &#x27;comments&#x27;: &#x27;&#x27;, &#x27;comments_and_work_notes&#x27;: &#x27;&#x27;, &#x27;company&#x27;: &#x27;&#x27;, &#x27;confirmed_at&#x27;: &#x27;&#x27;, &#x27;confirmed_by&#x27;: &#x27;&#x27;, &#x27;contact_type&#x27;: &#x27;&#x27;, &#x27;contract&#x27;: &#x27;&#x27;, &#x27;correlation_display&#x27;: &#x27;&#x27;, &#x27;correlation_id&#x27;: &#x27;&#x27;, &#x27;delivery_plan&#x27;: &#x27;&#x27;, &#x27;delivery_task&#x27;: &#x27;&#x27;, &#x27;description&#x27;: &#x27;Unable to send or receive emails.&#x27;, &#x27;due_date&#x27;: &#x27;&#x27;, &#x27;duplicate_of&#x27;: &#x27;&#x27;, &#x27;escalation&#x27;: &#x27;0&#x27;, &#x27;expected_start&#x27;: &#x27;&#x27;, &#x27;first_reported_by_task&#x27;: &#x27;&#x27;, &#x27;fix_communicated_at&#x27;: &#x27;&#x27;, &#x27;fix_communicated_by&#x27;: &#x27;&#x27;, &#x27;fix_notes&#x27;: &#x27;&#x27;, &#x27;follow_up&#x27;: &#x27;&#x27;, &#x27;group_list&#x27;: &#x27;&#x27;, &#x27;impact&#x27;: &#x27;low&#x27;, &#x27;knowledge&#x27;: &#x27;false&#x27;, &#x27;known_error&#x27;: &#x27;false&#x27;, &#x27;location&#x27;: &#x27;&#x27;, &#x27;made_sla&#x27;: &#x27;true&#x27;, &#x27;major_problem&#x27;: &#x27;false&#x27;, &#x27;number&#x27;: &#x27;PRB0007601&#x27;, &#x27;opened_at&#x27;: &#x27;2018-08-30 08:08:39&#x27;, &#x27;opened_by&#x27;: &#x27;6816f79cc0a8016401c5a33be04be441&#x27;, &#x27;order&#x27;: &#x27;&#x27;, &#x27;parent&#x27;: &#x27;&#x27;, &#x27;priority&#x27;: &#x27;5&#x27;, &#x27;problem_state&#x27;: &#x27;new&#x27;, &#x27;reassignment_count&#x27;: &#x27;0&#x27;, &#x27;related_incidents&#x27;: &#x27;0&#x27;, &#x27;reopen_count&#x27;: &#x27;0&#x27;, &#x27;reopened_at&#x27;: &#x27;&#x27;, &#x27;reopened_by&#x27;: &#x27;&#x27;, &#x27;resolution_code&#x27;: &#x27;&#x27;, &#x27;resolved_at&#x27;: &#x27;&#x27;, &#x27;resolved_by&#x27;: &#x27;&#x27;, &#x27;review_outcome&#x27;: &#x27;&#x27;, &#x27;rfc&#x27;: &#x27;&#x27;, &#x27;route_reason&#x27;: &#x27;&#x27;, &#x27;service_offering&#x27;: &#x27;&#x27;, &#x27;short_description&#x27;: &#x27;Unable to send or receive emails.&#x27;, &#x27;sla_due&#x27;: &#x27;&#x27;, &#x27;state&#x27;: &#x27;new&#x27;, &#x27;subcategory&#x27;: &#x27;email&#x27;, &#x27;sys_class_name&#x27;: &#x27;problem&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2018-08-30 08:09:05&#x27;, &#x27;sys_domain&#x27;: &#x27;global&#x27;, &#x27;sys_domain_path&#x27;: &#x27;/&#x27;, &#x27;sys_id&#x27;: &#x27;62304320731823002728660c4cf6a7e8&#x27;, &#x27;sys_mod_count&#x27;: &#x27;1&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;admin&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2018-12-12 07:16:57&#x27;, &#x27;task_effective_number&#x27;: &#x27;PRB0007601&#x27;, &#x27;time_worked&#x27;: &#x27;&#x27;, &#x27;universal_request&#x27;: &#x27;&#x27;, &#x27;upon_approval&#x27;: &#x27;proceed&#x27;, &#x27;upon_reject&#x27;: &#x27;cancel&#x27;, &#x27;urgency&#x27;: &#x27;low&#x27;, &#x27;user_input&#x27;: &#x27;&#x27;, &#x27;watch_list&#x27;: &#x27;&#x27;, &#x27;work_end&#x27;: &#x27;&#x27;, &#x27;work_notes&#x27;: &#x27;&#x27;, &#x27;work_notes_list&#x27;: &#x27;&#x27;, &#x27;work_start&#x27;: &#x27;&#x27;, &#x27;workaround&#x27;: &#x27;&#x27;, &#x27;workaround_applied&#x27;: &#x27;false&#x27;, &#x27;workaround_communicated_at&#x27;: &#x27;&#x27;, &#x27;workaround_communicated_by&#x27;: &#x27;&#x27;}]</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;active&#x27;: &#x27;true&#x27;, &#x27;activity_due&#x27;: &#x27;&#x27;, &#x27;additional_assignee_list&#x27;: &#x27;&#x27;, &#x27;approval&#x27;: &#x27;not requested&#x27;, &#x27;approval_history&#x27;: &#x27;&#x27;, &#x27;approval_set&#x27;: &#x27;&#x27;, &#x27;assigned_to&#x27;: &#x27;7e3bbb173b331300ad3cc9bb34efc4a8&#x27;, &#x27;assignment_group&#x27;: &#x27;&#x27;, &#x27;business_duration&#x27;: &#x27;&#x27;, &#x27;business_service&#x27;: &#x27;&#x27;, &#x27;calendar_duration&#x27;: &#x27;&#x27;, &#x27;cause_code&#x27;: &#x27;&#x27;, &#x27;cause_notes&#x27;: &#x27;&#x27;, &#x27;close_code&#x27;: &#x27;&#x27;, &#x27;close_notes&#x27;: &#x27;&#x27;, &#x27;closed_at&#x27;: &#x27;&#x27;, &#x27;closed_by&#x27;: &#x27;&#x27;, &#x27;cmdb_ci&#x27;: &#x27;26da329f0a0a0bb400f69d8159bc753d&#x27;, &#x27;comments&#x27;: &#x27;&#x27;, &#x27;comments_and_work_notes&#x27;: &#x27;&#x27;, &#x27;company&#x27;: &#x27;&#x27;, &#x27;contact_type&#x27;: &#x27;&#x27;, &#x27;contract&#x27;: &#x27;&#x27;, &#x27;correlation_display&#x27;: &#x27;&#x27;, &#x27;correlation_id&#x27;: &#x27;&#x27;, &#x27;delivery_plan&#x27;: &#x27;&#x27;, &#x27;delivery_task&#x27;: &#x27;&#x27;, &#x27;description&#x27;: &#x27;&#x27;, &#x27;due_date&#x27;: &#x27;&#x27;, &#x27;escalation&#x27;: &#x27;0&#x27;, &#x27;expected_start&#x27;: &#x27;&#x27;, &#x27;fix_notes&#x27;: &#x27;&#x27;, &#x27;follow_up&#x27;: &#x27;&#x27;, &#x27;group_list&#x27;: &#x27;&#x27;, &#x27;impact&#x27;: &#x27;low&#x27;, &#x27;knowledge&#x27;: &#x27;false&#x27;, &#x27;location&#x27;: &#x27;&#x27;, &#x27;made_sla&#x27;: &#x27;true&#x27;, &#x27;number&#x27;: &#x27;PTASK0010005&#x27;, &#x27;opened_at&#x27;: &#x27;2020-12-17 10:21:49&#x27;, &#x27;opened_by&#x27;: &#x27;d3dbbf173b331300ad3cc9bb34efc466&#x27;, &#x27;order&#x27;: &#x27;&#x27;, &#x27;other_reason&#x27;: &#x27;&#x27;, &#x27;parent&#x27;: &#x27;&#x27;, &#x27;priority&#x27;: &#x27;2&#x27;, &#x27;problem&#x27;: &#x27;d7296d02c0a801670085e737da016e70&#x27;, &#x27;problem_task_type&#x27;: &#x27;rca&#x27;, &#x27;reassignment_count&#x27;: &#x27;0&#x27;, &#x27;reopen_count&#x27;: &#x27;1&#x27;, &#x27;reopened_at&#x27;: &#x27;2020-12-17 10:23:10&#x27;, &#x27;reopened_by&#x27;: &#x27;6816f79cc0a8016401c5a33be04be441&#x27;, &#x27;route_reason&#x27;: &#x27;&#x27;, &#x27;service_offering&#x27;: &#x27;&#x27;, &#x27;short_description&#x27;: &#x27;SAP outage, please investigate the cause&#x27;, &#x27;sla_due&#x27;: &#x27;&#x27;, &#x27;started_at&#x27;: &#x27;2020-12-17 10:23:14&#x27;, &#x27;started_by&#x27;: &#x27;6816f79cc0a8016401c5a33be04be441&#x27;, &#x27;state&#x27;: &#x27;154&#x27;, &#x27;sys_class_name&#x27;: &#x27;problem_task&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2020-12-17 10:22:25&#x27;, &#x27;sys_domain&#x27;: &#x27;global&#x27;, &#x27;sys_domain_path&#x27;: &#x27;/&#x27;, &#x27;sys_id&#x27;: &#x27;5f6bec57531063004247ddeeff7b1216&#x27;, &#x27;sys_mod_count&#x27;: &#x27;5&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;admin&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2020-12-17 10:27:14&#x27;, &#x27;task_effective_number&#x27;: &#x27;PTASK0010005&#x27;, &#x27;time_worked&#x27;: &#x27;&#x27;, &#x27;universal_request&#x27;: &#x27;&#x27;, &#x27;upon_approval&#x27;: &#x27;proceed&#x27;, &#x27;upon_reject&#x27;: &#x27;cancel&#x27;, &#x27;urgency&#x27;: &#x27;low&#x27;, &#x27;user_input&#x27;: &#x27;&#x27;, &#x27;vendor&#x27;: &#x27;&#x27;, &#x27;watch_list&#x27;: &#x27;&#x27;, &#x27;work_end&#x27;: &#x27;&#x27;, &#x27;work_notes&#x27;: &#x27;&#x27;, &#x27;work_notes_list&#x27;: &#x27;&#x27;, &#x27;work_start&#x27;: &#x27;&#x27;, &#x27;workaround&#x27;: &#x27;&#x27;}]</div>
                 </td>
             </tr>
     </table>
@@ -342,4 +342,3 @@ Authors
 - Manca Bizjak (@mancabizjak)
 - Miha Dolinar (@mdolin)
 - Tadej Borovsak (@tadeboro)
-- Matej Pevec (@mysteriouswolf)

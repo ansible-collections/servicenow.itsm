@@ -348,7 +348,7 @@ def build_payload(module, table_client):
         # If we set 'state' field directly when modifying an existing record,
         # ServiceNow API sometimes ignores the desired state.
         # This happens for state transitions other than new -> assessment.
-        # Using 'problem_state' instead of 'state' resovles the issue.
+        # Using 'problem_state' instead of 'state' resolves the issue.
         payload["problem_state"] = module.params["state"]
     if module.params["assigned_to"]:
         user = table.find_user(table_client, module.params["assigned_to"])

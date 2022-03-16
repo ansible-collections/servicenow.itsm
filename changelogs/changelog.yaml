@@ -84,3 +84,36 @@ releases:
       name: configuration_item_batch
       namespace: ''
     release_date: '2021-09-08'
+  1.3.0:
+    changes:
+      minor_changes:
+      - client - Changed the base URL path of the HTTP client for all requests from
+        `/api/now` to `/`
+      - now - Enhance inventory with additional groups from CMDB relations (https://github.com/ansible-collections/servicenow.itsm/issues/108).
+      - table.py - add change_request and configuration item search options.
+      release_summary: 'This is the minor release of the ``servicenow.itsm`` collection.
+
+        This changelog contains all changes to the modules in this collection that
+
+        have been added after the release of ``servicenow.itsm`` 1.2.0.
+
+        '
+    fragments:
+    - change_request_task.yaml
+    - client-change-base-path.yaml
+    - enhanced-inventory.yaml
+    - 1.3.yml
+    modules:
+    - description: Manage ServiceNow change request tasks
+      name: change_request_task
+      namespace: ''
+    - description: List ServiceNow change request tasks
+      name: change_request_task_info
+      namespace: ''
+    - description: Manage ServiceNow problem tasks
+      name: problem_task
+      namespace: ''
+    - description: List ServiceNow problem tasks
+      name: problem_task_info
+      namespace: ''
+    release_date: '2022-03-18'

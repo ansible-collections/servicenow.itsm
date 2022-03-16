@@ -5,6 +5,32 @@ servicenow.itsm Release Notes
 .. contents:: Topics
 
 
+v1.3.0
+======
+
+Release Summary
+---------------
+
+This is the minor release of the ``servicenow.itsm`` collection.
+This changelog contains all changes to the modules in this collection that
+have been added after the release of ``servicenow.itsm`` 1.2.0.
+
+
+Minor Changes
+-------------
+
+- client - Changed the base URL path of the HTTP client for all requests from `/api/now` to `/`
+- now - Enhance inventory with additional groups from CMDB relations (https://github.com/ansible-collections/servicenow.itsm/issues/108).
+- table.py - add change_request and configuration item search options.
+
+New Modules
+-----------
+
+- servicenow.itsm.change_request_task - Manage ServiceNow change request tasks
+- servicenow.itsm.change_request_task_info - List ServiceNow change request tasks
+- servicenow.itsm.problem_task - Manage ServiceNow problem tasks
+- servicenow.itsm.problem_task_info - List ServiceNow problem tasks
+
 v1.2.0
 ======
 
