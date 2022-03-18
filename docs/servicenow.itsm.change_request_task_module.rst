@@ -1,14 +1,14 @@
-.. _servicenow.itsm.configuration_item_module:
+.. _servicenow.itsm.change_request_task_module:
 
 
-**********************************
-servicenow.itsm.configuration_item
-**********************************
+***********************************
+servicenow.itsm.change_request_task
+***********************************
 
-**Manage ServiceNow configuration items**
+**Manage ServiceNow change request tasks**
 
 
-Version added: 1.0.0
+Version added: 1.3.0
 
 .. contents::
    :local:
@@ -17,8 +17,8 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Create, delete or update a ServiceNow configuration item.
-- For more information, refer to the ServiceNow configuration management documentation at https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html.
+- Create, delete or update a ServiceNow change request tasks.
+- For more information, refer to the ServiceNow change management documentation at https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html.
 
 
 
@@ -37,22 +37,6 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>asset_tag</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Asset tag of the asset logically related to this configuration item.</div>
-                        <div>Read more about the relationship between configuration items and assets at <a href='https://docs.servicenow.com/bundle/paris-it-asset-management/page/product/asset-management/concept/c_ManagingAssets.html'>https://docs.servicenow.com/bundle/paris-it-asset-management/page/product/asset-management/concept/c_ManagingAssets.html</a>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>assigned_to</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -62,32 +46,13 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A person to whom this configuration item is assigned to.</div>
-                        <div>Expected value for <em>assigned_to</em> is user id (usually in the form of <code>first_name.last_name</code>).</div>
+                        <div>The user that the change task is assigned to.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>attachments</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=dictionary</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.2.0 of servicenow.itsm</div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>ServiceNow attachments.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>name</b>
+                    <b>assignment_group</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -96,64 +61,46 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Name of the file to be uploaded without the file extension.</div>
-                        <div>If not specified, the module will use <em>path</em>&#x27;s base name.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>path</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Path to the file to be uploaded.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>type</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>MIME type of the file to be attached.</div>
-                        <div>If not specified, the module will try to guess the file&#x27;s type from its extension.</div>
-                </td>
-            </tr>
-
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>category</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Category of the configuration item, for instance <code>Hardware</code>.</div>
+                        <div>The group that the change task is assigned to.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>configuration_item_mapping</b>
+                    <b>change_request_id</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div><em>sys_id</em> of the change request this task belongs to.</div>
+                        <div>Mutually exclusive with <em>change_request_number</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>change_request_number</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div><em>number</em> of the change request this task belongs to.</div>
+                        <div>Note that contrary to <em>change_request_id</em>, change request number may not uniquely identify a record. In case there are more change requests with the same number, the module fails and does nothing.</div>
+                        <div>Mutually exclusive with <em>change_request_id</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>change_request_task_mapping</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">dictionary</span>
@@ -163,15 +110,14 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>User mappings for <em>Configuration item</em> object.</div>
-                        <div>Where mapping is not set, the default will be used.</div>
+                        <div>User mapping for <em>Change request task</em> object, where user can override Choice Lists values for objects.</div>
                 </td>
             </tr>
                                 <tr>
                     <td class="elbow-placeholder"></td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>environment</b>
+                    <b>state</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">dictionary</span>
@@ -180,47 +126,15 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The environment to which this configuration item belongs.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>install_status</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The functional status of the configuration item.</div>
-                        <div>Special value that can not be overridden is <code>absent</code>, which would remove a configuration item from ServiceNow.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>operational_status</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The operational status of the configuration item.</div>
+                        <div>The state of the change request task.</div>
+                        <div>Cannot be changed to <code>pending</code> when <em>on_hold</em> is <code>true</code> (module fails and does nothing).</div>
                 </td>
             </tr>
 
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>environment</b>
+                    <b>close_code</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -228,40 +142,95 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>development</li>
-                                    <li>production</li>
-                                    <li>test</li>
+                                    <li>successful</li>
+                                    <li>successful_issues</li>
+                                    <li>unsuccessful</li>
                         </ul>
                 </td>
                 <td>
-                        <div>The environment to which this configuration item belongs.</div>
+                        <div>Provide information on how the change task was resolved.</div>
+                        <div>The change task must have this parameter set prior to transitioning to the <code>closed</code> state.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>install_status</b>
+                    <b>close_notes</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>implementing</li>
-                                    <li>installed</li>
-                                    <li>on_order</li>
-                                    <li>in_maintenance</li>
-                                    <li>pending_install</li>
-                                    <li>pending_repair</li>
-                                    <li>in_stock</li>
-                                    <li>retired</li>
-                                    <li>stolen</li>
-                                    <li>absent</li>
-                        </ul>
                 </td>
                 <td>
-                        <div>The functional status of the configuration item.</div>
+                        <div>Resolution notes added by the user who closed the change task.</div>
+                        <div>The change task must have this parameter set prior to transitioning to the <code>closed</code> state.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>configuration_item</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The configuration item (CI) or service name that the change task applies to.</div>
+                        <div>Note that contrary to <em>configuration_item_id</em>, configuration item names may not uniquely identify a record. In case there are more configuration items with the same name, the module fails and does nothing.</div>
+                        <div>Mutually exclusive with <em>configuration_item_id</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>configuration_item_id</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The configuration item (CI) or service ID that the change task applies to.</div>
+                        <div>Mutually exclusive with <em>configuration_item</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>description</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>A detailed description of the task.</div>
+                        <div>This field has to be set either in the record or here.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>hold_reason</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Reason why change task is on hold.</div>
+                        <div>Required if change task&#x27;s <em>on_hold</em> value will be <code>true</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -431,7 +400,7 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>ip_address</b>
+                    <b>number</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -440,63 +409,28 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Primary IP address used by the configuration item.</div>
+                        <div>Number of the record to operate on.</div>
+                        <div>Note that contrary to <em>sys_id</em>, <em>number</em> may not uniquely identify a record.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>mac_address</b>
+                    <b>on_hold</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>MAC address of the configuration item.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>name</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The name of the configuration item.</div>
-                        <div>Required if the configuration item does not yet exist.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>operational_status</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">boolean</span>
                     </div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>operational</li>
-                                    <li>non_operational</li>
-                                    <li>repair_in_progress</li>
-                                    <li>dr_standby</li>
-                                    <li>ready</li>
-                                    <li>retired</li>
-                                    <li>pipeline</li>
-                                    <li>catalog</li>
+                                    <li>no</li>
+                                    <li>yes</li>
                         </ul>
                 </td>
                 <td>
-                        <div>The operational status of the configuration item.</div>
+                        <div>A change task cannot be put on hold when <em>state</em> is <code>pending</code>, <code>canceled</code>, or <code>closed</code> (module fails and does nothing).</div>
+                        <div>Provide an On hold reason if a change task is placed on hold.</div>
                 </td>
             </tr>
             <tr>
@@ -511,15 +445,14 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Any of the remaining configuration parameters.</div>
-                        <div>For the attributes of the base <code>cmdb_ci</code> table, refer to the ServiceNow documentation on <a href='https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html'>https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html</a>.</div>
-                        <div>For the attributes of configuration items specific to <em>sys_class_name</em>, please consult the relevant ServiceNow documentation.</div>
+                        <div>Optional remaining parameters.</div>
+                        <div>For more information on optional parameters, refer to the ServiceNow change task documentation at <a href='https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/task/create-a-change-task.html'>https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/task/create-a-change-task.html</a>.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>serial_number</b>
+                    <b>planned_end_date</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -528,7 +461,22 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Serial number of the configuration item.</div>
+                        <div>The date the change task is planned to be completed.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>planned_start_date</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The date you plan to begin working on the task.</div>
                 </td>
             </tr>
             <tr>
@@ -543,7 +491,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Short description of the configuration item.</div>
+                        <div>A summary of the task.</div>
+                        <div>This field has to be set either in the record or here.</div>
                 </td>
             </tr>
             <tr>
@@ -557,30 +506,17 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
+                                    <li>pending</li>
+                                    <li>open</li>
+                                    <li>in_progress</li>
+                                    <li>closed</li>
+                                    <li>canceled</li>
                                     <li>absent</li>
                         </ul>
                 </td>
                 <td>
-                        <div>State of the configuration item.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>sys_class_name</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>ServiceNow configuration item class.</div>
-                        <div>The value of this parameter should point to a ServiceNow CMDB configuration item table, for instance <code>cmdb_ci_server</code>.</div>
-                        <div>For a list of valid CMDB tables, refer to ServiceNow documentation on <a href='https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-tables-details.html'>https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-tables-details.html</a>.</div>
-                        <div>If this parameter is unset when a new configuration item needs to be created, the default value <code>cmdb_ci</code> will be used.</div>
+                        <div>The state of the change request task.</div>
+                        <div>Cannot be changed to <code>pending</code> when <em>on_hold</em> is <code>true</code> (module fails and does nothing).</div>
                 </td>
             </tr>
             <tr>
@@ -598,6 +534,29 @@ Parameters
                         <div>Unique identifier of the record to operate on.</div>
                 </td>
             </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>type</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>planning</li>
+                                    <li>implementation</li>
+                                    <li>testing</li>
+                                    <li>review</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>The type of change task.</div>
+                        <div>Default workflow generates tasks in <em>type</em> <code>review</code>.</div>
+                        <div>If the task <em>type</em> is <code>implementation</code>, the <em>planned_start_date</em> and <em>planned_end_date</em> values must fall within the planned start and end dates specified in the <em>change_request</em>.</div>
+                </td>
+            </tr>
     </table>
     <br/>
 
@@ -608,8 +567,8 @@ See Also
 
 .. seealso::
 
-   :ref:`servicenow.itsm.configuration_item_info_module`
-      The official documentation on the **servicenow.itsm.configuration_item_info** module.
+   :ref:`servicenow.itsm.change_request_task_info_module`
+      The official documentation on the **servicenow.itsm.change_request_task_info** module.
 
 
 Examples
@@ -617,70 +576,42 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Create a configuration item
-      servicenow.itsm.configuration_item:
-        name: HPE ProLiant BL465C G7
-        short_description: HPE ProLiant Server G7
-        serial_number: ECE-164-E10834-NO
-        asset_tag: P1000613
-        sys_class_name: cmdb_ci_server
-        assigned_to: some.user
-        environment: production
-        category: Hardware
-        attachments:
-          - path: path/to/attachment.txt
+    - name: Create a change task
+      servicenow.itsm.change_request_task:
+        configuration_item: Rogue Squadron Launcher
+        change_request_number: CHG0000001
+        type: planning
+        state: open
+        assigned_to: fred.luddy
+        assignment_group: robot.embedded
+        short_description: Implement collision avoidance
+        description: "Implement collision avoidance based on the newly installed TOF sensor arrays."
+        on_hold: true
+        hold_reason: "Waiting for a report from the hardware team"
+        planned_start_date: 2021-07-15 08:00:00
+        planned_end_date: 2021-07-21 16:00:00
         other:
-          model_number: BL465C G7
-      register: server
+          approval: approved
 
-    - name: Update a configuration item
-      servicenow.itsm.configuration_item:
-        sys_id: "{{ server.record.sys_id }}"
-        install_status: in_maintenance
-        operational_status: repair_in_progress
-        other:
-          fault_count: 1
-          classification: Development
+    - name: Change state of the change task
+      servicenow.itsm.change_request_task:
+        state: in_progress
+        on_hold: false
+        number: CTASK0000001
 
-    - name: Delete a configuration item
-      servicenow.itsm.configuration_item:
-        sys_id: "{{ server.record.sys_id }}"
+    - name: Close a change task
+      servicenow.itsm.change_request_task:
+        state: closed
+        close_code: "successful"
+        close_notes: "Closed"
+        number: CTASK0000001
+
+    - name: Delete a change task
+      servicenow.itsm.change_request_task:
         state: absent
+        number: CTASK0000001
 
 
-
-Return Values
--------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
-
-.. raw:: html
-
-    <table border=0 cellpadding=0 class="documentation-table">
-        <tr>
-            <th colspan="1">Key</th>
-            <th>Returned</th>
-            <th width="100%">Description</th>
-        </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>record</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>success</td>
-                <td>
-                            <div>The configuration item record.</div>
-                            <div>Note that the fields of the returned record depend on the configuration item&#x27;s <em>sys_class_name</em>.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;asset&#x27;: &#x27;05a9ec0d3790200044e0bfc8bcbe5dc2&#x27;, &#x27;asset_tag&#x27;: &#x27;P1000440&#x27;, &#x27;assigned&#x27;: &#x27;2019-02-28 08:00:00&#x27;, &#x27;assigned_to&#x27;: &#x27;8a826bf03710200044e0bfc8bcbe5d96&#x27;, &#x27;assignment_group&#x27;: &#x27;&#x27;, &#x27;attachments&#x27;: [{&#x27;average_image_color&#x27;: &#x27;&#x27;, &#x27;chunk_size_bytes&#x27;: &#x27;700000&#x27;, &#x27;compressed&#x27;: &#x27;true&#x27;, &#x27;content_type&#x27;: &#x27;text/plain&#x27;, &#x27;download_link&#x27;: &#x27;https://www.example.com/api/now/attachment/919d34d50706301022f9ffa08c1ed047/file&#x27;, &#x27;file_name&#x27;: &#x27;sample_file1.txt&#x27;, &#x27;hash&#x27;: &#x27;6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e&#x27;, &#x27;image_height&#x27;: &#x27;&#x27;, &#x27;image_width&#x27;: &#x27;&#x27;, &#x27;size_bytes&#x27;: &#x27;210&#x27;, &#x27;size_compressed&#x27;: &#x27;206&#x27;, &#x27;state&#x27;: &#x27;pending&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2021-08-17 11:18:58&#x27;, &#x27;sys_id&#x27;: &#x27;919d34d50706301022f9ffa08c1ed047&#x27;, &#x27;sys_mod_count&#x27;: &#x27;0&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;admin&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2021-08-17 11:18:58&#x27;, &#x27;table_name&#x27;: &#x27;cmdb_ci&#x27;, &#x27;table_sys_id&#x27;: &#x27;459d34d50706301022f9ffa08c1ed06a&#x27;}], &#x27;attestation_score&#x27;: &#x27;&#x27;, &#x27;attested&#x27;: &#x27;false&#x27;, &#x27;attested_by&#x27;: &#x27;&#x27;, &#x27;attested_date&#x27;: &#x27;&#x27;, &#x27;attributes&#x27;: &#x27;&#x27;, &#x27;can_print&#x27;: &#x27;false&#x27;, &#x27;category&#x27;: &#x27;Hardware&#x27;, &#x27;change_control&#x27;: &#x27;&#x27;, &#x27;checked_in&#x27;: &#x27;&#x27;, &#x27;checked_out&#x27;: &#x27;&#x27;, &#x27;comments&#x27;: &#x27;&#x27;, &#x27;company&#x27;: &#x27;81fca4cbac1d55eb355b4b6db0e3c80f&#x27;, &#x27;correlation_id&#x27;: &#x27;&#x27;, &#x27;cost&#x27;: &#x27;1699.99&#x27;, &#x27;cost_cc&#x27;: &#x27;USD&#x27;, &#x27;cost_center&#x27;: &#x27;d9d01546c0a80a6403e18b82250c80a1&#x27;, &#x27;delivery_date&#x27;: &#x27;2018-07-05 07:00:00&#x27;, &#x27;department&#x27;: &#x27;a581ab703710200044e0bfc8bcbe5de8&#x27;, &#x27;discovery_source&#x27;: &#x27;&#x27;, &#x27;dns_domain&#x27;: &#x27;&#x27;, &#x27;due&#x27;: &#x27;&#x27;, &#x27;due_in&#x27;: &#x27;&#x27;, &#x27;duplicate_of&#x27;: &#x27;&#x27;, &#x27;environment&#x27;: &#x27;&#x27;, &#x27;fault_count&#x27;: &#x27;0&#x27;, &#x27;first_discovered&#x27;: &#x27;&#x27;, &#x27;fqdn&#x27;: &#x27;&#x27;, &#x27;gl_account&#x27;: &#x27;&#x27;, &#x27;install_date&#x27;: &#x27;2018-10-02 07:00:00&#x27;, &#x27;install_status&#x27;: &#x27;installed&#x27;, &#x27;invoice_number&#x27;: &#x27;&#x27;, &#x27;ip_address&#x27;: &#x27;&#x27;, &#x27;justification&#x27;: &#x27;&#x27;, &#x27;last_discovered&#x27;: &#x27;&#x27;, &#x27;lease_id&#x27;: &#x27;&#x27;, &#x27;life_cycle_stage&#x27;: &#x27;&#x27;, &#x27;life_cycle_stage_status&#x27;: &#x27;&#x27;, &#x27;location&#x27;: &#x27;8228cda2ac1d55eb7029baf443945c37&#x27;, &#x27;mac_address&#x27;: &#x27;&#x27;, &#x27;maintenance_schedule&#x27;: &#x27;&#x27;, &#x27;managed_by&#x27;: &#x27;&#x27;, &#x27;managed_by_group&#x27;: &#x27;&#x27;, &#x27;manufacturer&#x27;: &#x27;aa0a6df8c611227601cd2ed45989e0ac&#x27;, &#x27;model_id&#x27;: &#x27;0c43b858c611227501522de20c61ac75&#x27;, &#x27;model_number&#x27;: &#x27;&#x27;, &#x27;monitor&#x27;: &#x27;false&#x27;, &#x27;name&#x27;: &#x27;ThinkStation S20&#x27;, &#x27;operational_status&#x27;: &#x27;operational&#x27;, &#x27;order_date&#x27;: &#x27;2018-06-07 07:00:00&#x27;, &#x27;owned_by&#x27;: &#x27;&#x27;, &#x27;po_number&#x27;: &#x27;PO100005&#x27;, &#x27;purchase_date&#x27;: &#x27;2018-06-22&#x27;, &#x27;schedule&#x27;: &#x27;&#x27;, &#x27;serial_number&#x27;: &#x27;WCL-206-Q10853-BF&#x27;, &#x27;short_description&#x27;: &#x27;&#x27;, &#x27;skip_sync&#x27;: &#x27;false&#x27;, &#x27;start_date&#x27;: &#x27;&#x27;, &#x27;subcategory&#x27;: &#x27;Computer&#x27;, &#x27;support_group&#x27;: &#x27;&#x27;, &#x27;supported_by&#x27;: &#x27;&#x27;, &#x27;sys_class_name&#x27;: &#x27;cmdb_ci_computer&#x27;, &#x27;sys_class_path&#x27;: &#x27;/!!/!2/!(&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2012-02-18 08:14:42&#x27;, &#x27;sys_domain&#x27;: &#x27;global&#x27;, &#x27;sys_domain_path&#x27;: &#x27;/&#x27;, &#x27;sys_id&#x27;: &#x27;01a9ec0d3790200044e0bfc8bcbe5dc3&#x27;, &#x27;sys_mod_count&#x27;: &#x27;6&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;system&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2021-01-16 05:50:31&#x27;, &#x27;unverified&#x27;: &#x27;false&#x27;, &#x27;vendor&#x27;: &#x27;aa0a6df8c611227601cd2ed45989e0ac&#x27;, &#x27;warranty_expiration&#x27;: &#x27;2021-10-01&#x27;}</div>
-                </td>
-            </tr>
-    </table>
-    <br/><br/>
 
 
 Status
@@ -690,7 +621,7 @@ Status
 Authors
 ~~~~~~~
 
+- Matej Pevec (@mysteriouswolf)
 - Manca Bizjak (@mancabizjak)
 - Miha Dolinar (@mdolin)
 - Tadej Borovsak (@tadeboro)
-- Matej Pevec (@mysteriouswolf)

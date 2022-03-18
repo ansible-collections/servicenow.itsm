@@ -93,6 +93,29 @@ Parameters
             <tr>
                 <td colspan="4">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>enhanced</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0 </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Enable enhanced inventory which provides relationship information from CMDB.</div>
+                        <div>Mutually exclusive with deprecated options <em>named_groups</em> and <em>group_by</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>group_by</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -836,6 +859,29 @@ Examples
     #  |  |  |--{cpu_type = Intel}
     #  |  |  |--{name = SAP-SD-02}
 
+    # Similar to the example above, but use enhanced groups with relationship information instead.
+    plugin: servicenow.itsm.now
+    enhanced: true
+    strict: true
+    inventory_hostname_source: asset_tag
+    columns:
+      - name
+      - classification
+      - cpu_type
+      - cost
+    compose:
+        cost: cost ~ " " ~ cost_cc
+        ansible_host: fqdn
+
+    # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
+    # @all:
+    # |--@Blackberry_Depends_on:
+    # |  |--P1000201
+    # |  |  |--{ansible_host = my.server.com}
+    # |  |  |--{classification = Production}
+    # |  |  |--{cost = 2,160 USD}
+    # |  |  |--{cpu_type = Intel}
+    # |  |  |--{name = INSIGHT-NY-03}
 
     # NOTE: All examples from here on are deprecated and should not be used when writing new
     # inventory sources.
@@ -907,6 +953,7 @@ Authors
 - Manca Bizjak (@mancabizjak)
 - Miha Dolinar (@mdolin)
 - Tadej Borovsak (@tadeboro)
+- Uros Pascinski (@uscinski)
 
 
 .. hint::

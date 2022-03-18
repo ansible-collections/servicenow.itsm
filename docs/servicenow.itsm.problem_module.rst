@@ -420,6 +420,91 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>problem_mapping</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0 of servicenow.itsm</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>User mapping for <em>Problem</em> object, where user can override Choice Lists values for objects.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>impact</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Effect that the problem has on business.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>problem_state</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>State of the problem.</div>
+                        <div>If a problem does not yet exist, all states except for <code>new</code> require setting of <em>assigned_to</em> parameter.</div>
+                        <div>This mapping can also be edited inside Choice Lists inside ServiceNow and can differ from state mapping.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>state</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>State of the problem.</div>
+                        <div>If a problem does not yet exist, all states except for <code>new</code> require setting of <em>assigned_to</em> parameter.</div>
+                        <div>Special value that can not be overridden is <code>absent</code>, which would remove a problem from ServiceNow.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>urgency</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The extent to which the problem resolution can bear delay.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>resolution_code</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -526,6 +611,10 @@ See Also
 
    :ref:`servicenow.itsm.problem_info_module`
       The official documentation on the **servicenow.itsm.problem_info** module.
+   :ref:`servicenow.itsm.problem_task_module`
+      The official documentation on the **servicenow.itsm.problem_task** module.
+   :ref:`servicenow.itsm.problem_task_info_module`
+      The official documentation on the **servicenow.itsm.problem_task_info** module.
 
 
 Examples
