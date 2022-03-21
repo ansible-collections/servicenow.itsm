@@ -9,6 +9,8 @@ description: Ansible Collection for interacting with ServiceNow ITSM
 license_file: LICENSE
 tags:
   - servicenow
+  - application
+  - infrastructure
 repository: https://github.com/ansible-collections/servicenow.itsm
 homepage: https://github.com/ansible-collections/servicenow.itsm
 issues: https://github.com/ansible-collections/servicenow.itsm/issues
