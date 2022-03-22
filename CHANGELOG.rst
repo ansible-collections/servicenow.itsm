@@ -5,6 +5,15 @@ servicenow.itsm Release Notes
 .. contents:: Topics
 
 
+v1.3.1
+======
+
+Release Summary
+---------------
+
+This is the patch release of the ``servicenow.itsm`` collection.
+
+
 v1.3.0
 ======
 
