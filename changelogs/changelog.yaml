@@ -99,10 +99,10 @@ releases:
 
         '
     fragments:
+    - 1.3.yml
     - change_request_task.yaml
     - client-change-base-path.yaml
     - enhanced-inventory.yaml
-    - 1.3.yml
     modules:
     - description: Manage ServiceNow change request tasks
       name: change_request_task
@@ -117,3 +117,11 @@ releases:
       name: problem_task_info
       namespace: ''
     release_date: '2022-03-18'
+  1.3.1:
+    changes:
+      release_summary: 'This is the patch release of the ``servicenow.itsm`` collection.
+
+        '
+    fragments:
+    - 1.3.1.yml
+    release_date: '2022-03-23'
