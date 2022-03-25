@@ -42,7 +42,7 @@ options:
       - State of the problem.
       - If a problem does not yet exist, all states except for C(new)
         require setting of I(assigned_to) parameter.
-      - Default choices are [ new, assess, root_cause_analysis, fix_in_progress, resolved, closed, absent ].
+      - Default choices are C(new), C(assess), C(root_cause_analysis), C(fix_in_progress), C(resolved), C(closed), C(absent).
         One can override them by setting I(problem_mapping.state).
     type: str
   short_description:
