@@ -57,7 +57,7 @@ options:
   impact:
     description:
       - Effect that the problem has on business.
-      - Default choices are [ low, medium, high ].
+      - Default choices are C(low), C(medium), C(high).
         One can override them by setting I(problem_mapping.impact).
     type: str
   urgency:
