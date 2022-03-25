@@ -63,7 +63,7 @@ options:
   urgency:
     description:
       - The extent to which the problem resolution can bear delay.
-      - Default choices are [ low, medium, high ]
+      - Default choices are C(low), C(medium), C(high).
         One can override them by setting I(problem_mapping.impact)
     type: str
   assigned_to:
