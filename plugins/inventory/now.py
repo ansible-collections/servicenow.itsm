@@ -7,31 +7,9 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-import os
-
-from ansible.errors import AnsibleParserError
-from ansible.inventory.group import to_safe_group_name as orig_safe
-from ansible.plugins.inventory import (
-    BaseInventoryPlugin,
-    Constructable,
-    to_safe_group_name,
-)
-
-from ..module_utils.client import Client
-from ..module_utils.errors import ServiceNowError
-from ..module_utils.query import parse_query, serialize_query
-from ..module_utils.table import TableClient
-from ..module_utils.relations import (
-    REL_FIELDS,
-    REL_QUERY,
-    REL_TABLE,
-    enhance_records_with_rel_groups,
-)
-
 
 DOCUMENTATION = r"""
 name: now
-plugin_type: inventory
 author:
   - Manca Bizjak (@mancabizjak)
   - Miha Dolinar (@mdolin)
@@ -111,6 +89,7 @@ options:
     description:
       - List of I(table) columns to be included as hostvars.
     type: list
+    elements: str
     default: [name, host_name, fqdn, ip_address]
   enhanced:
     description:
@@ -166,6 +145,7 @@ options:
                   - Mutually exclusive with I(excludes).
                 type: list
                 default: None
+                elements: str
               excludes:
                 description:
                   - Add a host to the group if <column> matches any value
@@ -173,6 +153,7 @@ options:
                   - For reference fields, you need to provide C(sys_id).
                   - Mutually exclusive with I(includes).
                 type: list
+                elements: str
                 default: None
   group_by:
     description:
@@ -201,6 +182,7 @@ options:
               - Mutually exclusive with I(excludes).
             type: list
             default: None
+            elements: str
           excludes:
             description:
               - Create Ansible inventory groups only for records with <column>
@@ -208,6 +190,7 @@ options:
               - For reference fields, you need to provide C(sys_id).
               - Mutually exclusive with I(includes).
             type: list
+            elements: str
             default: None
 """
 
@@ -386,6 +369,27 @@ named_groups:
 #  |  |--lnux101
 #  |--@ungrouped:
 """
+
+import os
+
+from ansible.errors import AnsibleParserError
+from ansible.inventory.group import to_safe_group_name as orig_safe
+from ansible.plugins.inventory import (
+    BaseInventoryPlugin,
+    Constructable,
+    to_safe_group_name,
+)
+
+from ..module_utils.client import Client
+from ..module_utils.errors import ServiceNowError
+from ..module_utils.query import parse_query, serialize_query
+from ..module_utils.table import TableClient
+from ..module_utils.relations import (
+    REL_FIELDS,
+    REL_QUERY,
+    REL_TABLE,
+    enhance_records_with_rel_groups,
+)
 
 
 def _includes_query(column, includes):
