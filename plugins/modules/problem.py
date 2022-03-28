@@ -64,7 +64,7 @@ options:
     description:
       - The extent to which the problem resolution can bear delay.
       - Default choices are C(low), C(medium), C(high).
-        One can override them by setting I(problem_mapping.impact)
+        One can override them by setting I(problem_mapping.urgency).
     type: str
   assigned_to:
     description:

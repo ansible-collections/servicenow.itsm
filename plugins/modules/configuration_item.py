@@ -68,15 +68,17 @@ options:
   install_status:
     description:
       - The functional status of the configuration item.
+      - Default choices are C(implementing), C(installed), C(on_order), C(in_maintenance), C(pending_install),
+        C(pending_repair), C(in_stock), C(retired), C(stolen), C(absent).
+        One can override them by setting I(configuration_item_mapping.install_status).
     type: str
-    choices: [ implementing, installed, on_order, in_maintenance, pending_install, pending_repair,
-      in_stock, retired, stolen, absent ]
   operational_status:
     description:
       - The operational status of the configuration item.
+      - Default choices are C(operational), C(non_operational), C(repair_in_progress), C(dr_standby), C(ready),
+        C(retired), C(pipeline), C(catalog).
+        One can override them by setting I(configuration_item_mapping.operational_status).
     type: str
-    choices: [ operational, non_operational, repair_in_progress, dr_standby, ready, retired,
-      pipeline, catalog ]
   serial_number:
     description:
       - Serial number of the configuration item.
@@ -96,7 +98,8 @@ options:
   environment:
     description:
       - The environment to which this configuration item belongs.
-    choices: [ development, production, test ]
+      - Default choices are C(development), C(production), C(test),
+        One can override them by setting I(configuration_item_mapping.environment).
     type: str
   assigned_to:
     description:
@@ -415,13 +418,9 @@ def main():
         ),
         install_status=dict(
             type="str",
-            choices=[i[1] for i in PAYLOAD_FIELDS_MAPPING["install_status"] if i[0]],
         ),
         operational_status=dict(
             type="str",
-            choices=[
-                i[1] for i in PAYLOAD_FIELDS_MAPPING["operational_status"] if i[0]
-            ],
         ),
         serial_number=dict(
             type="str",
@@ -437,11 +436,6 @@ def main():
         ),
         environment=dict(
             type="str",
-            choices=[
-                "development",
-                "production",
-                "test",
-            ],
         ),
         assigned_to=dict(
             type="str",

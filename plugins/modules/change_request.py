@@ -44,8 +44,8 @@ options:
       - For more information on state model and transition,
         refere to the ServiceNow documentation at
         U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ChangeStateModel.html)
-    choices: [ new, assess, authorize, scheduled,
-               implement, review, closed, canceled, absent ]
+      - Default choices are C(new), C(assess), C(authorize), C(scheduled), C(implement), C(review), C(closed), C(canceled), C(absent).
+        One can override them by setting I(change_request_mapping.state).
     type: str
   type:
     description:
@@ -79,23 +79,27 @@ options:
     description:
       - Priority is based on impact and urgency, and it identifies how quickly
         the service desk should address the task.
-    choices: [ critical, high, moderate, low ]
+      - Default choices are C(critical), C(high), C(moderate), C(low).
+        One can override them by setting I(change_request_mapping.priority).
     type: str
   risk:
     description:
       - The risk level for the change.
-    choices: [ high, moderate, low ]
+      - Default choices are C(high), C(moderate), C(low).
+        One can override them by setting I(change_request_mapping.risk).
     type: str
   impact:
     description:
       - Impact is a measure of the effect of an incident, problem,
         or change on business processes.
-    choices: [ high, medium, low ]
+      - Default choices are C(high), C(medium), C(low).
+        One can override them by setting I(change_request_mapping.impact).
     type: str
   urgency:
     description:
       - The extent to which resolution of an change request can bear delay.
-    choices: [ low, medium, high ]
+      - Default choices are C(high), C(medium), C(low).
+        One can override them by setting I(change_request_mapping.urgency).
     type: str
   short_description:
     description:
@@ -368,17 +372,6 @@ def main():
         ),
         state=dict(
             type="str",
-            choices=[
-                "new",
-                "assess",
-                "authorize",
-                "scheduled",
-                "implement",
-                "review",
-                "closed",
-                "canceled",
-                "absent",
-            ],
         ),
         type=dict(
             type="str",
@@ -413,32 +406,15 @@ def main():
         ),
         priority=dict(
             type="str",
-            choices=[
-                "critical",
-                "high",
-                "moderate",
-                "low",
-            ],
         ),
         risk=dict(
             type="str",
-            choices=[
-                "high",
-                "moderate",
-                "low",
-            ],
         ),
         impact=dict(
             type="str",
-            choices=[
-                "high",
-                "medium",
-                "low",
-            ],
         ),
         urgency=dict(
             type="str",
-            choices=["high", "medium", "low"],
         ),
         short_description=dict(
             type="str",
