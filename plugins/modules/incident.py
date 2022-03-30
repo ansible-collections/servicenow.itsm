@@ -37,13 +37,15 @@ options:
     description:
       - State of incident.
       - If I(state) value is C(on_hold), I(on_hold_reason) parameter must be filled in.
-    choices: [ new, in_progress, on_hold, resolved, closed, canceled, absent ]
+      - Default choices are C(new), C(in_progress), C(on_hold), C(resolved), C(closed), C(canceled), C(absent).
+        One can override them by setting I(incident_mapping.state).
     type: str
   hold_reason:
     description:
       - Reason why incident is on hold.
       - Required if I(state) value is C(on_hold).
-    choices: [ awaiting_caller, awaiting_change, awaiting_problem, awaiting_vendor ]
+      - Default choices are C(awaiting_caller), C(awaiting_change), C(awaiting_problem), C(awaiting_vendor).
+        One can override them by setting I(incident_mapping.hold_reason).
     type: str
   caller:
     description:
@@ -64,12 +66,14 @@ options:
   impact:
     description:
       - The measure of the business criticality of the affected service.
-    choices: [ low, medium, high ]
+      - Default choices are C(low), C(medium), C(high).
+        One can override them by setting I(incident_mapping.impact).
     type: str
   urgency:
     description:
       - The extent to which resolution of an incident can bear delay.
-    choices: [ low, medium, high ]
+      - Default choices are C(low), C(medium), C(high).
+        One can override them by setting I(incident_mapping.urgency).
     type: str
   close_code:
     description:
@@ -287,24 +291,9 @@ def main():
         ),
         state=dict(
             type="str",
-            choices=[
-                "new",
-                "in_progress",
-                "on_hold",
-                "resolved",
-                "closed",
-                "canceled",
-                "absent",
-            ],
         ),
         hold_reason=dict(
             type="str",
-            choices=[
-                "awaiting_caller",
-                "awaiting_change",
-                "awaiting_problem",
-                "awaiting_vendor",
-            ],
         ),
         caller=dict(
             type="str",
@@ -317,19 +306,9 @@ def main():
         ),
         impact=dict(
             type="str",
-            choices=[
-                "low",
-                "medium",
-                "high",
-            ],
         ),
         urgency=dict(
             type="str",
-            choices=[
-                "low",
-                "medium",
-                "high",
-            ],
         ),
         close_code=dict(
             type="str",

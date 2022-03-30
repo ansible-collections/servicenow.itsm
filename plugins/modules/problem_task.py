@@ -42,7 +42,8 @@ options:
     description:
       - State of problem tasks.
       - If I(state) value is C(new), I(short_description) parameter must be filled in.
-    choices: [ new, assess, work_in_progress, closed, absent ]
+      - Default choices are C(new), C(assess), C(work_in_progress), C(closed), C(absent).
+        One can override them by setting I(problem_task_mapping.state).
     type: str
   type:
     description:
@@ -66,7 +67,8 @@ options:
   priority:
     description:
       - How quickly the service desk should address the problem task.
-    choices: [ critical, high, moderate, low, planning ]
+      - Default choices are C(critical), C(high), C(moderate), C(low), C(planning).
+        One can override them by setting I(problem_task_mapping.priority).
     type: str
   assignment_group:
     description:
@@ -352,13 +354,6 @@ def main():
         arguments.get_spec("instance", "sys_id", "number", "problem_task_mapping"),
         state=dict(
             type="str",
-            choices=[
-                "new",
-                "assess",
-                "work_in_progress",
-                "closed",
-                "absent",
-            ],
         ),
         type=dict(
             choices=[
@@ -377,13 +372,6 @@ def main():
             type="str",
         ),
         priority=dict(
-            choices=[
-                "critical",
-                "high",
-                "moderate",
-                "low",
-                "planning",
-            ],
             type="str",
         ),
         assignment_group=dict(

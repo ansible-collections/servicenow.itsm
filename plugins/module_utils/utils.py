@@ -36,7 +36,8 @@ def get_choices(module, mapping_field, default_payload_fields_mapping):
     overrides = module.params[mapping_field]
     clone = {}
     for key, item in default_payload_fields_mapping.items():
-        clone[key] = overrides.get(key, item)
+        override = overrides.get(key)
+        clone[key] = override if override else item
 
     return clone
 

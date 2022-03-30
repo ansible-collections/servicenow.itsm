@@ -70,7 +70,8 @@ options:
       - The state of the change request task.
       - Cannot be changed to C(pending) when I(on_hold) is C(true)
         (module fails and does nothing).
-    choices: [ pending, open, in_progress, closed, canceled, absent ]
+      - Default choices are C(pending), C(open), C(in_progress), C(closed), C(canceled), C(absent).
+        One can override them by setting I(change_request_task.state).
     type: str
   assigned_to:
     description:
@@ -347,14 +348,6 @@ def main():
         ),
         state=dict(
             type="str",
-            choices=[
-                "pending",
-                "open",
-                "in_progress",
-                "closed",
-                "canceled",
-                "absent",
-            ],
         ),
         assigned_to=dict(
             type="str",
