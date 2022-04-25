@@ -75,6 +75,24 @@ options:
         env:
           - name: SN_CLIENT_SECRET
         type: str
+      grant_type:
+        description:
+          - Grant type used for OAuth authentication.
+          - If not set, the value of the C(SN_GRANT_TYPE) environment variable will be used.
+        choices: [ 'password', 'refresh_token' ]
+        default: password
+        env:
+          - name: SN_GRANT_TYPE
+        type: str
+      refresh_token:
+        description:
+          - Refresh token used for OAuth authentication.
+          - If not set, the value of the C(SN_REFRESH_TOKEN) environment
+            variable will be used.
+          - Required when I(grant_type=refresh_token).
+        env:
+          - name: SN_REFRESH_TOKEN
+        type: str
       timeout:
         description:
           - Timeout in seconds for the connection with the ServiceNow instance.
@@ -616,6 +634,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             password=os.getenv("SN_PASSWORD"),
             client_id=os.getenv("SN_CLIENT_ID"),
             client_secret=os.getenv("SN_SECRET_ID"),
+            refresh_token=os.getenv("SN_REFRESH_TOKEN"),
+            grant_type=os.getenv("SN_GRANT_TYPE"),
             timeout=os.getenv("SN_TIMEOUT"),
         )
 
