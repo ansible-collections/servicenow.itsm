@@ -84,6 +84,7 @@ options:
         env:
           - name: SN_GRANT_TYPE
         type: str
+        version_added: 1.4.0
       refresh_token:
         description:
           - Refresh token used for OAuth authentication.
