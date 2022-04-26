@@ -1,3 +1,3 @@
 ---
 minor_changes:
-- now.py inventory plugin updated to support refresh_token and added in grant_type 
+- now - inventory plugin updated to support ``refresh_token`` and ``grant_type`` (https://github.com/ansible-collections/servicenow.itsm/issues/168).
