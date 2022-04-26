@@ -94,6 +94,7 @@ options:
         env:
           - name: SN_REFRESH_TOKEN
         type: str
+        version_added: 1.4.0
       timeout:
         description:
           - Timeout in seconds for the connection with the ServiceNow instance.
