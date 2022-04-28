@@ -505,18 +505,11 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>pending</li>
-                                    <li>open</li>
-                                    <li>in_progress</li>
-                                    <li>closed</li>
-                                    <li>canceled</li>
-                                    <li>absent</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The state of the change request task.</div>
                         <div>Cannot be changed to <code>pending</code> when <em>on_hold</em> is <code>true</code> (module fails and does nothing).</div>
+                        <div>Default choices are <code>pending</code>, <code>open</code>, <code>in_progress</code>, <code>closed</code>, <code>canceled</code>, <code>absent</code>. One can override them by setting <em>change_request_task.state</em>.</div>
                 </td>
             </tr>
             <tr>

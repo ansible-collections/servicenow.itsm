@@ -211,14 +211,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>low</li>
-                                    <li>medium</li>
-                                    <li>high</li>
-                        </ul>
                 </td>
                 <td>
                         <div>Effect that the problem has on business.</div>
+                        <div>Default choices are <code>low</code>, <code>medium</code>, <code>high</code>. One can override them by setting <em>problem_mapping.impact</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -549,19 +545,11 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>new</li>
-                                    <li>assess</li>
-                                    <li>root_cause_analysis</li>
-                                    <li>fix_in_progress</li>
-                                    <li>resolved</li>
-                                    <li>closed</li>
-                                    <li>absent</li>
-                        </ul>
                 </td>
                 <td>
                         <div>State of the problem.</div>
                         <div>If a problem does not yet exist, all states except for <code>new</code> require setting of <em>assigned_to</em> parameter.</div>
+                        <div>Default choices are <code>new</code>, <code>assess</code>, <code>root_cause_analysis</code>, <code>fix_in_progress</code>, <code>resolved</code>, <code>closed</code>, <code>absent</code>. One can override them by setting <em>problem_mapping.state</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -589,14 +577,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>low</li>
-                                    <li>medium</li>
-                                    <li>high</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The extent to which the problem resolution can bear delay.</div>
+                        <div>Default choices are <code>low</code>, <code>medium</code>, <code>high</code>. One can override them by setting <em>problem_mapping.urgency</em>.</div>
                 </td>
             </tr>
     </table>

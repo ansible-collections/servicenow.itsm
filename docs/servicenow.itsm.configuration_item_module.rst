@@ -227,14 +227,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>development</li>
-                                    <li>production</li>
-                                    <li>test</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The environment to which this configuration item belongs.</div>
+                        <div>Default choices are <code>development</code>, <code>production</code>, <code>test</code>, One can override them by setting <em>configuration_item_mapping.environment</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -247,21 +243,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>implementing</li>
-                                    <li>installed</li>
-                                    <li>on_order</li>
-                                    <li>in_maintenance</li>
-                                    <li>pending_install</li>
-                                    <li>pending_repair</li>
-                                    <li>in_stock</li>
-                                    <li>retired</li>
-                                    <li>stolen</li>
-                                    <li>absent</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The functional status of the configuration item.</div>
+                        <div>Default choices are <code>implementing</code>, <code>installed</code>, <code>on_order</code>, <code>in_maintenance</code>, <code>pending_install</code>, <code>pending_repair</code>, <code>in_stock</code>, <code>retired</code>, <code>stolen</code>, <code>absent</code>. One can override them by setting <em>configuration_item_mapping.install_status</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -484,19 +469,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>operational</li>
-                                    <li>non_operational</li>
-                                    <li>repair_in_progress</li>
-                                    <li>dr_standby</li>
-                                    <li>ready</li>
-                                    <li>retired</li>
-                                    <li>pipeline</li>
-                                    <li>catalog</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The operational status of the configuration item.</div>
+                        <div>Default choices are <code>operational</code>, <code>non_operational</code>, <code>repair_in_progress</code>, <code>dr_standby</code>, <code>ready</code>, <code>retired</code>, <code>pipeline</code>, <code>catalog</code>. One can override them by setting <em>configuration_item_mapping.operational_status</em>.</div>
                 </td>
             </tr>
             <tr>

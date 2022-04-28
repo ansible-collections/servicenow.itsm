@@ -351,16 +351,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>critical</li>
-                                    <li>high</li>
-                                    <li>moderate</li>
-                                    <li>low</li>
-                                    <li>planning</li>
-                        </ul>
                 </td>
                 <td>
                         <div>How quickly the service desk should address the problem task.</div>
+                        <div>Default choices are <code>critical</code>, <code>high</code>, <code>moderate</code>, <code>low</code>, <code>planning</code>. One can override them by setting <em>problem_task_mapping.priority</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -453,17 +447,11 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>new</li>
-                                    <li>assess</li>
-                                    <li>work_in_progress</li>
-                                    <li>closed</li>
-                                    <li>absent</li>
-                        </ul>
                 </td>
                 <td>
                         <div>State of problem tasks.</div>
                         <div>If <em>state</em> value is <code>new</code>, <em>short_description</em> parameter must be filled in.</div>
+                        <div>Default choices are <code>new</code>, <code>assess</code>, <code>work_in_progress</code>, <code>closed</code>, <code>absent</code>. One can override them by setting <em>problem_task_mapping.state</em>.</div>
                 </td>
             </tr>
             <tr>

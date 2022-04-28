@@ -5,6 +5,24 @@ servicenow.itsm Release Notes
 .. contents:: Topics
 
 
+v1.4.0
+======
+
+Release Summary
+---------------
+
+This is the minor release of the ``servicenow.itsm`` collection.
+
+
+Minor Changes
+-------------
+
+- added ignore.txt for Ansible 2.14 devel branch.
+- now - Updated documents to make clear how AND OR queries operate.
+- now - fix mapped attributes in now modules.
+- now - fix validate-modules errors in now inventory plugins.
+- now - inventory plugin updated to support ``refresh_token`` and ``grant_type`` (https://github.com/ansible-collections/servicenow.itsm/issues/168).
+
 v1.3.3
 ======
 
@@ -88,7 +106,7 @@ Bugfixes
 New Modules
 -----------
 
-- servicenow.itsm.configuration_item_batch - Manage ServiceNow configuration items
+- servicenow.itsm.configuration_item_batch - Manage ServiceNow configuration items in batch mode
 
 v1.1.0
 ======

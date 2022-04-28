@@ -323,14 +323,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>high</li>
-                                    <li>medium</li>
-                                    <li>low</li>
-                        </ul>
                 </td>
                 <td>
                         <div>Impact is a measure of the effect of an incident, problem, or change on business processes.</div>
+                        <div>Default choices are <code>high</code>, <code>medium</code>, <code>low</code>. One can override them by setting <em>change_request_mapping.impact</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -558,15 +554,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>critical</li>
-                                    <li>high</li>
-                                    <li>moderate</li>
-                                    <li>low</li>
-                        </ul>
                 </td>
                 <td>
                         <div>Priority is based on impact and urgency, and it identifies how quickly the service desk should address the task.</div>
+                        <div>Default choices are <code>critical</code>, <code>high</code>, <code>moderate</code>, <code>low</code>. One can override them by setting <em>change_request_mapping.priority</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -594,14 +585,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>high</li>
-                                    <li>moderate</li>
-                                    <li>low</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The risk level for the change.</div>
+                        <div>Default choices are <code>high</code>, <code>moderate</code>, <code>low</code>. One can override them by setting <em>change_request_mapping.risk</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -629,22 +616,12 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>new</li>
-                                    <li>assess</li>
-                                    <li>authorize</li>
-                                    <li>scheduled</li>
-                                    <li>implement</li>
-                                    <li>review</li>
-                                    <li>closed</li>
-                                    <li>canceled</li>
-                                    <li>absent</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The state of the change request.</div>
                         <div>If <em>state</em> value is <code>assess</code> or <code>authorize</code> or <code>scheduled</code> or <code>implement</code> or <code>review</code> or <code>closed</code>, <em>assignment_group</em> parameter must be filled in.</div>
                         <div>For more information on state model and transition, refere to the ServiceNow documentation at <a href='https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ChangeStateModel.html'>https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ChangeStateModel.html</a></div>
+                        <div>Default choices are <code>new</code>, <code>assess</code>, <code>authorize</code>, <code>scheduled</code>, <code>implement</code>, <code>review</code>, <code>closed</code>, <code>canceled</code>, <code>absent</code>. One can override them by setting <em>change_request_mapping.state</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -708,14 +685,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>low</li>
-                                    <li>medium</li>
-                                    <li>high</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The extent to which resolution of an change request can bear delay.</div>
+                        <div>Default choices are <code>high</code>, <code>medium</code>, <code>low</code>. One can override them by setting <em>change_request_mapping.urgency</em>.</div>
                 </td>
             </tr>
     </table>
