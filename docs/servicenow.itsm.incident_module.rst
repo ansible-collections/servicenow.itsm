@@ -184,16 +184,11 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>awaiting_caller</li>
-                                    <li>awaiting_change</li>
-                                    <li>awaiting_problem</li>
-                                    <li>awaiting_vendor</li>
-                        </ul>
                 </td>
                 <td>
                         <div>Reason why incident is on hold.</div>
                         <div>Required if <em>state</em> value is <code>on_hold</code>.</div>
+                        <div>Default choices are <code>awaiting_caller</code>, <code>awaiting_change</code>, <code>awaiting_problem</code>, <code>awaiting_vendor</code>. One can override them by setting <em>incident_mapping.hold_reason</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -206,14 +201,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>low</li>
-                                    <li>medium</li>
-                                    <li>high</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The measure of the business criticality of the affected service.</div>
+                        <div>Default choices are <code>low</code>, <code>medium</code>, <code>high</code>. One can override them by setting <em>incident_mapping.impact</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -522,19 +513,11 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>new</li>
-                                    <li>in_progress</li>
-                                    <li>on_hold</li>
-                                    <li>resolved</li>
-                                    <li>closed</li>
-                                    <li>canceled</li>
-                                    <li>absent</li>
-                        </ul>
                 </td>
                 <td>
                         <div>State of incident.</div>
                         <div>If <em>state</em> value is <code>on_hold</code>, <em>on_hold_reason</em> parameter must be filled in.</div>
+                        <div>Default choices are <code>new</code>, <code>in_progress</code>, <code>on_hold</code>, <code>resolved</code>, <code>closed</code>, <code>canceled</code>, <code>absent</code>. One can override them by setting <em>incident_mapping.state</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -562,14 +545,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>low</li>
-                                    <li>medium</li>
-                                    <li>high</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The extent to which resolution of an incident can bear delay.</div>
+                        <div>Default choices are <code>low</code>, <code>medium</code>, <code>high</code>. One can override them by setting <em>incident_mapping.urgency</em>.</div>
                 </td>
             </tr>
     </table>
