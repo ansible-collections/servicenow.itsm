@@ -17,6 +17,14 @@ pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
 )
 
+@pytest.fixture
+def missing_field(mocker):
+    return "abc"
+
+@pytest.fixture
+def superset(mocker):
+    return "abc"
+
 
 class TestRemapCaller:
     def test_remap_params_direct(self, table_client):
