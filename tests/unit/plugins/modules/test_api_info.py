@@ -52,13 +52,13 @@ class TestMain:
             instance=dict(host="https://my.host.name", username="user", password="pass"),
             resource="sys_user",
             sys_id="1234",
-            sysparm_query="upon_reject=cancel",
-            sysparm_display_value="false",
-            sysparm_exclude_reference_link="false",
-            sysparm_fields=["parent", "watch_list"],
-            sysparm_query_category="cat",
-            sysparm_query_no_domain="true",
-            sysparm_no_count="true"
+            query="upon_reject=cancel",
+            display_value="false",
+            exclude_reference_link="false",
+            fields=["parent", "watch_list"],
+            query_category="cat",
+            query_no_domain="true",
+            no_count="true"
         )
 
         success, result = run_main(api_info, params)
@@ -76,7 +76,7 @@ class TestRun:
         params = dict(
             instance=dict(host="https://my.host.name", username="user", password="pass"),
             resource="sys_user",
-            sysparm_fields=["upon_reject", "state", "cmdb_ci"]
+            fields=["upon_reject", "state", "cmdb_ci"]
         )
 
         module = create_module(params=params)

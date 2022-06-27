@@ -31,6 +31,8 @@ from ansible.module_utils.basic import AnsibleModule
 from ..module_utils import arguments, attachment, client, errors, query, table, utils
 from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
 from ..module_utils.utils import get_mapper
+from ..module_utils.api import transform_query_to_servicenow_query
+
 
 
 def remap_assignment(query, table_client):
@@ -60,13 +62,15 @@ def sysparms_query(module, table_client, mapper):
 def run(module, table_client):
     mapper = get_mapper(module, "api_mapping", PAYLOAD_FIELDS_MAPPING)
 
-    module.params["sysparm_fields"] = ",".join(module.params["sysparm_fields"])
+    module.params["fields"] = ",".join(module.params["fields"])
 
     query = utils.filter_dict(
         module.params,
-        "sysparm_query", "sysparm_display_value", "sysparm_exclude_reference_link", "sysparm_fields",
-        "sysparm_query_category", "sysparm_query_no_domain", "sysparm_no_count"
+        "query", "display_value", "exclude_reference_link", "fields",
+        "query_category", "query_no_domain", "no_count"
     )
+
+    servicenow_query = transform_query_to_servicenow_query(query)
 
     return [
         mapper.to_ansible(record)
@@ -83,11 +87,11 @@ def main():
             type="str",
             required=True
         ),
-        sysparm_query=dict(
+        query=dict(
             type="str",
             default=None
         ),  # An encoded query string used to filter the results
-        sysparm_display_value=dict(
+        display_value=dict(
             type="str",
             choices=[
                 "true",
@@ -95,21 +99,21 @@ def main():
                 "both"
             ]
         ),  # Return field display values (true), actual values (false), or both (all) (default: false)
-        sysparm_exclude_reference_link=dict(
+        exclude_reference_link=dict(
             type="bool"
         ),  # True to exclude Table API links for reference fields (default: false)
-        sysparm_fields=dict(
+        fields=dict(
             type="list",
             default=[]
             # TODO: Add all possible choices for sysparam_fields
         ),  # A comma-separated list of fields to return in the response
-        sysparm_query_category=dict(
+        query_category=dict(
             type="str"
         ),  # Name of the query category (read replica category) to use for queries
-        sysparm_query_no_domain=dict(
+        query_no_domain=dict(
             type="bool"
         ),  # True to access data across domains if authorized (default: false)
-        sysparm_no_count=dict(
+        no_count=dict(
             type="bool"
         ),  # Do not execute a select count(*) on table (default: false)
     )
@@ -120,24 +124,6 @@ def main():
     )
 
     try:
-        # TODO:
-        #   - preimenuj parametre. Predpono sysparm daj stran
-        #   - Dodaj filter eq, neq, ... poglej si dele, kjer je to že razvito
-        #   - Poglej: inventory vtičnik. Poglej kaj lahko pouporabimo
-        #   - Zaenkrat pustimo (do srede). Docse pusti
-        #   - Naslednji korak: Dodaj možnosti: create, update, delete
-        #   - create: dodaj atribute, sprejmi, daj v tabelo, post
-        #   - update: podobno. Mora biti neki query, ki določi zapis
-        #   - delete: 2 možnosti:
-        #       - Zaenkrat ne: state present/absent. Na podlagi tega ugotovimo: create/upd/del
-        #       - Brisanje zapisov je možnos je ob danes sys id
-        #       - trenutno: Preko state parametra
-        #   - api modul naj ima tako strukturo.
-        #   - Za update potrebujemo vse podatke ter navesti nove vrednosti določenih atributov
-        #   - Update po svoje zastavimo
-        #   - Najprej ga podprimo za post
-        #   - Naredi ogrodje tega modula (za pomoč prosi Uroša)
-        #   -
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
         records = run(module, table_client)
