@@ -56,7 +56,6 @@ class TestMain:
             sysparm_display_value="false",
             sysparm_exclude_reference_link="false",
             sysparm_fields=["parent", "watch_list"],
-            sysparm_limit="10",
             sysparm_query_category="cat",
             sysparm_query_no_domain="true",
             sysparm_no_count="true"

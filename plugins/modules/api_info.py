@@ -65,7 +65,7 @@ def run(module, table_client):
     query = utils.filter_dict(
         module.params,
         "sysparm_query", "sysparm_display_value", "sysparm_exclude_reference_link", "sysparm_fields",
-        "sysparm_limit", "sysparm_query_category", "sysparm_query_no_domain", "sysparm_no_count"
+        "sysparm_query_category", "sysparm_query_no_domain", "sysparm_no_count"
     )
 
     return [
@@ -103,9 +103,6 @@ def main():
             default=[]
             # TODO: Add all possible choices for sysparam_fields
         ),  # A comma-separated list of fields to return in the response
-        sysparm_limit=dict(
-            type="int"
-        ),  # The maximum number of results returned (default: 10,000)
         sysparm_query_category=dict(
             type="str"
         ),  # Name of the query category (read replica category) to use for queries
@@ -123,10 +120,26 @@ def main():
     )
 
     try:
+        # TODO:
+        #   - preimenuj parametre. Predpono sysparm daj stran
+        #   - Dodaj filter eq, neq, ... poglej si dele, kjer je to že razvito
+        #   - Poglej: inventory vtičnik. Poglej kaj lahko pouporabimo
+        #   - Zaenkrat pustimo (do srede). Docse pusti
+        #   - Naslednji korak: Dodaj možnosti: create, update, delete
+        #   - create: dodaj atribute, sprejmi, daj v tabelo, post
+        #   - update: podobno. Mora biti neki query, ki določi zapis
+        #   - delete: 2 možnosti:
+        #       - Zaenkrat ne: state present/absent. Na podlagi tega ugotovimo: create/upd/del
+        #       - Brisanje zapisov je možnos je ob danes sys id
+        #       - trenutno: Preko state parametra
+        #   - api modul naj ima tako strukturo.
+        #   - Za update potrebujemo vse podatke ter navesti nove vrednosti določenih atributov
+        #   - Update po svoje zastavimo
+        #   - Najprej ga podprimo za post
+        #   - Naredi ogrodje tega modula (za pomoč prosi Uroša)
+        #   -
         snow_client = client.Client(**module.params["instance"])
-        default_batch_size = 10000
-        batch_size = module.params["sysparm_limit"] or default_batch_size
-        table_client = table.TableClient(snow_client, batch_size=batch_size)
+        table_client = table.TableClient(snow_client)
         records = run(module, table_client)
         module.exit_json(changed=False, record=records)
     except errors.ServiceNowError as e:
