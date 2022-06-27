@@ -17,21 +17,26 @@ pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
 )
 
+
 @pytest.fixture
 def missing_field(mocker):
     return "abc"
+
 
 @pytest.fixture
 def superset(mocker):
     return "abc"
 
+
 @pytest.fixture
 def candidate(mocker):
     return "abc"
 
+
 @pytest.fixture
 def record(mocker):
     return "abc"
+
 
 @pytest.fixture
 def params(mocker):
@@ -47,7 +52,6 @@ class TestEnsureAbsent:
 
 
 class TestValidateParams:
-
 
     def test_validate_params_missing_field(self, missing_field):
         pass

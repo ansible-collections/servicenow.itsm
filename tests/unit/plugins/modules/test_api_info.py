@@ -17,9 +17,11 @@ pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
 )
 
+
 @pytest.fixture
 def missing_field(mocker):
     return "abc"
+
 
 @pytest.fixture
 def superset(mocker):
@@ -36,15 +38,56 @@ class TestRemapCaller:
 
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
-        pass
+        params = dict(
+            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            resource="sys_user",
+        )
+
+        success, result = run_main(api_info, params)
+
+        assert success is True
 
     def test_all_params(self, run_main):
-        pass
+        params = dict(
+            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            resource="sys_user",
+            sys_id="1234",
+            sysparm_query="upon_reject=cancel",
+            sysparm_display_value="false",
+            sysparm_exclude_reference_link="false",
+            sysparm_fields=["parent", "watch_list"],
+            sysparm_limit="10",
+            sysparm_query_category="cat",
+            sysparm_query_no_domain="true",
+            sysparm_no_count="true"
+        )
+
+        success, result = run_main(api_info, params)
+
+        assert success is True
 
     def test_fail(self, run_main):
-        pass
+        success, result = run_main(api_info)
+
+        assert success is False
 
 
 class TestRun:
     def test_run(self, create_module, table_client):
-        pass
+        params = dict(
+            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            resource="sys_user",
+            sysparm_fields=["upon_reject", "state", "cmdb_ci"]
+        )
+
+        module = create_module(params=params)
+
+        table_client.list_records.return_value = [
+            dict(p=1, sys_id=1234),
+            dict(q=2, sys_id=4321),
+            dict(r=3, sys_id=1212),
+        ]
+
+        api_results = api_info.run(module, table_client)
+
+        assert api_results == [dict(p=1, sys_id=1234), dict(q=2, sys_id=4321),dict(r=3, sys_id=1212),]
