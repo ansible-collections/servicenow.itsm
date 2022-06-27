@@ -34,35 +34,10 @@ from ..module_utils.utils import get_mapper
 from ..module_utils.api import transform_query_to_servicenow_query
 
 
-
-def remap_assignment(query, table_client):
-    # TODO: Kaj ta funkcija pocne?
-    query_load = []
-
-    for item in query:
-        q = dict()
-        for k, v in item.items():
-            # TODO: Write if/else sentences for this iteration
-            pass
-        query_load.append(q)
-
-    return query_load
-
-
-def sysparms_query(module, table_client, mapper):
-    parsed, err = query.parse_query(module.params["query"])
-    if err:
-        raise errors.ServiceNowError(err)
-
-    remap_query = remap_assignment(parsed, table_client)
-
-    return query.serialize_query(query.map_query_values(remap_query, mapper))
-
-
 def run(module, table_client):
     mapper = get_mapper(module, "api_mapping", PAYLOAD_FIELDS_MAPPING)
 
-    module.params["fields"] = ",".join(module.params["fields"])
+    module.params["fields"] = ",".join([field.lower() for field in module.params["fields"]])
 
     query = utils.filter_dict(
         module.params,
@@ -74,7 +49,7 @@ def run(module, table_client):
 
     return [
         mapper.to_ansible(record)
-        for record in table_client.list_records(module.params["resource"], query)
+        for record in table_client.list_records(module.params["resource"], servicenow_query)
     ]
 
 
@@ -105,7 +80,6 @@ def main():
         fields=dict(
             type="list",
             default=[]
-            # TODO: Add all possible choices for sysparam_fields
         ),  # A comma-separated list of fields to return in the response
         query_category=dict(
             type="str"
