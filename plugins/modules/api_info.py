@@ -35,10 +35,7 @@ from ..module_utils.api import transform_query_to_servicenow_query
 
 
 def run(module, table_client):
-    mapper = get_mapper(module, "api_mapping", PAYLOAD_FIELDS_MAPPING)
-
     module.params["fields"] = ",".join([field.lower() for field in module.params["fields"]])
-
     query = utils.filter_dict(
         module.params,
         "query", "display_value", "exclude_reference_link", "fields",
@@ -46,14 +43,14 @@ def run(module, table_client):
     )
 
     servicenow_query = transform_query_to_servicenow_query(query)
-
-    return [
-        mapper.to_ansible(record)
-        for record in table_client.list_records(module.params["resource"], servicenow_query)
-    ]
+    return table_client.list_records(module.params["resource"], servicenow_query)
 
 
 def main():
+    # TODO:
+    #   - Rename and implement query conditions
+    #   - Rename: fields --> columns
+    #   - Look at now.py's line 253
     arg_spec = dict(
         arguments.get_spec(
             "instance", "sys_id"
