@@ -8,29 +8,13 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r"""
-module: api_info
-
-author:
-  - Manca Bizjak (@mancabizjak)
-  - Miha Dolinar (@mdolin)
-  - Tadej Borovsak (@tadeboro)
-  - Matej Pevec (@mysteriouswolf)
-
-short_description: ServiceNow REST API "client" module
-
-description:
-    - 
-
-"""
+DOCUMENTATION = r""" """
 
 EXAMPLES = """ """
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, attachment, client, errors, query, table, utils
-from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
-from ..module_utils.utils import get_mapper
+from ..module_utils import arguments, client, errors, table, utils
 from ..module_utils.api import transform_query_to_servicenow_query
 
 
@@ -47,10 +31,6 @@ def run(module, table_client):
 
 
 def main():
-    # TODO:
-    #   - Rename and implement query conditions
-    #   - Rename: fields --> columns
-    #   - Look at now.py's line 253
     arg_spec = dict(
         arguments.get_spec(
             "instance", "sys_id"
