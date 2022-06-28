@@ -15,30 +15,30 @@ EXAMPLES = """ """
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table
-from ..module_utils.api import get_table_name
+from ..module_utils.api import table_name
 
 
 def update_resource(module, table_client):
-    record_old = table_client.get_record(get_table_name(module), module.params["data"])
+    record_old = table_client.get_record(table_name(module), module.params["data"])
     if record_old is None:
         return False, None, dict(before=None, after=None)
     record_new = table_client.update_record(
-        get_table_name(module), record_old, module.params["update_data"], module.check_mode)
+        table_name(module), record_old, module.params["update_data"], module.check_mode)
     return True, record_new, dict(before=record_old, after=record_new)
 
 
 def create_resource(module, table_client):
-    # At the moment, creating a resource is not idempotent - meaning: If a record with such data as specified in
-    # module.params["data"] already exists, such resource will get created once again.
-    new = table_client.create_record(table=get_table_name(module), payload=module.params["data"], check_mode=None)
+    # At the moment, creating a resource is not idempotent (meaning: If a record with such data as specified in
+    # module.params["data"] already exists, such resource will get created once again).
+    new = table_client.create_record(table=table_name(module), payload=module.params["data"], check_mode=None)
     return True, new, dict(before=None, after=new)
 
 
 def delete_resource(module, table_client):
-    record = table_client.get_record(get_table_name(module), module.params["data"])
+    record = table_client.get_record(table_name(module), module.params["data"])
     if record is None:
         return False, None, dict(before=None, after=None)
-    table_client.delete_record(get_table_name(module), record, module.check_mode)
+    table_client.delete_record(table_name(module), record, module.check_mode)
     return True, None, dict(before=record, after=None)
 
 

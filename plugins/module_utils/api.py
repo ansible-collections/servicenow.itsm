@@ -20,7 +20,7 @@ def transform_query_to_servicenow_query(query):
     return {SERVICENOW_QUERY_PREFIX + query_key: query_value for (query_key, query_value) in query.items()}
 
 
-def get_table_name(module):
+def table_name(module):
     """
     In api.py and api_info.py the table's name is always going to be stored in module's resource
     """
