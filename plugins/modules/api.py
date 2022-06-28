@@ -14,38 +14,39 @@ EXAMPLES = """ """
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, attachment, client, errors, query, table, utils
-from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
-from ..module_utils.utils import get_mapper
+from ..module_utils import arguments, client, errors, table
+from ..module_utils.api import get_table_name
 
 
-def update_resource(module, table_client, payload):
-    # TODO: Implement updating the resource here
-    changed, record, diff = True, None, dict(before={}, after={})
-    return changed, record, diff
+def update_resource(module, table_client):
+    record_old = table_client.get_record(get_table_name(module), module.params["data"])
+    if record_old is None:
+        return False, None, dict(before=None, after=None)
+    record_new = table_client.update_record(
+        get_table_name(module), record_old, module.params["update_data"], module.check_mode)
+    return True, record_new, dict(before=record_old, after=record_new)
 
 
-def create_resource(module, table_client, payload):
-    new = table_client.create_record(table=module.params["resource"], payload=module.params["data"], check_mode=None)
+def create_resource(module, table_client):
+    # At the moment, creating a resource is not idempotent - meaning: If a record with such data as specified in
+    # module.params["data"] already exists, such resource will get created once again.
+    new = table_client.create_record(table=get_table_name(module), payload=module.params["data"], check_mode=None)
     return True, new, dict(before=None, after=new)
 
 
 def delete_resource(module, table_client):
-    record = table_client.get_record(module.params["resource"], module.params["data"])
-    table_client.delete_record(module.params["resource"], record, module.check_mode)
+    record = table_client.get_record(get_table_name(module), module.params["data"])
+    if record is None:
+        return False, None, dict(before=None, after=None)
+    table_client.delete_record(get_table_name(module), record, module.check_mode)
     return True, None, dict(before=record, after=None)
 
 
 def run(module, table_client):
-    # TODO:
-    #   - Build payload. Temporarily None
-    #   - Define field DIRECT_PAYLOAD_FIELDS. Look at files incident.py and problem.py as an example
-    #   - Look at: Module utils --> query --> parse query
-    payload = None
     if module.params["action"] == "update":  # PATCH method
-        return update_resource(module, table_client, payload)
+        return update_resource(module, table_client)
     elif module.params["action"] == "create":  # POST method
-        return create_resource(module, table_client, payload)
+        return create_resource(module, table_client)
     return delete_resource(module, table_client)  # DELETE method
 
 
@@ -69,7 +70,10 @@ def main():
         ),
         data=dict(
             type="dict",
-        )
+        ),
+        update_data=dict(
+            type="dict"
+        ),
     )
 
     module = AnsibleModule(
