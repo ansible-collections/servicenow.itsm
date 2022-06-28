@@ -18,24 +18,6 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.fixture
-def missing_field(mocker):
-    return "abc"
-
-
-@pytest.fixture
-def superset(mocker):
-    return "abc"
-
-
-class TestRemapCaller:
-    def test_remap_params_direct(self, table_client):
-        pass
-
-    def test_remap_params_full(self, table_client):
-        pass
-
-
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
         params = dict(
@@ -89,4 +71,4 @@ class TestRun:
 
         api_results = api_info.run(module, table_client)
 
-        assert api_results == [dict(p=1, sys_id=1234), dict(q=2, sys_id=4321),dict(r=3, sys_id=1212),]
+        assert api_results == [dict(p=1, sys_id=1234), dict(q=2, sys_id=4321), dict(r=3, sys_id=1212), ]
