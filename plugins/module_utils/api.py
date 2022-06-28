@@ -7,11 +7,11 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-SERVICENOW_PREFIX = "sysparm_"
+SERVICENOW_QUERY_PREFIX = "sysparm_"
 
 
 def transform_query_to_servicenow_query(query):
     """
     Transforms query by adding suffix to the query
     """
-    return {SERVICENOW_PREFIX + query_key: query_value for (query_key, query_value) in query.items()}
+    return {SERVICENOW_QUERY_PREFIX + query_key: query_value for (query_key, query_value) in query.items()}
