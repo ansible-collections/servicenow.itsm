@@ -9,9 +9,13 @@ __metaclass__ = type
 
 SERVICENOW_QUERY_PREFIX = "sysparm_"
 
+POSSIBLE_FILTER_PARAMETERS = [
+    "query", "display_value", "exclude_reference_link", "fields", "query_category", "query_no_domain", "no_count"]
+
 
 def transform_query_to_servicenow_query(query):
     """
     Transforms query by adding suffix to the query
     """
     return {SERVICENOW_QUERY_PREFIX + query_key: query_value for (query_key, query_value) in query.items()}
+

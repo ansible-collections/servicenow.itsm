@@ -15,17 +15,12 @@ EXAMPLES = """ """
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table, utils
-from ..module_utils.api import transform_query_to_servicenow_query
+from ..module_utils.api import transform_query_to_servicenow_query, POSSIBLE_FILTER_PARAMETERS
 
 
 def run(module, table_client):
     module.params["fields"] = ",".join([field.lower() for field in module.params["fields"]])
-    query = utils.filter_dict(
-        module.params,
-        "query", "display_value", "exclude_reference_link", "fields",
-        "query_category", "query_no_domain", "no_count"
-    )
-
+    query = utils.filter_dict(module.params, *POSSIBLE_FILTER_PARAMETERS)
     servicenow_query = transform_query_to_servicenow_query(query)
     return table_client.list_records(module.params["resource"], servicenow_query)
 
