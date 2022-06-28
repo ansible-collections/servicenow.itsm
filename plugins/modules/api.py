@@ -26,7 +26,7 @@ def update_resource(module, table_client, payload):
 
 
 def create_resource(module, table_client, payload):
-    new = table_client.create_record(table=module.params["resource"], payload=None, check_mode=None)
+    new = table_client.create_record(table=module.params["resource"], payload=module.params["data"], check_mode=None)
     return True, new, dict(before=None, after=new)
 
 
