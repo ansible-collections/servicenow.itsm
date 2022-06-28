@@ -19,7 +19,7 @@ from ..module_utils.api import transform_query_to_servicenow_query, POSSIBLE_FIL
 
 
 def run(module, table_client):
-    module.params["fields"] = ",".join([field.lower() for field in module.params["fields"]])
+    module.params["columns"] = ",".join([field.lower() for field in module.params["columns"]])
     query = utils.filter_dict(module.params, *POSSIBLE_FILTER_PARAMETERS)
     servicenow_query = transform_query_to_servicenow_query(query)
     return table_client.list_records(table_name(module), servicenow_query)
@@ -48,8 +48,8 @@ def main():
         ),  # Return field display values (true), actual values (false), or both (all) (default: false)
         exclude_reference_link=dict(
             type="bool"
-        ),  # True to exclude Table API links for reference fields (default: false)
-        fields=dict(
+        ),  # True to exclude Table API links for reference columns (default: false)
+        columns=dict(
             type="list",
             default=[]
         ),  # A comma-separated list of fields to return in the response

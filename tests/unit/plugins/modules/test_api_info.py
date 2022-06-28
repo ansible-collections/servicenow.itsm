@@ -37,7 +37,7 @@ class TestMain:
             query="upon_reject=cancel",
             display_value="false",
             exclude_reference_link="false",
-            fields=["parent", "watch_list"],
+            columns=["parent", "watch_list"],
             query_category="cat",
             query_no_domain="true",
             no_count="true"
@@ -58,7 +58,7 @@ class TestRun:
         params = dict(
             instance=dict(host="https://my.host.name", username="user", password="pass"),
             resource="sys_user",
-            fields=["upon_reject", "state", "cmdb_ci"]
+            columns=["upon_reject", "state", "cmdb_ci"]
         )
 
         module = create_module(params=params)
