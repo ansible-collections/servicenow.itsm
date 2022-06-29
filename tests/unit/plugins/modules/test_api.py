@@ -18,89 +18,25 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.fixture
-def missing_field(mocker):
-    return "abc"
+class TestUpdateResource:
 
-
-@pytest.fixture
-def superset(mocker):
-    return "abc"
-
-
-@pytest.fixture
-def candidate(mocker):
-    return "abc"
-
-
-@pytest.fixture
-def record(mocker):
-    return "abc"
-
-
-@pytest.fixture
-def params(mocker):
-    return "abc"
-
-
-class TestEnsureAbsent:
-    def test_delete_change_request(self, create_module, table_client):
+    def test_update_resource_not_present(self, create_module, table_client):
         pass
 
-    def test_delete_change_request_not_present(self, create_module, table_client):
+    def test_present_resource_present(self, create_module, table_client):
         pass
 
 
-class TestValidateParams:
+class TestCreateResource:
 
-    def test_validate_params_missing_field(self, missing_field):
-        pass
-
-    def test_validate_params_missing_on_hold_field(self, missing_field):
-        pass
-
-    def test_validate_params(self):
-        pass
-
-    def test_validate_params_on_hold(self):
+    def test_create_resource(self):
         pass
 
 
-class TestEnsurePresent:
-    def test_ensure_present_create_new(self, create_module, table_client):
+class TestDeleteResource:
+
+    def test_delete_resource_not_present(self):
         pass
 
-    def test_ensure_present_nothing_to_do(self, create_module, table_client):
-        pass
-
-    def test_ensure_present_update(self, create_module, table_client):
-        pass
-
-
-class TestBuildPayload:
-    def test_build_payload(self, create_module, table_client):
-        pass
-
-    def test_build_payload_with_other_option(self, create_module, table_client):
-        pass
-
-
-class TestSupersetWithDateCheck:
-
-    def test_valid_superset(self, superset, candidate):
-        pass
-
-    def test_not_a_superset(self, superset, candidate):
-        pass
-
-    def test_same_point_in_time(self, record, params):
-        pass
-
-    def test_different_point_in_time(self, record, params):
-        pass
-
-    def test_empty_superset_dates(self, record, params):
-        pass
-
-    def test_empty_not_superset_dates(self, record, params):
+    def test_delete_resource_present(self):
         pass
