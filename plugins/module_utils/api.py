@@ -9,10 +9,7 @@ __metaclass__ = type
 
 SERVICENOW_QUERY_PREFIX = "sysparm_"
 
-POSSIBLE_FILTER_PARAMETERS = [
-    "query", "display_value", "exclude_reference_link",  "fields", "query_category",
-    "query_no_domain", "no_count", "columns"
-]
+
 
 SN_QUERY_MAPPING = dict(
     query='sysparm_query',
@@ -28,7 +25,15 @@ SN_QUERY_MAPPING = dict(
     no_count='sysparm_no_count'
 )
 
-FIELDS_NAME = 'columns'
+# FIELD_COLUMNS_NAME and FIELD_QUERY_NAME are the ones that are additionally modified in api_info.py,
+# so setting constant variable for them.
+FIELD_COLUMNS_NAME = 'columns'
+FIELD_QUERY_NAME = 'query'
+
+POSSIBLE_FILTER_PARAMETERS = [
+    FIELD_QUERY_NAME, "display_value", "exclude_reference_link",  "fields", "query_category",
+    "query_no_domain", "no_count", FIELD_COLUMNS_NAME
+]
 
 
 def transform_query_to_servicenow_query(query):
