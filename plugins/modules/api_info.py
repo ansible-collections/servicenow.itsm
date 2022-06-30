@@ -16,13 +16,16 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table, utils
 from ..module_utils.api import (
-    transform_query_to_servicenow_query, POSSIBLE_FILTER_PARAMETERS, table_name, FIELDS_NAME
+    transform_query_to_servicenow_query, POSSIBLE_FILTER_PARAMETERS, table_name, FIELD_COLUMNS_NAME, FIELD_QUERY_NAME
 )
 
 
 def run(module, table_client):
-    if FIELDS_NAME in module.params:
-        module.params[FIELDS_NAME] = ",".join([field.lower() for field in module.params[FIELDS_NAME]])
+    if FIELD_COLUMNS_NAME in module.params:
+        module.params[FIELD_COLUMNS_NAME] = ",".join([field.lower() for field in module.params[FIELD_COLUMNS_NAME]])
+    if FIELD_QUERY_NAME in module.params:
+        # TODO (tjazsch): Fields for date-type query and between still have to be added. Think about how to do this.
+        module.params[FIELD_QUERY_NAME] = utils.sysparm_query_from_conditions(module.params[FIELD_QUERY_NAME])
     query = utils.filter_dict(module.params, *POSSIBLE_FILTER_PARAMETERS)
     servicenow_query = transform_query_to_servicenow_query(query)
     return table_client.list_records(table_name(module), servicenow_query)
@@ -37,9 +40,13 @@ def main():
             type="str",
             required=True
         ),
+        # query is going to be dict, which is going to hold:
+        #   - column names as keys (such as parent, made_sla)
+        #   - Additional dict as values. This dict is going to hold:
+        #       - operators as keys
+        #       - values that this operator is going to match as values
         query=dict(
-            type="str",
-            default=None
+            type="dict"
         ),  # An encoded query string used to filter the results
         display_value=dict(
             type="str",
