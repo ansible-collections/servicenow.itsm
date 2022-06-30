@@ -4,6 +4,8 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.servicenow.itsm.plugins.module_utils.query import POSSIBLE_QUERY_FIELDS, OPERATORS_MAPPING
+
 
 __metaclass__ = type
 
@@ -18,6 +20,41 @@ def filter_dict(input, *field_names):
                 output[field_name] = value
 
     return output
+
+
+def _operators_query(column, operator, elements):
+    """ column, =, ["a1", "a2", "a3", "a4"] -->  column=a1^ORcolumn=a2^ORcolumn=a3^ORcolumn=a4 """
+    return "^OR".join("{0}{1}{2}".format(column, operator, i) for i in elements)
+
+
+def sysparm_query_from_conditions(conditions):
+    """
+    From a dictionary that holds conditions for the specified fields
+    dict(
+       a=dict(starts_with=["a1", "a2"], ends_with=["a3", "a4"]),
+       b=dict(is_not=["b1", "b2"]),
+    )
+    creates the value directly usable for the sysparm_query ServiceNow API
+    query parameter: "aSTARTSWITHa1^ORaSTARTSWITHa2^aENDSWITHa3^ORaENDSWITHa4^b!=b1^ORb!=b2"
+    """
+    param_queries = []
+    # column represents field we're going to describe, val represents expressions we're going to apply to that field
+    for column_name, operators_dict in conditions.items():
+        if operators_dict:
+            # input_operator, input_desired_values = list(operators_dict.items())[0]
+            for input_operator, input_desired_values in operators_dict.items():
+                if not input_desired_values:
+                    continue
+                if input_operator not in POSSIBLE_QUERY_FIELDS:
+                    raise ValueError(f"{column_name} is not possible field for sysparm_query")
+                query_operator = OPERATORS_MAPPING[input_operator]
+                param_queries.append(
+                    _operators_query(column_name, query_operator, input_desired_values)
+                )
+    if param_queries:
+        return "^".join(param_queries)
+    return None
+
 
 
 def is_superset(superset, candidate):

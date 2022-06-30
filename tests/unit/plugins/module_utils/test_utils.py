@@ -101,3 +101,42 @@ class TestPayloadMapper:
         mapper = utils.PayloadMapper(dict(a=[(1, "a1"), (2, "a2")], b=[(2, "b2")]))
 
         assert data == mapper.to_snow(mapper.to_ansible(data))
+
+
+class TestSysparmQueryFromConditions:
+    def test_empty_conditions(self):
+        assert utils.sysparm_query_from_conditions({}) is None
+
+    def test_conditions_single_field(self):
+        conditions = dict(
+            a=dict(less_than_or_is=["a1", "a2"])
+        )
+        sysparm_query = utils.sysparm_query_from_conditions(conditions)
+
+        # We do not care about the order, we just want to make sure
+        # that there is "and" between conditions for both fields.
+        assert sysparm_query in ("a<=a1^ORa<=a2", "ORa<=a2^a<=a1")
+
+    @pytest.mark.parametrize(
+        "conditions,expected",
+        [
+            (
+                    dict(a=dict(less_than_or_is=["a1", "a2", "a3", "a4"]), b=dict(greater_than_or_is=["b1", "b2"])),
+                    "a<=a1^ORa<=a2^ORa<=a3^ORa<=a4^b>=b1^ORb>=b2"
+            ),
+            (
+                    dict(a=dict(less_than_or_is=["a1", "a2", "a3", "a4"]), b=dict()),
+                    "a<=a1^ORa<=a2^ORa<=a3^ORa<=a4"
+            ),
+            (
+                    dict(a=dict(less_than_or_is=["a1", "a2"], is_empty_string=['c1', 'c2', 'c3'])),
+                    "a<=a1^ORa<=a2^aEMPTYSTRINGc1^ORaEMPTYSTRINGc2^ORaEMPTYSTRINGc3"
+            ),
+            (
+                    dict(a=dict(starts_with=["a1", "a2"], ends_with=["a3", "a4"]), b=dict(is_not=["b1", "b2"])),
+                    "aSTARTSWITHa1^ORaSTARTSWITHa2^aENDSWITHa3^ORaENDSWITHa4^b!=b1^ORb!=b2"
+            )
+        ],
+    )
+    def test_conditions_multiple_field(self, conditions, expected):
+        assert expected == utils.sysparm_query_from_conditions(conditions)
