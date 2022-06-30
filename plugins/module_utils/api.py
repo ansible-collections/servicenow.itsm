@@ -10,7 +10,8 @@ __metaclass__ = type
 SERVICENOW_QUERY_PREFIX = "sysparm_"
 
 POSSIBLE_FILTER_PARAMETERS = [
-    "query", "display_value", "exclude_reference_link", "fields", "query_category", "query_no_domain", "no_count"
+    "query", "display_value", "exclude_reference_link",  "fields", "query_category",
+    "query_no_domain", "no_count", "columns"
 ]
 
 POSSIBLE_FIELDS = [
@@ -36,12 +37,28 @@ OPERATORS_MAPPING = dict(
     less_than_or_is_field='LT_OR_EQUALS_FIELD', changes='VALCHANGES', changes_from='CHANGESFROM', changes_to='CHANGESTO'
 )
 
+SN_QUERY_MAPPING = dict(
+    query='sysparm_query',
+    display_value='sysparm_display_value',
+    exclude_reference_link='sysparm_exclude_reference_link',
+    suppress_pagination_header='sysparm_suppress_pagination_header',
+    fields='sysparm_fields',
+    columns='sysparm_fields',
+    query_category='sysparm_query_category',
+    limit='sysparm_limit',
+    view='sysparm_view',
+    query_no_domain='sysparm_query_no_domain',
+    no_count='sysparm_no_count'
+)
+
+FIELDS_NAME = 'columns'
+
 
 def transform_query_to_servicenow_query(query):
     """
-    Transforms query by adding suffix to the query
+    Transforms query by applying SN_QUERY_MAPPING to query's keys.
     """
-    return {SERVICENOW_QUERY_PREFIX + query_key: query_value for (query_key, query_value) in query.items()}
+    return {SN_QUERY_MAPPING[query_key]: query_value for (query_key, query_value) in query.items()}
 
 
 def table_name(module):

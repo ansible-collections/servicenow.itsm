@@ -15,11 +15,14 @@ EXAMPLES = """ """
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table, utils
-from ..module_utils.api import transform_query_to_servicenow_query, POSSIBLE_FILTER_PARAMETERS, table_name
+from ..module_utils.api import (
+    transform_query_to_servicenow_query, POSSIBLE_FILTER_PARAMETERS, table_name, SN_QUERY_MAPPING, FIELDS_NAME
+)
 
 
 def run(module, table_client):
-    module.params["columns"] = ",".join([field.lower() for field in module.params["columns"]])
+    if FIELDS_NAME in module.params:
+        module.params[FIELDS_NAME] = ",".join([field.lower() for field in module.params[FIELDS_NAME]])
     query = utils.filter_dict(module.params, *POSSIBLE_FILTER_PARAMETERS)
     servicenow_query = transform_query_to_servicenow_query(query)
     return table_client.list_records(table_name(module), servicenow_query)
