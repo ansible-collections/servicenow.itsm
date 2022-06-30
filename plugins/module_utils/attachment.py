@@ -110,6 +110,35 @@ class AttachmentClient:
 
         return list(mapped_records.values())
 
+    def get_attachment(self, attachment_sys_id, dest):
+        response = self.client.get(_path(attachment_sys_id, 'file'))
+        with open(dest, 'wb') as f:
+            f.write(response.data)
+        return response.data  # What to return if anything?
+
+        # # FROM https://developer.servicenow.com/dev.do#!/reference/api/sandiego/rest/c_AttachmentAPI#attachment-GET-file
+        # # Install requests package for python
+        # import requests
+
+        # # Set the request parameters
+        # url = 'https://instance.servicenow.com/api/now/attachment/615ea769c0a80166001cf5f2367302f5/file'
+
+        # # Set the user credentials
+        # user = 'username'
+        # pwd = 'password'
+
+        # # Set the proper headers
+        # headers = {"Accept":"*/*"}
+
+        # # Make the HTTP request
+        # response = requests.get(url, auth=(user, pwd), headers=headers)
+
+        # # Check for HTTP codes other than 200
+        # if response.status_code != 200: 
+        #     print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
+        #     exit()
+
+
 
 def transform_metadata_list(metadata_list, hashing_method):
     metadata_dict = dict()
