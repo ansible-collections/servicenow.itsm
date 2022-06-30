@@ -129,8 +129,8 @@ class TestSysparmQueryFromConditions:
                     "a<=a1^ORa<=a2^ORa<=a3^ORa<=a4"
             ),
             (
-                    dict(a=dict(less_than_or_is=["a1", "a2"], is_empty_string=['c1', 'c2', 'c3'])),
-                    "a<=a1^ORa<=a2^aEMPTYSTRINGc1^ORaEMPTYSTRINGc2^ORaEMPTYSTRINGc3"
+                    dict(a=dict(less_than_or_is=["a1", "a2"], is_empty_string=None)),
+                    "a<=a1^ORa<=a2^aEMPTYSTRING"
             ),
             (
                     dict(a=dict(starts_with=["a1", "a2"], ends_with=["a3", "a4"]), b=dict(is_not=["b1", "b2"])),

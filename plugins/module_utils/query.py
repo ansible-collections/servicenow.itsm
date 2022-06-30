@@ -165,6 +165,17 @@ OPERATORS = (
     | OPERATORS_EMAIL
 )
 
+# Example:
+#   - starts_with is not one-side operator, as it's used in the following way: short_descriptionSTARTSWITHSAP
+#   - is_empty is one-side operator, as it's used in the following way: short_descriptionISEMPTY
+#     (meaning, there is no comparison attribute on the right side)
+# This will play a role in /plugins/module_utils/utils.py's method sysparm_query_from_conditions, where it's important
+# how to set the URL for the search query
+ONE_SIDE_OPERATORS = [
+    'is_empty', 'is_not_empty', 'is_anything', 'is_empty_string',
+]
+
+
 POSSIBLE_QUERY_FIELDS = [
     'starts_with', 'ends_with', 'contains', 'does_not_contain', 'is_not', 'is_empty', 'is_not_empty', 'is_anything',
     'is_empty_string', 'less_than_or_is', 'greater_than_or_is', 'between', 'is_same', 'is_different', 'is_dynamic',
@@ -172,7 +183,7 @@ POSSIBLE_QUERY_FIELDS = [
     'trend_on_or_before', 'trend_after', 'trend', 'trend_before', 'trend_on', 'relative_on_or_after',
     'relative_on_or_before', 'relative_after', 'relative_before', 'relative_on', 'is_more_than', 'is_less_than',
     'greater_than_field', 'less_than_field', 'greater_than_or_is_field', 'less_than_or_is_field', 'changes',
-    'changes_from', 'changes_to',
+    'changes_from', 'changes_to', 'is'
 ]
 
 OPERATORS_MAPPING = dict(
