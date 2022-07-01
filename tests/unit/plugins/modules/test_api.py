@@ -45,7 +45,7 @@ class TestUpdateResource:
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 resource="incident",
-                action="update",
+                action="patch",
                 data=dict(state="old", caller=None, short_description="Test incident", impact="low", urgency="low",
                           number=None, sys_id=None, description=None, close_code=None, close_notes=None,
                           hold_reason=None, other=None, attachments=None,
@@ -112,7 +112,7 @@ class TestCreateResource:
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 resource="incident",
-                action="create",
+                action="post",
                 data=dict(state="new", caller=None, short_description="Test incident", impact="low", urgency="low",
                           number=None, sys_id=None, description=None, close_code=None, close_notes=None,
                           hold_reason=None, other=None, attachments=None,

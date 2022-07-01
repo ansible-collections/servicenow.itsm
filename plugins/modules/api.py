@@ -43,9 +43,9 @@ def delete_resource(module, table_client):
 
 
 def run(module, table_client):
-    if module.params["action"] == "update":  # PATCH method
+    if module.params["action"] == "patch":  # PATCH method
         return update_resource(module, table_client)
-    elif module.params["action"] == "create":  # POST method
+    elif module.params["action"] == "post":  # POST method
         return create_resource(module, table_client)
     return delete_resource(module, table_client)  # DELETE method
 
@@ -63,8 +63,8 @@ def main():
             type="str",
             required=True,
             choices=[
-                "create",
-                "update",
+                "post",
+                "patch",
                 "delete"
             ]
         ),
