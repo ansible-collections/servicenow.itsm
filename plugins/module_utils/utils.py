@@ -6,7 +6,7 @@
 from __future__ import absolute_import, division, print_function
 
 from ansible_collections.servicenow.itsm.plugins.module_utils.query import (
-    OPERATORS_MAPPING, ONE_SIDE_OPERATORS
+    OPERATORS_MAPPING, ONE_SIDE_OPERATORS, NOT_IMPLEMENTED_YET_OPERATORS
 )
 
 __metaclass__ = type
