@@ -410,6 +410,7 @@ from ..module_utils.relations import (
     REL_TABLE,
     enhance_records_with_rel_groups,
 )
+from ..module_utils.utils import sysparm_query_from_conditions
 
 
 def construct_sysparm_query(query):
