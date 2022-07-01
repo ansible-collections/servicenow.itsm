@@ -24,7 +24,6 @@ def run(module, table_client):
     if FIELD_COLUMNS_NAME in module.params:
         module.params[FIELD_COLUMNS_NAME] = ",".join([field.lower() for field in module.params[FIELD_COLUMNS_NAME]])
     if FIELD_QUERY_NAME in module.params:
-        # TODO (tjazsch): Fields for date-type query and between still have to be added. Think about how to do this.
         module.params[FIELD_QUERY_NAME] = utils.sysparm_query_from_conditions(module.params[FIELD_QUERY_NAME])
     query = utils.filter_dict(module.params, *POSSIBLE_FILTER_PARAMETERS)
     servicenow_query = transform_query_to_servicenow_query(query)
@@ -40,11 +39,6 @@ def main():
             type="str",
             required=True
         ),
-        # query is going to be dict, which is going to hold:
-        #   - column names as keys (such as parent, made_sla)
-        #   - Additional dict as values. This dict is going to hold:
-        #       - operators as keys
-        #       - values that this operator is going to match as values
         query=dict(
             type="dict"
         ),  # An encoded query string used to filter the results
