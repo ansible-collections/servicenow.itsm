@@ -4,8 +4,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 from ansible_collections.servicenow.itsm.plugins.module_utils.query import (
-    POSSIBLE_QUERY_FIELDS, OPERATORS_MAPPING, ONE_SIDE_OPERATORS
+    OPERATORS_MAPPING, ONE_SIDE_OPERATORS
 )
 
 __metaclass__ = type
@@ -53,8 +54,8 @@ def sysparm_query_from_conditions(conditions):
             query_operator = OPERATORS_MAPPING[input_operator]
             if input_operator in ONE_SIDE_OPERATORS:
                 param_queries.append(_operators_query_two_side(column_name, query_operator))
-            elif input_operator in POSSIBLE_QUERY_FIELDS and input_operator not in ONE_SIDE_OPERATORS:
-                # ONE_SIDE_OPERATORS is subset of POSSIBLE_QUERY_FIELDS
+            elif input_operator in OPERATORS_MAPPING.keys() and input_operator not in ONE_SIDE_OPERATORS:
+                # ONE_SIDE_OPERATORS is subset of OPERATORS_MAPPING.keys()
                 if not input_desired_values:
                     continue
                 param_queries.append(_operators_query_one_side(column_name, query_operator, input_desired_values))

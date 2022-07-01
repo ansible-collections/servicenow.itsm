@@ -175,17 +175,6 @@ ONE_SIDE_OPERATORS = [
     'is_empty', 'is_not_empty', 'is_anything', 'is_empty_string',
 ]
 
-
-POSSIBLE_QUERY_FIELDS = [
-    'starts_with', 'ends_with', 'contains', 'does_not_contain', 'is_not', 'is_empty', 'is_not_empty', 'is_anything',
-    'is_empty_string', 'less_than_or_is', 'greater_than_or_is', 'between', 'is_same', 'is_different', 'is_dynamic',
-    'is_one_of', 'is_not_one_of', 'less_than', 'greater_than', 'on', 'not_on', 'trend_on_or_after',
-    'trend_on_or_before', 'trend_after', 'trend', 'trend_before', 'trend_on', 'relative_on_or_after',
-    'relative_on_or_before', 'relative_after', 'relative_before', 'relative_on', 'is_more_than', 'is_less_than',
-    'greater_than_field', 'less_than_field', 'greater_than_or_is_field', 'less_than_or_is_field', 'changes',
-    'changes_from', 'changes_to', 'is'
-]
-
 OPERATORS_MAPPING = dict(
     starts_with='STARTSWITH', ends_with='ENDSWITH', contains='LIKE', does_not_contain='NOT LIKE', is_not='!=',
     is_empty='ISEMPTY', is_not_empty='ISNOTEMPTY', is_anything='ANYTHING', is_empty_string='EMPTYSTRING',
