@@ -135,6 +135,11 @@ class TestSysparmQueryFromConditions:
             (
                     dict(a=dict(starts_with=["a1", "a2"], ends_with=["a3", "a4"]), b=dict(is_not=["b1", "b2"])),
                     "aSTARTSWITHa1^ORaSTARTSWITHa2^aENDSWITHa3^ORaENDSWITHa4^b!=b1^ORb!=b2"
+            ),
+            (
+                    dict(a=dict(includes=["a1", "a2"]), b=dict(excludes=["b1", "b2"])),
+                    "a=a1^ORa=a2^b!=b1^b!=b2"
+
             )
         ],
     )

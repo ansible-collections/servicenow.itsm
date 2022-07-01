@@ -221,6 +221,8 @@ OPERATORS_MAPPING = dict(
     at_or_before='<=',
     after='>',
     at_or_after='>=',
+    includes='=',
+    excludes='!='
 )
 
 # Additionally adding 'is' as a key in the dict the following way as 'is' is python's builtin word.
