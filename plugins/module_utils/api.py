@@ -7,10 +7,6 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-SERVICENOW_QUERY_PREFIX = "sysparm_"
-
-
-
 SN_QUERY_MAPPING = dict(
     query='sysparm_query',
     display_value='sysparm_display_value',
@@ -31,7 +27,7 @@ FIELD_COLUMNS_NAME = 'columns'
 FIELD_QUERY_NAME = 'query'
 
 POSSIBLE_FILTER_PARAMETERS = [
-    FIELD_QUERY_NAME, "display_value", "exclude_reference_link",  "fields", "query_category",
+    FIELD_QUERY_NAME, "display_value", "exclude_reference_link", "fields", "query_category",
     "query_no_domain", "no_count", FIELD_COLUMNS_NAME
 ]
 
