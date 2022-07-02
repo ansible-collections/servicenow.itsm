@@ -15,7 +15,7 @@ module: attachment
 author:
   - Polona Mihalič (@PolonaM)
 
-short_description: a module that users can use to download attachments
+short_description: a module that users can use to download attachments using sys_id
 
 description:
   - Create, delete or update a ServiceNow change request.
@@ -139,7 +139,6 @@ options:
 """
 
 EXAMPLES = """
-# Run as: ansible-playbook -t download-attachment-sn attachment.yaml
 - name: Download examples
   hosts: localhost
   vars:
@@ -160,6 +159,7 @@ EXAMPLES = """
       - download-attachment-sn
 """
 
+import hashlib
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -171,11 +171,41 @@ from ..module_utils import (
 )
 
 
+def get_checksum_dest(file_path):
+    h = hashlib.sha256()
+
+    with open(file_path, 'rb') as file:
+        while True:
+            # Reading is buffered, so we can read smaller chunks.
+            chunk = file.read(h.block_size)
+            if not chunk:
+                break
+            h.update(chunk)
+
+    return h.hexdigest()
+
+
+def get_checksum_src(binary_data):
+    h = hashlib.sha256()
+    # Should we implement also block_size reading?
+    # while True:
+    #     chunk = response.data.read(h.block_size) # replace read 
+    #     if not chunk:
+    #         break
+    #     h.update(chunk)
+    h.update(binary_data)
+    return h.hexdigest()
+
+
 def run(module, attachment_client):
-    return attachment_client.get_attachment(
+    response = attachment_client.get_attachment(
       module.params["sys_id"],
       module.params["dest"]
-      )  # response is binary file attachment
+      )
+    checksum_src = get_checksum_src(response.data)
+    checksum_dest = get_checksum_dest(module.params["dest"])
+
+    return response, checksum_src, checksum_dest
 
 
 def main():
@@ -196,9 +226,26 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         attachment_client = attachment.AttachmentClient(snow_client)
-        record = run(module, attachment_client)  # response is binary file attachment
-        print(record)
-        module.exit_json(changed=True, record='record')  # Changed True because we change the content of the computer where playbook runs
+        response, checksum_src, checksum_dest = run(module, attachment_client)
+        module.exit_json(
+          changed=True,  # Changed True because we change the content of the computer where playbook runs
+          checksum_dest=checksum_dest,
+          checksum_src=checksum_src,
+          # dest="/tmp/sn-attachment",
+          # elapsed=2, # The number of seconds that elapsed while performing the download
+          # gid=1001, # group id of the file
+          # group="polonamihalic", # group of the file
+          # md5sum="e67247842e8d985fd709ff18599699c2", # md5 checksum of the file after download - WHY DO WE NEED THIS?
+          # mode="0664", # permissions of the target
+          # msg="OK (unknown bytes)", # the HTTP message from the request
+          # owner="polonamihalic", # owner of the file
+          # size=1905, # size of the target
+          # src="/home/polonamihalic/.ansible/tmp/ansible-tmp-1656593431.4899359-251579-202476144348026/tmp6w1hml3g", # source file used after download
+          # state="file", # state of the target
+          status_code=response.status, # the HTTP status code from the request
+          # uid=1001, # owner id of the file, after execution
+          # url= "https://dev121244.service-now.com/api/now/attachment/11138a9e97901110166e318c1253afd9/file" # the actual URL used for the request
+          )
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
 

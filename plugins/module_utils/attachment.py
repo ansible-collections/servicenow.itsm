@@ -114,7 +114,7 @@ class AttachmentClient:
         response = self.client.get(_path(attachment_sys_id, 'file'))
         with open(dest, 'wb') as f:
             f.write(response.data)
-        return response.data  # What to return if anything?
+        return response  # What to return if anything?
 
         # # FROM https://developer.servicenow.com/dev.do#!/reference/api/sandiego/rest/c_AttachmentAPI#attachment-GET-file
         # # Install requests package for python
