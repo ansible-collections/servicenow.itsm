@@ -112,13 +112,14 @@ class AttachmentClient:
         return list(mapped_records.values())
 
     def get_attachment(self, attachment_sys_id, dest):
-        response = self.client.get(_path(attachment_sys_id, 'file'))
+        response = self.client.get(_path(attachment_sys_id, "file"))
+        url = os.path.join(self.client.host, _path(attachment_sys_id, "file"))
         # how to handle big files?
         # check service now documentation/file limits
         # ask on meeting
-        with open(dest, 'wb') as f:
+        with open(dest, "wb") as f:
             f.write(response.data)
-        return response
+        return url, response
 
 
 def transform_metadata_list(metadata_list, hashing_method):
