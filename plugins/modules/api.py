@@ -30,7 +30,8 @@ def update_resource(module, table_client):
 def create_resource(module, table_client):
     # At the moment, creating a resource is not idempotent (meaning: If a record with such data as specified in
     # module.params["data"] already exists, such resource will get created once again).
-    new = table_client.create_record(table=table_name(module), payload=module.params["data"], check_mode=None)
+    new = table_client.create_record(
+        table=table_name(module), payload=module.params["data"], check_mode=module.check_mode)
     return True, new, dict(before=None, after=new)
 
 
@@ -63,9 +64,9 @@ def main():
             type="str",
             required=True,
             choices=[
-                "post",
-                "patch",
-                "delete"
+                "post",  # create
+                "patch",  # update
+                "delete"  # delete
             ]
         ),
         data=dict(
