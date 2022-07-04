@@ -26,8 +26,8 @@ extends_documentation_fragment:
   - servicenow.itsm.sys_id
 
 options:
-  type:
-    dest:
+  dest:
+    description:
       - Specify download folder.
     type: str
 """
