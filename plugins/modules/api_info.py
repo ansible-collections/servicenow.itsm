@@ -40,7 +40,8 @@ def main():
             required=True
         ),
         query=dict(
-            type="dict"
+            type="dict",
+            default=dict()
         ),  # An encoded query string used to filter the results
         display_value=dict(
             type="str",
