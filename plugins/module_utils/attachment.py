@@ -27,8 +27,8 @@ def _path(*subpaths):
 
 class AttachmentClient:
     def __init__(self, client, batch_size=10000):
-        # 10000 records is default batch size for ServiceNow Attachment REST API, so we also use it
-        # as a default.
+        # 10000 records is default batch size for ServiceNow Attachment
+        # REST API, so we also use it as a default.
         self.client = client
         self.batch_size = batch_size
 
@@ -62,7 +62,8 @@ class AttachmentClient:
         ).json["result"]
 
     def upload_record(self, table, table_sys_id, metadata, check_mode):
-        # Table and table_sys_id parameters uniquely identify the record we will attach a file to.
+        # Table and table_sys_id parameters uniquely identify the record we
+        # will attach a file to.
         query = dict(
             table_name=table,
             table_sys_id=table_sys_id,
@@ -112,32 +113,12 @@ class AttachmentClient:
 
     def get_attachment(self, attachment_sys_id, dest):
         response = self.client.get(_path(attachment_sys_id, 'file'))
+        # how to handle big files?
+        # check service now documentation/file limits
+        # ask on meeting
         with open(dest, 'wb') as f:
             f.write(response.data)
-        return response  # What to return if anything?
-
-        # # FROM https://developer.servicenow.com/dev.do#!/reference/api/sandiego/rest/c_AttachmentAPI#attachment-GET-file
-        # # Install requests package for python
-        # import requests
-
-        # # Set the request parameters
-        # url = 'https://instance.servicenow.com/api/now/attachment/615ea769c0a80166001cf5f2367302f5/file'
-
-        # # Set the user credentials
-        # user = 'username'
-        # pwd = 'password'
-
-        # # Set the proper headers
-        # headers = {"Accept":"*/*"}
-
-        # # Make the HTTP request
-        # response = requests.get(url, auth=(user, pwd), headers=headers)
-
-        # # Check for HTTP codes other than 200
-        # if response.status_code != 200: 
-        #     print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
-        #     exit()
-
+        return response
 
 
 def transform_metadata_list(metadata_list, hashing_method):
