@@ -118,8 +118,12 @@ class AttachmentClient:
         # ask on meeting
     
     def save_attachment(self, binary_data, dest):
-        with open(dest, "wb") as f:
-            f.write(binary_data)
+        try:
+            with open(dest, "wb") as f:
+                f.write(binary_data)
+        except Exception: # is this better?
+        # except (IOError, OSError):
+            raise errors.ServiceNowError(f"Cannot open or write to {dest}")
 
 
 def transform_metadata_list(metadata_list, hashing_method):
