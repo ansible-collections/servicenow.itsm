@@ -81,16 +81,18 @@ def get_checksum_src(binary_data):
 
 def run(module, attachment_client):
     start = time.time()
-    url, response = attachment_client.get_attachment(
-        module.params["sys_id"], module.params["dest"]
-    )
+    response = attachment_client.get_attachment(module.params["sys_id"])
+    if response.status == 200:
+        attachment_client.write_attachment(response.data, module.params["dest"])
+    else:
+        raise errors.ServiceNowError("Not able to retrieve attachment")
     end = time.time()
     elapsed = f"{end - start:.1f}"
     checksum_src = get_checksum_src(response.data)
     checksum_dest = get_checksum_dest(module.params["dest"])
     size = os.path.getsize(module.params["dest"])  # bytes
 
-    return elapsed, response, checksum_src, checksum_dest, size, url
+    return elapsed, response, checksum_src, checksum_dest, size
 
 
 def main():
@@ -109,7 +111,7 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         attachment_client = attachment.AttachmentClient(snow_client)
-        elapsed, response, checksum_src, checksum_dest, size, url = run(
+        elapsed, response, checksum_src, checksum_dest, size = run(
             module, attachment_client
         )
         module.exit_json(
@@ -119,7 +121,6 @@ def main():
             elapsed=elapsed,
             size=size,
             status_code=response.status,
-            url=url,  # the actual URL used for the request
         )
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
