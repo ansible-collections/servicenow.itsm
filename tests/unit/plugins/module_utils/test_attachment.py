@@ -792,3 +792,44 @@ class TestAttachmentUpdateRecords:
                 "file_name": "attachment_name.txt",
             },
         ] == sorted(record, key=lambda k: k["file_name"])
+
+
+class TestAttachmentGetAttachment:
+    def test_get_attachment_200(self, client):
+        client.get.return_value = Response(
+            200, 'binary_data', 'headers'
+        )
+        a = attachment.AttachmentClient(client)
+
+        a.get_attachment("0061f0c510247200964f77ffeec6c4de")
+
+        client.get.assert_called_once_with(
+            "api/now/attachment/0061f0c510247200964f77ffeec6c4de/file"
+        )
+
+    def test_get_attachment_404(self):
+        # "msg": "Record doesn't exist or ACL restricts the record retrieval" 
+        pass
+
+    def test_get_attachment_unexpected_response(self):
+        # "msg": "Unexpected response..." 
+        pass
+
+    def test_get_attachment_wrong_auth(self):
+        # "msg": "Failed to authenticate with the instance: 401 Unauthorized" (from client.py _request())
+        pass
+
+    def test_get_attachment_wrong_host(self):
+        # "msg": "[Errno -2] Name or service not known" (from client.py _request())
+        pass
+
+
+class TestAttachmentSaveAttachment:
+    def test_save_attachment(self, tmp_path):  # tmp_path is a built in fixture
+        pass
+
+    def test_save_attachment_bad_dest(self):
+        # "msg": "Cannot open or write to /tmpž/sn-attachment"
+        pass
+
+# stestiraj 0B? je sploh treba to?
