@@ -16,7 +16,8 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table, utils
 from ..module_utils.api import (
-    transform_query_to_servicenow_query, POSSIBLE_FILTER_PARAMETERS, table_name, FIELD_COLUMNS_NAME, FIELD_QUERY_NAME
+    transform_query_to_servicenow_query, POSSIBLE_FILTER_PARAMETERS, table_name, FIELD_COLUMNS_NAME, FIELD_QUERY_NAME,
+    ACTION_POST, ACTION_PATCH, ACTION_DELETE, FIELD_SYS_ID
 )
 
 
@@ -25,8 +26,14 @@ def run(module, table_client):
         module.params[FIELD_COLUMNS_NAME] = ",".join([field.lower() for field in module.params[FIELD_COLUMNS_NAME]])
     if FIELD_QUERY_NAME in module.params:
         module.params[FIELD_QUERY_NAME] = utils.sysparm_query_from_conditions(module.params[FIELD_QUERY_NAME])
-    query = utils.filter_dict(module.params, *POSSIBLE_FILTER_PARAMETERS)
-    servicenow_query = transform_query_to_servicenow_query(query)
+    if module.params[FIELD_SYS_ID] is not None:
+        # If sys_id is specified, we're only going to retrieve a single record
+        servicenow_query = dict(sys_id=module.params[FIELD_SYS_ID])
+    else:
+        # Otherwise, retrieve records that fit the values specified in query
+        query = utils.filter_dict(module.params, *POSSIBLE_FILTER_PARAMETERS)
+        servicenow_query = transform_query_to_servicenow_query(query)
+    # raise errors.ServiceNowError(servicenow_query)
     return table_client.list_records(table_name(module), servicenow_query)
 
 

@@ -15,15 +15,17 @@ EXAMPLES = """ """
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table
-from ..module_utils.api import table_name
+from ..module_utils.api import table_name, get_query_by_sys_id, ACTION_POST, ACTION_PATCH, ACTION_DELETE, FIELD_SYS_ID
 
 
 def update_resource(module, table_client):
-    record_old = table_client.get_record(table_name(module), module.params["data"])
+    query = get_query_by_sys_id(module)
+    # raise errors.ServiceNowError(module.params[FIELD_SYS_ID])
+    record_old = table_client.get_record(table_name(module), query)
     if record_old is None:
         return False, None, dict(before=None, after=None)
     record_new = table_client.update_record(
-        table_name(module), record_old, module.params["update_data"], module.check_mode)
+        table_name(module), record_old, module.params["data"], module.check_mode)
     return True, record_new, dict(before=record_old, after=record_new)
 
 
@@ -36,7 +38,8 @@ def create_resource(module, table_client):
 
 
 def delete_resource(module, table_client):
-    record = table_client.get_record(table_name(module), module.params["data"])
+    query = get_query_by_sys_id(module)
+    record = table_client.get_record(table_name(module), query)
     if record is None:
         return False, None, dict(before=None, after=None)
     table_client.delete_record(table_name(module), record, module.check_mode)
@@ -44,9 +47,12 @@ def delete_resource(module, table_client):
 
 
 def run(module, table_client):
-    if module.params["action"] == "patch":  # PATCH method
+    action = module.params['action']
+    if (action == ACTION_PATCH or action == ACTION_DELETE) and module.params[FIELD_SYS_ID] is None:
+        raise errors.ServiceNowError('For actions patch and delete sys_id needs to be specified.')
+    if action == ACTION_PATCH:  # PATCH method
         return update_resource(module, table_client)
-    elif module.params["action"] == "post":  # POST method
+    elif action == ACTION_POST:  # POST method
         return create_resource(module, table_client)
     return delete_resource(module, table_client)  # DELETE method
 
@@ -54,7 +60,8 @@ def run(module, table_client):
 def main():
     arg_spec = dict(
         arguments.get_spec(
-            "instance", "sys_id"
+            "instance",
+            "sys_id"  # necessary for deleting and patching a resource, not relevant if creating a resource
         ),
         resource=dict(
             type="str",
@@ -64,16 +71,13 @@ def main():
             type="str",
             required=True,
             choices=[
-                "post",  # create
-                "patch",  # update
-                "delete"  # delete
+                ACTION_POST,  # create
+                ACTION_PATCH,  # update
+                ACTION_DELETE  # delete
             ]
         ),
         data=dict(
             type="dict",
-        ),
-        update_data=dict(
-            type="dict"
         ),
     )
 

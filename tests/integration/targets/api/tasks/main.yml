@@ -11,7 +11,7 @@
       register: initial
     - ansible.builtin.assert:
         that:
-          - initial != []
+          - initial.record != []
 
     - name: Create a resource in table incident with some specified attributes
       servicenow.itsm.api: &api-create
@@ -34,21 +34,12 @@
         that:
           - result.record | length == initial.record | length
 
-    - name: Verify that a resource in table incident has been created
-      servicenow.itsm.api_info:
-        resource: incident
-        query:
-          short_description:
-            is:
-              - my-incident
-      register: result_before
-
     - name: Create a resource in table incident
       servicenow.itsm.api: *api-create
       register: first_incident
     - ansible.builtin.assert: *api-create-assertions
 
-    - name: Verify creation in check mode did not create a record
+    - name: Retrieve all incidents after creating a new resource
       servicenow.itsm.api_info:
         resource: incident
       register: result
@@ -69,9 +60,8 @@
       servicenow.itsm.api: &api-update
         resource: incident
         action: patch
+        sys_id: "{{ first_incident.record.sys_id }}"
         data:
-          sys_id: "{{ first_incident.record.sys_id }}"
-        update_data:
           short_description: my-incident-updated
       check_mode: true
       register: updated_incident
@@ -84,10 +74,7 @@
     - name: Verify modification in check mode did not update the record
       servicenow.itsm.api_info:
         resource: incident
-        query:
-          sys_id:
-              is:
-                - "{{ first_incident.record.sys_id }}"
+        sys_id: "{{ first_incident.record.sys_id }}"
       register: result
     - ansible.builtin.assert:
         that:
@@ -111,9 +98,8 @@
       servicenow.itsm.api:
         resource: incident
         action: patch
+        sys_id: "nonexistent sys ID"
         data:
-          sys_id: "nonexistent sys ID"
-        update_data:
           short_description: "this part will not be reached"
       register: result_update_failed
     - ansible.builtin.assert:
@@ -124,8 +110,7 @@
       servicenow.itsm.api: &api-delete
         resource: incident
         action: delete
-        data:
-          sys_id: "{{ first_incident.record.sys_id }}"
+        sys_id: "{{ first_incident.record.sys_id }}"
       check_mode: true
       register: deleted_incident
     - ansible.builtin.assert: &api-delete-assertions
@@ -135,10 +120,7 @@
     - name: Verify deletion in check mode did not remove the record
       servicenow.itsm.api_info:
         resource: incident
-        query:
-          sys_id:
-            is:
-              - "{{ first_incident.record.sys_id }}"
+        sys_id: "{{ first_incident.record.sys_id }}"
       register: result
     - ansible.builtin.assert:
         that:
@@ -154,10 +136,7 @@
     - name: Verify that record was deleted
       servicenow.itsm.api_info:
         resource: incident
-        query:
-          sys_id:
-            is:
-              - "{{ first_incident.record.sys_id }}"
+        sys_id: "{{ first_incident.record.sys_id }}"
       register: result
     - ansible.builtin.assert:
         that:

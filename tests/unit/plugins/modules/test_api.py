@@ -24,13 +24,13 @@ class TestUpdateResource:
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
+                sys_id='my_sys_id',
                 resource="incident",
-                action="update",
-                data=dict(state="old", caller=None, short_description="Test incident", impact="low", urgency="low",
+                action="patch",
+                data=dict(state="new", caller=None, short_description="Test incident", impact="low", urgency="low",
                           number=None, sys_id=None, description=None, close_code=None, close_notes=None,
                           hold_reason=None, other=None, attachments=None,
                           ),
-                update_data=dict(state="new")
             )
         )
 
@@ -45,12 +45,9 @@ class TestUpdateResource:
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 resource="incident",
+                sys_id='my_sys_id',
                 action="patch",
-                data=dict(state="old", caller=None, short_description="Test incident", impact="low", urgency="low",
-                          number=None, sys_id=None, description=None, close_code=None, close_notes=None,
-                          hold_reason=None, other=None, attachments=None,
-                          ),
-                update_data=dict(state="new")
+                data=dict(state="new")
             )
         )
 
@@ -117,7 +114,6 @@ class TestCreateResource:
                           number=None, sys_id=None, description=None, close_code=None, close_notes=None,
                           hold_reason=None, other=None, attachments=None,
                           ),
-                update_data=dict()
             )
         )
 
@@ -165,12 +161,8 @@ class TestDeleteResource:
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 resource="incident",
+                sys_id='my_sys_id',
                 action="delete",
-                data=dict(state="new", caller=None, short_description="Test incident", impact="low", urgency="low",
-                          number=None, sys_id=None, description=None, close_code=None, close_notes=None,
-                          hold_reason=None, other=None, attachments=None,
-                          ),
-                update_data=dict()
             )
         )
 
@@ -185,12 +177,8 @@ class TestDeleteResource:
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 resource="incident",
+                sys_id='my_sys_id',
                 action="delete",
-                data=dict(state="new", caller=None, short_description="Test incident", impact="low", urgency="low",
-                          number=None, sys_id=None, description=None, close_code=None, close_notes=None,
-                          hold_reason=None, other=None, attachments=None,
-                          ),
-                update_data=dict()
             )
         )
 

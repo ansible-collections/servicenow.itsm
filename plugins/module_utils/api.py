@@ -25,11 +25,16 @@ SN_QUERY_MAPPING = dict(
 # so setting constant variable for them.
 FIELD_COLUMNS_NAME = 'columns'
 FIELD_QUERY_NAME = 'query'
+FIELD_SYS_ID = 'sys_id'
 
 POSSIBLE_FILTER_PARAMETERS = [
     FIELD_QUERY_NAME, "display_value", "exclude_reference_link", "fields", "query_category",
-    "query_no_domain", "no_count", FIELD_COLUMNS_NAME
+    "query_no_domain", "no_count", FIELD_COLUMNS_NAME, FIELD_SYS_ID
 ]
+
+ACTION_POST = 'post'
+ACTION_PATCH = 'patch'
+ACTION_DELETE = 'delete'
 
 
 def transform_query_to_servicenow_query(query):
@@ -44,3 +49,7 @@ def table_name(module):
     In api.py and api_info.py the table's name is always going to be stored in module's resource
     """
     return module.params["resource"]
+
+
+def get_query_by_sys_id(module):
+    return dict(sys_id=module.params['sys_id'])
