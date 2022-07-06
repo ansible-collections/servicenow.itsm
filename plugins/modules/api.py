@@ -8,9 +8,182 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = r""" """
+DOCUMENTATION = r"""
+module: api
 
-EXAMPLES = """ """
+author:
+  - Manca Bizjak (@mancabizjak)
+  - Miha Dolinar (@mdolin)
+  - Tadej Borovsak (@tadeboro)
+  - Matej Pevec (@mysteriouswolf)
+
+short_description: Manage ServiceNow POST, PATCH and DELETE requests
+description:
+  - Create, delete or update a ServiceNow record from the given resource
+  - For more information, refer to the ServiceNow REST TAble API documentation at
+    U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO).
+version_added: 1.4.0
+extends_documentation_fragment:
+  - servicenow.itsm.instance
+  - servicenow.itsm.sys_id
+  - servicenow.itsm.resource
+  - servicenow.itsm.action
+  - servicenow.itsm.data
+options:
+  sys_id:
+    description:
+      - Unique ID of the record that we want to perform POST, PATCH and DELETE operation on
+      - If no such sys_id exists, no request is going to be executed
+      - Needs to be specified if I(action==patch or action==delete)
+    type: str
+  resource:
+    description:
+      - The name of the table that we want to obtain records from
+    type: str
+    required: true
+  action:
+    description: The action that we want to perform (post, patch, delete)
+    type: str
+    required: true
+    choices:
+      - post
+      - patch
+      - delete
+  data:
+    description:
+      - Only relevant if I(action==patch or action==post)
+      - The data that we want to update the resource with
+      - Has resource's column names as keys (such as description, number, priority, ...) and the patching values
+        as keys (the value we want to change column to)
+    type: dict
+"""
+
+EXAMPLES = """
+- name: Create a resource in table incident, set value short_description to my-incident
+  servicenow.itsm.api:
+    resource: incident
+    action: post
+    data:
+      short_description: my-incident
+  register: result
+
+- name: Update resource's description in the table incident with given sys_id
+  servicenow.itsm.api:
+    resource: incident
+    action: patch
+    sys_id: 46b66a40a9fe198101f243dfbc79033d
+    data:
+      short_description: my-incident-updated
+  register: result
+
+- name: Delete the resource the table incident with given sys_id
+  servicenow.itsm.api:
+    resource: incident
+      action: patch
+      sys_id: 46b66a40a9fe198101f243dfbc79033d
+  register: result
+"""
+
+RETURN = """
+record:
+  description:
+    - The problem record.
+  returned: success
+  type: dict
+  sample:
+    "active": "true",
+    "activity_due": "",
+    "additional_assignee_list": "",
+    "approval": "not requested",
+    "approval_history": "",
+    "approval_set": "",
+    "assigned_to": "",
+    "assignment_group": "",
+    "business_duration": "",
+    "business_impact": "",
+    "business_service": "",
+    "business_stc": "",
+    "calendar_duration": "",
+    "calendar_stc": "",
+    "caller_id": "",
+    "category": "inquiry",
+    "cause": "",
+    "caused_by": "",
+    "child_incidents": "0",
+    "close_code": "",
+    "close_notes": "",
+    "closed_at": "",
+    "closed_by": "",
+    "cmdb_ci": "",
+    "comments": "",
+    "comments_and_work_notes": "",
+    "company": "",
+    "contact_type": "",
+    "contract": "",
+    "correlation_display": "",
+    "correlation_id": "",
+    "delivery_plan": "",
+    "delivery_task": "",
+    "description": "",
+    "due_date": "",
+    "escalation": "0",
+    "expected_start": "",
+    "follow_up": "",
+    "group_list": "",
+    "hold_reason": "",
+    "impact": "3",
+    "incident_state": "1",
+    "knowledge": "false",
+    "location": "",
+    "made_sla": "true",
+    "notify": "1",
+    "number": "INC0010204",
+    "opened_at": "2022-07-06 08:53:05",
+    "opened_by": "6816f79cc0a8016401c5a33be04be441",
+    "order": "",
+    "origin_id": "",
+    "origin_table": "",
+    "parent": "",
+    "parent_incident": "",
+    "priority": "5",
+    "problem_id": "",
+    "reassignment_count": "0",
+    "reopen_count": "0",
+    "reopened_by": "",
+    "reopened_time": "",
+    "resolved_at": "",
+    "resolved_by": "",
+    "rfc": "",
+    "route_reason": "",
+    "service_offering": "",
+    "severity": "3",
+    "short_description": "my-incident",
+    "sla_due": "",
+    "state": "1",
+    "subcategory": "",
+    "sys_class_name": "incident",
+    "sys_created_by": "admin",
+    "sys_created_on": "2022-07-06 08:53:05",
+    "sys_domain": "global",
+    "sys_domain_path": "/",
+    "sys_id": "35b5fb4197245110949235dfe153af06",
+    "sys_mod_count": "0",
+    "sys_tags": "",
+    "sys_updated_by": "admin",
+    "sys_updated_on": "2022-07-06 08:53:05",
+    "task_effective_number": "INC0010204",
+    "time_worked": "",
+    "universal_request": "",
+    "upon_approval": "proceed",
+    "upon_reject": "cancel",
+    "urgency": "3",
+    "user_input": "",
+    "watch_list": "",
+    "work_end": "",
+    "work_notes": "",
+    "work_notes_list": "",
+    "work_start": ""
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -27,7 +200,6 @@ from ..module_utils.api import (
 
 def update_resource(module, table_client):
     query = get_query_by_sys_id(module)
-    # raise errors.ServiceNowError(module.params[FIELD_SYS_ID])
     record_old = table_client.get_record(table_name(module), query)
     if record_old is None:
         return False, None, dict(before=None, after=None)

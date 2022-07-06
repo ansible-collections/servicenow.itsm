@@ -16,11 +16,11 @@ author:
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
   - Matej Pevec (@mysteriouswolf)
-short_description: List ServiceNow REST Table API results
+short_description: Manage ServiceNow GET requests
 description:
   - Retrieve information about ServiceNow REST Table API results from arbitrary table
   - For more information, refer to the ServiceNow REST TAble API documentation at
-    U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO
+    U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO).
 version_added: 1.4.0
 extends_documentation_fragment:
   - servicenow.itsm.instance

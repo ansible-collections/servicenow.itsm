@@ -9,3 +9,4 @@ per-file-ignores =
     # somewhat different convention here because DOCUMENTATION, EXAMPLES, and
     # RETRUN module variables contain documentation.
     plugins/modules/*:E402
+    plugins/inventory/*:E402
