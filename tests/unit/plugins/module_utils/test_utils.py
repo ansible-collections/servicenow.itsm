@@ -108,9 +108,7 @@ class TestSysparmQueryFromConditions:
         assert utils.sysparm_query_from_conditions({}) is None
 
     def test_conditions_single_field(self):
-        conditions = dict(
-            a=dict(less_than_or_is=["a1", "a2"])
-        )
+        conditions = dict(a=dict(less_than_or_is=["a1", "a2"]))
         sysparm_query = utils.sysparm_query_from_conditions(conditions)
 
         # We do not care about the order, we just want to make sure
@@ -121,26 +119,31 @@ class TestSysparmQueryFromConditions:
         "conditions,expected",
         [
             (
-                    dict(a=dict(less_than_or_is=["a1", "a2", "a3", "a4"]), b=dict(greater_than_or_is=["b1", "b2"])),
-                    "a<=a1^ORa<=a2^ORa<=a3^ORa<=a4^b>=b1^ORb>=b2"
+                dict(
+                    a=dict(less_than_or_is=["a1", "a2", "a3", "a4"]),
+                    b=dict(greater_than_or_is=["b1", "b2"]),
+                ),
+                "a<=a1^ORa<=a2^ORa<=a3^ORa<=a4^b>=b1^ORb>=b2",
             ),
             (
-                    dict(a=dict(less_than_or_is=["a1", "a2", "a3", "a4"]), b=dict()),
-                    "a<=a1^ORa<=a2^ORa<=a3^ORa<=a4"
+                dict(a=dict(less_than_or_is=["a1", "a2", "a3", "a4"]), b=dict()),
+                "a<=a1^ORa<=a2^ORa<=a3^ORa<=a4",
             ),
             (
-                    dict(a=dict(less_than_or_is=["a1", "a2"], is_empty_string=None)),
-                    "a<=a1^ORa<=a2^aEMPTYSTRING"
+                dict(a=dict(less_than_or_is=["a1", "a2"], is_empty_string=None)),
+                "a<=a1^ORa<=a2^aEMPTYSTRING",
             ),
             (
-                    dict(a=dict(starts_with=["a1", "a2"], ends_with=["a3", "a4"]), b=dict(is_not=["b1", "b2"])),
-                    "aSTARTSWITHa1^ORaSTARTSWITHa2^aENDSWITHa3^ORaENDSWITHa4^b!=b1^ORb!=b2"
+                dict(
+                    a=dict(starts_with=["a1", "a2"], ends_with=["a3", "a4"]),
+                    b=dict(is_not=["b1", "b2"]),
+                ),
+                "aSTARTSWITHa1^ORaSTARTSWITHa2^aENDSWITHa3^ORaENDSWITHa4^b!=b1^ORb!=b2",
             ),
             (
-                    dict(a=dict(includes=["a1", "a2"]), b=dict(excludes=["b1", "b2"])),
-                    "a=a1^ORa=a2^b!=b1^b!=b2"
-
-            )
+                dict(a=dict(includes=["a1", "a2"]), b=dict(excludes=["b1", "b2"])),
+                "a=a1^ORa=a2^b!=b1^b!=b2",
+            ),
         ],
     )
     def test_conditions_multiple_field(self, conditions, expected):

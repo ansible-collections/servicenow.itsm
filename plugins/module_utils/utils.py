@@ -6,7 +6,8 @@
 from __future__ import absolute_import, division, print_function
 
 from ansible_collections.servicenow.itsm.plugins.module_utils.query import (
-    OPERATORS_MAPPING, ONE_SIDE_OPERATORS
+    OPERATORS_MAPPING,
+    ONE_SIDE_OPERATORS,
 )
 
 __metaclass__ = type
@@ -25,13 +26,15 @@ def filter_dict(input, *field_names):
 
 
 def _operators_query_two_side(column, operator, elements, is_excludes):
-    """ column, =, ["a1", "a2", "a3", "a4"] -->  column=a1^ORcolumn=a2^ORcolumn=a3^ORcolumn=a4 """
+    """column, =, ["a1", "a2", "a3", "a4"] -->  column=a1^ORcolumn=a2^ORcolumn=a3^ORcolumn=a4"""
     boolean_operator = "^OR" if not is_excludes else "^"
-    return boolean_operator.join("{0}{1}{2}".format(column, operator, i) for i in elements)
+    return boolean_operator.join(
+        "{0}{1}{2}".format(column, operator, i) for i in elements
+    )
 
 
 def _operators_query_one_side(column, operator):
-    """ column, EMPTYSTRING --> columnEMPTYSTRING """
+    """column, EMPTYSTRING --> columnEMPTYSTRING"""
     return column + operator
 
 
@@ -58,18 +61,26 @@ def sysparm_query_from_conditions(conditions):
                 param_queries.append(
                     _operators_query_one_side(column_name, query_operator)
                 )
-            elif input_operator in OPERATORS_MAPPING.keys() and input_operator not in ONE_SIDE_OPERATORS:
+            elif (
+                input_operator in OPERATORS_MAPPING.keys()
+                and input_operator not in ONE_SIDE_OPERATORS
+            ):
                 # ONE_SIDE_OPERATORS is subset of OPERATORS_MAPPING.keys()
                 if not input_desired_values:
                     continue
                 # 'excludes' is the only operator that is being tied by 'AND' operator and not by 'OR'
                 param_queries.append(
                     _operators_query_two_side(
-                        column_name, query_operator, input_desired_values, input_operator == 'excludes'
+                        column_name,
+                        query_operator,
+                        input_desired_values,
+                        input_operator == "excludes",
                     )
                 )
             else:
-                raise ValueError(f"\'{input_operator}\' is not possible field for sysparm_query")
+                raise ValueError(
+                    input_operator + " is not possible field for sysparm_query"
+                )
     if param_queries:
         return "^".join(param_queries)
     return None

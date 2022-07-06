@@ -21,7 +21,9 @@ pytestmark = pytest.mark.skipif(
 class TestMain:
     def test_minimal_set_of_params(self, run_main):
         params = dict(
-            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
             resource="sys_user",
         )
 
@@ -31,7 +33,9 @@ class TestMain:
 
     def test_all_params(self, run_main):
         params = dict(
-            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
             resource="sys_user",
             sys_id="1234",
             query="upon_reject=cancel",
@@ -40,7 +44,7 @@ class TestMain:
             columns=["parent", "watch_list"],
             query_category="cat",
             query_no_domain="true",
-            no_count="true"
+            no_count="true",
         )
 
         success, result = run_main(api_info, params)
@@ -56,9 +60,11 @@ class TestMain:
 class TestRun:
     def test_run(self, create_module, table_client):
         params = dict(
-            instance=dict(host="https://my.host.name", username="user", password="pass"),
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
             resource="sys_user",
-            columns=["upon_reject", "state", "cmdb_ci"]
+            columns=["upon_reject", "state", "cmdb_ci"],
         )
 
         module = create_module(params=params)
@@ -71,4 +77,8 @@ class TestRun:
 
         api_results = api_info.run(module, table_client)
 
-        assert api_results == [dict(p=1, sys_id=1234), dict(q=2, sys_id=4321), dict(r=3, sys_id=1212), ]
+        assert api_results == [
+            dict(p=1, sys_id=1234),
+            dict(q=2, sys_id=4321),
+            dict(r=3, sys_id=1212),
+        ]

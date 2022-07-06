@@ -19,18 +19,28 @@ pytestmark = pytest.mark.skipif(
 
 
 class TestUpdateResource:
-
     def test_update_resource_not_present(self, create_module, table_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
-                sys_id='my_sys_id',
+                sys_id="my_sys_id",
                 resource="incident",
                 action="patch",
-                data=dict(state="new", caller=None, short_description="Test incident", impact="low", urgency="low",
-                          number=None, sys_id=None, description=None, close_code=None, close_notes=None,
-                          hold_reason=None, other=None, attachments=None,
-                          ),
+                data=dict(
+                    state="new",
+                    caller=None,
+                    short_description="Test incident",
+                    impact="low",
+                    urgency="low",
+                    number=None,
+                    sys_id=None,
+                    description=None,
+                    close_code=None,
+                    close_notes=None,
+                    hold_reason=None,
+                    other=None,
+                    attachments=None,
+                ),
             )
         )
 
@@ -45,9 +55,9 @@ class TestUpdateResource:
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 resource="incident",
-                sys_id='my_sys_id',
+                sys_id="my_sys_id",
                 action="patch",
-                data=dict(state="new")
+                data=dict(state="new"),
             )
         )
 
@@ -98,22 +108,32 @@ class TestUpdateResource:
                     sys_id="1234",
                     state="new",
                 ),
-            )
+            ),
         )
 
 
 class TestCreateResource:
-
     def test_create_resource(self, create_module, table_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 resource="incident",
                 action="post",
-                data=dict(state="new", caller=None, short_description="Test incident", impact="low", urgency="low",
-                          number=None, sys_id=None, description=None, close_code=None, close_notes=None,
-                          hold_reason=None, other=None, attachments=None,
-                          ),
+                data=dict(
+                    state="new",
+                    caller=None,
+                    short_description="Test incident",
+                    impact="low",
+                    urgency="low",
+                    number=None,
+                    sys_id=None,
+                    description=None,
+                    close_code=None,
+                    close_notes=None,
+                    hold_reason=None,
+                    other=None,
+                    attachments=None,
+                ),
             )
         )
 
@@ -150,18 +170,17 @@ class TestCreateResource:
                     urgency="3",
                     sys_id="1234",
                 ),
-            )
+            ),
         )
 
 
 class TestDeleteResource:
-
     def test_delete_resource_not_present(self, create_module, table_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 resource="incident",
-                sys_id='my_sys_id',
+                sys_id="my_sys_id",
                 action="delete",
             )
         )
@@ -177,7 +196,7 @@ class TestDeleteResource:
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
                 resource="incident",
-                sys_id='my_sys_id',
+                sys_id="my_sys_id",
                 action="delete",
             )
         )
@@ -205,5 +224,6 @@ class TestDeleteResource:
                     urgency="3",
                     sys_id="1234",
                 ),
-                after=None)
+                after=None,
+            ),
         )

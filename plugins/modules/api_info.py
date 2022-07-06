@@ -56,18 +56,18 @@ options:
       - Query is dictionary, with table's column names as keys and additional dictionaries as values
         Inner dictionaries have keys as possible filter operators (starts_with, contains, is, ...) and list
         of values that this operator can match as values. Elements in the same list will get mapped with
-        'OR' operator and elements in different list will get mapped with 'AND' operator. Example of query may 
+        'OR' operator and elements in different list will get mapped with 'AND' operator. Example of query may
         be seen under examples (the one with query specified).
-      - "Example: query = dict(number=dict(starts_with=['A1', 'A2'], ends_with=['B1', 'B2']), state=dict(is=[7]))) 
+      - "Example: query = dict(number=dict(starts_with=['A1', 'A2'], ends_with=['B1', 'B2']), state=dict(is=[7])))
         will get mapped to URL query as
         numberSTARTSWITHA1^ORnumberSTARTSWITHA2^numberENDSWITHB1^ORnumberENDSWITHB2^state=7 (it would be same
         had you inputed this string directly in REST API."
-      - "List of all possible operators may be found at 
+      - "List of all possible operators may be found at
         U(https://docs.servicenow.com/en-US/bundle/sandiego-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
         under column operator label with spaces replaced with underline (for example: 'is same' is written in the
         link above --> write 'is_same' when filtering through playbook. Same others, e.g.: 'is not' --> 'is_not')"
       - "If your operator is one of the following: 'is_empty', 'is_not_empty', 'is_anything', 'is_empty_string',
-        nothing has to be specified in list of possible values as they're boolean operators that don't need any 
+        nothing has to be specified in list of possible values as they're boolean operators that don't need any
         value on the right side of the operator. For example, if you want to use 'is_empty_string' as query for
         column 'short_desciption', you'd say: query = dict(short_description=dict(is_empty_string=None)).
         Anything else than None would fit the needs be okay. See example of this under the examples (the one with
@@ -99,7 +99,7 @@ options:
     type: bool
 """
 
-EXAMPLES = """ 
+EXAMPLES = """
 - name: Retrieve all records from table incidents
   servicenow.itsm.api_info:
     resource: incident
@@ -253,16 +253,24 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table, utils
 from ..module_utils.api import (
-    transform_query_to_servicenow_query, POSSIBLE_FILTER_PARAMETERS, table_name, FIELD_COLUMNS_NAME, FIELD_QUERY_NAME,
-    ACTION_POST, ACTION_PATCH, ACTION_DELETE, FIELD_SYS_ID
+    transform_query_to_servicenow_query,
+    POSSIBLE_FILTER_PARAMETERS,
+    table_name,
+    FIELD_COLUMNS_NAME,
+    FIELD_QUERY_NAME,
+    FIELD_SYS_ID,
 )
 
 
 def run(module, table_client):
     if FIELD_COLUMNS_NAME in module.params:
-        module.params[FIELD_COLUMNS_NAME] = ",".join([field.lower() for field in module.params[FIELD_COLUMNS_NAME]])
+        module.params[FIELD_COLUMNS_NAME] = ",".join(
+            [field.lower() for field in module.params[FIELD_COLUMNS_NAME]]
+        )
     if FIELD_QUERY_NAME in module.params:
-        module.params[FIELD_QUERY_NAME] = utils.sysparm_query_from_conditions(module.params[FIELD_QUERY_NAME])
+        module.params[FIELD_QUERY_NAME] = utils.sysparm_query_from_conditions(
+            module.params[FIELD_QUERY_NAME]
+        )
     if module.params[FIELD_SYS_ID] is not None:
         # If sys_id is specified, we're only going to retrieve a single record
         servicenow_query = dict(sys_id=module.params[FIELD_SYS_ID])
@@ -270,38 +278,22 @@ def run(module, table_client):
         # Otherwise, retrieve records that fit the values specified in query
         query = utils.filter_dict(module.params, *POSSIBLE_FILTER_PARAMETERS)
         servicenow_query = transform_query_to_servicenow_query(query)
-    raise errors.ServiceNowError(servicenow_query)
-    # raise errors.ServiceNowError(servicenow_query)
     return table_client.list_records(table_name(module), servicenow_query)
 
 
 def main():
     arg_spec = dict(
-        arguments.get_spec(
-            "instance", "sys_id"
-        ),
-        resource=dict(  # resource - table name
-            type="str",
-            required=True
-        ),
-        query=dict(
-            type="dict",
-            default=dict()
-        ),  # An encoded query string used to filter the results
+        arguments.get_spec("instance", "sys_id"),
+        resource=dict(type="str", required=True),
+        query=dict(type="dict", default=dict()),
         display_value=dict(
-            type="str",
-            choices=[
-                "true",
-                "false",
-                "both"
-            ]
+            type="str", choices=["true", "false", "both"]
         ),  # Return field display values (true), actual values (false), or both (all) (default: false)
         exclude_reference_link=dict(
             type="bool",
         ),  # True to exclude Table API links for reference columns (default: false)
         columns=dict(
-            type="list",
-            default=[]
+            type="list", default=[]
         ),  # A comma-separated list of fields to return in the response
         query_category=dict(
             type="str"
@@ -314,10 +306,7 @@ def main():
         ),  # Do not execute a select count(*) on table (default: false)
     )
 
-    module = AnsibleModule(
-        supports_check_mode=True,
-        argument_spec=arg_spec
-    )
+    module = AnsibleModule(supports_check_mode=True, argument_spec=arg_spec)
 
     try:
         snow_client = client.Client(**module.params["instance"])

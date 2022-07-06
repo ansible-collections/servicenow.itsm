@@ -52,7 +52,7 @@ $(integration_test_targets):
 .PHONY: sanity
 sanity:  ## Run sanity tests
 	pip install -r sanity.requirements
-	black -t py33 --check --diff --color plugins tests/unit
+	black -t py27 --check --diff --color plugins tests/unit
 	flake8
 	ansible-test sanity --docker
 
