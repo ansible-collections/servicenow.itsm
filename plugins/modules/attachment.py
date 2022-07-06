@@ -46,11 +46,11 @@ EXAMPLES = """
 """
 
 
-import hashlib
 import os
 import time
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible.utils.hashing import secure_hash, secure_hash_s
 
 from ..module_utils import (
     arguments,
@@ -60,40 +60,18 @@ from ..module_utils import (
 )
 
 
-def get_checksum_dest(file_path):
-    h = hashlib.sha256()
-    with open(file_path, "rb") as file:
-        while True:
-            chunk = file.read(h.block_size)
-            if not chunk:
-                break
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def get_checksum_src(binary_data):
-    h = hashlib.sha256()
-    h.update(binary_data)
-    return h.hexdigest()
-
-
 def run(module, attachment_client):
     start = time.time()
     response = attachment_client.get_attachment(module.params["sys_id"])
     if response.status == 200:
         attachment_client.save_attachment(response.data, module.params["dest"])
     elif response.status == 404:
-        raise errors.ServiceNowError("Record doesn't exist or ACL restricts the record retrieval", 404)
-    
-    # get_attachment already raises UnexpectedAPIResponse in case statuse code is different than 200 or 404
-    # and _request raises AuthError (but here we get it as ServiceNowError) and ServiceNowError 
-    # do we always get ServiceNowError due to inheritance?
-
+        raise errors.ServiceNowError("Status code: 404, Details: " + response.json["error"]["detail"])
     end = time.time()
     elapsed = f"{end - start:.1f}"
-    checksum_src = get_checksum_src(response.data)
-    checksum_dest = get_checksum_dest(module.params["dest"])
-    size = os.path.getsize(module.params["dest"])  # bytes
+    checksum_src = secure_hash_s(response.data)
+    checksum_dest = secure_hash(module.params["dest"])
+    size = os.path.getsize(module.params["dest"])
 
     return response, elapsed, checksum_src, checksum_dest, size
 
@@ -124,13 +102,10 @@ def main():
             elapsed=elapsed,
             size=size,
             status_code=response.status,
+            msg='OK',
         )
-    # to get the status_code in fail_json, the best way is to use error message - 
-    # eg module.fail_json(msg=str(e.args[0]), status_code=str(e.args[1])) - but there is a problem in case ServiceNowError is not a tuple
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
-    # except errors.ServiceNowError as e:
-    #     module.fail_json(msg=str(e.args[0]), status_code=str(e.args[1]))
 
 
 if __name__ == "__main__":
