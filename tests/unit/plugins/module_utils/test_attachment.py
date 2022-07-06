@@ -14,6 +14,7 @@ import pytest
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors, attachment
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
 
+
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
 )
@@ -795,41 +796,36 @@ class TestAttachmentUpdateRecords:
 
 
 class TestAttachmentGetAttachment:
-    def test_get_attachment_200(self, client):
+    def test_get_attachment(self, client):
         client.get.return_value = Response(
-            200, 'binary_data', 'headers'
+            200, bytes("binary_data", "ascii"), {"headers": "headers"} # preveri če bytes obstaja v 2.7
         )
         a = attachment.AttachmentClient(client)
 
-        a.get_attachment("0061f0c510247200964f77ffeec6c4de")
+        response = a.get_attachment("0061f0c510247200964f77ffeec6c4de")
 
         client.get.assert_called_once_with(
             "api/now/attachment/0061f0c510247200964f77ffeec6c4de/file"
         )
-
-    def test_get_attachment_404(self):
-        # "msg": "Record doesn't exist or ACL restricts the record retrieval" 
-        pass
-
-    def test_get_attachment_unexpected_response(self):
-        # "msg": "Unexpected response..." 
-        pass
-
-    def test_get_attachment_wrong_auth(self):
-        # "msg": "Failed to authenticate with the instance: 401 Unauthorized" (from client.py _request())
-        pass
-
-    def test_get_attachment_wrong_host(self):
-        # "msg": "[Errno -2] Name or service not known" (from client.py _request())
-        pass
+        assert response.status == 200
+        assert response.data == bytes("binary_data", "ascii")
+        assert response.headers == {'headers': 'headers'}
 
 
 class TestAttachmentSaveAttachment:
-    def test_save_attachment(self, tmp_path):  # tmp_path is a built in fixture
-        pass
+    def test_save_attachment(self, client, tmp_path):
+        path = tmp_path / "test.txt"
+        a = attachment.AttachmentClient(client)
 
-    def test_save_attachment_bad_dest(self):
-        # "msg": "Cannot open or write to /tmpž/sn-attachment"
-        pass
+        a.save_attachment(bytes("test", "ascii"), path)
+        file = open(path, "r")
+        
+        assert file.read() == "test"
 
-# stestiraj 0B? je sploh treba to?
+    def test_save_attachment_bad_dest(self, client):
+        a = attachment.AttachmentClient(client)
+
+        with pytest.raises(errors.ServiceNowError) as exc:
+            a.save_attachment(bytes("test", "ascii"), "/not/a/path")
+
+        assert "Cannot open or write to /not/a/path" in str(exc.value)
