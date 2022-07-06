@@ -27,8 +27,7 @@ def _path(*subpaths):
 
 class AttachmentClient:
     def __init__(self, client, batch_size=10000):
-        # 10000 records is default batch size for ServiceNow Attachment
-        # REST API, so we also use it as a default.
+        # 10000 records is default batch size for ServiceNow Attachment REST API, so we also use it as a default.
         self.client = client
         self.batch_size = batch_size
 
@@ -62,8 +61,7 @@ class AttachmentClient:
         ).json["result"]
 
     def upload_record(self, table, table_sys_id, metadata, check_mode):
-        # Table and table_sys_id parameters uniquely identify the record we
-        # will attach a file to.
+        # Table and table_sys_id parameters uniquely identify the record we will attach a file to.
         query = dict(
             table_name=table,
             table_sys_id=table_sys_id,
@@ -113,17 +111,13 @@ class AttachmentClient:
 
     def get_attachment(self, attachment_sys_id):
         return self.client.get(_path(attachment_sys_id, "file"))
-        # how to handle big files?
-        # check service now documentation/file limits
-        # ask on meeting
     
     def save_attachment(self, binary_data, dest):
         try:
             with open(dest, "wb") as f:
                 f.write(binary_data)
-        except Exception: # is this better?
-        # except (IOError, OSError):
-            raise errors.ServiceNowError(f"Cannot open or write to {dest}")
+        except (IOError, OSError) as e:
+            raise errors.ServiceNowError(str(e))
 
 
 def transform_metadata_list(metadata_list, hashing_method):
