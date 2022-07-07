@@ -38,7 +38,7 @@ class TestMain:
             ),
             resource="sys_user",
             sys_id="1234",
-            query="upon_reject=cancel",
+            sysparm_query="upon_reject=cancel",
             display_value="false",
             exclude_reference_link="false",
             columns=["parent", "watch_list"],

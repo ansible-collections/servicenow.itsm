@@ -164,7 +164,7 @@
     - name: Test invalid column name - API ignores column names that are not present in the resource
       servicenow.itsm.api_info:
         resource: incident
-        query: bad_column=bad_column_value1^ORbad_column=bad_column_value2 # 'bad_column' is not present in incident's columns
+        sysparm_query: bad_column=bad_column_value1^ORbad_column=bad_column_value2 # 'bad_column' is not present in incident's columns
       register: result_bad_query
     - name: Retrieve all incidents so they'll be compared to the API call with columns ignored
       servicenow.itsm.api_info:

@@ -25,42 +25,28 @@ version_added: 1.4.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id.info
-  - servicenow.itsm.query
-  - servicenow.itsm.display_value
-  - servicenow.itsm.exclude_reference_link
-  - servicenow.itsm.query_category
-  - servicenow.itsm.query_no_domain
-  - servicenow.itsm.no_count
 seealso:
   - module: servicenow.itsm.api
-
 options:
-  sys_id:
-    description:
-      - Unique ID of the record
-      - If sys_id is specified, the output is going to be either empty list (if a record in table,
-        specified in resource does not exist) or a list with single element (since sys_id is unique identifier)
-    type: str
-    required: true
   resource:
     description:
       - The name of the table that we want to obtain records from
     type: str
     required: true
-  query:
+  sysparm_query:
     description:
       - An encoded query string used to filter the results.
       - Will be ignored if sys_id is specified (since query is intended for obtaining multiple records
         with certain properties, and sys_id is uniquely defined property)
-      - "List of all possible operators and guide how to map them to form query may be found at
+      - List of all possible operators and guide how to map them to form query may be found at
         U(https://docs.servicenow.com/en-US/bundle/sandiego-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
         and U(https://developer.servicenow.com/dev.do#!/reference/api/sandiego/rest/c_TableAPI) under 'sysparm_query'.
     type: str
   display_value:
     description:
-      - Return field display values (true), actual values (false), or both (all) (default: false)
-    choices=["true", "false", "both"]
-    type: bool
+      - "Return field display values (true), actual values (false), or both (all) (default: false)"
+    type: str
+    choices: ["true", "false", "both"]
   exclude_reference_link:
     description:
       - "true to exclude Table API links for reference fields (default: false)"
@@ -69,6 +55,7 @@ options:
     description:
       - List of fields/columns to return in the response
     type: list
+    elements: str
   query_category:
     description:
       - Name of the query category to use for queries
@@ -98,13 +85,13 @@ EXAMPLES = """
 - name: Retrieve all incidents with properties specified in query
   servicenow.itsm.api_info:
     resource: incident
-    query: numberSTARTSWITHINC^ORnumberSTARTSWITHABC^state!=7^stateBETWEEN1@4^short_descriptionISNOTEMPTY
+    sysparm_query: numberSTARTSWITHINC^ORnumberSTARTSWITHABC^state!=7^stateBETWEEN1@4^short_descriptionISNOTEMPTY
   register: result
 
 - name: Retrieve all incidents with properties specified in query, filtered by few other parameters
   servicenow.itsm.api_info:
     resource: incident
-    query: numberSTARTSWITHINC^ORnumberSTARTSWITHABC^state!=7^stateBETWEEN1@4^short_descriptionISNOTEMPTY
+    sysparm_query: numberSTARTSWITHINC^ORnumberSTARTSWITHABC^state!=7^stateBETWEEN1@4^short_descriptionISNOTEMPTY
     display_value: true
     exclude_reference_link: true
     columns:
@@ -245,7 +232,7 @@ def main():
     arg_spec = dict(
         arguments.get_spec("instance", "sys_id"),
         resource=dict(type="str", required=True),
-        query=dict(type="str", default=""),
+        sysparm_query=dict(type="str"),
         display_value=dict(
             type="str", choices=["true", "false", "both"]
         ),  # Return field display values (true), actual values (false), or both (all) (default: false)
@@ -253,7 +240,7 @@ def main():
             type="bool",
         ),  # True to exclude Table API links for reference columns (default: false)
         columns=dict(
-            type="list", default=[]
+            type="list", default=[], elements="str"
         ),  # A comma-separated list of fields to return in the response
         query_category=dict(
             type="str"
