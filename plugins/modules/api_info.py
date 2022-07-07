@@ -25,7 +25,6 @@ version_added: 1.4.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id.info
-  - servicenow.itsm.resource
   - servicenow.itsm.query
   - servicenow.itsm.display_value
   - servicenow.itsm.exclude_reference_link
@@ -60,6 +59,7 @@ options:
   display_value:
     description:
       - Return field display values (true), actual values (false), or both (all) (default: false)
+    choices=["true", "false", "both"]
     type: bool
   exclude_reference_link:
     description:
