@@ -798,7 +798,9 @@ class TestAttachmentUpdateRecords:
 class TestAttachmentGetAttachment:
     def test_get_attachment(self, client):
         client.get.return_value = Response(
-            200, bytes("binary_data", "ascii"), {"headers": "headers"} # preveri če bytes obstaja v 2.7
+            200,
+            bytearray(b"binary_data"),
+            {"headers": "headers"},
         )
         a = attachment.AttachmentClient(client)
 
@@ -808,8 +810,8 @@ class TestAttachmentGetAttachment:
             "api/now/attachment/0061f0c510247200964f77ffeec6c4de/file"
         )
         assert response.status == 200
-        assert response.data == bytes("binary_data", "ascii")
-        assert response.headers == {'headers': 'headers'}
+        assert response.data == bytearray(b"binary_data")
+        assert response.headers == {"headers": "headers"}
 
 
 class TestAttachmentSaveAttachment:
@@ -817,7 +819,7 @@ class TestAttachmentSaveAttachment:
         path = tmp_path / "test.txt"
         a = attachment.AttachmentClient(client)
 
-        a.save_attachment(bytes("test", "ascii"), path)
+        a.save_attachment(bytearray(b"test"), path)
         file = open(path, "r")
         
         assert file.read() == "test"
@@ -826,6 +828,6 @@ class TestAttachmentSaveAttachment:
         a = attachment.AttachmentClient(client)
 
         with pytest.raises(errors.ServiceNowError) as exc:
-            a.save_attachment(bytes("test", "ascii"), "/not/a/path")
+            a.save_attachment(bytearray(b"test"), "/not/a/path")
 
-        assert "Cannot open or write to /not/a/path" in str(exc.value)
+        assert "[Errno 2] No such file or directory: '/not/a/path'" in str(exc.value)
