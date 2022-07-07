@@ -46,8 +46,8 @@ EXAMPLES = """
 """
 
 
-import os
 import time
+import json
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.utils.hashing import secure_hash, secure_hash_s
@@ -66,14 +66,15 @@ def run(module, attachment_client):
     if response.status == 200:
         attachment_client.save_attachment(response.data, module.params["dest"])
     elif response.status == 404:
-        raise errors.ServiceNowError("Status code: 404, Details: " + response.json["error"]["detail"])
+        raise errors.ServiceNowError(
+            "Status code: 404, Details: " + response.json["error"]["detail"]
+        )
     end = time.time()
     elapsed = f"{end - start:.1f}"
     checksum_src = secure_hash_s(response.data)
     checksum_dest = secure_hash(module.params["dest"])
-    size = os.path.getsize(module.params["dest"])
 
-    return response, elapsed, checksum_src, checksum_dest, size
+    return response, elapsed, checksum_src, checksum_dest
 
 
 def main():
@@ -92,7 +93,7 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         attachment_client = attachment.AttachmentClient(snow_client)
-        response, elapsed, checksum_src, checksum_dest, size = run(
+        response, elapsed, checksum_src, checksum_dest = run(
             module, attachment_client
         )
         module.exit_json(
@@ -100,9 +101,9 @@ def main():
             checksum_src=checksum_src,
             checksum_dest=checksum_dest,
             elapsed=elapsed,
-            size=size,
+            size=json.loads(response.headers["x-attachment-metadata"])["size_bytes"],
             status_code=response.status,
-            msg='OK',
+            msg="OK",
         )
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
