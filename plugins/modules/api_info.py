@@ -50,29 +50,13 @@ options:
     required: true
   query:
     description:
-      - Query for obtaining records with certain properties.
+      - An encoded query string used to filter the results.
       - Will be ignored if sys_id is specified (since query is intended for obtaining multiple records
-        with certiain properties, and sys_id is uniquely defined property)
-      - Query is dictionary, with table's column names as keys and additional dictionaries as values
-        Inner dictionaries have keys as possible filter operators (starts_with, contains, is, ...) and list
-        of values that this operator can match as values. Elements in the same list will get mapped with
-        'OR' operator and elements in different list will get mapped with 'AND' operator. Example of query may
-        be seen under examples (the one with query specified).
-      - "Example: query = dict(number=dict(starts_with=['A1', 'A2'], ends_with=['B1', 'B2']), state=dict(is=[7])))
-        will get mapped to URL query as
-        numberSTARTSWITHA1^ORnumberSTARTSWITHA2^numberENDSWITHB1^ORnumberENDSWITHB2^state=7 (it would be same
-        had you inputed this string directly in REST API."
-      - "List of all possible operators may be found at
+        with certain properties, and sys_id is uniquely defined property)
+      - "List of all possible operators and guide how to map them to form query may be found at
         U(https://docs.servicenow.com/en-US/bundle/sandiego-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
-        under column operator label with spaces replaced with underline (for example: 'is same' is written in the
-        link above --> write 'is_same' when filtering through playbook. Same others, e.g.: 'is not' --> 'is_not')"
-      - "If your operator is one of the following: 'is_empty', 'is_not_empty', 'is_anything', 'is_empty_string',
-        nothing has to be specified in list of possible values as they're boolean operators that don't need any
-        value on the right side of the operator. For example, if you want to use 'is_empty_string' as query for
-        column 'short_desciption', you'd say: query = dict(short_description=dict(is_empty_string=None)).
-        Anything else than None would fit the needs be okay. See example of this under the examples (the one with
-        query specified)"
-    type: dict
+        and U(https://developer.servicenow.com/dev.do#!/reference/api/sandiego/rest/c_TableAPI) under 'sysparm_query'.
+    type: str
   display_value:
     description:
       - Return field display values (true), actual values (false), or both (all) (default: false)
@@ -114,33 +98,13 @@ EXAMPLES = """
 - name: Retrieve all incidents with properties specified in query
   servicenow.itsm.api_info:
     resource: incident
-    query:
-      number:
-        starts_with:
-          - 'INC'
-          - 'ABC'
-        state:
-          is:
-            - 7
-          between:
-            - 5@9
-        short_description:
-          is_empty_string: # No need to list any values for operator is_empty_string
+    query: numberSTARTSWITHINC^ORnumberSTARTSWITHABC^state!=7^stateBETWEEN1@4^short_descriptionISNOTEMPTY
   register: result
 
-- name: Retrieve all incidents with properties specified in query with additional filter parameters
+- name: Retrieve all incidents with properties specified in query, filtered by few other parameters
   servicenow.itsm.api_info:
     resource: incident
-    query:
-      number:
-        starts_with:
-          - 'INC'
-          - 'ABC'
-      state:
-        is:
-          - 7
-        between:
-          - 5@9
+    query: numberSTARTSWITHINC^ORnumberSTARTSWITHABC^state!=7^stateBETWEEN1@4^short_descriptionISNOTEMPTY
     display_value: true
     exclude_reference_link: true
     columns:
@@ -257,8 +221,8 @@ from ..module_utils.api import (
     POSSIBLE_FILTER_PARAMETERS,
     table_name,
     FIELD_COLUMNS_NAME,
-    FIELD_QUERY_NAME,
     FIELD_SYS_ID,
+    get_query_by_sys_id,
 )
 
 
@@ -267,13 +231,9 @@ def run(module, table_client):
         module.params[FIELD_COLUMNS_NAME] = ",".join(
             [field.lower() for field in module.params[FIELD_COLUMNS_NAME]]
         )
-    if FIELD_QUERY_NAME in module.params:
-        module.params[FIELD_QUERY_NAME] = utils.sysparm_query_from_conditions(
-            module.params[FIELD_QUERY_NAME]
-        )
-    if module.params[FIELD_SYS_ID] is not None:
+    if FIELD_SYS_ID in module.params and module.params[FIELD_SYS_ID]:
         # If sys_id is specified, we're only going to retrieve a single record
-        servicenow_query = dict(sys_id=module.params[FIELD_SYS_ID])
+        servicenow_query = get_query_by_sys_id(module)
     else:
         # Otherwise, retrieve records that fit the values specified in query
         query = utils.filter_dict(module.params, *POSSIBLE_FILTER_PARAMETERS)
@@ -285,7 +245,7 @@ def main():
     arg_spec = dict(
         arguments.get_spec("instance", "sys_id"),
         resource=dict(type="str", required=True),
-        query=dict(type="dict", default=dict()),
+        query=dict(type="str", default=""),
         display_value=dict(
             type="str", choices=["true", "false", "both"]
         ),  # Return field display values (true), actual values (false), or both (all) (default: false)

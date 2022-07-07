@@ -62,4 +62,4 @@ def table_name(module):
 
 
 def get_query_by_sys_id(module):
-    return dict(sys_id=module.params["sys_id"])
+    return dict(sys_id=module.params[FIELD_SYS_ID])
