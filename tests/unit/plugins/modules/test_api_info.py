@@ -37,7 +37,6 @@ class TestMain:
                 host="https://my.host.name", username="user", password="pass"
             ),
             resource="sys_user",
-            sys_id="1234",
             sysparm_query="upon_reject=cancel",
             display_value="false",
             exclude_reference_link="false",
