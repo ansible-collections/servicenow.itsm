@@ -16,21 +16,23 @@ author:
 
 short_description: Manage ServiceNow POST, PATCH and DELETE requests
 description:
-  - Create, delete or update a ServiceNow record from the given resource
+  - Create, delete or update a ServiceNow record from the given resource.
   - For more information, refer to the ServiceNow REST Table API documentation at
     U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO).
 version_added: 2.0.0
+seealso:
+  - module: servicenow.itsm.api_info
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id
 options:
   resource:
     description:
-      - The name of the table that we want to obtain records from
+      - The name of the table that we want to obtain record(s) from.
     type: str
     required: true
   action:
-    description: The action that we want to perform (post, patch, delete)
+    description: The action to perform.
     type: str
     required: true
     choices:
@@ -39,14 +41,14 @@ options:
       - delete
   data:
     description:
-      - Only relevant if I(action==patch or action==post)
-      - The data that we want to update or create the resource with
-      - Has resource's column names as keys (such as description, number, priority, ...) and the patching values
-        as values (the value we want to change column to)
+      - Only relevant if I(action==patch) or I(action==post)
+      - The data that we want to update or create the resource with.
+      - A Dict consists of resource's column names as keys (such as description, number, priority, and so on) and the
+        patching values as values (the value we want to change the column to).
       - When updating a resource's record, if no datum is specified for a specific column, the value of that column will
-        remain intact
+        remain intact.
       - When creating a resource's record, if no datum is specified for a specific column, the default value of the
-        column will be used
+        column will be used.
     type: dict
 """
 
