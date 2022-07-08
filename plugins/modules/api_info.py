@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright: (c) 2021, XLAB Steampunk <steampunk@xlab.si>
+# Copyright: (c) 2022, XLAB Steampunk <steampunk@xlab.si>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -12,16 +12,14 @@ DOCUMENTATION = r"""
 module: api_info
 
 author:
-  - Manca Bizjak (@mancabizjak)
-  - Miha Dolinar (@mdolin)
-  - Tadej Borovsak (@tadeboro)
-  - Matej Pevec (@mysteriouswolf)
+  - Tjaž Eržen (@tjazsch)
+
 short_description: Manage ServiceNow GET requests
 description:
-  - Retrieve information about ServiceNow REST Table API results from arbitrary table
+  - Retrieve records via ServiceNow REST Table API for an arbitrary table
   - For more information, refer to the ServiceNow REST TAble API documentation at
     U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO).
-version_added: 1.4.0
+version_added: 2.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id.info
@@ -36,9 +34,8 @@ options:
   sysparm_query:
     description:
       - An encoded query string used to filter the results.
-      - Will be ignored if sys_id is specified (since query is intended for obtaining multiple records
-        with certain properties, and sys_id is uniquely defined property)
-      - List of all possible operators and guide how to map them to form query may be found at
+      - Mutually exclusive with sys_id
+      - List of all possible operators and a guide on how to map them to form a query may be found at
         U(https://docs.servicenow.com/en-US/bundle/sandiego-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
         and U(https://developer.servicenow.com/dev.do#!/reference/api/sandiego/rest/c_TableAPI) under 'sysparm_query'.
     type: str
@@ -71,24 +68,24 @@ options:
 """
 
 EXAMPLES = """
-- name: Retrieve all records from table incidents
+- name: Retrieve all records from table incident
   servicenow.itsm.api_info:
     resource: incident
   register: result
 
-- name: Retrieve a record with specified sys_id from the resource incidents
+- name: Retrieve a record with specified sys_id from the resource incident
   servicenow.itsm.api_info:
     resource: incident
     sys_id: 471bfbc7a9fe198101e77a3e10e5d47f
   register: result
 
-- name: Retrieve all incidents with properties specified in query
+- name: Retrieve all incidents with properties specified in a query
   servicenow.itsm.api_info:
     resource: incident
     sysparm_query: numberSTARTSWITHINC^ORnumberSTARTSWITHABC^state!=7^stateBETWEEN1@4^short_descriptionISNOTEMPTY
   register: result
 
-- name: Retrieve all incidents with properties specified in query, filtered by few other parameters
+- name: Retrieve all incidents with properties specified in a query, filtered by a few other parameters
   servicenow.itsm.api_info:
     resource: incident
     sysparm_query: numberSTARTSWITHINC^ORnumberSTARTSWITHABC^state!=7^stateBETWEEN1@4^short_descriptionISNOTEMPTY
