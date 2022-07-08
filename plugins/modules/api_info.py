@@ -16,7 +16,7 @@ author:
 
 short_description: Manage ServiceNow GET requests
 description:
-  - Retrieve records via ServiceNow REST Table API for an arbitrary table
+  - Retrieve records via ServiceNow REST Table API for an arbitrary table.
   - For more information, refer to the ServiceNow REST TAble API documentation at
     U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO).
 version_added: 2.0.0
@@ -34,14 +34,14 @@ options:
   sysparm_query:
     description:
       - An encoded query string used to filter the results.
-      - Mutually exclusive with sys_id
+      - Mutually exclusive with C(sys_id).
       - List of all possible operators and a guide on how to map them to form a query may be found at
         U(https://docs.servicenow.com/en-US/bundle/sandiego-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
         and U(https://developer.servicenow.com/dev.do#!/reference/api/sandiego/rest/c_TableAPI) under 'sysparm_query'.
     type: str
   display_value:
     description:
-      - "Return field display values (true), actual values (false), or both (all) (default: false)"
+      - "Return field display values (true), actual values (false), or both (all) (default: false)."
     type: str
     choices: ["true", "false", "both"]
   exclude_reference_link:
@@ -50,20 +50,22 @@ options:
     type: bool
   columns:
     description:
-      - List of fields/columns to return in the response
+      - List of fields/columns to return in the response.
     type: list
     elements: str
   query_category:
     description:
-      - Name of the query category to use for queries
+      - Name of the query category to use for queries.
     type: str
   query_no_domain:
     description:
-      - "true to access data across domains if authorized (default: false)"
+      - If set to C(true) to access data across domains if authorized.
+      - Default is set to C(false).
     type: bool
   no_count:
     description:
-      - "Do not execute a select count(*) on table (default: false)"
+      - Do not execute a select count(*) on table.
+      - Default is set to C(false).
     type: bool
 """
 
@@ -235,7 +237,7 @@ def main():
         ),  # Return field display values (true), actual values (false), or both (all) (default: false)
         exclude_reference_link=dict(
             type="bool",
-        ),  # True to exclude Table API links for reference columns (default: false)
+        ),  # True to exclude Table API links for reference columns
         columns=dict(
             type="list", default=[], elements="str"
         ),  # A comma-separated list of fields to return in the response
