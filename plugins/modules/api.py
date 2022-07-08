@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright: (c) 2021, XLAB Steampunk <steampunk@xlab.si>
+# Copyright: (c) 2022, XLAB Steampunk <steampunk@xlab.si>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -12,17 +12,14 @@ DOCUMENTATION = r"""
 module: api
 
 author:
-  - Manca Bizjak (@mancabizjak)
-  - Miha Dolinar (@mdolin)
-  - Tadej Borovsak (@tadeboro)
-  - Matej Pevec (@mysteriouswolf)
+  - Tjaž Eržen (@tjazsch)
 
 short_description: Manage ServiceNow POST, PATCH and DELETE requests
 description:
   - Create, delete or update a ServiceNow record from the given resource
-  - For more information, refer to the ServiceNow REST TAble API documentation at
+  - For more information, refer to the ServiceNow REST Table API documentation at
     U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO).
-version_added: 1.4.0
+version_added: 2.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id
@@ -43,16 +40,18 @@ options:
   data:
     description:
       - Only relevant if I(action==patch or action==post)
-      - The data that we want to update the resource with
+      - The data that we want to update or create the resource with
       - Has resource's column names as keys (such as description, number, priority, ...) and the patching values
-        as keys (the value we want to change column to)
-      - If no data is specified for specific column, the value of that column will be set to built-in ServiceNow
-        default value.
+        as values (the value we want to change column to)
+      - When updating a resource's record, if no datum is specified for a specific column, the value of that column will
+        remain intact
+      - When creating a resource's record, if no datum is specified for a specific column, the default value of the 
+        column will be used
     type: dict
 """
 
 EXAMPLES = """
-- name: Create a resource in table incident, set value short_description to my-incident
+- name: Create a record in table incident with column short_description set to my-incident
   servicenow.itsm.api:
     resource: incident
     action: post
@@ -60,7 +59,7 @@ EXAMPLES = """
       short_description: my-incident
   register: result
 
-- name: Update resource's description in the table incident with given sys_id
+- name: Update column short_description in table incident of a record with given sys_id
   servicenow.itsm.api:
     resource: incident
     action: patch
@@ -76,7 +75,7 @@ EXAMPLES = """
     sys_id: 46b66a40a9fe198101f243dfbc79033d
   register: result
 
-- name: Create a resource in the table sc_req_item and set short_description's value to demo-description2
+- name: Create a record in the table sc_req_item and set short_description's value to demo-description2
   servicenow.itsm.api:
     resource: sc_req_item
     action: post
@@ -84,7 +83,7 @@ EXAMPLES = """
       short_description: demo-description2
   register: result
 
-- name: Delete a resource in the table sc_req_item
+- name: name: Delete a record by sys_id from table sc_req_item
   servicenow.itsm.api:
     resource: sc_req_item
     action: delete
@@ -95,7 +94,7 @@ EXAMPLES = """
 RETURN = """
 record:
   description:
-    - The problem record.
+    - The created, updated or deleted record.
   returned: success
   type: dict
   sample:
