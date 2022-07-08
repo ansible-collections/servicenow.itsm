@@ -83,7 +83,7 @@ EXAMPLES = """
       short_description: demo-description2
   register: result
 
-- name: name: Delete a record by sys_id from table sc_req_item
+- name: Delete a record by sys_id from table sc_req_item
   servicenow.itsm.api:
     resource: sc_req_item
     action: delete
