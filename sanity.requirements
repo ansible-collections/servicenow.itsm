@@ -1,2 +1,2 @@
-black
+black<=21.12b0  # as long as we need to support Python 2.7
 flake8
