@@ -250,7 +250,10 @@ def main():
         ),  # Do not execute a select count(*) on table (default: false)
     )
 
-    module = AnsibleModule(supports_check_mode=True, argument_spec=arg_spec)
+    module = AnsibleModule(
+        supports_check_mode=True, argument_spec=arg_spec,
+        mutually_exclusive=[("sys_id", "sysparm_query")]
+    )
 
     try:
         snow_client = client.Client(**module.params["instance"])
