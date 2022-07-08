@@ -99,6 +99,7 @@ EXAMPLES = """
       - sys_id
     query_no_domain: true
     no_count: false
+  register: result
 """
 
 RETURN = r"""
@@ -207,23 +208,15 @@ from ..module_utils.api import (
     POSSIBLE_FILTER_PARAMETERS,
     table_name,
     FIELD_COLUMNS_NAME,
-    FIELD_SYS_ID,
-    get_query_by_sys_id,
 )
 
 
 def run(module, table_client):
-    if FIELD_COLUMNS_NAME in module.params:
-        module.params[FIELD_COLUMNS_NAME] = ",".join(
-            [field.lower() for field in module.params[FIELD_COLUMNS_NAME]]
-        )
-    if FIELD_SYS_ID in module.params and module.params[FIELD_SYS_ID]:
-        # If sys_id is specified, we're only going to retrieve a single record
-        servicenow_query = get_query_by_sys_id(module)
-    else:
-        # Otherwise, retrieve records that fit the values specified in query
-        query = utils.filter_dict(module.params, *POSSIBLE_FILTER_PARAMETERS)
-        servicenow_query = transform_query_to_servicenow_query(query)
+    columns = ",".join([field.lower() for field in module.params[FIELD_COLUMNS_NAME]])
+    columns_search_dict = dict(columns=columns)
+    search_dict = module.params | columns_search_dict
+    query = utils.filter_dict(search_dict, *POSSIBLE_FILTER_PARAMETERS)
+    servicenow_query = transform_query_to_servicenow_query(query)
     return table_client.list_records(table_name(module), servicenow_query)
 
 

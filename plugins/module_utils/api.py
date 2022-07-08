@@ -19,12 +19,14 @@ SN_QUERY_MAPPING = dict(
     view="sysparm_view",
     query_no_domain="sysparm_query_no_domain",
     no_count="sysparm_no_count",
+    sys_id="sys_id",
+    sysparm_query="sysparm_query",
 )
 
 # FIELD_COLUMNS_NAME and FIELD_QUERY_NAME are the ones that are additionally modified in api_info.py,
 # so setting constant variable for them.
 FIELD_COLUMNS_NAME = "columns"
-FIELD_QUERY_NAME = "query"
+FIELD_QUERY_NAME = "sysparm_query"
 FIELD_SYS_ID = "sys_id"
 
 POSSIBLE_FILTER_PARAMETERS = [
