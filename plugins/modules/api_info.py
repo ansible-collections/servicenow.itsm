@@ -213,8 +213,8 @@ from ..module_utils.api import (
 
 def run(module, table_client):
     columns = ",".join([field.lower() for field in module.params[FIELD_COLUMNS_NAME]])
-    columns_search_dict = dict(columns=columns)
-    search_dict = module.params | columns_search_dict
+    search_dict = dict(columns=columns)
+    search_dict.update(module.params)
     query = utils.filter_dict(search_dict, *POSSIBLE_FILTER_PARAMETERS)
     servicenow_query = transform_query_to_servicenow_query(query)
     return table_client.list_records(table_name(module), servicenow_query)
