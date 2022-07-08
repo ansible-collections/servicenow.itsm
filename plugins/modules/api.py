@@ -45,7 +45,7 @@ options:
         as values (the value we want to change column to)
       - When updating a resource's record, if no datum is specified for a specific column, the value of that column will
         remain intact
-      - When creating a resource's record, if no datum is specified for a specific column, the default value of the 
+      - When creating a resource's record, if no datum is specified for a specific column, the default value of the
         column will be used
     type: dict
 """
