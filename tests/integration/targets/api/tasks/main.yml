@@ -104,7 +104,7 @@
       register: result_update_failed
     - ansible.builtin.assert:
         that:
-          - result_update_failed.changed is false
+          - result_update_failed.changed == false
 
     - name: Delete the incident (check mode)
       servicenow.itsm.api: &api-delete
