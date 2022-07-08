@@ -241,9 +241,7 @@ def run(module, table_client):
     if (action == ACTION_PATCH or action == ACTION_DELETE) and module.params[
         FIELD_SYS_ID
     ] is None:
-        raise errors.ServiceNowError(
-            "For actions patch and delete sys_id needs to be specified."
-        )
+        module.display.warning("For action create sys_id is ignored.")
     if action == ACTION_PATCH:  # PATCH method
         return update_resource(module, table_client)
     elif action == ACTION_POST:  # POST method
