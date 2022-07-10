@@ -73,8 +73,18 @@ def run(module, attachment_client):
     elapsed = f"{end - start:.1f}"
     checksum_src = secure_hash_s(response.data)
     checksum_dest = secure_hash(module.params["dest"])
+    size = json.loads(response.headers["x-attachment-metadata"])["size_bytes"],
+    status_code = response.status,
+    msg = "OK"
 
-    return response, elapsed, checksum_src, checksum_dest
+    return {      # return True, record, {}
+        'elapsed': elapsed,
+        'checksum_src': checksum_src,
+        'checksum_dest': checksum_dest,
+        'size': size,
+        'status_code': status_code,
+        'msg': msg,
+    }
 
 
 def main():
@@ -93,18 +103,8 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         attachment_client = attachment.AttachmentClient(snow_client)
-        response, elapsed, checksum_src, checksum_dest = run(
-            module, attachment_client
-        )
-        module.exit_json(
-            changed=True,
-            checksum_src=checksum_src,
-            checksum_dest=checksum_dest,
-            elapsed=elapsed,
-            size=json.loads(response.headers["x-attachment-metadata"])["size_bytes"],
-            status_code=response.status,
-            msg="OK",
-        )
+        records = run(module, attachment_client)
+        module.exit_json(changed=True, records=records)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
 
