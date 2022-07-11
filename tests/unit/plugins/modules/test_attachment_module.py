@@ -48,22 +48,15 @@ class TestMain:
 
 
 # class TestRun:
-#     def test_run(self, create_module, table_client, attachment_client):
+#     def test_run(self, create_module, attachment_client):
 #         module = create_module(
 #             params=dict(
 #                 instance=dict(
 #                     host="https://my.host.name", username="user", password="pass"
 #                 ),
 #                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
-#                 sys_class_name="cmdb_ci",
-#                 query=None,
 #             )
 #         )
-#         table_client.list_records.return_value = [
-#             dict(p=1, sys_id=1234),
-#             dict(q=2, sys_id=4321),
-#             dict(r=3, sys_id=1212),
-#         ]
 #         attachment_client.list_records.side_effect = [
 #             [
 #                 {
@@ -78,7 +71,7 @@ class TestMain:
 #             [],
 #         ]
 
-#         records = configuration_item_info.run(module, table_client, attachment_client)
+#         records = attachment.run(module, attachment_client)
 
 #         table_client.list_records.assert_called_once_with(
 #             "cmdb_ci", dict(sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3")
