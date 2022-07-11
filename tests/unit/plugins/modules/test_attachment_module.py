@@ -12,6 +12,9 @@ import sys
 import pytest
 
 from ansible_collections.servicenow.itsm.plugins.modules import attachment
+from ansible_collections.servicenow.itsm.plugins.module_utils import errors
+from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
+from ansible.module_utils._text import to_bytes, to_text
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -35,6 +38,7 @@ class TestMain:
                 host="https://my.host.name", username="user", password="pass"
             ),
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            dest="tmp",
         )
         success, result = run_main(attachment, params)
 
@@ -43,35 +47,43 @@ class TestMain:
     def test_fail(self, run_main):
         success, result = run_main(attachment)
 
-        assert success is False
+        assert success is False  # THIS DOESNT PASS, success is True - WHY?
         #   assert "instance" in result["msg"]  ## REPLACE!
 
 
-# class TestRun:
-#     def test_run(self, create_module, attachment_client):
-#         module = create_module(
-#             params=dict(
-#                 instance=dict(
-#                     host="https://my.host.name", username="user", password="pass"
-#                 ),
-#                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
-#             )
-#         )
-#         attachment_client.list_records.side_effect = [
-#             [
-#                 {
-#                     "content_type": "text/plain",
-#                     "file_name": "sample_file",
-#                     "table_name": "change_request",
-#                     "table_sys_id": 1234,
-#                     "sys_id": 4444,
-#                 },
-#             ],
-#             [],
-#             [],
-#         ]
+class TestRun:
+    def test_run(self, create_module, attachment_client, mocker):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                dest="tmp",
+            )
+        )
+        attachment_client.get_attachment.return_value = Response(
+            200,
+            to_bytes("binary_data"),
+            {"x-attachment-metadata": "{  \"size_bytes\" : \"106879\"}"},
+        )
 
-#         records = attachment.run(module, attachment_client)
+        mocker.patch("ansible_collections.servicenow.itsm.plugins.modules.attachment.secure_hash_s").return_value = 17
+        mocker.patch("ansible_collections.servicenow.itsm.plugins.modules.attachment.secure_hash").return_value = 17
+        mocker.patch("ansible_collections.servicenow.itsm.plugins.modules.attachment.time.time").return_value = 0
+        # we don't need this anymore, but still, how can I patch json.loads?
+        #mocker.patch("ansible_collections.servicenow.itsm.plugins.modules.attachment.json.loads").return_value = 1000
+
+        records = attachment.run(module, attachment_client)
+
+        assert records == {
+            "elapsed": "0.0",
+            "checksum_src": 17,
+            "checksum_dest": 17,
+            "size": "106879",
+            "status_code": 200,
+            "msg": "OK",
+        }
 
 #         table_client.list_records.assert_called_once_with(
 #             "cmdb_ci", dict(sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3")
@@ -104,14 +116,28 @@ class TestMain:
 #             dict(r=3, sys_id=1212, attachments=[]),
 #         ]
 
+    def test_run_404(self, create_module, attachment_client):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                dest="tmp",
+            )
+        )
+        attachment_client.get_attachment.return_value = Response(
+            404,
+            {"error": {"detail": "Record doesn't exist or ACL restricts the record retrieval"}},
+            {"headers": "headers"},
+        )
+
+        with pytest.raises(errors.ServiceNowError) as exc:
+            attachment.run(module, attachment_client)
+        # need to patch response.json["error"]["detail"]
+        assert str(exc.value).find("Status code: 404, Details: Record doesn't exist") != -1
 
 
-
-
-
-# def test_get_attachment_404(self):
-#         # "msg": "Record doesn't exist or ACL restricts the record retrieval" 
-#         pass
 
 #     def test_get_attachment_unexpected_response(self):
 #         # "msg": "Unexpected response..." 
