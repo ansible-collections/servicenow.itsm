@@ -203,7 +203,7 @@ from ..module_utils.api import (
     ACTION_POST,
     ACTION_PATCH,
     ACTION_DELETE,
-    FIELD_SYS_ID,
+    FIELD_SYS_ID, get_data, sys_id_present,
 )
 
 
@@ -213,7 +213,7 @@ def update_resource(module, table_client):
     if record_old is None:
         return False, None, dict(before=None, after=None)
     record_new = table_client.update_record(
-        table_name(module), record_old, module.params["data"], module.check_mode
+        table_name(module), record_old, get_data(module), module.check_mode
     )
     return True, record_new, dict(before=record_old, after=record_new)
 
@@ -223,7 +223,7 @@ def create_resource(module, table_client):
     # module.params["data"] already exists, such resource will get created once again).
     new = table_client.create_record(
         table=table_name(module),
-        payload=module.params["data"],
+        payload=get_data(module),
         check_mode=module.check_mode,
     )
     return True, new, dict(before=None, after=new)
@@ -240,17 +240,15 @@ def delete_resource(module, table_client):
 
 def run(module, table_client):
     action = module.params["action"]
-    if (action == ACTION_PATCH or action == ACTION_DELETE) and module.params[
-        FIELD_SYS_ID
-    ] is None:
+    if (action == ACTION_PATCH or action == ACTION_DELETE) and not sys_id_present(module):
         raise errors.ServiceNowError(
             "For actions patch and delete sys_id needs to be specified."
         )
     if action == ACTION_PATCH:  # PATCH method
         return update_resource(module, table_client)
     elif action == ACTION_POST:  # POST method
-        if FIELD_SYS_ID in module.params:
-            module.display.warning("For action create (post) sys_id is ignored.")
+        if sys_id_present(module):
+            module.warn("For action create (post) sys_id is ignored.")
         return create_resource(module, table_client)
     return delete_resource(module, table_client)  # DELETE method
 

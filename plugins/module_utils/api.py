@@ -28,6 +28,7 @@ SN_QUERY_MAPPING = dict(
 FIELD_COLUMNS_NAME = "columns"
 FIELD_QUERY_NAME = "sysparm_query"
 FIELD_SYS_ID = "sys_id"
+FIELD_DATA = "data"
 
 POSSIBLE_FILTER_PARAMETERS = [
     FIELD_QUERY_NAME,
@@ -65,3 +66,15 @@ def table_name(module):
 
 def get_query_by_sys_id(module):
     return dict(sys_id=module.params[FIELD_SYS_ID])
+
+
+def get_data(module):
+    if FIELD_DATA in module.params:
+        return module.params[FIELD_DATA]
+    return dict()
+
+
+def sys_id_present(module):
+    if FIELD_SYS_ID in module.params and module.params[FIELD_SYS_ID]:
+        return True
+    return False
