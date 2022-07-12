@@ -12,6 +12,7 @@ import sys
 import pytest
 
 from ansible_collections.servicenow.itsm.plugins.modules import api
+from ansible_collections.servicenow.itsm.plugins.module_utils import errors
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -111,9 +112,21 @@ class TestUpdateResource:
             ),
         )
 
+    def test_update_resource_no_sys_id(self, create_module, table_client):
+        with pytest.raises(errors.ServiceNowError, match="For actions patch and delete sys_id needs to be specified."):
+            module = create_module(
+                params=dict(
+                    instance=dict(host="my.host.name", username="user", password="pass"),
+                    resource="incident",
+                    action="patch",
+                    data=dict(state="new"),
+                )
+            )
+            result = api.run(module, table_client)
+
 
 class TestCreateResource:
-    def test_create_resource(self, create_module, table_client):
+    def test_create_resource_no_sys_id(self, create_module, table_client):
         module = create_module(
             params=dict(
                 instance=dict(host="my.host.name", username="user", password="pass"),
@@ -173,6 +186,52 @@ class TestCreateResource:
             ),
         )
 
+    def test_create_resource_sys_id(self, create_module, table_client):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                resource="incident",
+                action="post",
+                sys_id="my-sys-id",
+            )
+        )
+
+        table_client.create_record.return_value = dict(
+            state="1",
+            number="INC0000001",
+            short_description="Test incident",
+            impact="3",
+            urgency="3",
+            sys_id="1234",
+        )
+
+        result = api.run(module, table_client)
+
+        table_client.create_record.assert_called_once()
+
+        assert result == (
+            True,
+            dict(
+                state="1",
+                number="INC0000001",
+                short_description="Test incident",
+                impact="3",
+                urgency="3",
+                sys_id="1234",
+            ),
+            dict(
+                before=None,
+                after=dict(
+                    state="1",
+                    number="INC0000001",
+                    short_description="Test incident",
+                    impact="3",
+                    urgency="3",
+                    sys_id="1234",
+                )
+            )
+        )
+
 
 class TestDeleteResource:
     def test_delete_resource_not_present(self, create_module, table_client):
@@ -227,3 +286,18 @@ class TestDeleteResource:
                 after=None,
             ),
         )
+
+    def test_delete_resource_no_sys_id(self, create_module, table_client):
+        with pytest.raises(errors.ServiceNowError, match="For actions patch and delete sys_id needs to be specified."):
+            module = create_module(
+                params=dict(
+                    instance=dict(host="my.host.name", username="user", password="pass"),
+                    resource="incident",
+                    action="patch",
+                    data=dict(state="new"),
+                )
+            )
+            result = api.run(module, table_client)
+
+
+
