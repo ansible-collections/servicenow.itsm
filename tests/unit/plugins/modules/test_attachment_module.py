@@ -125,4 +125,4 @@ class TestRun:
         with pytest.raises(errors.ServiceNowError) as exc:
             attachment.run(module, attachment_client)
         # could also patch response.json["error"]["detail"], but how can I do that?
-        assert str(exc.value).find("Status code: 404, Details: Record doesnt exist") != -1
+        assert "Status code: 404, Details: Record doesnt exist" in str(exc.value)
