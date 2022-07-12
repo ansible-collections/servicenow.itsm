@@ -248,7 +248,6 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=arg_spec,
-        mutually_exclusive=[("sys_id", "sysparm_query")],
     )
 
     try:
