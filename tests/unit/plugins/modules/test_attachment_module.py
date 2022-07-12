@@ -106,7 +106,7 @@ class TestRun:
             to_bytes("binary_data"), "tmp"
         )
 
-    def test_run_404(self, create_module, attachment_client):
+    def test_run_404(self, create_module, attachment_client, mocker):
         module = create_module(
             params=dict(
                 instance=dict(
@@ -118,11 +118,11 @@ class TestRun:
         )
         attachment_client.get_attachment.return_value = Response(
             404,
-            {"error": {"detail": "Record doesn't exist or ACL restricts the record retrieval"}},
+            to_bytes('{\"error\":{\"message\":\"No Record found\",\"detail\":\"Record doesnt exist\"},\"status\":\"failure\"}'),
             {"headers": "headers"},
         )
 
         with pytest.raises(errors.ServiceNowError) as exc:
             attachment.run(module, attachment_client)
         # could also patch response.json["error"]["detail"], but how can I do that?
-        assert str(exc.value).find("Status code: 404, Details: Record doesn't exist") != -1
+        assert str(exc.value).find("Status code: 404, Details: Record doesnt exist") != -1
