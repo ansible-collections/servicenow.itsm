@@ -73,25 +73,31 @@ def run(module, attachment_client):
     elapsed = f"{end - start:.1f}"
     checksum_src = secure_hash_s(response.data)
     checksum_dest = secure_hash(module.params["dest"])
-    size = json.loads(response.headers["x-attachment-metadata"])["size_bytes"],
-    status_code = response.status,
+    size = json.loads(response.headers["x-attachment-metadata"])["size_bytes"]
+    status_code = response.status
     msg = "OK"
 
-    return {      # return True, record, {}
-        'elapsed': elapsed,
-        'checksum_src': checksum_src,
-        'checksum_dest': checksum_dest,
-        'size': size,
-        'status_code': status_code,
-        'msg': msg,
+    return {
+        "size": size,     # return True, record, {}
+        "elapsed": elapsed,
+        "checksum_src": checksum_src,
+        "checksum_dest": checksum_dest,
+        "status_code": status_code,
+        "msg": msg,
     }
 
 
 def main():
     module_args = dict(
-        arguments.get_spec("instance", "sys_id"),
+        arguments.get_spec("instance"),
+        # Overwrites sys_id from SHARED_SPECS to add required=True
+        sys_id=dict(
+            type="str",
+            required=True,
+        ),
         dest=dict(
             type="str",
+            required=True,
         ),
     )
 
