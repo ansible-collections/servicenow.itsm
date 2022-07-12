@@ -249,7 +249,7 @@ def run(module, table_client):
     if action == ACTION_PATCH:  # PATCH method
         return update_resource(module, table_client)
     elif action == ACTION_POST:  # POST method
-        if module.params[FIELD_SYS_ID]:
+        if FIELD_SYS_ID in module.params:
             module.display.warning("For action create (post) sys_id is ignored.")
         return create_resource(module, table_client)
     return delete_resource(module, table_client)  # DELETE method
