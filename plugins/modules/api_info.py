@@ -211,9 +211,9 @@ from ..module_utils.api import (
 
 
 def run(module, table_client):
+    search_dict = dict(module.params)
     columns = ",".join([field.lower() for field in module.params[FIELD_COLUMNS_NAME]])
-    search_dict = dict(columns=columns)
-    search_dict.update(module.params)
+    search_dict.update(columns=columns)
     query = utils.filter_dict(search_dict, *POSSIBLE_FILTER_PARAMETERS)
     servicenow_query = transform_query_to_servicenow_query(query)
     return table_client.list_records(table_name(module), servicenow_query)
