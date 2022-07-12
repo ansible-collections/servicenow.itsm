@@ -67,7 +67,7 @@ def run(module, attachment_client):
         attachment_client.save_attachment(response.data, module.params["dest"])
     elif response.status == 404:
         raise errors.ServiceNowError(
-            "Status code: 404, Details: " + response.json["error"]["detail"]
+            "Status code: 404, Details: " + json.loads(response.data)["error"]["detail"]
         )
     end = time.time()
     elapsed = f"{end - start:.1f}"
