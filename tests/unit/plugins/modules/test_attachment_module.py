@@ -22,16 +22,7 @@ pytestmark = pytest.mark.skipif(
 
 
 class TestMain:
-    def test_minimal_set_of_params(self, run_main):
-        params = dict(
-            instance=dict(
-                host="https://my.host.name", username="user", password="pass"
-            ),
-        )
-        success, result = run_main(attachment, params)
-
-        assert success is True
-
+    # minimal_set_of_params == test_all_params
     def test_all_params(self, run_main):
         params = dict(
             instance=dict(
@@ -47,8 +38,32 @@ class TestMain:
     def test_fail(self, run_main):
         success, result = run_main(attachment)
 
-        assert success is False  # THIS DOESNT PASS, success is True - WHY?
-        #   assert "instance" in result["msg"]  ## REPLACE!
+        assert success is False
+        assert "missing required arguments" in result["msg"]
+
+    def test_missing_dest(self, run_main):
+        params = dict(
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+        )
+        success, result = run_main(attachment, params)
+
+        assert success is False
+        assert "missing required arguments: dest" in result["msg"]
+
+    def test_missing_sys_id(self, run_main):
+        params = dict(
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
+            dest="tmp",
+        )
+        success, result = run_main(attachment, params)
+
+        assert success is False
+        assert "missing required arguments: sys_id" in result["msg"]
 
 
 class TestRun:
@@ -84,37 +99,12 @@ class TestRun:
             "status_code": 200,
             "msg": "OK",
         }
-
-#         table_client.list_records.assert_called_once_with(
-#             "cmdb_ci", dict(sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3")
-#         )
-#         attachment_client.list_records.assert_any_call(
-#             {"table_name": "cmdb_ci", "table_sys_id": 1234}
-#         )
-#         attachment_client.list_records.assert_any_call(
-#             {"table_name": "cmdb_ci", "table_sys_id": 4321}
-#         )
-#         attachment_client.list_records.assert_any_call(
-#             {"table_name": "cmdb_ci", "table_sys_id": 1212}
-#         )
-#         assert attachment_client.list_records.call_count == 3
-#         assert records == [
-#             dict(
-#                 p=1,
-#                 sys_id=1234,
-#                 attachments=[
-#                     {
-#                         "content_type": "text/plain",
-#                         "file_name": "sample_file",
-#                         "table_name": "change_request",
-#                         "table_sys_id": 1234,
-#                         "sys_id": 4444,
-#                     },
-#                 ],
-#             ),
-#             dict(q=2, sys_id=4321, attachments=[]),
-#             dict(r=3, sys_id=1212, attachments=[]),
-#         ]
+        attachment_client.get_attachment.assert_called_once_with(
+            "01a9ec0d3790200044e0bfc8bcbe5dc3"
+        )
+        attachment_client.save_attachment.assert_called_once_with(
+            to_bytes("binary_data"), "tmp"
+        )
 
     def test_run_404(self, create_module, attachment_client):
         module = create_module(
@@ -134,19 +124,5 @@ class TestRun:
 
         with pytest.raises(errors.ServiceNowError) as exc:
             attachment.run(module, attachment_client)
-        # need to patch response.json["error"]["detail"]
+        # could also patch response.json["error"]["detail"], but how can I do that?
         assert str(exc.value).find("Status code: 404, Details: Record doesn't exist") != -1
-
-
-
-#     def test_get_attachment_unexpected_response(self):
-#         # "msg": "Unexpected response..." 
-#         pass
-
-#     def test_get_attachment_wrong_auth(self):
-#         # "msg": "Failed to authenticate with the instance: 401 Unauthorized" (from client.py _request())
-#         pass
-
-#     def test_get_attachment_wrong_host(self):
-#         # "msg": "[Errno -2] Name or service not known" (from client.py _request())
-#         pass
