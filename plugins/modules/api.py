@@ -203,7 +203,8 @@ from ..module_utils.api import (
     ACTION_POST,
     ACTION_PATCH,
     ACTION_DELETE,
-    FIELD_SYS_ID, get_data, sys_id_present,
+    get_data,
+    sys_id_present,
 )
 
 
@@ -240,7 +241,9 @@ def delete_resource(module, table_client):
 
 def run(module, table_client):
     action = module.params["action"]
-    if (action == ACTION_PATCH or action == ACTION_DELETE) and not sys_id_present(module):
+    if (action == ACTION_PATCH or action == ACTION_DELETE) and not sys_id_present(
+        module
+    ):
         raise errors.ServiceNowError(
             "For actions patch and delete sys_id needs to be specified."
         )

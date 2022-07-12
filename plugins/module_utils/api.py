@@ -75,6 +75,4 @@ def get_data(module):
 
 
 def sys_id_present(module):
-    if FIELD_SYS_ID in module.params and module.params[FIELD_SYS_ID]:
-        return True
-    return False
+    return FIELD_SYS_ID in module.params and module.params[FIELD_SYS_ID]
