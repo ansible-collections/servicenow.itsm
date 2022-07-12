@@ -28,7 +28,7 @@ extends_documentation_fragment:
 options:
   resource:
     description:
-      - The name of the table that we want to obtain record(s) from.
+      - The name of the table in which a record is to be created, updated or deleted from.
     type: str
     required: true
   action:
@@ -247,6 +247,7 @@ def run(module, table_client):
         raise errors.ServiceNowError(
             "For actions patch and delete sys_id needs to be specified."
         )
+
     if action == ACTION_PATCH:  # PATCH method
         return update_resource(module, table_client)
     elif action == ACTION_POST:  # POST method
