@@ -34,7 +34,6 @@ options:
   sysparm_query:
     description:
       - An encoded query string used to filter the results.
-      - Mutually exclusive with C(sys_id).
       - List of all possible operators and a guide on how to map them to form a query may be found at
         U(https://docs.servicenow.com/en-US/bundle/sandiego-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
         and U(https://developer.servicenow.com/dev.do#!/reference/api/sandiego/rest/c_TableAPI) under 'sysparm_query'.
