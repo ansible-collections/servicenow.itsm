@@ -18,18 +18,22 @@ author:
 short_description: a module that users can use to download attachment using sys_id
 
 description:
-  - Download attachment using sys_id.
-  - For more information, refer to the INSERT LINK FROM SERVICE NOW
+  - Download attachment using attachment's sys_id.
 version_added: 2.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
-  - servicenow.itsm.sys_id
 
 options:
   dest:
     description:
       - Specify download folder.
     type: str
+    required: true
+  sys_id:
+    description:
+      - Attachment's sys_id.
+    type: str
+    required: true
 """
 
 EXAMPLES = """
@@ -44,6 +48,40 @@ EXAMPLES = """
     tags:
       - download-attachment-sn
 """
+
+
+RETURN = r'''
+checksum_dest:
+    description: sha1 checksum of the file after download
+    returned: success
+    type: str
+    sample: 6e642bb8dd5c2e027bf21dd923337cbb4214f827
+checksum_src:
+    description: sha1 checksum of the file
+    returned: success
+    type: str
+    sample: 6e642bb8dd5c2e027bf21dd923337cbb4214f827
+elapsed:
+    description: the number of seconds that elapsed while performing the download
+    returned: success
+    type: float
+    sample: 23
+msg:
+    description: OK or error message
+    returned: always
+    type: str
+    sample: OK
+size:
+    description: size of the target
+    returned: success
+    type: int
+    sample: 1220
+status_code:
+    description: the HTTP status code from the request
+    returned: success
+    type: int
+    sample: 200
+'''
 
 
 import time
@@ -70,15 +108,15 @@ def run(module, attachment_client):
             "Status code: 404, Details: " + json.loads(response.data)["error"]["detail"]
         )
     end = time.time()
-    elapsed = f"{end - start:.1f}"
+    elapsed = round(end - start, 1) 
     checksum_src = secure_hash_s(response.data)
     checksum_dest = secure_hash(module.params["dest"])
-    size = json.loads(response.headers["x-attachment-metadata"])["size_bytes"]
+    size = int(json.loads(response.headers["x-attachment-metadata"])["size_bytes"]) # does it matter if it is str or int?
     status_code = response.status
     msg = "OK"
 
     return {
-        "size": size,     # return True, record, {}
+        "size": size,  # return True, record, {}
         "elapsed": elapsed,
         "checksum_src": checksum_src,
         "checksum_dest": checksum_dest,

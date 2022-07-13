@@ -85,10 +85,10 @@ class TestRun:
 
         mocker.patch(
             "ansible_collections.servicenow.itsm.plugins.modules.attachment.secure_hash_s"
-        ).return_value = 17
+        ).return_value = "6e642bb8dd5c2e027bf21dd923337cbb4214f827"
         mocker.patch(
             "ansible_collections.servicenow.itsm.plugins.modules.attachment.secure_hash"
-        ).return_value = 17
+        ).return_value = "6e642bb8dd5c2e027bf21dd923337cbb4214f828"
         mocker.patch(
             "ansible_collections.servicenow.itsm.plugins.modules.attachment.time.time"
         ).return_value = 0
@@ -99,10 +99,10 @@ class TestRun:
         records = attachment.run(module, attachment_client)
 
         assert records == {
-            "elapsed": "0.0",
-            "checksum_src": 17,
-            "checksum_dest": 17,
-            "size": "1000",
+            "elapsed": 0.0,
+            "checksum_src": "6e642bb8dd5c2e027bf21dd923337cbb4214f827",
+            "checksum_dest": "6e642bb8dd5c2e027bf21dd923337cbb4214f828",
+            "size": 1000,
             "status_code": 200,
             "msg": "OK",
         }
