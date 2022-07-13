@@ -80,14 +80,21 @@ class TestRun:
         attachment_client.get_attachment.return_value = Response(
             200,
             to_bytes("binary_data"),
-            {"x-attachment-metadata": "{  \"size_bytes\" : \"106879\"}"},
+            {"x-attachment-metadata": '{  "size_bytes" : "1000"}'},
         )
 
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.modules.attachment.secure_hash_s").return_value = 17
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.modules.attachment.secure_hash").return_value = 17
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.modules.attachment.time.time").return_value = 0
-        # we don't need this anymore, but still, how can I patch json.loads?
-        #mocker.patch("ansible_collections.servicenow.itsm.plugins.modules.attachment.json.loads").return_value = 1000
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.modules.attachment.secure_hash_s"
+        ).return_value = 17
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.modules.attachment.secure_hash"
+        ).return_value = 17
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.modules.attachment.time.time"
+        ).return_value = 0
+        # mocker.patch(
+        #     "ansible_collections.servicenow.itsm.plugins.modules.attachment.json.loads"
+        # ).return_value = {"size_bytes": "1000"}
 
         records = attachment.run(module, attachment_client)
 
@@ -95,7 +102,7 @@ class TestRun:
             "elapsed": "0.0",
             "checksum_src": 17,
             "checksum_dest": 17,
-            "size": "106879",
+            "size": "1000",
             "status_code": 200,
             "msg": "OK",
         }
@@ -118,11 +125,17 @@ class TestRun:
         )
         attachment_client.get_attachment.return_value = Response(
             404,
-            to_bytes('{\"error\":{\"message\":\"No Record found\",\"detail\":\"Record doesnt exist\"},\"status\":\"failure\"}'),
+            to_bytes(
+                '{"error":{"message":"No Record found","detail":"Record doesnt exist"},"status":"failure"}'
+            ),
             {"headers": "headers"},
         )
+        # mocker.patch(
+        #     "ansible_collections.servicenow.itsm.plugins.modules.attachment.json.loads"
+        # ).return_value = {"error": {"detail": "Record doesnt exist"}}
+        # could also patch response.json["error"]["detail"], but how can I do that?
 
         with pytest.raises(errors.ServiceNowError) as exc:
             attachment.run(module, attachment_client)
-        # could also patch response.json["error"]["detail"], but how can I do that?
+
         assert "Status code: 404, Details: Record doesnt exist" in str(exc.value)

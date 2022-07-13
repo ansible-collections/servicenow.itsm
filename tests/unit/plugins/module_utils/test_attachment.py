@@ -823,7 +823,7 @@ class TestAttachmentSaveAttachment:
         a.save_attachment(to_bytes("test"), path)
         file = open(path, "r")
         b_data = file.read()
-        
+
         assert to_text(b_data) == "test"
 
     def test_save_attachment_bad_dest(self, client):

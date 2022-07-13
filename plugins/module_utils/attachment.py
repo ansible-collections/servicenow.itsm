@@ -111,7 +111,7 @@ class AttachmentClient:
 
     def get_attachment(self, attachment_sys_id):
         return self.client.get(_path(attachment_sys_id, "file"))
-    
+
     def save_attachment(self, binary_data, dest):
         try:
             with open(dest, "wb") as f:
