@@ -14,7 +14,7 @@ import pytest
 from ansible_collections.servicenow.itsm.plugins.modules import attachment
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
-from ansible.module_utils._text import to_bytes, to_text
+from ansible.module_utils._text import to_bytes
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -82,26 +82,16 @@ class TestRun:
             to_bytes("binary_data"),
             {"x-attachment-metadata": '{  "size_bytes" : "1000"}'},
         )
-
-        mocker.patch(
-            "ansible_collections.servicenow.itsm.plugins.modules.attachment.secure_hash_s"
-        ).return_value = "6e642bb8dd5c2e027bf21dd923337cbb4214f827"
-        mocker.patch(
-            "ansible_collections.servicenow.itsm.plugins.modules.attachment.secure_hash"
-        ).return_value = "6e642bb8dd5c2e027bf21dd923337cbb4214f828"
         mocker.patch(
             "ansible_collections.servicenow.itsm.plugins.modules.attachment.time.time"
         ).return_value = 0
-        # mocker.patch(
-        #     "ansible_collections.servicenow.itsm.plugins.modules.attachment.json.loads"
-        # ).return_value = {"size_bytes": "1000"}
 
         records = attachment.run(module, attachment_client)
 
         assert records == {
             "elapsed": 0.0,
-            "checksum_src": "6e642bb8dd5c2e027bf21dd923337cbb4214f827",
-            "checksum_dest": "6e642bb8dd5c2e027bf21dd923337cbb4214f828",
+            "checksum_src": "08d1d491223ab3d4460f6dbc0e1948f06adf74b7",
+            "checksum_dest": None,
             "size": 1000,
             "status_code": 200,
             "msg": "OK",
@@ -130,10 +120,6 @@ class TestRun:
             ),
             {"headers": "headers"},
         )
-        # mocker.patch(
-        #     "ansible_collections.servicenow.itsm.plugins.modules.attachment.json.loads"
-        # ).return_value = {"error": {"detail": "Record doesnt exist"}}
-        # could also patch response.json["error"]["detail"], but how can I do that?
 
         with pytest.raises(errors.ServiceNowError) as exc:
             attachment.run(module, attachment_client)
