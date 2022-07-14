@@ -51,36 +51,41 @@ EXAMPLES = """
 
 
 RETURN = r'''
-checksum_dest:
-    description: sha1 checksum of the file after download
-    returned: success
-    type: str
-    sample: 6e642bb8dd5c2e027bf21dd923337cbb4214f827
-checksum_src:
-    description: sha1 checksum of the file
-    returned: success
-    type: str
-    sample: 6e642bb8dd5c2e027bf21dd923337cbb4214f827
-elapsed:
-    description: the number of seconds that elapsed while performing the download
-    returned: success
-    type: float
-    sample: 23
-msg:
-    description: OK or error message
-    returned: always
-    type: str
-    sample: OK
-size:
-    description: size of the target
-    returned: success
-    type: int
-    sample: 1220
-status_code:
-    description: the HTTP status code from the request
-    returned: success
-    type: int
-    sample: 200
+record:
+  description: download attachment record
+  returned: success
+  type: dict
+  return parameters:
+    checksum_dest:
+        description: sha1 checksum of the file after download
+        returned: success
+        type: str
+        sample: 6e642bb8dd5c2e027bf21dd923337cbb4214f827
+    checksum_src:
+        description: sha1 checksum of the file
+        returned: success
+        type: str
+        sample: 6e642bb8dd5c2e027bf21dd923337cbb4214f827
+    elapsed:
+        description: the number of seconds that elapsed while performing the download
+        returned: success
+        type: float
+        sample: 2.3
+    msg:
+        description: OK or error message
+        returned: always
+        type: str
+        sample: OK
+    size:
+        description: size of the target
+        returned: success
+        type: int
+        sample: 1220
+    status_code:
+        description: the HTTP status code from the request
+        returned: success
+        type: int
+        sample: 200
 '''
 
 
@@ -108,10 +113,10 @@ def run(module, attachment_client):
             "Status code: 404, Details: " + json.loads(response.data)["error"]["detail"]
         )
     end = time.time()
-    elapsed = round(end - start, 1) 
+    elapsed = round(end - start, 2)
     checksum_src = secure_hash_s(response.data)
     checksum_dest = secure_hash(module.params["dest"])
-    size = int(json.loads(response.headers["x-attachment-metadata"])["size_bytes"]) # does it matter if it is str or int?
+    size = int(json.loads(response.headers["x-attachment-metadata"])["size_bytes"])
     status_code = response.status
     msg = "OK"
 
@@ -147,8 +152,8 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         attachment_client = attachment.AttachmentClient(snow_client)
-        records = run(module, attachment_client)
-        module.exit_json(changed=True, records=records)
+        record = run(module, attachment_client)
+        module.exit_json(changed=True, record=record)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
 
