@@ -86,6 +86,7 @@ class ActionModule(ActionBase):
             new_module_args[FIELD_DATA] = self.load_template(
                 template, task_vars
             )
+            new_module_args.pop(FIELD_TEMPLATE)
 
         # Execute the api.py module.
         module_return = self._execute_module(
