@@ -436,3 +436,43 @@
       servicenow.itsm.problem: *delete-problem-attachment
 
     - ansible.builtin.assert: *delete-problem-attachment-result
+
+
+    ################################################
+    ############# Get Attachment Tests #############
+    ################################################
+
+    - name: Create a base configuration item with attachment
+      servicenow.itsm.configuration_item: *ci-create
+      register: result
+
+    - name: Create temporary file
+      ansible.builtin.tempfile:
+        state: file
+      register: temp_file
+
+    - name: Download attachment
+      servicenow.itsm.attachment:
+        dest: "{{ temp_file.path }}"
+        sys_id: "{{ result.record.attachments[0].sys_id }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.records.checksum_src == "e867d44768615c88da0b5f7ccff0d14d3f4c06f4"
+          - result.records.checksum_dest == "e867d44768615c88da0b5f7ccff0d14d3f4c06f4"
+          - result.records.msg == "OK"
+          - result.records.size == 210
+          - result.records.status_code == 200
+
+    - name: Download attachment with wrong sys_id
+      servicenow.itsm.attachment:
+        dest: /tmp/sn-attachment
+        sys_id: "wrongid"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.msg == "Status code':'' 404, Details':'' Record doesn't exist or ACL restricts the record retrieval"
+          
