@@ -1,3 +1,0 @@
-ruamel.yaml==0.17.21
-ruamel.yaml.jinja2==0.2.7
-jinja2==3.1.2
