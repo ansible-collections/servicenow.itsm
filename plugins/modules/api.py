@@ -258,7 +258,7 @@ def update_resource(module, table_client):
     record_new = table_client.update_record(
         table=table_name(module),
         record=record_old,
-        payload=module.params[FIELD_DATA],
+        payload=module.params.get(FIELD_DATA, dict()),
         check_mode=module.check_mode,
     )
     return True, record_new, dict(before=record_old, after=record_new)
@@ -269,7 +269,7 @@ def create_resource(module, table_client):
     # module.params["data"] already exists, such resource will get created once again).
     new = table_client.create_record(
         table=table_name(module),
-        payload=module.params[FIELD_DATA],
+        payload=module.params.get(FIELD_DATA, dict()),
         check_mode=module.check_mode,
     )
     return True, new, dict(before=None, after=new)
