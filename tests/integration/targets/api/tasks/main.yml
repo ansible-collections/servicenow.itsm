@@ -13,15 +13,17 @@
         that:
           - initial.record != []
 
+    # Using api module's 'data' field
+
     - name: Create a resource in table incident with some specified attributes
-      servicenow.itsm.api: &api-create
+      servicenow.itsm.api: &api-create-data
         resource: incident
         action: post
         data:
           short_description: my-incident
       register: base_api
       check_mode: true
-    - ansible.builtin.assert: &api-create-assertions
+    - ansible.builtin.assert: &api-create-assertions-data
         that:
           - base_api is changed
           - base_api.record.short_description == 'my-incident'
@@ -35,9 +37,9 @@
           - result.record | length == initial.record | length
 
     - name: Create a resource in table incident
-      servicenow.itsm.api: *api-create
+      servicenow.itsm.api: *api-create-data
       register: first_incident
-    - ansible.builtin.assert: *api-create-assertions
+    - ansible.builtin.assert: *api-create-assertions-data
 
     - name: Retrieve all incidents after creating a new resource
       servicenow.itsm.api_info:
@@ -50,14 +52,14 @@
     # If idempotence will be implemented in the future:
     #   - TODO: change assertion to 'result is not changed'
     - name: Create a incident (idempotence - at the moment, the module is NOT idempotent)
-      servicenow.itsm.api: *api-create
+      servicenow.itsm.api: *api-create-data
       register: result
     - ansible.builtin.assert:
         that:
           - result is changed
 
     - name: Update the incident (check mode)
-      servicenow.itsm.api: &api-update
+      servicenow.itsm.api: &api-update-data
         resource: incident
         action: patch
         sys_id: "{{ first_incident.record.sys_id }}"
@@ -65,7 +67,7 @@
           short_description: my-incident-updated
       check_mode: true
       register: updated_incident
-    - ansible.builtin.assert: &api-update-assertions
+    - ansible.builtin.assert: &api-update-assertions-data
         that:
           - updated_incident is changed
           - updated_incident.record.sys_id == first_incident.record.sys_id
@@ -81,14 +83,14 @@
           - result.record.0.short_description != "my-incident-updated"
 
     - name: Update the problem
-      servicenow.itsm.api: *api-update
+      servicenow.itsm.api: *api-update-data
       register: updated_incident
-    - ansible.builtin.assert: *api-update-assertions
+    - ansible.builtin.assert: *api-update-assertions-data
 
     # If idempotence will be implemented in the future:
     #   - TODO: change assertion to 'result is  changed'
     - name: Update the problem (idempotence - at the moment, the module is NOT idempotent)
-      servicenow.itsm.api: *api-update
+      servicenow.itsm.api: *api-update-data
       register: result
     - ansible.builtin.assert:
         that:
@@ -107,13 +109,13 @@
           - result_update_failed.changed == false
 
     - name: Delete the incident (check mode)
-      servicenow.itsm.api: &api-delete
+      servicenow.itsm.api: &api-delete-data
         resource: incident
         action: delete
         sys_id: "{{ first_incident.record.sys_id }}"
       check_mode: true
       register: deleted_incident
-    - ansible.builtin.assert: &api-delete-assertions
+    - ansible.builtin.assert: &api-delete-assertions-data
         that:
           - result is changed
 
@@ -127,7 +129,7 @@
           - result.record | length == 1
 
     - name: Delete the incident
-      servicenow.itsm.api: *api-delete
+      servicenow.itsm.api: *api-delete-data
       register: result
     - ansible.builtin.assert:
         that:
@@ -145,7 +147,7 @@
     # Despite the module not being idempotent, there is no resource with the mentioned sys_id,
     # so this element will not get deleted once again.
     - name: Delete a problem (idempotency)
-      servicenow.itsm.api: *api-delete
+      servicenow.itsm.api: *api-delete-data
       register: result
     - ansible.builtin.assert:
         that:
@@ -173,3 +175,47 @@
     - ansible.builtin.assert:
         that:
           - result_bad_query.record | length == result_no_query.record | length
+
+    # Using api module's 'column' field
+    - name: Create a resource in table incident with attributes, specified in template file
+      servicenow.itsm.api:
+        resource: incident
+        action: post
+        template: "test_template_post.j2"
+      vars: &template-vars
+        short_desc: "short"
+        long_desc: "looooooooong description"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.short_description == 'short'
+          - result.record.description == 'short looooooooong description'
+
+    - name: Update a resource in table incident with attributes, specified in template file
+      servicenow.itsm.api:
+        resource: incident
+        action: patch
+        sys_id: "{{ result.record.sys_id }}"
+        template: "test_template_patch.j2"
+      vars: *template-vars
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - "result.record.short_description == 'Changed template - short'"
+          - "result.record.description == 'Desciption is changed also - short looooooooong description'"
+
+    # - name: print info from previous task
+    #   ansible.builtin.debug:
+    #     var: result
+
+    - name: Delete the incident
+      servicenow.itsm.api:
+        resource: incident
+        action: delete
+        sys_id: "{{ result.record.sys_id }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is changed
