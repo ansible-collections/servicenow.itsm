@@ -84,7 +84,7 @@ class ActionModule(ActionBase):
             # If template was specified, override the existing data field with rendered jinja template
             # with path specified in template.
             new_module_args[FIELD_DATA] = self.load_template(
-                template, new_module_args, task_vars
+                template, task_vars
             )
 
         # Execute the api.py module.
@@ -155,7 +155,7 @@ class ActionModule(ActionBase):
             # Removes any temporary files created from a previous call to get_real_file
             self._loader.cleanup_tmp_file(b_tmp_source)
 
-    def load_template(self, template, new_module_args, task_vars):
+    def load_template(self, template, task_vars):
         template_item = get_template_args(template)
         default_environment = self._set_default_env()
 
