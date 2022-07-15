@@ -23,7 +23,7 @@ class TestRun:
                 sys_id="my_sys_id",
                 action="patch",
                 data=dict(state="new"),
-            )
+            ),
         )
         action = api.ActionModule(
             task,
@@ -57,18 +57,22 @@ class TestRun:
 
     def test_fail(self, mocker):
         # Test mutual exclusiveness of data and template is tested on controller machine already
-        with pytest.raises(TypeError, match="parameters are mutually exclusive: data|template"):
+        with pytest.raises(
+            TypeError, match="parameters are mutually exclusive: data|template"
+        ):
             task = mocker.MagicMock(
                 Task,
                 async_val=0,
                 args=dict(
-                    instance=dict(host="my.host.name", username="user", password="pass"),
+                    instance=dict(
+                        host="my.host.name", username="user", password="pass"
+                    ),
                     resource="incident",
                     sys_id="my_sys_id",
                     action="patch",
                     data=dict(state="new"),
-                    template="/path/to/the/template.j2"
-                )
+                    template="/path/to/the/template.j2",
+                ),
             )
             action = api.ActionModule(
                 task,
@@ -119,7 +123,7 @@ class TestDefaultEnv:
                 sys_id="my_sys_id",
                 action="patch",
                 data=dict(state="new"),
-            )
+            ),
         )
         action = api.ActionModule(
             task,
@@ -138,5 +142,5 @@ class TestDefaultEnv:
             variable_end_string="}}",
             block_start_string="{%",
             block_end_string="%}",
-            trim_blocks=True
+            trim_blocks=True,
         )

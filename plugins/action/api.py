@@ -83,9 +83,7 @@ class ActionModule(ActionBase):
         if template:
             # If template was specified, override the existing data field with rendered jinja template
             # with path specified in template.
-            new_module_args[FIELD_DATA] = self.load_template(
-                template, task_vars
-            )
+            new_module_args[FIELD_DATA] = self.load_template(template, task_vars)
             new_module_args.pop(FIELD_TEMPLATE)
 
         # Execute the api.py module.
