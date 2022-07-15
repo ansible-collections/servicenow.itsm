@@ -29,6 +29,8 @@ FIELD_COLUMNS_NAME = "columns"
 FIELD_QUERY_NAME = "sysparm_query"
 FIELD_SYS_ID = "sys_id"
 FIELD_DATA = "data"
+FIELD_TEMPLATE = "template"
+FIELD_DATA_RENDERED = "data_rendered"
 
 POSSIBLE_FILTER_PARAMETERS = [
     FIELD_QUERY_NAME,
@@ -68,11 +70,5 @@ def get_query_by_sys_id(module):
     return dict(sys_id=module.params[FIELD_SYS_ID])
 
 
-def get_data(module):
-    if FIELD_DATA in module.params:
-        return module.params[FIELD_DATA]
-    return dict()
-
-
-def sys_id_present(module):
-    return FIELD_SYS_ID in module.params and module.params[FIELD_SYS_ID]
+def field_present(module, field):
+    return field in module.params and module.params[field]

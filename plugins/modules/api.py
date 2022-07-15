@@ -41,8 +41,9 @@ options:
       - delete
   data:
     description:
-      - Only relevant if I(action==patch) or I(action==post)
       - The data that we want to update or create the resource with.
+      - Mutually exclusive with template.
+      - Only relevant if I(action==patch) or I(action==post)
       - A Dict consists of resource's column names as keys (such as description, number, priority, and so on) and the
         patching values as values (the value we want to change the column to).
       - When updating a resource's record, if no datum is specified for a specific column, the value of that column will
@@ -50,10 +51,19 @@ options:
       - When creating a resource's record, if no datum is specified for a specific column, the default value of the
         column will be used.
     type: dict
+  template:
+    description:
+      - Provide a valid YAML template definition file for creating or updating a record
+      - Provides built-in template processing capabilities as an alternative to its data parameter.
+      - Mutually exclusive with data.
+      - If template starts with C("/"), it's assumed you've specified absolute path to file. Otherwise, it's assumed
+        you've specified relative path to file.
+      - Template file needs to present on the Ansible Controller's system. Otherwise, error is raised.
+    type: str
 """
 
 EXAMPLES = """
-- name: Create a record in table incident with column short_description set to my-incident
+- name: Create a record in table incident with specified short_description (which is read from data)
   servicenow.itsm.api:
     resource: incident
     action: post
@@ -61,7 +71,22 @@ EXAMPLES = """
       short_description: my-incident
   register: result
 
-- name: Update column short_description in table incident of a record with given sys_id
+- name: Create a record in table incident with column values set in template, located in Ansible controller file system
+  servicenow.itsm.api:
+    resource: incident
+    action: post
+    template: '/testing/deployment.j2'
+  register: result
+
+- name: Update a record with given sys_id in table incident with template, located in Ansible controller file system
+  servicenow.itsm.api:
+    resource: incident
+    action: patch
+    sys_id: 46b66a40a9fe198101f243dfbc79033d
+    template: '/testing/deployment.j2'
+  register: result
+
+- name: Update column short_description (specified in data) in table incident of a record with given sys_id
   servicenow.itsm.api:
     resource: incident
     action: patch
@@ -83,6 +108,21 @@ EXAMPLES = """
     action: post
     data:
       short_description: demo-description2
+  register: result
+
+- name: Create a record in the table sc_req_item and set short_description's value to demo-description2
+  servicenow.itsm.api:
+    resource: sc_req_item
+    action: post
+    data:
+      short_description: demo-description2
+  register: result
+
+- name: Create a record in sc_req_item with column values set in template, located in Ansible controller file system
+  servicenow.itsm.api:
+    resource: sc_req_item
+    action: post
+    template: '/testing/deployment.j2'
   register: result
 
 - name: Delete a record by sys_id from table sc_req_item
@@ -203,8 +243,10 @@ from ..module_utils.api import (
     ACTION_POST,
     ACTION_PATCH,
     ACTION_DELETE,
-    get_data,
-    sys_id_present,
+    field_present,
+    FIELD_SYS_ID,
+    FIELD_DATA,
+    FIELD_TEMPLATE,
 )
 
 
@@ -214,7 +256,10 @@ def update_resource(module, table_client):
     if record_old is None:
         return False, None, dict(before=None, after=None)
     record_new = table_client.update_record(
-        table_name(module), record_old, get_data(module), module.check_mode
+        table=table_name(module),
+        record=record_old,
+        payload=module.params[FIELD_DATA],
+        check_mode=module.check_mode,
     )
     return True, record_new, dict(before=record_old, after=record_new)
 
@@ -224,7 +269,7 @@ def create_resource(module, table_client):
     # module.params["data"] already exists, such resource will get created once again).
     new = table_client.create_record(
         table=table_name(module),
-        payload=get_data(module),
+        payload=module.params[FIELD_DATA],
         check_mode=module.check_mode,
     )
     return True, new, dict(before=None, after=new)
@@ -241,8 +286,8 @@ def delete_resource(module, table_client):
 
 def run(module, table_client):
     action = module.params["action"]
-    if (action == ACTION_PATCH or action == ACTION_DELETE) and not sys_id_present(
-        module
+    if (action == ACTION_PATCH or action == ACTION_DELETE) and not field_present(
+        module, FIELD_SYS_ID
     ):
         raise errors.ServiceNowError(
             "For actions patch and delete sys_id needs to be specified."
@@ -250,7 +295,7 @@ def run(module, table_client):
     if action == ACTION_PATCH:  # PATCH method
         return update_resource(module, table_client)
     elif action == ACTION_POST:  # POST method
-        if sys_id_present(module):
+        if field_present(module, FIELD_SYS_ID):
             module.warn("For action create (post) sys_id is ignored.")
         return create_resource(module, table_client)
     return delete_resource(module, table_client)  # DELETE method
@@ -272,12 +317,17 @@ def main():
                 ACTION_DELETE,  # delete
             ],
         ),
-        data=dict(
-            type="dict",
+        data=dict(type="dict", default=dict()),
+        template=dict(
+            type="str",
         ),
     )
 
-    module = AnsibleModule(supports_check_mode=True, argument_spec=arg_spec)
+    module = AnsibleModule(
+        supports_check_mode=True,
+        argument_spec=arg_spec,
+        mutually_exclusive=[(FIELD_DATA, FIELD_TEMPLATE)],
+    )
 
     try:
         snow_client = client.Client(**module.params["instance"])
