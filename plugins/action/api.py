@@ -74,8 +74,8 @@ class ActionModule(ActionBase):
         # on remote machine
 
         check_mutually_exclusive(
-            terms=self.MUTUALLY_EXCLUSIVE,
-            module_parameters=self._task.args,
+            self.MUTUALLY_EXCLUSIVE,
+            self._task.args,
         )
 
         new_module_args = copy.deepcopy(self._task.args)
