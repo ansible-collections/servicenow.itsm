@@ -34,6 +34,9 @@ options:
       - Attachment's sys_id.
     type: str
     required: true
+
+notes:
+  - Supports check_mode.
 """
 
 EXAMPLES = """
@@ -96,7 +99,8 @@ def run(module, attachment_client):
     start = time.time()
     response = attachment_client.get_attachment(module.params["sys_id"])
     if response.status == 200:
-        attachment_client.save_attachment(response.data, module.params["dest"])
+        if not module.check_mode:
+            attachment_client.save_attachment(response.data, module.params["dest"])
     elif response.status == 404:
         raise errors.ServiceNowError(
             "Status code: 404, Details: " + json.loads(response.data)["error"]["detail"]
