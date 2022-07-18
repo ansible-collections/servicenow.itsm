@@ -18,7 +18,7 @@ short_description: Manage ServiceNow POST, PATCH and DELETE requests
 description:
   - Create, delete or update a ServiceNow record from the given resource.
   - For more information, refer to the ServiceNow REST Table API documentation at
-    U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO).
+    U(https://docs.servicenow.com/bundle/sandiego-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html).
 version_added: 2.0.0
 seealso:
   - module: servicenow.itsm.api_info
