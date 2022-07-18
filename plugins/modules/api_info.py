@@ -43,10 +43,12 @@ options:
       - "Return field display values (true), actual values (false), or both (all) (default: false)."
     type: str
     choices: ["true", "false", "all"]
+    default: 'false'
   exclude_reference_link:
     description:
       - "true to exclude Table API links for reference fields (default: false)"
     type: bool
+    default: False
   columns:
     description:
       - List of fields/columns to return in the response.
@@ -61,11 +63,13 @@ options:
       - If set to C(true) to access data across domains if authorized.
       - Default is set to C(false).
     type: bool
+    default: False
   no_count:
     description:
       - Do not execute a select count(*) on table.
       - Default is set to C(false).
     type: bool
+    default: False
 """
 
 EXAMPLES = """
