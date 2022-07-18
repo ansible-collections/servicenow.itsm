@@ -15,8 +15,9 @@ def _path(table, *subpaths):
 
 
 def _query(original=None):
-    # Flatten the response (skip embedded links to resources)
-    return dict(original or {}, sysparm_exclude_reference_link="true")
+    original = original or dict()
+    original["sysparm_exclude_reference_link"] = original.setdefault("sysparm_exclude_reference_link", "true")
+    return original
 
 
 class TableClient:
