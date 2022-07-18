@@ -18,7 +18,7 @@ short_description: Manage ServiceNow GET requests
 description:
   - Retrieve records via ServiceNow REST Table API for an arbitrary table.
   - For more information, refer to the ServiceNow REST Table API documentation at
-    U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO).
+    U(https://docs.servicenow.com/bundle/sandiego-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html).
 version_added: 2.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
