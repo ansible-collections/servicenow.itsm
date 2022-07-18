@@ -85,6 +85,17 @@
       register: updated_incident
     - ansible.builtin.assert: *api-update-assertions
 
+    - name: Test 'required_if' module functionality for when action is set to patch and no sys_id is specified
+      servicenow.itsm.api:
+        resource: incident
+        action: patch
+      ignore_errors: true
+      register: patch_missing_sys_id
+    - ansible.builtin.assert:
+        that:
+          - patch_missing_sys_id is failed
+          - "'action is patch but all of the following are missing: sys_id' in patch_missing_sys_id.msg"
+
     # If idempotence will be implemented in the future:
     #   - TODO: change assertion to 'result is  changed'
     - name: Update the problem (idempotence - at the moment, the module is NOT idempotent)
@@ -141,6 +152,17 @@
     - ansible.builtin.assert:
         that:
           - result.record == []
+
+    - name: Test 'required_if' module functionality for when action is set to delete and no sys_id is specified
+      servicenow.itsm.api:
+        resource: incident
+        action: delete
+      ignore_errors: true
+      register: delete_missing_sys_id
+    - ansible.builtin.assert:
+        that:
+          - delete_missing_sys_id is failed
+          - "'action is patch but all of the following are missing: sys_id' in patch_missing_sys_id.msg"
 
     # Despite the module not being idempotent, there is no resource with the mentioned sys_id,
     # so this element will not get deleted once again.

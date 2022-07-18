@@ -112,23 +112,6 @@ class TestUpdateResource:
             ),
         )
 
-    def test_update_resource_no_sys_id(self, create_module, table_client):
-        with pytest.raises(
-            errors.ServiceNowError,
-            match="For actions patch and delete sys_id needs to be specified.",
-        ):
-            module = create_module(
-                params=dict(
-                    instance=dict(
-                        host="my.host.name", username="user", password="pass"
-                    ),
-                    resource="incident",
-                    action="patch",
-                    data=dict(state="new"),
-                )
-            )
-            api.run(module, table_client)
-
 
 class TestCreateResource:
     def test_create_resource_no_sys_id(self, create_module, table_client):
@@ -291,20 +274,3 @@ class TestDeleteResource:
                 after=None,
             ),
         )
-
-    def test_delete_resource_no_sys_id(self, create_module, table_client):
-        with pytest.raises(
-            errors.ServiceNowError,
-            match="For actions patch and delete sys_id needs to be specified.",
-        ):
-            module = create_module(
-                params=dict(
-                    instance=dict(
-                        host="my.host.name", username="user", password="pass"
-                    ),
-                    resource="incident",
-                    action="patch",
-                    data=dict(state="new"),
-                )
-            )
-            api.run(module, table_client)

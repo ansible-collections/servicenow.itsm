@@ -26,6 +26,10 @@ extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id
 options:
+  sys_id:
+    description:
+      - Required if I(action==patch) or I(action==delete)
+    type: str
   resource:
     description:
       - The name of the table in which a record is to be created, updated or deleted from.
@@ -41,7 +45,7 @@ options:
       - delete
   data:
     description:
-      - Only relevant if I(action==patch) or I(action==post)
+      - Only elevant if I(action==patch) or I(action==post)
       - The data that we want to update or create the resource with.
       - A Dict consists of resource's column names as keys (such as description, number, priority, and so on) and the
         patching values as values (the value we want to change the column to).
@@ -240,16 +244,9 @@ def delete_resource(module, table_client):
 
 
 def run(module, table_client):
-    action = module.params["action"]
-    if (action == ACTION_PATCH or action == ACTION_DELETE) and not sys_id_present(
-        module
-    ):
-        raise errors.ServiceNowError(
-            "For actions patch and delete sys_id needs to be specified."
-        )
-    if action == ACTION_PATCH:  # PATCH method
+    if module.params["action"] == ACTION_PATCH:  # PATCH method
         return update_resource(module, table_client)
-    elif action == ACTION_POST:  # POST method
+    elif module.params["action"] == ACTION_POST:  # POST method
         if sys_id_present(module):
             module.warn("For action create (post) sys_id is ignored.")
         return create_resource(module, table_client)
@@ -277,7 +274,14 @@ def main():
         ),
     )
 
-    module = AnsibleModule(supports_check_mode=True, argument_spec=arg_spec)
+    module = AnsibleModule(
+        supports_check_mode=True,
+        argument_spec=arg_spec,
+        required_if=[
+            ("action", "patch", ("sys_id",)),
+            ("action", "delete", ("sys_id",)),
+        ],
+    )
 
     try:
         snow_client = client.Client(**module.params["instance"])
