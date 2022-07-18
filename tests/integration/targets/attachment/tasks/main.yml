@@ -466,13 +466,14 @@
           - result.records.size == 210
           - result.records.status_code == 200
 
-    - name: Download attachment with wrong sys_id
+    - name: Download attachment with wrong id
       servicenow.itsm.attachment:
-        dest: /tmp/sn-attachment
+        dest: "{{ temp_file.path }}"
         sys_id: "wrongid"
+      ignore_errors: true
       register: result
 
     - ansible.builtin.assert:
         that:
-          - result.msg == "Status code':'' 404, Details':'' Record doesn't exist or ACL restricts the record retrieval"
-          
+          - result is failed
+          - "'Record' in result.msg"
