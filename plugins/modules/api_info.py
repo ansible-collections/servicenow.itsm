@@ -225,7 +225,8 @@ def main():
         resource=dict(type="str", required=True),
         sysparm_query=dict(type="str"),
         display_value=dict(
-            type="str", choices=["true", "false", "all"],
+            type="str",
+            choices=["true", "false", "all"],
             default="false",
         ),  # Return field display values (true), actual values (false), or both (all) (default: false)
         exclude_reference_link=dict(
