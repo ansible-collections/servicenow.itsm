@@ -26,7 +26,7 @@ extends_documentation_fragment:
 options:
   dest:
     description:
-      - Specify download folder.
+      - Specify download file.
     type: str
     required: true
   sys_id:
@@ -50,22 +50,12 @@ EXAMPLES = """
 """
 
 
-RETURN = r'''
+RETURN = r"""
 record:
   description: download attachment record
   returned: success
   type: dict
-  return parameters:
-    checksum_dest:
-        description: sha1 checksum of the file after download
-        returned: success
-        type: str
-        sample: 6e642bb8dd5c2e027bf21dd923337cbb4214f827
-    checksum_src:
-        description: sha1 checksum of the file
-        returned: success
-        type: str
-        sample: 6e642bb8dd5c2e027bf21dd923337cbb4214f827
+  contains:
     elapsed:
         description: the number of seconds that elapsed while performing the download
         returned: success
@@ -86,14 +76,13 @@ record:
         returned: success
         type: int
         sample: 200
-'''
+"""
 
 
 import time
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.utils.hashing import secure_hash, secure_hash_s
 
 from ..module_utils import (
     arguments,
@@ -114,17 +103,13 @@ def run(module, attachment_client):
         )
     end = time.time()
     elapsed = round(end - start, 2)
-    checksum_src = secure_hash_s(response.data)
-    checksum_dest = secure_hash(module.params["dest"])
     size = int(json.loads(response.headers["x-attachment-metadata"])["size_bytes"])
     status_code = response.status
     msg = "OK"
 
     return {
-        "size": size,  # return True, record, {}
+        "size": size,
         "elapsed": elapsed,
-        "checksum_src": checksum_src,
-        "checksum_dest": checksum_dest,
         "status_code": status_code,
         "msg": msg,
     }
