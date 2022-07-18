@@ -445,26 +445,31 @@
     - name: Create a base configuration item with attachment
       servicenow.itsm.configuration_item: *ci-create
       register: result
-
+    
     - name: Create temporary file
       ansible.builtin.tempfile:
         state: file
       register: temp_file
 
-    - name: Download attachment
-      servicenow.itsm.attachment:
+    - name: Download attachment - check mode
+      servicenow.itsm.attachment: &download-attachment
         dest: "{{ temp_file.path }}"
         sys_id: "{{ result.record.attachments[0].sys_id }}"
-      register: result
+      check_mode: yes
+      register: att_result
 
-    - ansible.builtin.assert:
+    - ansible.builtin.assert: &download-attachment-result
         that:
-          - result is changed
-          - result.records.checksum_src == "e867d44768615c88da0b5f7ccff0d14d3f4c06f4"
-          - result.records.checksum_dest == "e867d44768615c88da0b5f7ccff0d14d3f4c06f4"
-          - result.records.msg == "OK"
-          - result.records.size == 210
-          - result.records.status_code == 200
+          - att_result is changed
+          - att_result.record.msg == "OK"
+          - att_result.record.size != 0
+          - att_result.record.status_code == 200
+    
+    - name: Download attachment
+      servicenow.itsm.attachment: *download-attachment
+      register: att_result
+
+    - ansible.builtin.assert: *download-attachment-result
 
     - name: Download attachment with wrong id
       servicenow.itsm.attachment:
