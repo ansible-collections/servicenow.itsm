@@ -42,7 +42,7 @@ options:
     description:
       - "Return field display values (true), actual values (false), or both (all) (default: false)."
     type: str
-    choices: ["true", "false", "both"]
+    choices: ["true", "false", "all"]
   exclude_reference_link:
     description:
       - "true to exclude Table API links for reference fields (default: false)"
@@ -225,10 +225,12 @@ def main():
         resource=dict(type="str", required=True),
         sysparm_query=dict(type="str"),
         display_value=dict(
-            type="str", choices=["true", "false", "both"]
+            type="str", choices=["true", "false", "all"],
+            default="false",
         ),  # Return field display values (true), actual values (false), or both (all) (default: false)
         exclude_reference_link=dict(
             type="bool",
+            default=False,  # to enforce False when this parameter is omitted from a playbook
         ),  # True to exclude Table API links for reference columns
         columns=dict(
             type="list", default=[], elements="str"
@@ -237,10 +239,12 @@ def main():
             type="str"
         ),  # Name of the query category (read replica category) to use for queries
         query_no_domain=dict(
-            type="bool"
+            type="bool",
+            default=False,  # to enforce False when this parameter is omitted from a playbook
         ),  # True to access data across domains if authorized (default: false)
         no_count=dict(
             type="bool",
+            default=False,  # to enforce False when this parameter is omitted from a playbook
         ),  # Do not execute a select count(*) on table (default: false)
     )
 
