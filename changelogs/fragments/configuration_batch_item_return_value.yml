@@ -1,2 +1,2 @@
 minor_changes:
- - configuration_batch_item - now returns result insted only if something was changed or not.
+ - configuration_batch_item - now returns result instead only if something was changed or not.
