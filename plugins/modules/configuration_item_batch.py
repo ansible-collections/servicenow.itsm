@@ -105,22 +105,29 @@ def update(module, table_client):
     cmdb_table = module.params["sys_class_name"]
     id_column_set = module.params["id_column_set"]
 
+    results = []
     for desired in module.params["dataset"]:
         query = dict((c, desired[c]) for c in id_column_set)
         current = table_client.get_record(cmdb_table, query)
 
         if not current:
-            table_client.create_record(cmdb_table, desired, module.check_mode)
+            result = table_client.create_record(cmdb_table, desired, module.check_mode)
+            results.append(result)
             changed = True
             continue
 
         if utils.is_superset(current, desired):
+            results.append(current)
             continue
 
-        table_client.update_record(cmdb_table, current, desired, module.check_mode)
+        result = table_client.update_record(
+            cmdb_table, current, desired, module.check_mode
+        )
+
+        results.append(result)
         changed = True
 
-    return changed
+    return results, changed
 
 
 def main():
@@ -157,8 +164,8 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
-        changed = update(module, table_client)
-        module.exit_json(changed=changed)
+        results, changed = update(module, table_client)
+        module.exit_json(changed=changed, records_raw=results)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
 
