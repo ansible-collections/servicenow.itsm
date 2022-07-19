@@ -16,7 +16,7 @@ def _path(table, *subpaths):
 
 def _query(original=None):
     original = original or dict()
-    original["sysparm_exclude_reference_link"] = original.setdefault("sysparm_exclude_reference_link", "true")
+    original.setdefault("sysparm_exclude_reference_link", "true")
     return original
 
 
