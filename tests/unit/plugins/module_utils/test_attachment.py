@@ -821,7 +821,7 @@ class TestAttachmentSaveAttachment:
         a = attachment.AttachmentClient(client)
 
         a.save_attachment(to_bytes("test"), path)
-        file = open(path, "r")
+        file = open(str(path), "r")
         b_data = file.read()
 
         assert to_text(b_data) == "test"
