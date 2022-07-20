@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright: (c) 2021, XLAB Steampunk <steampunk@xlab.si>
+# Copyright: (c) 2022, XLAB Steampunk <steampunk@xlab.si>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -26,7 +26,7 @@ extends_documentation_fragment:
 options:
   dest:
     description:
-      - Specify download file.
+      - Specify the location to download the file.
     type: str
     required: true
   sys_id:
@@ -43,13 +43,11 @@ EXAMPLES = """
   - name: ServiceNow download attachment module
     servicenow.itsm.attachment:
       instance:
-        host: sn_host
-        username: sn_username
-        password: sn_password
+        host: https://instance_id.service-now.com
+        username: user
+        password: pass
       dest: /tmp/sn-attachment
-      sys_id: sn_attachment_id
-    tags:
-      - download-attachment-sn
+      sys_id: 003a3ef24ff1120031577d2ca310c74b
 """
 
 
