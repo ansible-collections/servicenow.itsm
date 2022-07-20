@@ -114,7 +114,7 @@ class AttachmentClient:
 
     def save_attachment(self, binary_data, dest):
         try:
-            with open(dest, "wb") as f:
+            with open(str(dest), "wb") as f:
                 f.write(binary_data)
         except (IOError, OSError) as e:
             raise errors.ServiceNowError(str(e))
