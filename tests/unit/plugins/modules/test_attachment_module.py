@@ -90,8 +90,6 @@ class TestRun:
 
         assert records == {
             "elapsed": 0.0,
-            "checksum_src": "08d1d491223ab3d4460f6dbc0e1948f06adf74b7",
-            "checksum_dest": None,
             "size": 1000,
             "status_code": 200,
             "msg": "OK",
@@ -116,7 +114,7 @@ class TestRun:
         attachment_client.get_attachment.return_value = Response(
             404,
             to_bytes(
-                '{"error":{"message":"No Record found","detail":"Record doesnt exist"},"status":"failure"}'
+                '{"error":{"message":"No Record found","detail":"Record does not exist"},"status":"failure"}'
             ),
             {"headers": "headers"},
         )
@@ -124,4 +122,4 @@ class TestRun:
         with pytest.raises(errors.ServiceNowError) as exc:
             attachment.run(module, attachment_client)
 
-        assert "Status code: 404, Details: Record doesnt exist" in str(exc.value)
+        assert "Status code: 404, Details: Record does not exist" in str(exc.value)
