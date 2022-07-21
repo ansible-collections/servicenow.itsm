@@ -143,7 +143,7 @@ SHARED_SPECS = dict(
             ),
         ),
     ),
-    field_display_value=dict(
+    sysparm_display_value=dict(
         type="str",
         choices=[
             "true",
