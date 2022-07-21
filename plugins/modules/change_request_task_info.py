@@ -222,8 +222,6 @@ def run(module, table_client):
     else:
         query = utils.filter_dict(module.params, "sys_id", "number", "sysparm_display_value")
 
-    # raise errors.ServiceNowError(query)  # table_client.list_records("change_task", query))
-
     return [
         mapper.to_ansible(record)
         for record in table_client.list_records("change_task", query)
