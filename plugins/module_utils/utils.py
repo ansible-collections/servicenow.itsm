@@ -42,14 +42,18 @@ def get_choices(module, mapping_field, default_payload_fields_mapping):
     return clone
 
 
-def get_mapper(module, mapping_field, default_payload_fields_mapping, sysparm_display_value="false"):
+def get_mapper(
+    module, mapping_field, default_payload_fields_mapping, sysparm_display_value="false"
+):
     choices = get_choices(module, mapping_field, default_payload_fields_mapping)
     mapper = PayloadMapper(choices, module.warn, sysparm_display_value)
     return mapper
 
 
 class PayloadMapper:
-    def __init__(self, mapping, unknown_value_handler=None, sysparm_display_value="false"):
+    def __init__(
+        self, mapping, unknown_value_handler=None, sysparm_display_value="false"
+    ):
         # Convert
         #   dict(a=[("s1", "a1"), ("s2", "a2")], b=[("s3", "a3")])
         # to

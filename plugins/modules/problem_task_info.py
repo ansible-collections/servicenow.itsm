@@ -209,7 +209,9 @@ def run(module, table_client):
             "sysparm_display_value": module.params["sysparm_display_value"],
         }
     else:
-        query = utils.filter_dict(module.params, "sys_id", "number", "sysparm_display_value")
+        query = utils.filter_dict(
+            module.params, "sys_id", "number", "sysparm_display_value"
+        )
 
     return [
         mapper.to_ansible(record)
@@ -221,7 +223,9 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            arguments.get_spec("instance", "sys_id", "number", "query", "sysparm_display_value"),
+            arguments.get_spec(
+                "instance", "sys_id", "number", "query", "sysparm_display_value"
+            ),
         ),
         mutually_exclusive=[("sys_id", "query"), ("number", "query")],
     )

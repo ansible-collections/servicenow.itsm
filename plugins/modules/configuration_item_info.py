@@ -251,7 +251,11 @@ def main():
         supports_check_mode=True,
         argument_spec=dict(
             arguments.get_spec(
-                "instance", "sys_id", "query", "configuration_item_mapping", "sysparm_display_value",
+                "instance",
+                "sys_id",
+                "query",
+                "configuration_item_mapping",
+                "sysparm_display_value",
             ),
             sys_class_name=dict(
                 type="str",

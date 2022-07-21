@@ -158,7 +158,6 @@ SHARED_SPECS = dict(
     configuration_item_mapping=CONFIGURATION_ITEM_MAPPING_SPEC,
     problem_mapping=PROBLEM_MAPPING_SPEC,
     problem_task_mapping=PROBLEM_TASK_MAPPING_SPEC,
-
 )
 
 
