@@ -26,7 +26,7 @@ extends_documentation_fragment:
 options:
   dest:
     description:
-      - Specify the location to download the file.
+      - Specify the path in which the attachment will be downloaded to. The file will be downloaded on all the hosts from the inventory.
     type: str
     required: true
   sys_id:
