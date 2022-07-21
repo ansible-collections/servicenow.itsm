@@ -46,7 +46,7 @@ options:
     choices: ["true", "false", "both"]
   exclude_reference_link:
     description:
-      - "C(true) to exclude Table API links for reference fields."
+      - C(true) to exclude Table API links for reference fields.
       - The default is C(false).
     type: bool
   columns:
