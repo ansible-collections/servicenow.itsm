@@ -53,12 +53,12 @@ options:
     type: dict
   template:
     description:
-      - Provide a valid YAML template definition file for creating or updating a record
+      - Provide a valid YAML template definition file for creating or updating a record.
       - Provides built-in template processing capabilities as an alternative to its data parameter.
       - Mutually exclusive with data.
-      - If template starts with C("/"), it's assumed you've specified absolute path to file. Otherwise, it's assumed
-        you've specified relative path to file.
-      - Template file needs to present on the Ansible Controller's system. Otherwise, error is raised.
+      - If template starts with C("/"), it is assumed you have specified absolute path to file. Otherwise, it is assumed
+        you have specified relative a path to the file.
+      - Template file needs to present on the Ansible Controller's system. Otherwise, error an is raised.
     type: str
 """
 
