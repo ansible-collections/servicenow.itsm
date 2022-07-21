@@ -40,12 +40,14 @@ options:
     type: str
   display_value:
     description:
-      - "Return field display values (true), actual values (false), or both (all) (default: false)."
+      - Return field display values C(true), actual values C(false), or both C(all).
+      - The default value is C(false).
     type: str
     choices: ["true", "false", "both"]
   exclude_reference_link:
     description:
-      - "true to exclude Table API links for reference fields (default: false)"
+      - "C(true) to exclude Table API links for reference fields."
+      - The default is C(false).
     type: bool
   columns:
     description:
