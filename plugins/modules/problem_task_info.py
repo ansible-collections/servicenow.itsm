@@ -27,6 +27,7 @@ extends_documentation_fragment:
   - servicenow.itsm.sys_id.info
   - servicenow.itsm.number.info
   - servicenow.itsm.query
+  - servicenow.itsm.sysparm_display_value
 seealso:
   - module: servicenow.itsm.problem_task
   - module: servicenow.itsm.problem

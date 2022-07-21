@@ -30,6 +30,7 @@ extends_documentation_fragment:
   - servicenow.itsm.number.info
   - servicenow.itsm.query
   - servicenow.itsm.change_request_mapping
+  - servicenow.itsm.sysparm_display_value
 seealso:
   - module: servicenow.itsm.change_request
 """

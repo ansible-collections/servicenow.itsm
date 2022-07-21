@@ -31,9 +31,10 @@ extends_documentation_fragment:
   - servicenow.itsm.sys_id.info
   - servicenow.itsm.query
   - servicenow.itsm.configuration_item_mapping
+  - servicenow.itsm.sysparm_display_value
 seealso:
   - module: servicenow.itsm.configuration_item
-x
+
 options:
   sys_class_name:
     description:
