@@ -206,10 +206,6 @@
           - "result.record.short_description == 'Changed template - short'"
           - "result.record.description == 'Desciption is changed also - short looooooooong description'"
 
-    # - name: print info from previous task
-    #   ansible.builtin.debug:
-    #     var: result
-
     - name: Delete the incident
       servicenow.itsm.api:
         resource: incident
