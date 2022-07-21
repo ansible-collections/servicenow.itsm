@@ -91,6 +91,7 @@ class TestRun:
                 sys_id=None,
                 number="n",
                 query=None,
+                sysparm_display_value="true",
             )
         )
         table_client.list_records.return_value = [
@@ -117,7 +118,7 @@ class TestRun:
         )
 
         table_client.list_records.assert_called_once_with(
-            "change_request", dict(number="n")
+            "change_request", dict(number="n", sysparm_display_value="true")
         )
 
         attachment_client.list_records.assert_any_call(
