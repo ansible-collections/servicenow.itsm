@@ -143,12 +143,22 @@ SHARED_SPECS = dict(
             ),
         ),
     ),
+    field_display_value=dict(
+        type="str",
+        choices=[
+            "true",
+            "false",
+            "all",
+        ],
+        default="false",
+    ),
     incident_mapping=INCIDENT_MAPPING_SPEC,
     change_request_mapping=CHANGE_REQUEST_MAPPING_SPEC,
     change_request_task_mapping=CHANGE_REQUEST_TASK_MAPPING_SPEC,
     configuration_item_mapping=CONFIGURATION_ITEM_MAPPING_SPEC,
     problem_mapping=PROBLEM_MAPPING_SPEC,
     problem_task_mapping=PROBLEM_TASK_MAPPING_SPEC,
+
 )
 
 
