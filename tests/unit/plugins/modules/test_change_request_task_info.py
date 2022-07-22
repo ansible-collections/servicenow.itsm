@@ -118,6 +118,7 @@ class TestRun:
                 sys_id=None,
                 number="n",
                 query=None,
+                sysparm_query=None,
             )
         )
         table_client.list_records.return_value = [dict(p=1), dict(q=2), dict(r=3)]

@@ -75,6 +75,7 @@ class TestRun:
                 sys_id=None,
                 number="INC001",
                 query=None,
+                sysparm_query=None,
             )
         )
         table_client.list_records.return_value = [

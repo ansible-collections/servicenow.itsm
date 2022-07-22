@@ -91,6 +91,7 @@ class TestRun:
                 sys_id=None,
                 number="n",
                 query=None,
+                sysparm_query=None,
             )
         )
         table_client.list_records.return_value = [

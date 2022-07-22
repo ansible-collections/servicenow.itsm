@@ -80,6 +80,7 @@ class TestRun:
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci",
                 query=None,
+                sysparm_query=None,
             )
         )
         table_client.list_records.return_value = [
