@@ -57,10 +57,15 @@ EXAMPLES = r"""
     sys_id: 01a9ec0d3790200044e0bfc8bcbe5dc3
   register: result
 
-- name: Retrieve all hardare configuration items
+- name: Retrieve all hardare configuration items by using field query
   servicenow.itsm.configuration_item_info:
     query:
       - category: = Hardware
+  register: result
+
+- name: Retrieve all hardare configuration items by using field sysparm_query
+  servicenow.itsm.configuration_item_info:
+    sysparm_query: category=Hardware
   register: result
 
 - name: Retrieve configuration items in hardware category assigned to abel.tuter or bertie.luby

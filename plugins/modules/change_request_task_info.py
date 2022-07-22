@@ -47,10 +47,15 @@ EXAMPLES = r"""
     number: CTASK0000001
   register: result
 
-- name: Retrieve change request tasks that contain SAP in their short description
+- name: Retrieve change request tasks that contain SAP in their short description by using field query
   servicenow.itsm.change_request_task_info:
     query:
       - short_description: LIKE SAP
+  register: result
+  
+- name: Retrieve change request tasks that contain SAP in their short description by using field sysparm-query
+  servicenow.itsm.change_request_task_info:
+    sysparm_query: short_descriptionLIKESAP
   register: result
 
 - name: Retrieve new change requests assigned to abel.tuter or bertie.luby

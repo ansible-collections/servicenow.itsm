@@ -49,10 +49,15 @@ EXAMPLES = r"""
     number: PRB0007601
   register: result
 
-- name: Retrieve problems that do not contain SAP in its short description
+- name: Retrieve problems that do not contain SAP in its short description by using field query
   servicenow.itsm.problem_info:
     query:
       - short_description: NOT LIKE SAP
+  register: result
+
+- name: Retrieve problems that do not contain SAP in its short description by using field sysparm_query
+  servicenow.itsm.problem_info:
+    sysparm_query: short_descriptionNOT LIKESAP
   register: result
 
 - name: Retrieve new problems assigned to abel.tuter or bertie.luby

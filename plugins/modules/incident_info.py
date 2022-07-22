@@ -48,10 +48,15 @@ EXAMPLES = r"""
     number: INC0000039
   register: result
 
-- name: Retrieve all incidents that contain SAP in its short description
+- name: Retrieve all incidents that contain SAP in its short description by using field query
   servicenow.itsm.incident_info:
     query:
       - short_description: LIKE SAP
+  register: result
+
+- name: Retrieve all incidents that contain SAP in its short description by using field sysparm_query
+  servicenow.itsm.incident_info:
+    sysparm_query: short_descriptionLIKESAP
   register: result
 
 - name: Retrieve new incidents reported by abel.tuter or bertie.luby

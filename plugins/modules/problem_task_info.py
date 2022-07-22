@@ -48,10 +48,15 @@ EXAMPLES = r"""
     number: PTASK0007601
   register: result
 
-- name: Retrieve problem tasks that do not contain SAP in its short description
+- name: Retrieve problem tasks that do not contain SAP in its short description by using field query
   servicenow.itsm.problem_task_info:
     query:
       - short_description: NOT LIKE SAP
+  register: result
+
+- name: Retrieve problem tasks that do not contain SAP in its short description by using field sysparm_query
+  servicenow.itsm.problem_task_info:
+    sysparm_query: short_descriptionNOT LIKESAP
   register: result
 
 - name: Retrieve new problem tasks assigned to abel.tuter or bertie.luby
