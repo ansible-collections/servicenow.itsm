@@ -27,7 +27,8 @@ def _path(*subpaths):
 
 class AttachmentClient:
     def __init__(self, client, batch_size=10000):
-        # 10000 records is default batch size for ServiceNow Attachment REST API, so we also use it as a default.
+        # 10000 records is default batch size for ServiceNow Attachment REST API, so we also use it
+        # as a default.
         self.client = client
         self.batch_size = batch_size
 
