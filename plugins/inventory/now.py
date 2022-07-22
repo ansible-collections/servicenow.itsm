@@ -721,12 +721,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                 "exclusive."
             )
 
+        # TODO: Insert caching here once we remove deprecated functionality
         if sysparm_query:
             records = fetch_records(table_client, table, query, raw_input=True)
         else:
             records = fetch_records(table_client, table, query)
 
-        # TODO: Insert caching here once we remove deprecated functionality
         if enhanced:
             rel_records = fetch_records(
                 table_client, REL_TABLE, REL_QUERY, fields=REL_FIELDS
