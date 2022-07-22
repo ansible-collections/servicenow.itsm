@@ -1,3 +1,3 @@
 ---
 minor_changes:
-- \*_info modules - Added additional field sysparm_query, which enables the user to see sys_tags if set to true.
+- \*_info modules - Added additional module parameter sysparm_display_value to all info modules, which, if set to either true or all, enables the user to see the values of sys_tags.
