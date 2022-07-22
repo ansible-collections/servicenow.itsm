@@ -224,6 +224,8 @@ def run(module, table_client, attachment_client):
 
     if module.params["query"]:
         query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
+    elif module.params["sysparm_query"]:
+        query = {"sysparm_query": module.params["sysparm_query"]}
     else:
         query = utils.filter_dict(module.params, "sys_id")
 
@@ -243,13 +245,17 @@ def main():
         supports_check_mode=True,
         argument_spec=dict(
             arguments.get_spec(
-                "instance", "sys_id", "query", "configuration_item_mapping"
+                "instance",
+                "sys_id",
+                "query",
+                "configuration_item_mapping",
+                "sysparm_query",
             ),
             sys_class_name=dict(
                 type="str",
             ),
         ),
-        mutually_exclusive=[("sys_id", "query")],
+        mutually_exclusive=[("sys_id", "query"), ("sysparm_query", "query")],
     )
 
     try:

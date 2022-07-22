@@ -235,6 +235,8 @@ def run(module, table_client, attachment_client):
 
     if module.params["query"]:
         query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
+    elif module.params["sysparm_query"]:
+        query = {"sysparm_query": module.params["sysparm_query"]}
     else:
         query = utils.filter_dict(module.params, "sys_id", "number")
 
@@ -253,9 +255,15 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            arguments.get_spec("instance", "sys_id", "number", "query"),
+            arguments.get_spec(
+                "instance", "sys_id", "number", "query", "sysparm_query"
+            ),
         ),
-        mutually_exclusive=[("sys_id", "query"), ("number", "query")],
+        mutually_exclusive=[
+            ("sys_id", "query"),
+            ("number", "query"),
+            ("sysparm_query", "query"),
+        ],
     )
 
     try:
