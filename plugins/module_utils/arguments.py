@@ -129,7 +129,7 @@ SHARED_SPECS = dict(
     query=dict(type="list", elements="dict"),
     sysparm_query=dict(
         type="str",
-        fallback=(env_fallback, ["SN_FILTER_RESULTS"]),
+        fallback=(env_fallback, ["SN_SYSPARM_QUERY"]),
     ),
     attachments=dict(
         type="list",
