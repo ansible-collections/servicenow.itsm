@@ -54,7 +54,7 @@ EXAMPLES = r"""
     query:
       - short_description: LIKE SAP
   register: result
-  
+
 - name: Retrieve change requests that contain SAP in its short description by using field sysparm_query
   servicenow.itsm.change_request_info:
     sysparm_query: short_descriptionLIKESAP
