@@ -826,10 +826,11 @@ class TestAttachmentSaveAttachment:
 
         assert to_text(b_data) == "test"
 
-    def test_save_attachment_bad_dest(self, client):
+    def test_save_attachment_bad_dest(self, client, tmpdir):
         a = attachment.AttachmentClient(client)
+        nonexisting_path_name = str(tmpdir.join("not", "a", "path"))
 
         with pytest.raises(errors.ServiceNowError) as exc:
-            a.save_attachment(to_bytes("test"), "/not/a/path")
+            a.save_attachment(to_bytes("test"), nonexisting_path_name)
 
-        assert "[Errno 2] No such file or directory: '/not/a/path'" in str(exc.value)
+        assert "[Errno 2] No such file or directory" in str(exc.value)

@@ -101,6 +101,38 @@ class TestRun:
             to_bytes("binary_data"), "tmp"
         )
 
+    def test_run_bad_response_keys(self, create_module, attachment_client, mocker):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                dest="tmp",
+            )
+        )
+        attachment_client.get_attachment.return_value = Response(
+            200,
+            to_bytes("binary_data"),
+            {"bad_key": '{"bad_key": "1000"}'},
+        )
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.modules.attachment.time.time"
+        ).return_value = 0
+
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.modules.attachment.os.path.getsize"
+        ).return_value = 2000
+
+        records = attachment.run(module, attachment_client)
+
+        assert records == {
+            "elapsed": 0.0,
+            "size": 2000,
+            "status_code": 200,
+            "msg": "OK",
+        }
+
     def test_run_404(self, create_module, attachment_client, mocker):
         module = create_module(
             params=dict(
@@ -123,3 +155,26 @@ class TestRun:
             attachment.run(module, attachment_client)
 
         assert "Status code: 404, Details: Record does not exist" in str(exc.value)
+
+    def test_run_404_bad_response_keys(self, create_module, attachment_client, mocker):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                dest="tmp",
+            )
+        )
+        attachment_client.get_attachment.return_value = Response(
+            404,
+            to_bytes(
+                '{"bad_key":{"message":"No Record found","bad_key":"Record does not exist"},"status":"failure"}'
+            ),
+            {"headers": "headers"},
+        )
+
+        with pytest.raises(errors.ServiceNowError) as exc:
+            attachment.run(module, attachment_client)
+
+        assert "Status code: 404, Details: Not found" in str(exc.value)

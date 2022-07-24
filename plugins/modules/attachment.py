@@ -68,7 +68,7 @@ record:
         type: str
         sample: OK
     size:
-        description: size of the target
+        description: size of the attachment in bytes
         returned: success
         type: int
         sample: 1220
@@ -82,6 +82,7 @@ record:
 
 import time
 import json
+import os
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -100,12 +101,18 @@ def run(module, attachment_client):
         if not module.check_mode:
             attachment_client.save_attachment(response.data, module.params["dest"])
     elif response.status == 404:
+        fallback_msg = "Not found"
+        fallback_dict = dict(detail=fallback_msg)
+        error = response.json.get("error", fallback_dict).get("detail", fallback_msg)
         raise errors.ServiceNowError(
-            "Status code: 404, Details: " + json.loads(response.data)["error"]["detail"]
+            "Status code: 404, Details: " + error
         )
     end = time.time()
     elapsed = round(end - start, 2)
-    size = int(json.loads(response.headers["x-attachment-metadata"])["size_bytes"])
+    try:
+        size = int(json.loads(response.headers["x-attachment-metadata"])["size_bytes"])
+    except KeyError:
+        size = os.path.getsize(module.params["dest"])
     status_code = response.status
     msg = "OK"
 
