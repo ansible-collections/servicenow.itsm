@@ -284,11 +284,7 @@ DIRECT_PAYLOAD_FIELDS = (
 
 def ensure_absent(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
-
-    query = utils.filter_dict(module.params, "sys_id")
-    if query == []:
-        query = utils.filter_dict(module.params, "name")
-
+    query = utils.filter_dict(module.params, "sys_id", "name")
     configuration_item = table_client.get_record("cmdb_ci", query)
 
     if configuration_item:
@@ -453,13 +449,9 @@ def main():
         argument_spec=module_args,
         supports_check_mode=True,
         required_if=[
-            ("state", "absent", ("sys_id", "name", )),
+            ["state", "absent", ("sys_id", "name", ), True],
         ],
     )
-        # required_if: List of lists of ``[parameter, value, [parameters]]`` where
-        #             one of ``[parameters]`` is required if ``parameter == value``.
-        #         :type required_if: list
-
 
     try:
         snow_client = client.Client(**module.params["instance"])
