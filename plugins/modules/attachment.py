@@ -104,9 +104,7 @@ def run(module, attachment_client):
         fallback_msg = "Not found"
         fallback_dict = dict(detail=fallback_msg)
         error = response.json.get("error", fallback_dict).get("detail", fallback_msg)
-        raise errors.ServiceNowError(
-            "Status code: 404, Details: " + error
-        )
+        raise errors.ServiceNowError("Status code: 404, Details: " + error)
     end = time.time()
     elapsed = round(end - start, 2)
     try:
