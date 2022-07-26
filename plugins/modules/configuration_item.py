@@ -285,7 +285,7 @@ DIRECT_PAYLOAD_FIELDS = (
 def ensure_absent(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "name")
-    configuration_item = table_client.get_record("cmdb_ci", query)
+    configuration_item = table_client.get_record("cmdb_ci", query) # SHOULD I SET must_exist=True?
 
     if configuration_item:
         cmdb_table = configuration_item["sys_class_name"]
@@ -321,42 +321,52 @@ def build_payload(module, table_client):
 
 def ensure_present(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
-    query = utils.filter_dict(module.params, "sys_id")
+    query_sys_id = utils.filter_dict(module.params, "sys_id")
+    query_name = utils.filter_dict(module.params, "name")
     payload = build_payload(module, table_client)
     attachments = attachment.transform_metadata_list(
         module.params["attachments"], module.sha256
     )
 
-    if not query:
-        cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
-
-        if not module.params["name"]:
-            raise errors.ServiceNowError("Missing required parameter: name")
+    if not query_sys_id:
+        configuration_item = table_client.get_record("cmdb_ci", query_name)
         # User did not specify existing CI, so we need to create a new one.
-        new = mapper.to_ansible(
-            table_client.create_record(
-                cmdb_table, mapper.to_snow(payload), module.check_mode
+        if not configuration_item:
+            cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
+            new = mapper.to_ansible(
+                table_client.create_record(
+                    cmdb_table, mapper.to_snow(payload), module.check_mode
+                )
             )
-        )
+            # When we execute in check mode, new["sys_id"] is not defined.
+            # In order to give users back as much info as possible, we fake the sys_id in the
+            # next call.
+            new["attachments"] = attachment_client.upload_records(
+                cmdb_table,
+                new.get("sys_id", "N/A"),
+                attachments,
+                module.check_mode,
+            )
+            return True, new, dict(before=None, after=new)
 
-        # When we execute in check mode, new["sys_id"] is not defined.
-        # In order to give users back as much info as possible, we fake the sys_id in the
-        # next call.
-        new["attachments"] = attachment_client.upload_records(
-            cmdb_table,
-            new.get("sys_id", "N/A"),
-            attachments,
-            module.check_mode,
-        )
+        else:
+            # Update existing record
+            old = mapper.to_ansible(table_client.get_record("cmdb_ci", query_name))
 
-        return True, new, dict(before=None, after=new)
+    else:
+        old = mapper.to_ansible(table_client.get_record("cmdb_ci", query_sys_id, must_exist=True))
+        if query_name:
+            old2 = mapper.to_ansible(table_client.get_record("cmdb_ci", query_name))
+            if old["sys_id"] != old2["sys_id"]:
+                raise errors.ServiceNowError(
+                    "Record with the name {0} already exists.".format(module.params["name"])
+                )
 
-    old = mapper.to_ansible(table_client.get_record("cmdb_ci", query, must_exist=True))
     cmdb_table = old["sys_class_name"]
     # If necessary, fetch the record from the table for the extended CI class
     if cmdb_table != "cmdb_ci":
         old = mapper.to_ansible(
-            table_client.get_record(cmdb_table, query, must_exist=True)
+            table_client.get_record(cmdb_table, query_sys_id, must_exist=True)
         )
 
     old["attachments"] = attachment_client.list_records(
@@ -448,9 +458,10 @@ def main():
     module = AnsibleModule(
         argument_spec=module_args,
         supports_check_mode=True,
-        required_if=[
-            ["state", "absent", ("sys_id", "name", ), True],
-        ],
+        # required_if=[
+        #     ["state", "absent", ("sys_id", "name", ), True],
+        # ],
+        required_one_of=[("sys_id", "name", ), ],
     )
 
     try:
