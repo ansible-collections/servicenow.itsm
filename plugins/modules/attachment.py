@@ -134,7 +134,7 @@ def main():
             required=True,
         ),
         dest=dict(
-            type="str",
+            type="path",
             required=True,
         ),
     )
