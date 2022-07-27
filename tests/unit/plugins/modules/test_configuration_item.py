@@ -21,7 +21,7 @@ pytestmark = pytest.mark.skipif(
 
 
 class TestEnsureAbsent:
-    def test_delete_configuration_item(
+    def test_delete_configuration_item_using_sys_id(
         self, create_module, table_client, attachment_client
     ):
         module = create_module(
@@ -31,6 +31,7 @@ class TestEnsureAbsent:
                 ),
                 state="absent",
                 number=None,
+                name=None,
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci",
             )
@@ -43,6 +44,7 @@ class TestEnsureAbsent:
             module, table_client, attachment_client
         )
 
+        table_client.get_record.assert_called_once_with("cmdb_ci", {"sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"})
         table_client.delete_record.assert_called_once()
         assert result == (
             True,
@@ -50,6 +52,42 @@ class TestEnsureAbsent:
             dict(
                 before=dict(
                     sys_class_name="cmdb_ci", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
+                ),
+                after=None,
+            ),
+        )
+
+    def test_delete_configuration_item_using_name(
+        self, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="absent",
+                number=None,
+                name="my_name",
+                sys_id=None,
+                sys_class_name="cmdb_ci",
+            )
+        )
+        table_client.get_record.return_value = dict(
+            sys_class_name="cmdb_ci", name="my_name", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
+        )
+
+        result = configuration_item.ensure_absent(
+            module, table_client, attachment_client
+        )
+
+        table_client.get_record.assert_called_once_with("cmdb_ci", {"name": "my_name"})
+        table_client.delete_record.assert_called_once()
+        assert result == (
+            True,
+            None,
+            dict(
+                before=dict(
+                    sys_class_name="cmdb_ci", name="my_name", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
                 ),
                 after=None,
             ),
@@ -65,6 +103,7 @@ class TestEnsureAbsent:
                 ),
                 state="absent",
                 number=None,
+                name=None,
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci_computer",
             )
@@ -100,6 +139,7 @@ class TestEnsureAbsent:
                 ),
                 state="absent",
                 number=None,
+                name=None,
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci",
             ),
@@ -218,6 +258,7 @@ class TestEnsurePresent:
                 attachments=None,
             ),
         )
+        table_client.get_record.return_value = {}
         table_client.create_record.return_value = dict(
             name="test.name",
             short_description="Test configuration item",
@@ -230,6 +271,7 @@ class TestEnsurePresent:
             module, table_client, attachment_client
         )
 
+        table_client.get_record.assert_called_once_with("cmdb_ci", {"name": "test.name"})
         table_client.create_record.assert_called_once()
         assert result == (
             True,
@@ -252,6 +294,8 @@ class TestEnsurePresent:
             ),
         )
 
+    # Ansible module now requires name or sys_id, so this should be tested in main()
+    # ansible module returns: "msg": "one of the following is required: sys_id, name"
     def test_ensure_present_create_new_error(
         self, create_module, table_client, attachment_client
     ):
@@ -431,3 +475,122 @@ class TestEnsurePresent:
                 ),
             ),
         )
+
+    def test_ensure_present_update_name(
+        self, mocker, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="present",
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                name="my_new_name",
+                short_description=None,
+                sys_class_name="cmdb_ci",
+                assigned_to=None,
+                asset_tag=None,
+                install_status="installed",
+                operational_status="ready",
+                serial_number=None,
+                ip_address=None,
+                mac_address=None,
+                category=None,
+                environment=None,
+                other=None,
+                attachments=None,
+            ),
+        )
+        payload_mocker = mocker.patch.object(configuration_item, "build_payload")
+        payload_mocker.return_value = dict(
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            sys_class_name="cmdb_ci",
+            name="my_new_name"
+        )
+        table_client.get_record.return_value = dict(
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            sys_class_name="cmdb_ci",
+            name="my_name"
+        )
+        table_client.update_record.return_value = dict(
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            sys_class_name="cmdb_ci",
+            name="my_new_name"
+        )
+        attachment_client.update_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        result = configuration_item.ensure_present(
+            module, table_client, attachment_client
+        )
+
+        table_client.update_record.assert_called_once()
+        assert result == (
+            True,
+            dict(
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                sys_class_name="cmdb_ci",
+                name="my_new_name",
+                attachments=[],
+            ),
+            dict(
+                before=dict(
+                    sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                    sys_class_name="cmdb_ci",
+                    name="my_name",
+                    attachments=[],
+                ),
+                after=dict(
+                    sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                    sys_class_name="cmdb_ci",
+                    name="my_new_name",
+                    attachments=[],
+                ),
+            ),
+        )
+
+    def test_ensure_present_update_name_already_exists(
+        self, mocker, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="present",
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                name="my_new_name",
+                short_description=None,
+                sys_class_name="cmdb_ci",
+                assigned_to=None,
+                asset_tag=None,
+                install_status="installed",
+                operational_status="ready",
+                serial_number=None,
+                ip_address=None,
+                mac_address=None,
+                category=None,
+                environment=None,
+                other=None,
+                attachments=None,
+            ),
+        )
+
+        def get_record_side_effect(cmdb_table, query, **kwargs):
+            if query == {"sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"}:
+                return dict(
+                    sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                    name="my_new_name",
+                )
+            return dict(
+                    sys_id="different_sys_id",
+                    name="my_new_name",
+                )
+
+        table_client.get_record.side_effect = get_record_side_effect
+
+        with pytest.raises(
+            errors.ServiceNowError, match="Record with the name my_new_name already exists."
+        ):
+            configuration_item.ensure_present(module, table_client, attachment_client)
