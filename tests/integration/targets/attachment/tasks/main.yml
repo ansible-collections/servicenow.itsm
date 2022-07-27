@@ -436,3 +436,49 @@
       servicenow.itsm.problem: *delete-problem-attachment
 
     - ansible.builtin.assert: *delete-problem-attachment-result
+
+
+    ################################################
+    ############# Get Attachment Tests #############
+    ################################################
+
+    - name: Create a base configuration item with attachment
+      servicenow.itsm.configuration_item: *ci-create
+      register: result
+    
+    - name: Create temporary file
+      ansible.builtin.tempfile:
+        state: file
+      register: temp_file
+
+    - name: Download attachment - check mode
+      servicenow.itsm.attachment: &download-attachment
+        dest: "{{ temp_file.path }}"
+        sys_id: "{{ result.record.attachments[0].sys_id }}"
+      check_mode: yes
+      register: att_result
+
+    - ansible.builtin.assert: &download-attachment-result
+        that:
+          - att_result is changed
+          - att_result.record.msg == "OK"
+          - att_result.record.size != 0
+          - att_result.record.status_code == 200
+    
+    - name: Download attachment
+      servicenow.itsm.attachment: *download-attachment
+      register: att_result
+
+    - ansible.builtin.assert: *download-attachment-result
+
+    - name: Download attachment with wrong id
+      servicenow.itsm.attachment:
+        dest: "{{ temp_file.path }}"
+        sys_id: "wrongid"
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Record' in result.msg"
