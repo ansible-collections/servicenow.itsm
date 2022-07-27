@@ -26,8 +26,11 @@ extends_documentation_fragment:
 options:
   dest:
     description:
-      - Specify the path in which the attachment will be downloaded to. The file will be downloaded on all the hosts from the inventory.
-    type: str
+      - Specifies the path in which the attachment will be downloaded to.
+      - The file will be downloaded to all of the hosts from the inventory.
+      - All the directories on the path should already exist.
+      - If the file at the destination path already exists, it will be overwritten.
+    type: path
     required: true
   sys_id:
     description:
