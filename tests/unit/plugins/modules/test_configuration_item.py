@@ -294,41 +294,6 @@ class TestEnsurePresent:
             ),
         )
 
-    # Ansible module now requires name or sys_id, so this should be tested in main()
-    # ansible module returns: "msg": "one of the following is required: sys_id, name"
-    def test_ensure_present_create_new_error(
-        self, create_module, table_client, attachment_client
-    ):
-        module = create_module(
-            params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
-                state="present",
-                sys_id=None,
-                name=None,
-                short_description="Test configuration item",
-                sys_class_name="cmdb_ci",
-                assigned_to=None,
-                asset_tag="P1000613",
-                install_status=None,
-                operational_status=None,
-                serial_number="ECE-164-E10834-NO",
-                ip_address=None,
-                mac_address=None,
-                category="Hardware",
-                environment=None,
-                production=None,
-                other=None,
-                attachments=None,
-            ),
-        )
-
-        with pytest.raises(
-            errors.ServiceNowError, match="Missing required parameter: name"
-        ):
-            configuration_item.ensure_present(module, table_client, attachment_client)
-
     def test_ensure_present_nothing_to_do(
         self, create_module, table_client, attachment_client
     ):
@@ -594,3 +559,59 @@ class TestEnsurePresent:
             errors.ServiceNowError, match="Record with the name my_new_name already exists."
         ):
             configuration_item.ensure_present(module, table_client, attachment_client)
+
+
+class TestMain:
+    def test_minimal_set_of_params_sys_id(self, run_main):
+        params = dict(
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+        )
+        success, result = run_main(configuration_item, params)
+
+        assert success is True
+
+    def test_minimal_set_of_params_name(self, run_main):
+        params = dict(
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
+            name="my_name",
+        )
+        success, result = run_main(configuration_item, params)
+
+        assert success is True
+
+    def test_all_params(self, run_main):
+        params = dict(
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            state="present",
+            name="my_new_name",
+            short_description="short_description",
+            sys_class_name="cmdb_ci",
+            assigned_to="polona",
+            asset_tag="polona",
+            install_status="installed",
+            operational_status="ready",
+            serial_number=1234,
+            ip_address=0000,
+            mac_address="MMMM",
+            category="hardware",
+            environment="development",
+            other=None,
+            attachments=None,
+        )
+        success, result = run_main(configuration_item, params)
+
+        assert success is True
+
+    def test_fail(self, run_main):
+        success, result = run_main(configuration_item)
+
+        assert success is False
+        assert "one of the following is required: sys_id, name" in result["msg"]
