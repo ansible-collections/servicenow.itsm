@@ -28,4 +28,5 @@ options:
       - If not set, the value of the C(SN_SYSPARM_QUERY) environment, if specified.
       - Mutually exclusive with C(query).
     type: str
+    version_added: 2.0.0
 """
