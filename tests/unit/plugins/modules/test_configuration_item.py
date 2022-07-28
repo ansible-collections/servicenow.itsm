@@ -294,7 +294,7 @@ class TestEnsurePresent:
             ),
         )
 
-    def test_ensure_present_nothing_to_do(
+    def test_ensure_present_nothing_to_do_query_by_sys_id(
         self, create_module, table_client, attachment_client
     ):
         module = create_module(
@@ -361,7 +361,74 @@ class TestEnsurePresent:
             ),
         )
 
-    def test_ensure_present_update(
+    def test_ensure_present_nothing_to_do_query_by_name(
+        self, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="present",
+                sys_id=None,
+                name="test.name",
+                short_description="Test configuration item",
+                sys_class_name="cmdb_ci_computer",
+                assigned_to=None,
+                asset_tag=None,
+                install_status=None,
+                operational_status=None,
+                serial_number=None,
+                ip_address=None,
+                mac_address=None,
+                category=None,
+                environment=None,
+                other=None,
+                attachments=None,
+            ),
+        )
+        table_client.get_record.return_value = dict(
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            name="test.name",
+            short_description="Test configuration item",
+            sys_class_name="cmdb_ci_computer",
+        )
+        attachment_client.update_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        result = configuration_item.ensure_present(
+            module, table_client, attachment_client
+        )
+
+        table_client.get_record.assert_called()
+        assert result == (
+            False,
+            dict(
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                name="test.name",
+                short_description="Test configuration item",
+                sys_class_name="cmdb_ci_computer",
+                attachments=[],
+            ),
+            dict(
+                before=dict(
+                    sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                    name="test.name",
+                    short_description="Test configuration item",
+                    sys_class_name="cmdb_ci_computer",
+                    attachments=[],
+                ),
+                after=dict(
+                    sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                    name="test.name",
+                    short_description="Test configuration item",
+                    sys_class_name="cmdb_ci_computer",
+                    attachments=[],
+                ),
+            ),
+        )
+
+    def test_ensure_present_update_query_by_sys_id(
         self, mocker, create_module, table_client, attachment_client
     ):
         module = create_module(
@@ -433,6 +500,92 @@ class TestEnsurePresent:
                 ),
                 after=dict(
                     sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                    sys_class_name="cmdb_ci",
+                    install_status="installed",
+                    operational_status="ready",
+                    attachments=[],
+                ),
+            ),
+        )
+
+    def test_ensure_present_update_query_by_name(
+        self, mocker, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="present",
+                sys_id=None,
+                name="test.name",
+                short_description=None,
+                sys_class_name="cmdb_ci",
+                assigned_to=None,
+                asset_tag=None,
+                install_status="installed",
+                operational_status="ready",
+                serial_number=None,
+                ip_address=None,
+                mac_address=None,
+                category=None,
+                environment=None,
+                other=None,
+                attachments=None,
+            ),
+        )
+        payload_mocker = mocker.patch.object(configuration_item, "build_payload")
+        payload_mocker.return_value = dict(
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            name="test.name",
+            sys_class_name="cmdb_ci",
+            install_status="installed",
+            operational_status="ready",
+        )
+        table_client.get_record.return_value = dict(
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            name="test.name",
+            sys_class_name="cmdb_ci",
+            install_status="",
+            operational_status="",
+        )
+        table_client.update_record.return_value = dict(
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            name="test.name",
+            sys_class_name="cmdb_ci",
+            install_status="1",
+            operational_status="5",
+        )
+        attachment_client.update_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        result = configuration_item.ensure_present(
+            module, table_client, attachment_client
+        )
+
+        table_client.update_record.assert_called_once()
+        assert result == (
+            True,
+            dict(
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                name="test.name",
+                sys_class_name="cmdb_ci",
+                install_status="installed",
+                operational_status="ready",
+                attachments=[],
+            ),
+            dict(
+                before=dict(
+                    sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                    name="test.name",
+                    sys_class_name="cmdb_ci",
+                    install_status="",
+                    operational_status="",
+                    attachments=[],
+                ),
+                after=dict(
+                    sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                    name="test.name",
                     sys_class_name="cmdb_ci",
                     install_status="installed",
                     operational_status="ready",
