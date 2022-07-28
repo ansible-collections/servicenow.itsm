@@ -610,8 +610,80 @@ class TestMain:
 
         assert success is True
 
-    def test_fail(self, run_main):
+    def test_fail_missing_required_parameters(self, run_main):
         success, result = run_main(configuration_item)
 
         assert success is False
         assert "one of the following is required: sys_id, name" in result["msg"]
+
+    def test_fail_no_instance(self, run_main):
+        success, result = run_main(configuration_item)
+
+        assert success is False
+        assert "instance" in result["msg"]
+
+
+class TestRun:
+    def test_run_absent(self, mocker, create_module, table_client, attachment_client):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="absent",
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                name=None,
+                short_description=None,
+                sys_class_name="cmdb_ci",
+                assigned_to=None,
+                asset_tag=None,
+                install_status="installed",
+                operational_status="ready",
+                serial_number=None,
+                ip_address=None,
+                mac_address=None,
+                category=None,
+                environment=None,
+                other=None,
+                attachments=None,
+            ),
+        )
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.modules.configuration_item.ensure_absent"
+        ).return_value = "ensure_absent"
+
+        ensure = configuration_item.run(module, table_client, attachment_client)
+
+        assert ensure == "ensure_absent"
+
+    def test_run_present(self, mocker, create_module, table_client, attachment_client):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="present",
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                name=None,
+                short_description=None,
+                sys_class_name="cmdb_ci",
+                assigned_to=None,
+                asset_tag=None,
+                install_status="installed",
+                operational_status="ready",
+                serial_number=None,
+                ip_address=None,
+                mac_address=None,
+                category=None,
+                environment=None,
+                other=None,
+                attachments=None,
+            ),
+        )
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.modules.configuration_item.ensure_present"
+        ).return_value = "ensure_present"
+
+        ensure = configuration_item.run(module, table_client, attachment_client)
+
+        assert ensure == "ensure_present"
