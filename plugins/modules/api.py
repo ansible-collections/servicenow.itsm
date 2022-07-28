@@ -28,7 +28,7 @@ extends_documentation_fragment:
 options:
   sys_id:
     description:
-      - Required if I(action==patch) or I(action==delete)
+      - Required if I(action==patch) or I(action==delete).
     type: str
   resource:
     description:
@@ -45,7 +45,7 @@ options:
       - delete
   data:
     description:
-      - Only relevant if I(action==patch) or I(action==post)
+      - Only relevant if I(action==patch) or I(action==post).
       - The data that we want to update or create the resource with.
       - A Dict consists of resource's column names as keys (such as description, number, priority, and so on) and the
         patching values as values (the value we want to change the column to).

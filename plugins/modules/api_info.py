@@ -28,7 +28,7 @@ seealso:
 options:
   resource:
     description:
-      - The name of the table that we want to obtain records from
+      - The name of the table that we want to obtain records from.
     type: str
     required: true
   sysparm_query:
@@ -40,13 +40,15 @@ options:
     type: str
   display_value:
     description:
-      - "Return field display values (true), actual values (false), or both (all) (default: false)."
+      - Return field display values C(true), actual values C(false), or both C(all).
+      - Default value is set to C(false).
     type: str
     choices: ["true", "false", "all"]
     default: 'false'
   exclude_reference_link:
     description:
-      - "true to exclude Table API links for reference fields (default: false)"
+      - If set to C(true) to exclude Table API links for reference fields.
+      - Default is set to C(false).
     type: bool
     default: False
   columns:
