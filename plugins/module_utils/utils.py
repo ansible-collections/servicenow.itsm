@@ -12,9 +12,10 @@ def filter_dict(input, *field_names):
     output = {}
 
     for field_name in field_names:
-        value = input[field_name]
-        if value is not None:
-            output[field_name] = value
+        if field_name in input:
+            value = input[field_name]
+            if value is not None:
+                output[field_name] = value
 
     return output
 
