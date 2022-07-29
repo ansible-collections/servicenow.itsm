@@ -285,7 +285,7 @@ DIRECT_PAYLOAD_FIELDS = (
 def ensure_absent(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "name")
-    configuration_item = table_client.get_record("cmdb_ci", query) # SHOULD I SET must_exist=True?
+    configuration_item = table_client.get_record("cmdb_ci", query)
 
     if configuration_item:
         cmdb_table = configuration_item["sys_class_name"]

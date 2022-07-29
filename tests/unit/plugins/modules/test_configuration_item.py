@@ -30,7 +30,6 @@ class TestEnsureAbsent:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 state="absent",
-                number=None,
                 name=None,
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci",
@@ -66,7 +65,6 @@ class TestEnsureAbsent:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 state="absent",
-                number=None,
                 name="my_name",
                 sys_id=None,
                 sys_class_name="cmdb_ci",
@@ -93,6 +91,41 @@ class TestEnsureAbsent:
             ),
         )
 
+    def test_delete_configuration_item_using_sys_id_and_name(
+        self, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="absent",
+                name="my_name",
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+                sys_class_name="cmdb_ci",
+            )
+        )
+        table_client.get_record.return_value = dict(
+            sys_class_name="cmdb_ci", name="my_name", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
+        )
+
+        result = configuration_item.ensure_absent(
+            module, table_client, attachment_client
+        )
+
+        table_client.get_record.assert_called_once_with("cmdb_ci", {"name": "my_name", "sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"})
+        table_client.delete_record.assert_called_once()
+        assert result == (
+            True,
+            None,
+            dict(
+                before=dict(
+                    sys_class_name="cmdb_ci", name="my_name", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
+                ),
+                after=None,
+            ),
+        )
+
     def test_delete_configuration_item_none_cmdb_ci(
         self, create_module, table_client, attachment_client
     ):
@@ -102,7 +135,6 @@ class TestEnsureAbsent:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 state="absent",
-                number=None,
                 name=None,
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci_computer",
@@ -138,7 +170,6 @@ class TestEnsureAbsent:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 state="absent",
-                number=None,
                 name=None,
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci",
