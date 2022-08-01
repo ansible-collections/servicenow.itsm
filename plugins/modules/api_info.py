@@ -43,12 +43,14 @@ options:
       - Return field display values C(true), actual values C(false), or both C(all).
       - The default value is C(false).
     type: str
-    choices: ["true", "false", "both"]
+    choices: ["true", "false", "all"]
+    default: 'false'
   exclude_reference_link:
     description:
       - C(true) to exclude Table API links for reference fields.
       - The default is C(false).
     type: bool
+    default: False
   columns:
     description:
       - List of fields/columns to return in the response.
