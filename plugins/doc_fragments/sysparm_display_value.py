@@ -13,8 +13,9 @@ class ModuleDocFragment(object):
 options:
   sysparm_display_value:
     description:
-      - Return field display values C(true), actual values C(false), or both C(all). Added in version 2.0.0.
+      - Return field display values C(true), actual values C(false), or both C(all).
     type: str
     choices: ["true", "false", "all"]
     default: 'false'
+    version_added: '2.0.0'
 """
