@@ -81,7 +81,7 @@ EXAMPLES = """
     action: post
     template: '/testing/deployment.j2'
   register: result
-  
+
 - name: Update a record with given sys_id in table incident with template, located in Ansible controller file system
   servicenow.itsm.api:
     resource: incident
@@ -89,7 +89,7 @@ EXAMPLES = """
     sys_id: 46b66a40a9fe198101f243dfbc79033d
     template: '/testing/deployment.j2'
   register: result
-  
+
 - name: Update column short_description (specified in data) in table incident of a record with given sys_id
   servicenow.itsm.api:
     resource: incident
