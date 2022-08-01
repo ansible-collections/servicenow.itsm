@@ -274,7 +274,6 @@ def create_resource(module, table_client):
     new = table_client.create_record(
         table=table_name(module),
         payload=module.params.get(FIELD_DATA, dict()),
-        payload=get_data(module),
         check_mode=module.check_mode,
     )
     return True, new, dict(before=None, after=new)
@@ -293,7 +292,7 @@ def run(module, table_client):
     if module.params["action"] == ACTION_PATCH:  # PATCH method
         return update_resource(module, table_client)
     elif module.params["action"] == ACTION_POST:  # POST method
-        if sys_id_present(module):
+        if field_present(module, FIELD_SYS_ID):
             module.warn("For action create (post) sys_id is ignored.")
         return create_resource(module, table_client)
     return delete_resource(module, table_client)  # DELETE method
