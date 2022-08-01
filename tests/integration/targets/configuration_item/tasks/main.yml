@@ -1,25 +1,10 @@
 ---
-# - environment:
-#     SN_HOST: "{{ sn_host }}"
-#     SN_USERNAME: "{{ sn_username }}"
-#     SN_PASSWORD: "{{ sn_password }}"
+- environment:
+    SN_HOST: "{{ sn_host }}"
+    SN_USERNAME: "{{ sn_username }}"
+    SN_PASSWORD: "{{ sn_password }}"
 
-#   block:
-
-- name: Download examples
-  hosts: localhost
-  #hosts: all
-  vars:
-    sn_host: https://dev108430.service-now.com
-    sn_username: admin
-    sn_password: H+CDzg%gJ03r
-    # sn_attachment_id: 003a3ef24ff1120031577d2ca310c74b
-  # - environment:
-  #   SN_HOST: "{{ sn_host }}"
-  #   SN_USERNAME: "{{ sn_username }}"
-  #   SN_PASSWORD: "{{ sn_password }}"
-
-  tasks:
+  block:
     - name: Retrieve configuration item records
       servicenow.itsm.configuration_item_info:
       register: initial
@@ -132,8 +117,7 @@
 
     - name: Update the configuration item using only name (idempotence)
       servicenow.itsm.configuration_item: 
-        <<: *ci-update
-        sys_id: nonexistent
+        name: my-configuration-item
       register: result
     - ansible.builtin.assert:
         that:
@@ -151,9 +135,6 @@
     
     - name: Create configuration item without sys_id or name
       servicenow.itsm.configuration_item:
-        <<: *ci-create
-        sys_id: nonexistent
-        name: nonexistent
       ignore_errors: true
       register: result
     - ansible.builtin.assert:
@@ -215,6 +196,17 @@
           - server is changed
           - server.record.name == "test-server"
           - server.record.classification == "Development"
+    
+    - name: Update test-server's name with existing one (idempotence)
+      servicenow.itsm.configuration_item:
+        sys_id: "{{ server.record.sys_id }}"
+        name: my-computer
+      ignore_errors: true
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Record with the name' in result.msg"
 
     - name: Get configuration item info by sysparm query - sys_class_name and name
       servicenow.itsm.configuration_item_info:
@@ -237,27 +229,6 @@
         that:
           - result is failed
           - "'No sys_user records match' in result.msg"
-
-    - name: Create another configuration item
-      servicenow.itsm.configuration_item:
-        <<: *ci-create
-        name: my-new-configuration-item
-        register: another_base_ci
-    - ansible.builtin.assert:
-        that:
-          - another_base_ci is changed
-          - another_base_ci.record.name == "my-new-configuration-item"
-    
-    - name: Update another configuration item's name with existing one (idempotence)
-      servicenow.itsm.configuration_item:
-        sys_id: "{{ another_base_ci.record.sys_id }}"
-        name: my-computer
-      ignore_errors: true
-      register: updated_ci
-    - ansible.builtin.assert:
-        that:
-          - updated_ci is failed
-          - "'Record with the name' in updated_ci.msg"
     
     - name: Delete a configuration item (check mode)
       servicenow.itsm.configuration_item: &ci-delete
@@ -319,9 +290,9 @@
         that:
           - result is not changed
 
-    - name: Delete another configuration item using name
+    - name: Delete test-server using name
       servicenow.itsm.configuration_item:
-        name: my-new-configuration-item
+        name: test-server
         state: absent
       register: result
     - ansible.builtin.assert:
