@@ -248,7 +248,7 @@ def run(module, table_client, attachment_client):
         query = {
             "sysparm_query": sysparms_query(module, table_client, mapper),
             "sysparm_display_value": module.params["sysparm_display_value"],
-        }  
+        }
     elif module.params["sysparm_query"]:
         query = {"sysparm_query": module.params["sysparm_query"]}
     else:
@@ -272,10 +272,10 @@ def main():
         supports_check_mode=True,
         argument_spec=dict(
             arguments.get_spec(
-                "instance", 
-                "sys_id", 
-                "number", 
-                "query", 
+                "instance",
+                "sys_id",
+                "number",
+                "query",
                 "sysparm_display_value",
                 "sysparm_query",
             ),

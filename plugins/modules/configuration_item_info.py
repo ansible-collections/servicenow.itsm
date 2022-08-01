@@ -237,7 +237,7 @@ def run(module, table_client, attachment_client):
         query = {
             "sysparm_query": sysparms_query(module, table_client, mapper),
             "sysparm_display_value": module.params["sysparm_display_value"],
-        }  
+        }
     elif module.params["sysparm_query"]:
         query = {"sysparm_query": module.params["sysparm_query"]}
     else:
