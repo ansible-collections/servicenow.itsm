@@ -17,11 +17,15 @@ author:
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
   - Matej Pevec (@mysteriouswolf)
+  - Polona Mihalič (@PolonaM)
 
 short_description: Manage ServiceNow configuration items
 
 description:
   - Create, delete or update a ServiceNow configuration item.
+  - Configuration items can be managed using sys_id or name.
+  - When creating a new configuration item, a check will be made if the configuration item with provided name already exists
+    and in this case existing configuration item will be updated.
   - For more information, refer to the ServiceNow configuration management documentation at
     U(https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
 version_added: 1.0.0
