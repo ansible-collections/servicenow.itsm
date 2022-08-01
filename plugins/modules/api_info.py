@@ -17,8 +17,8 @@ author:
 short_description: Manage ServiceNow GET requests
 description:
   - Retrieve records via ServiceNow REST Table API for an arbitrary table.
-  - For more information, refer to the ServiceNow REST TAble API documentation at
-    U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO).
+  - For more information, refer to the ServiceNow REST Table API documentation at
+    U(https://docs.servicenow.com/bundle/sandiego-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html).
 version_added: 2.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
@@ -28,7 +28,7 @@ seealso:
 options:
   resource:
     description:
-      - The name of the table that we want to obtain records from
+      - The name of the table that we want to obtain records from.
     type: str
     required: true
   sysparm_query:
@@ -63,11 +63,13 @@ options:
       - If set to C(true) to access data across domains if authorized.
       - Default is set to C(false).
     type: bool
+    default: False
   no_count:
     description:
       - Do not execute a select count(*) on table.
       - Default is set to C(false).
     type: bool
+    default: False
 """
 
 EXAMPLES = """
@@ -227,10 +229,13 @@ def main():
         resource=dict(type="str", required=True),
         sysparm_query=dict(type="str"),
         display_value=dict(
-            type="str", choices=["true", "false", "both"]
+            type="str",
+            choices=["true", "false", "all"],
+            default="false",
         ),  # Return field display values (true), actual values (false), or both (all) (default: false)
         exclude_reference_link=dict(
             type="bool",
+            default=False,  # to enforce False when this parameter is omitted from a playbook
         ),  # True to exclude Table API links for reference columns
         columns=dict(
             type="list", default=[], elements="str"
@@ -239,10 +244,12 @@ def main():
             type="str"
         ),  # Name of the query category (read replica category) to use for queries
         query_no_domain=dict(
-            type="bool"
+            type="bool",
+            default=False,  # to enforce False when this parameter is omitted from a playbook
         ),  # True to access data across domains if authorized (default: false)
         no_count=dict(
             type="bool",
+            default=False,  # to enforce False when this parameter is omitted from a playbook
         ),  # Do not execute a select count(*) on table (default: false)
     )
 

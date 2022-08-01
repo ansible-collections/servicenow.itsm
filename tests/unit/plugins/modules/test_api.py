@@ -129,7 +129,6 @@ class TestUpdateResource:
             )
             api.run(module, table_client)
 
-
 class TestCreateResource:
     def test_create_resource_no_sys_id(self, create_module, table_client):
         module = create_module(

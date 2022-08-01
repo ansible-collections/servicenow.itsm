@@ -18,7 +18,7 @@ short_description: Manage ServiceNow POST, PATCH and DELETE requests
 description:
   - Create, delete or update a ServiceNow record from the given resource.
   - For more information, refer to the ServiceNow REST Table API documentation at
-    U(https://docs.servicenow.com/bundle/paris-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#c_TableAPIO).
+    U(https://docs.servicenow.com/bundle/sandiego-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html).
 version_added: 2.0.0
 seealso:
   - module: servicenow.itsm.api_info
@@ -26,6 +26,10 @@ extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.sys_id
 options:
+  sys_id:
+    description:
+      - Required if I(action==patch) or I(action==delete).
+    type: str
   resource:
     description:
       - The name of the table in which a record is to be created, updated or deleted from.
@@ -77,7 +81,7 @@ EXAMPLES = """
     action: post
     template: '/testing/deployment.j2'
   register: result
-
+  
 - name: Update a record with given sys_id in table incident with template, located in Ansible controller file system
   servicenow.itsm.api:
     resource: incident
@@ -85,7 +89,7 @@ EXAMPLES = """
     sys_id: 46b66a40a9fe198101f243dfbc79033d
     template: '/testing/deployment.j2'
   register: result
-
+  
 - name: Update column short_description (specified in data) in table incident of a record with given sys_id
   servicenow.itsm.api:
     resource: incident
@@ -270,6 +274,7 @@ def create_resource(module, table_client):
     new = table_client.create_record(
         table=table_name(module),
         payload=module.params.get(FIELD_DATA, dict()),
+        payload=get_data(module),
         check_mode=module.check_mode,
     )
     return True, new, dict(before=None, after=new)
@@ -285,17 +290,10 @@ def delete_resource(module, table_client):
 
 
 def run(module, table_client):
-    action = module.params["action"]
-    if (action == ACTION_PATCH or action == ACTION_DELETE) and not field_present(
-        module, FIELD_SYS_ID
-    ):
-        raise errors.ServiceNowError(
-            "For actions patch and delete sys_id needs to be specified."
-        )
-    if action == ACTION_PATCH:  # PATCH method
+    if module.params["action"] == ACTION_PATCH:  # PATCH method
         return update_resource(module, table_client)
-    elif action == ACTION_POST:  # POST method
-        if field_present(module, FIELD_SYS_ID):
+    elif module.params["action"] == ACTION_POST:  # POST method
+        if sys_id_present(module):
             module.warn("For action create (post) sys_id is ignored.")
         return create_resource(module, table_client)
     return delete_resource(module, table_client)  # DELETE method
@@ -327,6 +325,10 @@ def main():
         supports_check_mode=True,
         argument_spec=arg_spec,
         mutually_exclusive=[(FIELD_DATA, FIELD_TEMPLATE)],
+        required_if=[
+            ("action", "patch", ("sys_id",)),
+            ("action", "delete", ("sys_id",)),
+        ],
     )
 
     try:
