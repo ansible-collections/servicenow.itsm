@@ -80,6 +80,7 @@ class TestRun:
                 number="n",
                 query=None,
                 sysparm_query=None,
+                sysparm_display_value="true",
             )
         )
         table_client.list_records.return_value = [
@@ -103,7 +104,9 @@ class TestRun:
 
         problems = problem_info.run(module, table_client, attachment_client)
 
-        table_client.list_records.assert_called_once_with("problem", dict(number="n"))
+        table_client.list_records.assert_called_once_with(
+            "problem", dict(number="n", sysparm_display_value="true")
+        )
         attachment_client.list_records.assert_any_call(
             {"table_name": "problem", "table_sys_id": 1234}
         )

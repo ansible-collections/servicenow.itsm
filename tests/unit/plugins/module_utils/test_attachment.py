@@ -13,6 +13,8 @@ import pytest
 
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors, attachment
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
+from ansible.module_utils._text import to_bytes, to_text
+
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -792,3 +794,43 @@ class TestAttachmentUpdateRecords:
                 "file_name": "attachment_name.txt",
             },
         ] == sorted(record, key=lambda k: k["file_name"])
+
+
+class TestAttachmentGetAttachment:
+    def test_get_attachment(self, client):
+        client.get.return_value = Response(
+            200,
+            to_bytes("binary_data"),
+            {"headers": "headers"},
+        )
+        a = attachment.AttachmentClient(client)
+
+        response = a.get_attachment("0061f0c510247200964f77ffeec6c4de")
+
+        client.get.assert_called_once_with(
+            "api/now/attachment/0061f0c510247200964f77ffeec6c4de/file"
+        )
+        assert response.status == 200
+        assert response.data == to_bytes("binary_data")
+        assert response.headers == {"headers": "headers"}
+
+
+class TestAttachmentSaveAttachment:
+    def test_save_attachment(self, client, tmp_path):
+        path = tmp_path / "test.txt"
+        a = attachment.AttachmentClient(client)
+
+        a.save_attachment(to_bytes("test"), path)
+        file = open(str(path), "r")
+        b_data = file.read()
+
+        assert to_text(b_data) == "test"
+
+    def test_save_attachment_bad_dest(self, client, tmpdir):
+        a = attachment.AttachmentClient(client)
+        nonexisting_path_name = str(tmpdir.join("not", "a", "path"))
+
+        with pytest.raises(errors.ServiceNowError) as exc:
+            a.save_attachment(to_bytes("test"), nonexisting_path_name)
+
+        assert "[Errno 2] No such file or directory" in str(exc.value)

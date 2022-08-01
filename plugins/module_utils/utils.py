@@ -42,14 +42,18 @@ def get_choices(module, mapping_field, default_payload_fields_mapping):
     return clone
 
 
-def get_mapper(module, mapping_field, default_payload_fields_mapping):
+def get_mapper(
+    module, mapping_field, default_payload_fields_mapping, sysparm_display_value="false"
+):
     choices = get_choices(module, mapping_field, default_payload_fields_mapping)
-    mapper = PayloadMapper(choices, module.warn)
+    mapper = PayloadMapper(choices, module.warn, sysparm_display_value)
     return mapper
 
 
 class PayloadMapper:
-    def __init__(self, mapping, unknown_value_handler=None):
+    def __init__(
+        self, mapping, unknown_value_handler=None, sysparm_display_value="false"
+    ):
         # Convert
         #   dict(a=[("s1", "a1"), ("s2", "a2")], b=[("s3", "a3")])
         # to
@@ -62,6 +66,7 @@ class PayloadMapper:
         self._to_ansible = {}
         self._to_snow = {}
         self.unknown_value_handler = unknown_value_handler
+        self.sysparm_display_value = sysparm_display_value
 
         for key, value_map in mapping.items():
             if isinstance(value_map, dict):
@@ -98,7 +103,15 @@ class PayloadMapper:
         return result
 
     def to_ansible(self, snow_data):
+        # If sysparm_display_value is set to "true" or "all", no need to transform as field display values are already
+        # returned.
+        if self.sysparm_display_value != "false":  # is equal to either "all" or "true"
+            return snow_data
         return self._transform(self._to_ansible, snow_data)
 
     def to_snow(self, ansible_data):
+        # If sysparm_display_value is set to "true" or "all", no need to transform as field display values are already
+        # returned.
+        if self.sysparm_display_value != "false":  # is equal to either "all" or "true"
+            return ansible_data
         return self._transform(self._to_snow, ansible_data)

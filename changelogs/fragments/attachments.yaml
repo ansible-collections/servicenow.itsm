@@ -1,0 +1,2 @@
+minor_changes:
+- module_utils/attachments.py - Add ``get_attachment`` and ``save_attachment`` (https://github.com/ansible-collections/servicenow.itsm/pull/186).

@@ -29,6 +29,7 @@ extends_documentation_fragment:
   - servicenow.itsm.number.info
   - servicenow.itsm.query
   - servicenow.itsm.incident_mapping
+  - servicenow.itsm.sysparm_display_value
 seealso:
   - module: servicenow.itsm.incident
 """
@@ -222,16 +223,27 @@ def sysparms_query(module, table_client, mapper):
 
 
 def run(module, table_client, attachment_client):
-    mapper = get_mapper(module, "incident_mapping", PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(
+        module,
+        "incident_mapping",
+        PAYLOAD_FIELDS_MAPPING,
+        sysparm_display_value=module.params["sysparm_display_value"],
+    )
 
     if module.params["query"]:
-        query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
+        query = {
+            "sysparm_query": sysparms_query(module, table_client, mapper),
+            "sysparm_display_value": module.params["sysparm_display_value"],
+        }  
     elif module.params["sysparm_query"]:
         query = {"sysparm_query": module.params["sysparm_query"]}
     else:
-        query = utils.filter_dict(module.params, "sys_id", "number")
+        query = utils.filter_dict(
+            module.params, "sys_id", "number", "sysparm_display_value"
+        )
 
     records = table_client.list_records("incident", query)
+
     result = [
         dict(
             mapper.to_ansible(record),
@@ -255,6 +267,7 @@ def main():
                 "query",
                 "incident_mapping",
                 "sysparm_query",
+                "sysparm_display_value",
             ),
         ),
         mutually_exclusive=[
