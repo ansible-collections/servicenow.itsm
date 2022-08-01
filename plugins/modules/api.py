@@ -61,7 +61,7 @@ options:
       - Provides built-in template processing capabilities as an alternative to its data parameter.
       - Mutually exclusive with data.
       - If template starts with C("/"), it is assumed you have specified absolute path to the file. Otherwise, it is assumed
-        you have specified relative a path to the file.
+        you have specified relative path to the file.
       - Template file needs to be present on the Ansible Controller's system. Otherwise, an error is raised.
     type: str
 """
