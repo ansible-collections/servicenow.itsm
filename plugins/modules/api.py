@@ -62,7 +62,7 @@ options:
       - Mutually exclusive with data.
       - If template starts with C("/"), it is assumed you have specified absolute path to file. Otherwise, it is assumed
         you have specified relative a path to the file.
-      - Template file needs to present on the Ansible Controller's system. Otherwise, error an is raised.
+      - Template file needs to be present on the Ansible Controller's system. Otherwise, an error is raised.
     type: str
 """
 
