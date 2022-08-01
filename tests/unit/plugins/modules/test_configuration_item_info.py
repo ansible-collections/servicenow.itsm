@@ -80,6 +80,7 @@ class TestRun:
                 sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 sys_class_name="cmdb_ci",
                 query=None,
+                sysparm_display_value="true",
             )
         )
         table_client.list_records.return_value = [
@@ -104,7 +105,10 @@ class TestRun:
         records = configuration_item_info.run(module, table_client, attachment_client)
 
         table_client.list_records.assert_called_once_with(
-            "cmdb_ci", dict(sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3")
+            "cmdb_ci",
+            dict(
+                sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3", sysparm_display_value="true"
+            ),
         )
         attachment_client.list_records.assert_any_call(
             {"table_name": "cmdb_ci", "table_sys_id": 1234}
