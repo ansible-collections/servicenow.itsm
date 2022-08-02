@@ -99,7 +99,7 @@
           - updated_ci.record.short_description == "short-description"
           - updated_ci.record.assigned_to != ""
 
-    - name: Verify modification in check mode did not update the record
+    - name: Verify modification in check mode did not update the record - use sys_id
       servicenow.itsm.configuration_item_info:
         sys_id: "{{ base_ci.record.sys_id }}"
       register: result
@@ -127,11 +127,11 @@
       servicenow.itsm.configuration_item:
         sys_id: "{{ base_ci.record.sys_id }}"
         name: my-computer
-      register: updated_ci
+      register: base_ci
     - ansible.builtin.assert:
         that:
-          - updated_ci is changed
-          - updated_ci.record.name == "my-computer"
+          - base_ci is changed
+          - base_ci.record.name == "my-computer"
     
     - name: Create configuration item without sys_id or name
       servicenow.itsm.configuration_item:
@@ -240,9 +240,9 @@
         that:
           - result is changed
 
-    - name: Verify deletion in check mode did not remove the record
+    - name: Verify deletion in check mode did not remove the record - use name
       servicenow.itsm.configuration_item_info:
-        sys_id: "{{ base_ci.record.sys_id }}"
+        name: "{{ base_ci.record.name }}"
       register: result
     - ansible.builtin.assert:
         that:
@@ -309,7 +309,7 @@
     - ansible.builtin.assert:
         that:
           - result is failed
-          - "'parameters are mutually exclusive: sys_id|query' in result.msg"
+          - "'parameters are mutually exclusive: sys_id|query|name' in result.msg"
 
     - name: Test invalid operator detection
       servicenow.itsm.configuration_item_info:
