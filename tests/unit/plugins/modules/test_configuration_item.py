@@ -794,17 +794,11 @@ class TestMain:
 
         assert success is True
 
-    def test_fail_missing_required_parameters(self, run_main):
+    def test_fail(self, run_main):
         success, result = run_main(configuration_item)
 
         assert success is False
         assert "one of the following is required: sys_id, name" in result["msg"]
-
-    def test_fail_no_instance(self, run_main):
-        success, result = run_main(configuration_item)
-
-        assert success is False
-        assert "instance" in result["msg"]
 
 
 class TestRun:
