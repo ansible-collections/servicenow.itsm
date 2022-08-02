@@ -43,7 +43,9 @@ class TestEnsureAbsent:
             module, table_client, attachment_client
         )
 
-        table_client.get_record.assert_called_once_with("cmdb_ci", {"sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"})
+        table_client.get_record.assert_called_once_with(
+            "cmdb_ci", {"sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"}
+        )
         table_client.delete_record.assert_called_once()
         assert result == (
             True,
@@ -71,7 +73,9 @@ class TestEnsureAbsent:
             )
         )
         table_client.get_record.return_value = dict(
-            sys_class_name="cmdb_ci", name="my_name", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
+            sys_class_name="cmdb_ci",
+            name="my_name",
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
         )
 
         result = configuration_item.ensure_absent(
@@ -85,7 +89,9 @@ class TestEnsureAbsent:
             None,
             dict(
                 before=dict(
-                    sys_class_name="cmdb_ci", name="my_name", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
+                    sys_class_name="cmdb_ci",
+                    name="my_name",
+                    sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 ),
                 after=None,
             ),
@@ -106,21 +112,27 @@ class TestEnsureAbsent:
             )
         )
         table_client.get_record.return_value = dict(
-            sys_class_name="cmdb_ci", name="my_name", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
+            sys_class_name="cmdb_ci",
+            name="my_name",
+            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
         )
 
         result = configuration_item.ensure_absent(
             module, table_client, attachment_client
         )
 
-        table_client.get_record.assert_called_once_with("cmdb_ci", {"name": "my_name", "sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"})
+        table_client.get_record.assert_called_once_with(
+            "cmdb_ci", {"name": "my_name", "sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"}
+        )
         table_client.delete_record.assert_called_once()
         assert result == (
             True,
             None,
             dict(
                 before=dict(
-                    sys_class_name="cmdb_ci", name="my_name", sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3"
+                    sys_class_name="cmdb_ci",
+                    name="my_name",
+                    sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 ),
                 after=None,
             ),
@@ -302,7 +314,9 @@ class TestEnsurePresent:
             module, table_client, attachment_client
         )
 
-        table_client.get_record.assert_called_once_with("cmdb_ci", {"name": "test.name"})
+        table_client.get_record.assert_called_once_with(
+            "cmdb_ci", {"name": "test.name"}
+        )
         table_client.create_record.assert_called_once()
         assert result == (
             True,
@@ -655,17 +669,17 @@ class TestEnsurePresent:
         payload_mocker.return_value = dict(
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
             sys_class_name="cmdb_ci",
-            name="my_new_name"
+            name="my_new_name",
         )
         table_client.get_record.return_value = dict(
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
             sys_class_name="cmdb_ci",
-            name="my_name"
+            name="my_name",
         )
         table_client.update_record.return_value = dict(
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
             sys_class_name="cmdb_ci",
-            name="my_new_name"
+            name="my_new_name",
         )
         attachment_client.update_records.return_value = []
         attachment_client.list_records.return_value = []
@@ -733,14 +747,15 @@ class TestEnsurePresent:
                     name="my_new_name",
                 )
             return dict(
-                    sys_id="different_sys_id",
-                    name="my_new_name",
-                )
+                sys_id="different_sys_id",
+                name="my_new_name",
+            )
 
         table_client.get_record.side_effect = get_record_side_effect
 
         with pytest.raises(
-            errors.ServiceNowError, match="Record with the name my_new_name already exists."
+            errors.ServiceNowError,
+            match="Record with the name my_new_name already exists.",
         ):
             configuration_item.ensure_present(module, table_client, attachment_client)
 

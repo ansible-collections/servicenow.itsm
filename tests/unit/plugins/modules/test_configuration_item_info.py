@@ -70,7 +70,7 @@ class TestMain:
             ),
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
             sys_class_name="cmdb_ci",
-            name="test.name"
+            name="test.name",
         )
         success, result = run_main(configuration_item_info, params)
 
@@ -181,7 +181,7 @@ class TestRun:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 sys_class_name="cmdb_ci",
-                query=[{"category": "= Hardware"}]
+                query=[{"category": "= Hardware"}],
             )
         )
         table_client.list_records.return_value = []
@@ -190,5 +190,5 @@ class TestRun:
         configuration_item_info.run(module, table_client, attachment_client)
 
         table_client.list_records.assert_called_once_with(
-            "cmdb_ci", {'sysparm_query': 'category=Hardware'}
+            "cmdb_ci", {"sysparm_query": "category=Hardware"}
         )

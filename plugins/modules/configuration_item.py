@@ -359,7 +359,9 @@ def ensure_present(module, table_client, attachment_client):
 
     else:
         # Get existing record using provided sys_id
-        old = mapper.to_ansible(table_client.get_record("cmdb_ci", query_sys_id, must_exist=True))
+        old = mapper.to_ansible(
+            table_client.get_record("cmdb_ci", query_sys_id, must_exist=True)
+        )
         # Check if provided name already exists
         if query_name:
             configuration_item = table_client.get_record("cmdb_ci", query_name)
@@ -367,14 +369,18 @@ def ensure_present(module, table_client, attachment_client):
                 old2 = mapper.to_ansible(table_client.get_record("cmdb_ci", query_name))
                 if old["sys_id"] != old2["sys_id"]:
                     raise errors.ServiceNowError(
-                        "Record with the name {0} already exists.".format(module.params["name"])
+                        "Record with the name {0} already exists.".format(
+                            module.params["name"]
+                        )
                     )
     # Update existing record
     cmdb_table = old["sys_class_name"]
     # If necessary, fetch the record from the table for the extended CI class
     if cmdb_table != "cmdb_ci":
         old = mapper.to_ansible(
-            table_client.get_record(cmdb_table, query_sys_id or query_name, must_exist=True)
+            table_client.get_record(
+                cmdb_table, query_sys_id or query_name, must_exist=True
+            )
         )
 
     old["attachments"] = attachment_client.list_records(
@@ -466,7 +472,12 @@ def main():
     module = AnsibleModule(
         argument_spec=module_args,
         supports_check_mode=True,
-        required_one_of=[("sys_id", "name", ), ],
+        required_one_of=[
+            (
+                "sys_id",
+                "name",
+            ),
+        ],
     )
 
     try:
