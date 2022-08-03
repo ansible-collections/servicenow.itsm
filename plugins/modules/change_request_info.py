@@ -30,6 +30,7 @@ extends_documentation_fragment:
   - servicenow.itsm.number.info
   - servicenow.itsm.query
   - servicenow.itsm.change_request_mapping
+  - servicenow.itsm.sysparm_display_value
 seealso:
   - module: servicenow.itsm.change_request
 """
@@ -252,12 +253,22 @@ def sysparms_query(module, table_client, mapper):
 
 
 def run(module, table_client, attachment_client):
-    mapper = get_mapper(module, "change_request_mapping", PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(
+        module,
+        "change_request_mapping",
+        PAYLOAD_FIELDS_MAPPING,
+        sysparm_display_value=module.params["sysparm_display_value"],
+    )
 
     if module.params["query"]:
-        query = {"sysparm_query": sysparms_query(module, table_client, mapper)}
+        query = {
+            "sysparm_query": sysparms_query(module, table_client, mapper),
+            "sysparm_display_value": module.params["sysparm_display_value"],
+        }
     else:
-        query = utils.filter_dict(module.params, "sys_id", "number")
+        query = utils.filter_dict(
+            module.params, "sys_id", "number", "sysparm_display_value"
+        )
 
     return [
         dict(
@@ -275,7 +286,12 @@ def main():
         supports_check_mode=True,
         argument_spec=dict(
             arguments.get_spec(
-                "instance", "sys_id", "number", "query", "change_request_mapping"
+                "instance",
+                "sys_id",
+                "number",
+                "query",
+                "change_request_mapping",
+                "sysparm_display_value",
             ),
         ),
         mutually_exclusive=[("sys_id", "query"), ("number", "query")],

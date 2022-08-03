@@ -79,6 +79,7 @@ class TestRun:
                 sys_id=None,
                 number="n",
                 query=None,
+                sysparm_display_value="true",
             )
         )
         table_client.list_records.return_value = [dict(p=1), dict(q=2), dict(r=3)]
@@ -86,6 +87,6 @@ class TestRun:
         problems = problem_task_info.run(module, table_client)
 
         table_client.list_records.assert_called_once_with(
-            "problem_task", dict(number="n")
+            "problem_task", dict(number="n", sysparm_display_value="true")
         )
         assert problems == [dict(p=1), dict(q=2), dict(r=3)]

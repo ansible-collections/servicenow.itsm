@@ -110,6 +110,16 @@ class AttachmentClient:
 
         return list(mapped_records.values())
 
+    def get_attachment(self, attachment_sys_id):
+        return self.client.get(_path(attachment_sys_id, "file"))
+
+    def save_attachment(self, binary_data, dest):
+        try:
+            with open(str(dest), "wb") as f:
+                f.write(binary_data)
+        except (IOError, OSError) as e:
+            raise errors.ServiceNowError(str(e))
+
 
 def transform_metadata_list(metadata_list, hashing_method):
     metadata_dict = dict()

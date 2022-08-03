@@ -143,6 +143,15 @@ SHARED_SPECS = dict(
             ),
         ),
     ),
+    sysparm_display_value=dict(
+        type="str",
+        choices=[
+            "true",
+            "false",
+            "all",
+        ],
+        default="false",
+    ),
     incident_mapping=INCIDENT_MAPPING_SPEC,
     change_request_mapping=CHANGE_REQUEST_MAPPING_SPEC,
     change_request_task_mapping=CHANGE_REQUEST_TASK_MAPPING_SPEC,
