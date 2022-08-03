@@ -1,0 +1,3 @@
+---
+minor_changes:
+- attachment integration tests - Adapt integration tests for attachment module due to changes on PR 192 (https://github.com/ansible-collections/servicenow.itsm/pull/193)
