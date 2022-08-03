@@ -92,7 +92,85 @@ EXAMPLES = r"""
 """
 
 
-RETURN = r""" # """
+RETURN = r"""
+records:
+  description:
+    - A list of configuration item records.
+    - Note that the fields of the returned records depend on the configuration
+      item's I(sys_class_name).
+    - Returning of values added in version 2.0.0.
+  returned: success
+  type: list
+  sample:
+    - skip_sync: 'false'
+      assignment_group: ''
+      managed_by: ''
+      sys_updated_on: '2022-03-18 03:59:41'
+      sys_class_name: cmdb_ci_computer
+      manufacturer:
+        link: https://www.example.com/api/now/table/core_company/b7e9e843c0a80169009a5a485bb2a2b5
+        value: b7e9e843c0a80169009a5a485bb2a2b5
+      sys_id: 00a96c0d3790200044e0bfc8bcbe5db4
+      po_number: PO100003
+      sys_updated_by: system
+      due_in: ''
+      checked_in: ''
+      sys_class_path: "/!!/!2/!("
+      sys_created_on: '2012-02-18 08:14:21'
+      vendor:
+        link: https://www.example.com/api/now/table/core_company/b7e9e843c0a80169009a5a485bb2a2b5
+        value: b7e9e843c0a80169009a5a485bb2a2b5
+      sys_domain:
+        link: https://www.example.com/api/now/table/sys_user_group/global
+        value: global
+      company:
+        link: https://www.example.com/api/now/table/core_company/81fbfe03ac1d55eb286d832de58ae1fd
+        value: 81fbfe03ac1d55eb286d832de58ae1fd
+      install_date: '2019-07-28 07:00:00'
+      justification: ''
+      department:
+        link: https://www.example.com/api/now/table/cmn_department/221f79b7c6112284005d646b76ab978c
+        value: 221f79b7c6112284005d646b76ab978c
+      gl_account: ''
+      invoice_number: ''
+      sys_created_by: admin
+      assigned_to:
+        link: https://www.example.comapi/now/table/sys_user/92826bf03710200044e0bfc8bcbe5dbb
+        value: 92826bf03710200044e0bfc8bcbe5dbb
+      warranty_expiration: '2022-07-27'
+      asset_tag: P1000503
+      cost: '1799.99'
+      sys_mod_count: '6'
+      owned_by: ''
+      serial_number: ABE-486-V17263-DO
+      checked_out: ''
+      model_id:
+        link: https://www.example.com/api/now/table/cmdb_model/d501454f1b1310002502fbcd2c071334
+        value: d501454f1b1310002502fbcd2c071334
+      sys_domain_path: "/"
+      sys_tags: ''
+      cost_cc: USD
+      order_date: '2019-05-13 08:00:00'
+      support_group: ''
+      delivery_date: '2019-06-09 08:00:00'
+      install_status: '1'
+      cost_center:
+        link: https://www.example.com/api/now/table/cmn_cost_center/d9d0a971c0a80a641c20b13d99a48576
+        value: d9d0a971c0a80a641c20b13d99a48576
+      due: ''
+      supported_by: ''
+      name: MacBook Pro 15"
+      unverified: 'false'
+      assigned: '2019-11-10 07:00:00'
+      location:
+        link: https://www.example.com/api/now/table/cmn_location/8226baa4ac1d55eb40eb653c02649519
+        value: 8226baa4ac1d55eb40eb653c02649519
+      asset:
+        link: https://www.example.com/api/now/table/alm_asset/04a96c0d3790200044e0bfc8bcbe5db3
+        value: 04a96c0d3790200044e0bfc8bcbe5db3
+      purchase_date: '2019-05-25'
+      lease_id: ''
+"""
 
 
 from ansible.module_utils.basic import AnsibleModule
