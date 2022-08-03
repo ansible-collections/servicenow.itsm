@@ -1,0 +1,5 @@
+---
+breaking_changes:
+- configuration_item - Add name as a unique identifier. This breaks a task where a new record is created using existing name in CMDB. Now an existing record is updated (https://github.com/ansible-collections/servicenow.itsm/pull/192)
+minor_changes:
+- configuration_item_info - Add option name 
