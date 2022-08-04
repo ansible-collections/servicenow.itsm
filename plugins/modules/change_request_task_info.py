@@ -256,6 +256,8 @@ def main():
             ("sys_id", "query"),
             ("number", "query"),
             ("sysparm_query", "query"),
+     ("sys_id", "sysparm_query"),
+     ("number", "sysparm_query")
         ],
     )
 
