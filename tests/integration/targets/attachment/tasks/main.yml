@@ -482,3 +482,13 @@
         that:
           - result is failed
           - "'Record' in result.msg"
+
+    - name: Delete configuration item
+      servicenow.itsm.configuration_item:
+        name: my-configuration-item
+        state: absent
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is changed
