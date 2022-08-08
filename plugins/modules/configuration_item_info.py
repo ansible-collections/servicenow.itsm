@@ -270,7 +270,11 @@ def main():
                 type="str",
             ),
         ),
-        mutually_exclusive=[("sys_id", "query"), ("sysparm_query", "query"), ("sys"id", "sysparm_query")],
+        mutually_exclusive=[
+            ("sys_id", "query"),
+            ("sysparm_query", "query"),
+            ("sys_id", "sysparm_query"),
+        ],
     )
 
     try:
