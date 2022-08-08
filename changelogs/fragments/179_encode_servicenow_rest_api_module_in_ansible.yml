@@ -1,4 +1,0 @@
----
-minor_changes:
-- api - Added module api, which essentially codifies the ServiceNow REST API explorer in Ansible-native way for POST, PATCH and DELETE operations.
-- api_info - Added module api_info, which essentially codifies the ServiceNow REST API explorer in Ansible-native way for retrieving records (GET operations).
