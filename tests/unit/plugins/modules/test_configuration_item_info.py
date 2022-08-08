@@ -63,19 +63,35 @@ class TestMain:
 
         assert success is True
 
-    def test_params_mutually_exclusive(self, run_main):
+    @pytest.mark.parametrize(
+        "sys_id_value, name_value, query_value, sysparm_query_value",
+        [
+            ("01a9ec0d3790200044e0bfc8bcbe5dc3", "test.name", None, None),
+            ("01a9ec0d3790200044e0bfc8bcbe5dc3", None, None, "category=Hardware"),
+            (None, None, [{"category": "= Hardware"}], "category=Hardware"),
+            (None, "test.name", [{"category": "= Hardware"}], None),
+        ],
+    )
+    def test_params_mutually_exclusive(
+        self, sys_id_value, name_value, query_value, sysparm_query_value, run_main
+    ):
         params = dict(
             instance=dict(
                 host="https://my.host.name", username="user", password="pass"
             ),
-            sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            sys_id=sys_id_value,
+            name=name_value,
+            query=query_value,
+            sysparm=sysparm_query_value,
             sys_class_name="cmdb_ci",
-            name="test.name",
         )
         success, result = run_main(configuration_item_info, params)
 
         assert success is False
-        assert "parameters are mutually exclusive: sys_id|query|name" in result["msg"]
+        assert (
+            "parameters are mutually exclusive: sys_id|query|name|sysparm_query"
+            in result["msg"]
+        )
 
     def test_fail(self, run_main):
         success, result = run_main(configuration_item_info)
@@ -95,6 +111,7 @@ class TestRun:
                 sys_class_name="cmdb_ci",
                 query=None,
                 sysparm_query=None,
+                name=None,
                 sysparm_display_value="true",
             )
         )
@@ -153,45 +170,70 @@ class TestRun:
             dict(r=3, sys_id=1212, attachments=[]),
         ]
 
-    def test_run_name(self, create_module, table_client, attachment_client):
+    @pytest.mark.parametrize(
+        "sys_id_value, name_value, query_value, sysparm_query_value, query",
+        [
+            (
+                "01a9ec0d3790200044e0bfc8bcbe5dc3",
+                None,
+                None,
+                None,
+                {
+                    "sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3",
+                    "sysparm_display_value": "true",
+                },
+            ),
+            (
+                None,
+                "test.name",
+                None,
+                None,
+                {"name": "test.name", "sysparm_display_value": "true"},
+            ),
+            (
+                None,
+                None,
+                [{"category": "= Hardware"}],
+                None,
+                {"sysparm_query": "category=Hardware", "sysparm_display_value": "true"},
+            ),
+            (
+                None,
+                None,
+                None,
+                "category=Hardware",
+                {"sysparm_query": "category=Hardware", "sysparm_display_value": "true"},
+            ),
+        ],
+    )
+    def test_run_called_with(
+        self,
+        create_module,
+        table_client,
+        attachment_client,
+        sys_id_value,
+        name_value,
+        query_value,
+        sysparm_query_value,
+        query,
+    ):
         module = create_module(
             params=dict(
                 instance=dict(
                     host="https://my.host.name", username="user", password="pass"
                 ),
-                sys_id=None,
-                name="test.name",
+                sys_id=sys_id_value,
+                name=name_value,
+                query=query_value,
+                sysparm_query=sysparm_query_value,
                 sys_class_name="cmdb_ci",
-                query=None,
                 sysparm_display_value="true",
             )
         )
+
         table_client.list_records.return_value = []
         attachment_client.list_records.return_value = []
 
         configuration_item_info.run(module, table_client, attachment_client)
 
-        table_client.list_records.assert_called_once_with(
-            "cmdb_ci", dict(name="test.name")
-        )
-
-    def test_run_query(self, create_module, table_client, attachment_client):
-        module = create_module(
-            params=dict(
-                instance=dict(
-                    host="https://my.host.name", username="user", password="pass"
-                ),
-                sys_class_name="cmdb_ci",
-                query=[{"category": "= Hardware"}],
-                sysparm_display_value="true",
-            )
-        )
-        table_client.list_records.return_value = []
-        attachment_client.list_records.return_value = []
-
-        configuration_item_info.run(module, table_client, attachment_client)
-
-        table_client.list_records.assert_called_once_with(
-            "cmdb_ci",
-            {"sysparm_query": "category=Hardware", "sysparm_display_value": "true"},
-        )
+        table_client.list_records.assert_called_once_with("cmdb_ci", query)

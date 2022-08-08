@@ -40,7 +40,9 @@ options:
   name:
     description:
       - Unique identifier of the record to retrieve.
+      - Mutually exclusive with C(query) and C(sys_id).
     type: str
+    version_added: 2.0.0
   sys_class_name:
     description:
       - ServiceNow configuration item class.
@@ -250,7 +252,9 @@ def run(module, table_client, attachment_client):
         }
 
     else:
-        query = utils.filter_dict(module.params, "sys_id", "name", "sysparm_query", "sysparm_display_value")
+        query = utils.filter_dict(
+            module.params, "sys_id", "name", "sysparm_query", "sysparm_display_value"
+        )
 
     return [
         dict(

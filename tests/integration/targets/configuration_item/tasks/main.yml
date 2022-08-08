@@ -123,7 +123,7 @@
         that:
           - result is not changed
     
-    - name: Update configuration item's name
+    - name: Rename configuration item
       servicenow.itsm.configuration_item:
         sys_id: "{{ base_ci.record.sys_id }}"
         name: my-computer

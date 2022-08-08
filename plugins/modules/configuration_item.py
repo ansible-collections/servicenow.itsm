@@ -24,10 +24,10 @@ short_description: Manage ServiceNow configuration items
 description:
   - Create, delete or update a ServiceNow configuration item.
   - Configuration items can be managed using sys_id or name.
-  - When creating a new configuration item, a check will be made if the configuration item with provided name already exists
-    and in this case existing configuration item will be updated.
+  - Operations create and delete are idempotent on parameter C(name).
+  - When C(state) is set to C(present), a record identified by C(name) is only created once. Further invocations will update the record.
   - For more information, refer to the ServiceNow configuration management documentation at
-    U(https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
+    U(https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
 version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
@@ -355,7 +355,7 @@ def ensure_present(module, table_client, attachment_client):
 
         else:
             # Get existing record using provided name
-            old = mapper.to_ansible(table_client.get_record("cmdb_ci", query_name))
+            old = mapper.to_ansible(configuration_item)
 
     else:
         # Get existing record using provided sys_id
@@ -366,7 +366,7 @@ def ensure_present(module, table_client, attachment_client):
         if query_name:
             configuration_item = table_client.get_record("cmdb_ci", query_name)
             if configuration_item:
-                old2 = mapper.to_ansible(table_client.get_record("cmdb_ci", query_name))
+                old2 = mapper.to_ansible(configuration_item)
                 if old["sys_id"] != old2["sys_id"]:
                     raise errors.ServiceNowError(
                         "Record with the name {0} already exists.".format(
