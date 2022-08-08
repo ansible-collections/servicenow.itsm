@@ -211,7 +211,7 @@
           - result.records[0].attachments | map(attribute="hash") | sort | list == ["6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e", "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902"]
 
 
-    - name: Delete configuration item attachment - check mode
+    - name: Delete configuration item with attachments - check mode
       servicenow.itsm.configuration_item: &delete-configuration_item-attachment
         sys_id: "{{ test_result.record.sys_id }}"
         state: absent
@@ -223,10 +223,12 @@
           - result is changed
 
 
-    - name: Delete attachment
+    - name: Delete configuration item with attachments
       servicenow.itsm.configuration_item: *delete-configuration_item-attachment
+      register: result
 
     - ansible.builtin.assert: *delete-configuration_item-attachment-result
+
 
     #######################################
     ###### Incident Attachment Tests ######
@@ -333,6 +335,7 @@
 
     - name: Delete incident/attachments
       servicenow.itsm.incident: *delete-incident-attachment
+      register: result
 
     - ansible.builtin.assert: *delete-incident-attachment-result
 
