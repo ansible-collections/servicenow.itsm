@@ -1,0 +1,197 @@
+---
+- environment:
+    SN_HOST: "{{ sn_host }}"
+    SN_USERNAME: "{{ sn_username }}"
+    SN_PASSWORD: "{{ sn_password }}"
+
+  block:
+    - name: Retrieve all incidents
+      servicenow.itsm.api_info:
+        resource: incident
+      register: initial
+    - ansible.builtin.assert:
+        that:
+          - initial.record != []
+
+    - name: Create a resource in table incident with some specified attributes
+      servicenow.itsm.api: &api-create
+        resource: incident
+        action: post
+        data:
+          short_description: my-incident
+      register: base_api
+      check_mode: true
+    - ansible.builtin.assert: &api-create-assertions
+        that:
+          - base_api is changed
+          - base_api.record.short_description == 'my-incident'
+
+    - name: Verify creation in check mode did not create a record
+      servicenow.itsm.api_info:
+        resource: incident
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result.record | length == initial.record | length
+
+    - name: Create a resource in table incident
+      servicenow.itsm.api: *api-create
+      register: first_incident
+    - ansible.builtin.assert: *api-create-assertions
+
+    - name: Retrieve all incidents after creating a new resource
+      servicenow.itsm.api_info:
+        resource: incident
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result.record | length == initial.record | length + 1
+
+    # If idempotence will be implemented in the future:
+    #   - TODO: change assertion to 'result is not changed'
+    - name: Create a incident (idempotence - at the moment, the module is NOT idempotent)
+      servicenow.itsm.api: *api-create
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Update the incident (check mode)
+      servicenow.itsm.api: &api-update
+        resource: incident
+        action: patch
+        sys_id: "{{ first_incident.record.sys_id }}"
+        data:
+          short_description: my-incident-updated
+      check_mode: true
+      register: updated_incident
+    - ansible.builtin.assert: &api-update-assertions
+        that:
+          - updated_incident is changed
+          - updated_incident.record.sys_id == first_incident.record.sys_id
+          - updated_incident.record.short_description == "my-incident-updated"
+
+    - name: Verify modification in check mode did not update the record
+      servicenow.itsm.api_info:
+        resource: incident
+        sys_id: "{{ first_incident.record.sys_id }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result.record.0.short_description != "my-incident-updated"
+
+    - name: Update the problem
+      servicenow.itsm.api: *api-update
+      register: updated_incident
+    - ansible.builtin.assert: *api-update-assertions
+
+    - name: Test 'required_if' module functionality for when action is set to patch and no sys_id is specified
+      servicenow.itsm.api:
+        resource: incident
+        action: patch
+      ignore_errors: true
+      register: patch_missing_sys_id
+    - ansible.builtin.assert:
+        that:
+          - patch_missing_sys_id is failed
+          - "'action is patch but all of the following are missing: sys_id' in patch_missing_sys_id.msg"
+
+    # If idempotence will be implemented in the future:
+    #   - TODO: change assertion to 'result is  changed'
+    - name: Update the problem (idempotence - at the moment, the module is NOT idempotent)
+      servicenow.itsm.api: *api-update
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Try to update the non-existent incident
+      servicenow.itsm.api:
+        resource: incident
+        action: patch
+        sys_id: "nonexistent sys ID"
+        data:
+          short_description: "this part will not be reached"
+      register: result_update_failed
+    - ansible.builtin.assert:
+        that:
+          - result_update_failed.changed == false
+
+    - name: Delete the incident (check mode)
+      servicenow.itsm.api: &api-delete
+        resource: incident
+        action: delete
+        sys_id: "{{ first_incident.record.sys_id }}"
+      check_mode: true
+      register: deleted_incident
+    - ansible.builtin.assert: &api-delete-assertions
+        that:
+          - result is changed
+
+    - name: Verify deletion in check mode did not remove the record
+      servicenow.itsm.api_info:
+        resource: incident
+        sys_id: "{{ first_incident.record.sys_id }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result.record | length == 1
+
+    - name: Delete the incident
+      servicenow.itsm.api: *api-delete
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Verify that record was deleted
+      servicenow.itsm.api_info:
+        resource: incident
+        sys_id: "{{ first_incident.record.sys_id }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result.record == []
+
+    - name: Test 'required_if' module functionality for when action is set to delete and no sys_id is specified
+      servicenow.itsm.api:
+        resource: incident
+        action: delete
+      ignore_errors: true
+      register: delete_missing_sys_id
+    - ansible.builtin.assert:
+        that:
+          - delete_missing_sys_id is failed
+          - "'action is patch but all of the following are missing: sys_id' in patch_missing_sys_id.msg"
+
+    # Despite the module not being idempotent, there is no resource with the mentioned sys_id,
+    # so this element will not get deleted once again.
+    - name: Delete a problem (idempotency)
+      servicenow.itsm.api: *api-delete
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+    - name: Test bad resource name
+      servicenow.itsm.api_info:
+        resource: bad_table_name
+      ignore_errors: true
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Invalid table bad_table_name' in result.msg"
+
+    - name: Test invalid column name - API ignores column names that are not present in the resource
+      servicenow.itsm.api_info:
+        resource: incident
+        sysparm_query: bad_column=bad_column_value1^ORbad_column=bad_column_value2 # 'bad_column' is not present in incident's columns
+      register: result_bad_query
+    - name: Retrieve all incidents so they'll be compared to the API call with columns ignored
+      servicenow.itsm.api_info:
+        resource: incident
+      register: result_no_query
+    - ansible.builtin.assert:
+        that:
+          - result_bad_query.record | length == result_no_query.record | length
