@@ -453,14 +453,16 @@ def construct_sysparm_query(query):
     return serialize_query(parsed)
 
 
-def fetch_records(table_client, table, query, fields=None):
+def fetch_records(table_client, table, query, fields=None, raw_input=False):
     snow_query = dict(
         # Make references and choice fields human-readable
         sysparm_display_value=True,
     )
     if query:
-        snow_query["sysparm_query"] = construct_sysparm_query(query)
-
+        if raw_input:
+            snow_query["sysparm_query"] = query
+        else:
+            snow_query["sysparm_query"] = construct_sysparm_query(query)
     if fields:
         snow_query["sysparm_fields"] = ",".join(fields)
 
@@ -711,9 +713,19 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             return
 
         query = self.get_option("query")
+        sysparm_query = self.get_option("sysparm_query")
+
+        if query and sysparm_query:
+            raise AnsibleParserError(
+                "Invalid configuration: 'query' and 'sysparm_query' are mutually "
+                "exclusive."
+            )
 
         # TODO: Insert caching here once we remove deprecated functionality
-        records = fetch_records(table_client, table, query)
+        if sysparm_query:
+            records = fetch_records(table_client, table, query, raw_input=True)
+        else:
+            records = fetch_records(table_client, table, query)
 
         if enhanced:
             rel_records = fetch_records(

@@ -17,6 +17,16 @@ options:
       - The data type of a field determines what operators are available for it.
         Refer to the ServiceNow Available Filters Queries documentation at
         U(https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
+      - Mutually exclusive with C(sysparm_query).
     type: list
     elements: dict
+  sysparm_query:
+    description:
+      - An encoded query string used to filter the results as an alternative to C(query).
+      - Refer to the ServiceNow Available Filters Queries documentation at
+        U(https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
+      - If not set, the value of the C(SN_SYSPARM_QUERY) environment, if specified.
+      - Mutually exclusive with C(query).
+    type: str
+    version_added: 2.0.0
 """

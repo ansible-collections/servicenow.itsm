@@ -127,6 +127,10 @@ SHARED_SPECS = dict(
     sys_id=dict(type="str"),
     number=dict(type="str"),
     query=dict(type="list", elements="dict"),
+    sysparm_query=dict(
+        type="str",
+        fallback=(env_fallback, ["SN_SYSPARM_QUERY"]),
+    ),
     attachments=dict(
         type="list",
         elements="dict",

@@ -49,10 +49,15 @@ EXAMPLES = r"""
     number: INC0000039
   register: result
 
-- name: Retrieve all incidents that contain SAP in its short description
+- name: Retrieve all incidents that contain SAP in its short description by using field query
   servicenow.itsm.incident_info:
     query:
       - short_description: LIKE SAP
+  register: result
+
+- name: Retrieve all incidents that contain SAP in its short description by using field sysparm_query
+  servicenow.itsm.incident_info:
+    sysparm_query: short_descriptionLIKESAP
   register: result
 
 - name: Retrieve new incidents reported by abel.tuter or bertie.luby
@@ -230,6 +235,8 @@ def run(module, table_client, attachment_client):
             "sysparm_query": sysparms_query(module, table_client, mapper),
             "sysparm_display_value": module.params["sysparm_display_value"],
         }
+    elif module.params["sysparm_query"]:
+        query = {"sysparm_query": module.params["sysparm_query"]}
     else:
         query = utils.filter_dict(
             module.params, "sys_id", "number", "sysparm_display_value"
@@ -259,10 +266,17 @@ def main():
                 "number",
                 "query",
                 "incident_mapping",
+                "sysparm_query",
                 "sysparm_display_value",
             ),
         ),
-        mutually_exclusive=[("sys_id", "query"), ("number", "query")],
+        mutually_exclusive=[
+            ("sys_id", "query"),
+            ("number", "query"),
+            ("sysparm_query", "query"),
+            ("sys_id", "sysparm_query"),
+            ("number", "sysparm_query"),
+        ],
     )
 
     try:

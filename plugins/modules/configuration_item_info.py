@@ -58,10 +58,15 @@ EXAMPLES = r"""
     sys_id: 01a9ec0d3790200044e0bfc8bcbe5dc3
   register: result
 
-- name: Retrieve all hardare configuration items
+- name: Retrieve all hardare configuration items by using field query
   servicenow.itsm.configuration_item_info:
     query:
       - category: = Hardware
+  register: result
+
+- name: Retrieve all hardare configuration items by using field sysparm_query
+  servicenow.itsm.configuration_item_info:
+    sysparm_query: category=Hardware
   register: result
 
 - name: Retrieve configuration items in hardware category assigned to abel.tuter or bertie.luby
@@ -233,6 +238,8 @@ def run(module, table_client, attachment_client):
             "sysparm_query": sysparms_query(module, table_client, mapper),
             "sysparm_display_value": module.params["sysparm_display_value"],
         }
+    elif module.params["sysparm_query"]:
+        query = {"sysparm_query": module.params["sysparm_query"]}
     else:
         query = utils.filter_dict(module.params, "sys_id", "sysparm_display_value")
 
@@ -256,13 +263,18 @@ def main():
                 "sys_id",
                 "query",
                 "configuration_item_mapping",
+                "sysparm_query",
                 "sysparm_display_value",
             ),
             sys_class_name=dict(
                 type="str",
             ),
         ),
-        mutually_exclusive=[("sys_id", "query")],
+        mutually_exclusive=[
+            ("sys_id", "query"),
+            ("sysparm_query", "query"),
+            ("sys_id", "sysparm_query"),
+        ],
     )
 
     try:

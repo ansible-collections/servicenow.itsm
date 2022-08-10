@@ -49,10 +49,15 @@ EXAMPLES = r"""
     number: PTASK0007601
   register: result
 
-- name: Retrieve problem tasks that do not contain SAP in its short description
+- name: Retrieve problem tasks that do not contain SAP in its short description by using field query
   servicenow.itsm.problem_task_info:
     query:
       - short_description: NOT LIKE SAP
+  register: result
+
+- name: Retrieve problem tasks that do not contain SAP in its short description by using field sysparm_query
+  servicenow.itsm.problem_task_info:
+    sysparm_query: short_descriptionNOT LIKESAP
   register: result
 
 - name: Retrieve new problem tasks assigned to abel.tuter or bertie.luby
@@ -209,6 +214,8 @@ def run(module, table_client):
             "sysparm_query": sysparms_query(module, table_client, mapper),
             "sysparm_display_value": module.params["sysparm_display_value"],
         }
+    elif module.params["sysparm_query"]:
+        query = {"sysparm_query": module.params["sysparm_query"]}
     else:
         query = utils.filter_dict(
             module.params, "sys_id", "number", "sysparm_display_value"
@@ -225,10 +232,21 @@ def main():
         supports_check_mode=True,
         argument_spec=dict(
             arguments.get_spec(
-                "instance", "sys_id", "number", "query", "sysparm_display_value"
+                "instance",
+                "sys_id",
+                "number",
+                "query",
+                "sysparm_query",
+                "sysparm_display_value",
             ),
         ),
-        mutually_exclusive=[("sys_id", "query"), ("number", "query")],
+        mutually_exclusive=[
+            ("sys_id", "query"),
+            ("number", "query"),
+            ("sysparm_query", "query"),
+            ("sys_id", "sysparm_query"),
+            ("number", "sysparm_query"),
+        ],
     )
 
     try:

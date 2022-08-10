@@ -1,0 +1,4 @@
+---
+minor_changes:
+- \*_info modules - Added field sysparm_query, which represents an encoded query string used to filter the results as an alternative to C(query) (https://github.com/ansible-collections/servicenow.itsm/pull/190).
+- now - Added field sysparm_query, which represents an encoded query string used to filter the results as an alternative to C(query) (https://github.com/ansible-collections/servicenow.itsm/pull/190).

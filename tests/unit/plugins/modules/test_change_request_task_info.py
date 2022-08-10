@@ -118,6 +118,7 @@ class TestRun:
                 sys_id=None,
                 number="n",
                 query=None,
+                sysparm_query=None,
                 sysparm_display_value="true",
             )
         )
