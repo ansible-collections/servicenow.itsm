@@ -64,7 +64,7 @@ options:
         you have specified relative path to the file.
       - Template file needs to be present on the Ansible Controller's system. Otherwise, an error is raised.
     type: str
-"""
+
 
 EXAMPLES = """
 - name: Create a record in table incident with specified short_description (which is read from data)
