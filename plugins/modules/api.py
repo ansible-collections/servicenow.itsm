@@ -64,6 +64,7 @@ options:
         you have specified relative path to the file.
       - Template file needs to be present on the Ansible Controller's system. Otherwise, an error is raised.
     type: str
+"""
 
 
 EXAMPLES = """
