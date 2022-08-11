@@ -59,7 +59,7 @@ options:
     description:
       - Provide a valid YAML template definition file for creating or updating a record.
       - Provides built-in template processing capabilities as an alternative to its data parameter.
-      - Mutually exclusive with data.
+      - Mutually exclusive with I(data).
       - If template starts with C("/"), it is assumed you have specified absolute path to the file. Otherwise, it is assumed
         you have specified relative path to the file.
       - Template file needs to be present on the Ansible Controller's system. Otherwise, an error is raised.
