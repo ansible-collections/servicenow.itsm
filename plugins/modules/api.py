@@ -46,7 +46,7 @@ options:
   data:
     description:
       - The data that we want to update or create the resource with.
-      - Mutually exclusive with template.
+      - Mutually exclusive with I(template).
       - Only relevant if I(action==patch) or I(action==post).
       - A Dict consists of resource's column names as keys (such as description, number, priority, and so on) and the
         patching values as values (the value we want to change the column to).
