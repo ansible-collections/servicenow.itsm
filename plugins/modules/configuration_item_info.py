@@ -60,12 +60,12 @@ EXAMPLES = r"""
   servicenow.itsm.configuration_item_info:
   register: result
 
-- name: Retrieve a specific configuration item by it's sys_id
+- name: Retrieve a specific configuration item by sys_id
   servicenow.itsm.configuration_item_info:
     sys_id: 01a9ec0d3790200044e0bfc8bcbe5dc3
   register: result
 
-- name: Retrieve a specific configuration item by it's name
+- name: Retrieve a specific configuration item by name
   servicenow.itsm.configuration_item_info:
     name: my-configuration-item
   register: result
