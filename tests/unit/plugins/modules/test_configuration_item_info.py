@@ -82,7 +82,7 @@ class TestMain:
             sys_id=sys_id_value,
             name=name_value,
             query=query_value,
-            sysparm=sysparm_query_value,
+            sysparm_query=sysparm_query_value,
             sys_class_name="cmdb_ci",
         )
         success, result = run_main(configuration_item_info, params)
