@@ -1,0 +1,5 @@
+---
+breaking_changes:
+- configuration_item - Added name as a unique identifier. This means that the idempotence is based on name, while previously there was no idempotence (except for sys_id). When state=present if a configuration item with given name does not exist, the item is created. If it already exists, it is updated. (https://github.com/ansible-collections/servicenow.itsm/pull/192)
+minor_changes:
+- configuration_item_info - Added option name to simplify queries based on that parameter.

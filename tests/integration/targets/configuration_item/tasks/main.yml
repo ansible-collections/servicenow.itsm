@@ -49,8 +49,15 @@
     - ansible.builtin.assert:
         that:
           - result.records | length == initial.records | length + 1
+    
+    - name: Create a base configuration item using existing name (idempotence)
+      servicenow.itsm.configuration_item: *ci-create
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
 
-    - name: Create a base configuration item (idempotence)
+    - name: Create a base configuration item using existing sys_id (idempotence)
       servicenow.itsm.configuration_item:
         <<: *ci-create
         sys_id: "{{ base_ci.record.sys_id }}"
@@ -58,12 +65,12 @@
     - ansible.builtin.assert:
         that:
           - result is not changed
-
+    
     - name: Update the configuration item (check mode)
       servicenow.itsm.configuration_item: &ci-update
         sys_id: "{{ base_ci.record.sys_id }}"
         sys_class_name: cmdb_ci_computer
-        name: my-computer
+        name: my-configuration-item
         short_description: short-description
         asset_tag: P22896
         install_status: installed
@@ -81,7 +88,7 @@
           - updated_ci is changed
           - updated_ci.record.sys_id == base_ci.record.sys_id
           - updated_ci.record.sys_class_name == "cmdb_ci_computer"
-          - updated_ci.record.name == "my-computer"
+          - updated_ci.record.name == "my-configuration-item"
           - updated_ci.record.asset_tag == "P22896"
           - updated_ci.record.install_status == "installed"
           - updated_ci.record.operational_status == "ready"
@@ -92,7 +99,7 @@
           - updated_ci.record.short_description == "short-description"
           - updated_ci.record.assigned_to != ""
 
-    - name: Verify modification in check mode did not update the record
+    - name: Verify modification in check mode did not update the record - use sys_id
       servicenow.itsm.configuration_item_info:
         sys_id: "{{ base_ci.record.sys_id }}"
       register: result
@@ -108,12 +115,32 @@
       register: updated_ci
     - ansible.builtin.assert: *ci-update-assertions
 
-    - name: Update the configuration item (idempotence)
-      servicenow.itsm.configuration_item: *ci-update
+    - name: Update the configuration item using only name (idempotence)
+      servicenow.itsm.configuration_item: 
+        name: my-configuration-item
       register: result
     - ansible.builtin.assert:
         that:
           - result is not changed
+    
+    - name: Rename configuration item
+      servicenow.itsm.configuration_item:
+        sys_id: "{{ base_ci.record.sys_id }}"
+        name: my-computer
+      register: base_ci
+    - ansible.builtin.assert:
+        that:
+          - base_ci is changed
+          - base_ci.record.name == "my-computer"
+    
+    - name: Create configuration item without sys_id or name
+      servicenow.itsm.configuration_item:
+      ignore_errors: true
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'one of the following is required: sys_id, name' in result.msg"
 
     - name: Get specific configuration item info by sysparm query
       servicenow.itsm.configuration_item_info:
@@ -130,7 +157,6 @@
            mac_address: = a1:b2:c3:d4:e5
            assigned_to: = admin
       register: result
-
     - ansible.builtin.assert:
         that:
           - result.records | length == 1
@@ -170,6 +196,17 @@
           - server is changed
           - server.record.name == "test-server"
           - server.record.classification == "Development"
+    
+    - name: Update test-server's name with existing one (idempotence)
+      servicenow.itsm.configuration_item:
+        sys_id: "{{ server.record.sys_id }}"
+        name: my-computer
+      ignore_errors: true
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Record with the name' in result.msg"
 
     - name: Get configuration item info by sysparm query - sys_class_name and name
       servicenow.itsm.configuration_item_info:
@@ -177,7 +214,6 @@
          - sys_class_name: = cmdb_ci_server
            name: = test-server
       register: result
-
     - ansible.builtin.assert:
         that:
           - result.records.0.name == "test-server"
@@ -193,7 +229,7 @@
         that:
           - result is failed
           - "'No sys_user records match' in result.msg"
-
+    
     - name: Delete a configuration item (check mode)
       servicenow.itsm.configuration_item: &ci-delete
         sys_id: "{{ base_ci.record.sys_id }}"
@@ -204,15 +240,35 @@
         that:
           - result is changed
 
-    - name: Verify deletion in check mode did not remove the record
+    - name: Verify deletion in check mode did not remove the record - use name
       servicenow.itsm.configuration_item_info:
-        sys_id: "{{ base_ci.record.sys_id }}"
+        name: "{{ base_ci.record.name }}"
       register: result
     - ansible.builtin.assert:
         that:
           - result.records | length == 1
+    
+    - name: Delete configuration item using sys_id and wrong name
+      servicenow.itsm.configuration_item:
+        sys_id: "{{ base_ci.record.sys_id }}"
+        name: "wrong_name"
+        state: absent
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
 
-    - name: Delete a configuration item
+    - name: Delete configuration item using name and wrong sys_id
+      servicenow.itsm.configuration_item:
+        sys_id: "wrong_sys_id"
+        name: "{{ base_ci.record.name }}"
+        state: absent
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is not changed
+
+    - name: Delete a configuration item using sys_id
       servicenow.itsm.configuration_item: *ci-delete
       register: result
     - ansible.builtin.assert:
@@ -234,6 +290,14 @@
         that:
           - result is not changed
 
+    - name: Delete test-server using name
+      servicenow.itsm.configuration_item:
+        name: test-server
+        state: absent
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is changed
 
     - name: Test bad parameter combinator (sys_id + query)
       servicenow.itsm.configuration_item_info:
@@ -242,12 +306,10 @@
          - name: = lnux101
       ignore_errors: true
       register: result
-
     - ansible.builtin.assert:
         that:
           - result is failed
-          - "'parameters are mutually exclusive: sys_id|query' in result.msg"
-
+          - "'parameters are mutually exclusive: sys_id|query|name' in result.msg"
 
     - name: Test invalid operator detection
       servicenow.itsm.configuration_item_info:
@@ -255,23 +317,19 @@
          - name: == lnux101
       ignore_errors: true
       register: result
-
     - ansible.builtin.assert:
         that:
           - result is failed
           - "'Invalid condition' in result.msg"
-
 
     - name: Get configuration item info by sysparm query - name
       servicenow.itsm.configuration_item_info:
         query:
          - name: = lnux101
       register: result
-
     - ansible.builtin.assert:
         that:
           - "'lnux101' in result.records[0].name"
-
 
     - name: Test unary operator with argument detection
       servicenow.itsm.configuration_item_info:
@@ -279,19 +337,16 @@
          - short_description: ISEMPTY SAP
       ignore_errors: true
       register: result
-
     - ansible.builtin.assert:
         that:
           - result is failed
           - "'Operator ISEMPTY does not take any arguments' in result.msg"
-
 
     - name: Test sysparm query unary operator - short_description
       servicenow.itsm.configuration_item_info:
         query:
          - short_description: ISNOTEMPTY
       register: result
-
     - ansible.builtin.assert:
         that:
           - result.records[0].short_description != ""

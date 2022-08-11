@@ -18,6 +18,7 @@ author:
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
   - Matej Pevec (@mysteriouswolf)
+  - Polona Mihalič (@PolonaM)
 
 short_description: List ServiceNow configuration item
 
@@ -36,6 +37,12 @@ seealso:
   - module: servicenow.itsm.configuration_item
 
 options:
+  name:
+    description:
+      - Unique identifier of the record to retrieve.
+      - Mutually exclusive with C(query) and C(sys_id).
+    type: str
+    version_added: 2.0.0
   sys_class_name:
     description:
       - ServiceNow configuration item class.
@@ -53,9 +60,14 @@ EXAMPLES = r"""
   servicenow.itsm.configuration_item_info:
   register: result
 
-- name: Retrieve a specific configuration item by its sys_id
+- name: Retrieve a specific configuration item by sys_id
   servicenow.itsm.configuration_item_info:
     sys_id: 01a9ec0d3790200044e0bfc8bcbe5dc3
+  register: result
+
+- name: Retrieve a specific configuration item by name
+  servicenow.itsm.configuration_item_info:
+    name: my-configuration-item
   register: result
 
 - name: Retrieve all hardare configuration items by using field query
@@ -238,10 +250,11 @@ def run(module, table_client, attachment_client):
             "sysparm_query": sysparms_query(module, table_client, mapper),
             "sysparm_display_value": module.params["sysparm_display_value"],
         }
-    elif module.params["sysparm_query"]:
-        query = {"sysparm_query": module.params["sysparm_query"]}
+
     else:
-        query = utils.filter_dict(module.params, "sys_id", "sysparm_display_value")
+        query = utils.filter_dict(
+            module.params, "sys_id", "name", "sysparm_query", "sysparm_display_value"
+        )
 
     return [
         dict(
@@ -266,15 +279,14 @@ def main():
                 "sysparm_query",
                 "sysparm_display_value",
             ),
+            name=dict(
+                type="str",
+            ),
             sys_class_name=dict(
                 type="str",
             ),
         ),
-        mutually_exclusive=[
-            ("sys_id", "query"),
-            ("sysparm_query", "query"),
-            ("sys_id", "sysparm_query"),
-        ],
+        mutually_exclusive=[("sys_id", "query", "name", "sysparm_query")],
     )
 
     try:

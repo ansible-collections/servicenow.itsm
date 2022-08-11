@@ -17,13 +17,17 @@ author:
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
   - Matej Pevec (@mysteriouswolf)
+  - Polona Mihalič (@PolonaM)
 
 short_description: Manage ServiceNow configuration items
 
 description:
   - Create, delete or update a ServiceNow configuration item.
+  - Configuration items can be managed using sys_id or name.
+  - Operations create and delete are idempotent on parameter C(name).
+  - When C(state) is set to C(present), a record identified by C(name) is only created once. Further invocations will update the record.
   - For more information, refer to the ServiceNow configuration management documentation at
-    U(https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
+    U(https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
 version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
@@ -284,7 +288,7 @@ DIRECT_PAYLOAD_FIELDS = (
 
 def ensure_absent(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
-    query = utils.filter_dict(module.params, "sys_id")
+    query = utils.filter_dict(module.params, "sys_id", "name")
     configuration_item = table_client.get_record("cmdb_ci", query)
 
     if configuration_item:
@@ -321,42 +325,62 @@ def build_payload(module, table_client):
 
 def ensure_present(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
-    query = utils.filter_dict(module.params, "sys_id")
+    query_sys_id = utils.filter_dict(module.params, "sys_id")
+    query_name = utils.filter_dict(module.params, "name")
     payload = build_payload(module, table_client)
     attachments = attachment.transform_metadata_list(
         module.params["attachments"], module.sha256
     )
 
-    if not query:
-        cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
-
-        if not module.params["name"]:
-            raise errors.ServiceNowError("Missing required parameter: name")
+    if not query_sys_id:
+        configuration_item = table_client.get_record("cmdb_ci", query_name)
         # User did not specify existing CI, so we need to create a new one.
-        new = mapper.to_ansible(
-            table_client.create_record(
-                cmdb_table, mapper.to_snow(payload), module.check_mode
+        if not configuration_item:
+            cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
+            new = mapper.to_ansible(
+                table_client.create_record(
+                    cmdb_table, mapper.to_snow(payload), module.check_mode
+                )
             )
+            # When we execute in check mode, new["sys_id"] is not defined.
+            # In order to give users back as much info as possible, we fake the sys_id in the
+            # next call.
+            new["attachments"] = attachment_client.upload_records(
+                cmdb_table,
+                new.get("sys_id", "N/A"),
+                attachments,
+                module.check_mode,
+            )
+            return True, new, dict(before=None, after=new)
+
+        else:
+            # Get existing record using provided name
+            old = mapper.to_ansible(configuration_item)
+
+    else:
+        # Get existing record using provided sys_id
+        old = mapper.to_ansible(
+            table_client.get_record("cmdb_ci", query_sys_id, must_exist=True)
         )
-
-        # When we execute in check mode, new["sys_id"] is not defined.
-        # In order to give users back as much info as possible, we fake the sys_id in the
-        # next call.
-        new["attachments"] = attachment_client.upload_records(
-            cmdb_table,
-            new.get("sys_id", "N/A"),
-            attachments,
-            module.check_mode,
-        )
-
-        return True, new, dict(before=None, after=new)
-
-    old = mapper.to_ansible(table_client.get_record("cmdb_ci", query, must_exist=True))
+        # Check if provided name already exists
+        if query_name:
+            configuration_item = table_client.get_record("cmdb_ci", query_name)
+            if configuration_item:
+                old2 = mapper.to_ansible(configuration_item)
+                if old["sys_id"] != old2["sys_id"]:
+                    raise errors.ServiceNowError(
+                        "Record with the name {0} already exists.".format(
+                            module.params["name"]
+                        )
+                    )
+    # Update existing record
     cmdb_table = old["sys_class_name"]
     # If necessary, fetch the record from the table for the extended CI class
     if cmdb_table != "cmdb_ci":
         old = mapper.to_ansible(
-            table_client.get_record(cmdb_table, query, must_exist=True)
+            table_client.get_record(
+                cmdb_table, query_sys_id or query_name, must_exist=True
+            )
         )
 
     old["attachments"] = attachment_client.list_records(
@@ -448,8 +472,11 @@ def main():
     module = AnsibleModule(
         argument_spec=module_args,
         supports_check_mode=True,
-        required_if=[
-            ("state", "absent", ("sys_id",)),
+        required_one_of=[
+            (
+                "sys_id",
+                "name",
+            ),
         ],
     )
 
