@@ -15,6 +15,7 @@ from ansible_collections.servicenow.itsm.plugins.modules import attachment
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
 from ansible.module_utils._text import to_bytes
+from ansible.module_utils.json_utils import json
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -133,7 +134,7 @@ class TestRun:
             "msg": "OK",
         }
 
-    def test_run_404(self, create_module, attachment_client, mocker):
+    def test_run_404(self, create_module, attachment_client):
         module = create_module(
             params=dict(
                 instance=dict(
@@ -143,12 +144,11 @@ class TestRun:
                 dest="tmp",
             )
         )
+        msg = dict(error=dict(message="No Record found", detail="Record does not exist"), status="failure")
         attachment_client.get_attachment.return_value = Response(
             404,
-            to_bytes(
-                '{"error":{"message":"No Record found","detail":"Record does not exist"},"status":"failure"}'
-            ),
-            {"headers": "headers"},
+            json.dumps(msg),
+            dict(headers="headers"),
         )
 
         with pytest.raises(errors.ServiceNowError) as exc:
@@ -166,12 +166,11 @@ class TestRun:
                 dest="tmp",
             )
         )
+        msg = dict(bad_key=dict(message="No record found", bad_key="Record does not exist"), status="failure")
         attachment_client.get_attachment.return_value = Response(
             404,
-            to_bytes(
-                '{"bad_key":{"message":"No Record found","bad_key":"Record does not exist"},"status":"failure"}'
-            ),
-            {"headers": "headers"},
+            json.dumps(msg),
+            dict(headers="headers"),
         )
 
         with pytest.raises(errors.ServiceNowError) as exc:
