@@ -144,7 +144,10 @@ class TestRun:
                 dest="tmp",
             )
         )
-        msg = dict(error=dict(message="No Record found", detail="Record does not exist"), status="failure")
+        msg = dict(
+            error=dict(message="No Record found", detail="Record does not exist"),
+            status="failure",
+        )
         attachment_client.get_attachment.return_value = Response(
             404,
             json.dumps(msg),
@@ -166,7 +169,10 @@ class TestRun:
                 dest="tmp",
             )
         )
-        msg = dict(bad_key=dict(message="No record found", bad_key="Record does not exist"), status="failure")
+        msg = dict(
+            bad_key=dict(message="No record found", bad_key="Record does not exist"),
+            status="failure",
+        )
         attachment_client.get_attachment.return_value = Response(
             404,
             json.dumps(msg),
