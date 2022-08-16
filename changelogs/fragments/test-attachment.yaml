@@ -1,0 +1,3 @@
+trivial: 
+- Renamed test_attachment_module to test_attachment.
+- In unit tests changed mocked application/json response from bytes to str type to also work with Python 3.5
