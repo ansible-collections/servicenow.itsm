@@ -414,7 +414,25 @@ def validate_params(params, problem=None):
         )
 
 
-def ensure_present(module, table_client, attachment_client):
+def ensure_problem_state_transition(module, snow_client, old, new, mapper, payload):
+    target_state = module.params.get("state", old["state"])
+    if new["state"] != target_state:
+        sn_payload = mapper.to_snow(payload)
+        sn_old = mapper.to_snow(old)
+        if module.check_mode:
+            sn_new = dict(sn_old, **sn_payload)
+        else:
+            path_template = "/{0}/{1}/new_state/{2}".replace("//", "/")
+            path = path_template.format(
+                module.params["base_api_path"],
+                sn_old["number"], target_state
+            )
+            sn_new = snow_client.patch(path, sn_payload).json["result"]
+
+    return mapper.to_ansible(sn_new)
+
+
+def ensure_present(module, snow_client, table_client, attachment_client):
     mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
@@ -461,6 +479,10 @@ def ensure_present(module, table_client, attachment_client):
             "problem", mapper.to_snow(old), mapper.to_snow(payload), module.check_mode
         )
     )
+
+    # Was the problem state advanced?
+    new = ensure_problem_state_transition(module, snow_client, old, new, mapper, payload)
+
     new["attachments"] = attachment_client.update_records(
         "problem",
         old["sys_id"],
@@ -472,10 +494,10 @@ def ensure_present(module, table_client, attachment_client):
     return True, new, dict(before=old, after=new)
 
 
-def run(module, table_client, attachment_client):
+def run(module, snow_client, table_client, attachment_client):
     if module.params["state"] == "absent":
         return ensure_absent(module, table_client, attachment_client)
-    return ensure_present(module, table_client, attachment_client)
+    return ensure_present(module, snow_client, table_client, attachment_client)
 
 
 def main():
@@ -525,6 +547,9 @@ def main():
         other=dict(
             type="dict",
         ),
+        base_api_path=dict(
+            type="str"
+        )
     )
 
     module = AnsibleModule(
@@ -539,7 +564,7 @@ def main():
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
         attachment_client = attachment.AttachmentClient(snow_client)
-        changed, record, diff = run(module, table_client, attachment_client)
+        changed, record, diff = run(module, snow_client, table_client, attachment_client)
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
