@@ -311,8 +311,6 @@ record:
     "workaround_communicated_by": ""
 """
 
-import re
-
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import (
@@ -324,7 +322,7 @@ from ..module_utils import (
     utils,
     validation,
 )
-from ..module_utils.problem import PAYLOAD_FIELDS_MAPPING
+from ..module_utils.problem import PAYLOAD_FIELDS_MAPPING, ProblemClient
 from ..module_utils.utils import get_mapper
 
 DIRECT_PAYLOAD_FIELDS = (
@@ -365,7 +363,9 @@ def build_payload(module, table_client):
         # If we set 'state' field directly when modifying an existing record,
         # ServiceNow API sometimes ignores the desired state.
         # This happens for state transitions other than new -> assessment.
-        # Using 'problem_state' instead of 'state' resolves the issue.
+        # Using 'problem_state' instead of 'state' used to resolve the issue.
+        # Starting with release Rome, problem state has to be updated
+        # on the server.
         payload["problem_state"] = module.params["state"]
     if module.params["assigned_to"]:
         user = table.find_user(table_client, module.params["assigned_to"])
@@ -428,24 +428,9 @@ def validate_params(params, problem=None):
         )
 
 
-def ensure_state_transition(module, snow_client, old, new, mapper, payload):
-    target_state = module.params.get("state", old["state"])
-    if new["state"] != target_state:
-        sn_payload = mapper.to_snow(payload)
-        sn_old = mapper.to_snow(old)
-        if module.check_mode:
-            sn_new = dict(sn_old, **sn_payload)
-        else:
-            path_template = re.sub(r"/+", "/", "/{0}/{1}/new_state/{2}")
-            path = path_template.format(
-                module.params["base_api_path"], sn_old["number"], target_state
-            )
-            sn_new = snow_client.patch(path, sn_payload).json["result"]
-
-    return mapper.to_ansible(sn_new)
-
-
-def ensure_present(module, snow_client, table_client, attachment_client):
+def ensure_present(
+    module, problem_client, table_client, attachment_client
+):
     mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
@@ -474,27 +459,37 @@ def ensure_present(module, snow_client, table_client, attachment_client):
 
         return True, new, dict(before=None, after=new)
 
-    old = mapper.to_ansible(table_client.get_record("problem", query, must_exist=True))
+    sn_old = table_client.get_record("problem", query, must_exist=True)
 
-    old["attachments"] = attachment_client.list_records(
-        dict(table_name="problem", table_sys_id=old["sys_id"])
+    sn_old["attachments"] = attachment_client.list_records(
+        dict(table_name="problem", table_sys_id=sn_old["sys_id"])
     )
+
+    old = mapper.to_ansible(sn_old)
 
     if utils.is_superset(old, payload) and not any(
         attachment.are_changed(old["attachments"], attachments)
     ):
-        # No change in parameters we are interested in - nothing to do.
+        # No change in parameters we are interested in -- nothing to do.
         return False, old, dict(before=old, after=old)
 
     validate_params(module.params, old)
-    new = mapper.to_ansible(
-        table_client.update_record(
-            "problem", mapper.to_snow(old), mapper.to_snow(payload), module.check_mode
-        )
+    sn_payload = mapper.to_snow(payload)
+    sn_new = table_client.update_record(
+        "problem", sn_old, sn_payload, module.check_mode
     )
 
     # Was the problem state advanced?
-    new = ensure_state_transition(module, snow_client, old, new, mapper, payload)
+    # Starting with release Rome, Table API no longer transitions problem
+    # state. Try to advance state with the ServiceNow Store app.
+    if sn_new["state"] != sn_payload["state"]:
+        # Does not happen when check_mode is True
+        new = mapper.to_ansible(
+            problem_client.update_record(
+                sn_new["number"],
+                sn_payload,
+            )
+        )
 
     new["attachments"] = attachment_client.update_records(
         "problem",
@@ -507,10 +502,10 @@ def ensure_present(module, snow_client, table_client, attachment_client):
     return True, new, dict(before=old, after=new)
 
 
-def run(module, snow_client, table_client, attachment_client):
+def run(module, problem_client, table_client, attachment_client):
     if module.params["state"] == "absent":
         return ensure_absent(module, table_client, attachment_client)
-    return ensure_present(module, snow_client, table_client, attachment_client)
+    return ensure_present(module, problem_client, table_client, attachment_client)
 
 
 def main():
@@ -578,8 +573,11 @@ def main():
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
         attachment_client = attachment.AttachmentClient(snow_client)
+        problem_client = ProblemClient(
+            snow_client, module.params["base_api_path"]
+        )
         changed, record, diff = run(
-            module, snow_client, table_client, attachment_client
+            module, problem_client, table_client, attachment_client
         )
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
