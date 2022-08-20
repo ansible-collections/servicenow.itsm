@@ -562,6 +562,7 @@ def main():
         ),
         base_api_path=dict(
             type="str",
+            default="/api/x_rhtpp_ansible/problem",
         ),
     )
 
