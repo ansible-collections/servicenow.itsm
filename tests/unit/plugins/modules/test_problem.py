@@ -200,7 +200,7 @@ class TestValidateParams:
 
 class TestEnsurePresent:
     def test_ensure_present_create_new(
-        self, create_module, table_client, attachment_client
+        self, create_module, table_client, attachment_client, problem_client
     ):
         module = create_module(
             params=dict(
@@ -220,6 +220,7 @@ class TestEnsurePresent:
                 duplicate_of=None,
                 attachments=None,
                 other=None,
+                base_api_path="/api/path",
             ),
         )
         table_client.create_record.return_value = dict(
@@ -232,9 +233,10 @@ class TestEnsurePresent:
         )
         attachment_client.upload_records.return_value = []
 
-        result = problem.ensure_present(module, table_client, attachment_client)
+        result = problem.ensure_present(module, problem_client, table_client, attachment_client)
 
         table_client.create_record.assert_called_once()
+        problem_client.update_record.assert_not_called()
         assert result == (
             True,
             dict(
@@ -261,7 +263,7 @@ class TestEnsurePresent:
         )
 
     def test_ensure_present_nothing_to_do(
-        self, create_module, table_client, attachment_client
+        self, create_module, table_client, attachment_client, problem_client
     ):
         module = create_module(
             params=dict(
@@ -282,6 +284,7 @@ class TestEnsurePresent:
                 duplicate_of=None,
                 attachments=None,
                 other=None,
+                base_api_path="/api/path",
             ),
         )
         table_client.get_record.return_value = dict(
@@ -294,9 +297,10 @@ class TestEnsurePresent:
         attachment_client.update_records.return_value = []
         attachment_client.list_records.return_value = []
 
-        result = problem.ensure_present(module, table_client, attachment_client)
+        result = problem.ensure_present(module, problem_client, table_client, attachment_client)
 
         table_client.get_record.assert_called_once()
+        problem_client.update_record.assert_not_called()
         assert result == (
             False,
             dict(
@@ -328,7 +332,7 @@ class TestEnsurePresent:
         )
 
     def test_ensure_present_update(
-        self, mocker, create_module, table_client, attachment_client
+        self, mocker, create_module, table_client, attachment_client, problem_client
     ):
         module = create_module(
             params=dict(
@@ -349,6 +353,7 @@ class TestEnsurePresent:
                 duplicate_of=None,
                 attachments=None,
                 other=None,
+                base_api_path="/api/path",
             ),
         )
         payload_mocker = mocker.patch.object(problem, "build_payload")
@@ -376,9 +381,113 @@ class TestEnsurePresent:
         attachment_client.update_records.return_value = []
         attachment_client.list_records.return_value = []
 
-        result = problem.ensure_present(module, table_client, attachment_client)
+        result = problem.ensure_present(module, problem_client, table_client, attachment_client)
 
         table_client.update_record.assert_called_once()
+        problem_client.update_record.assert_not_called()
+        assert result == (
+            True,
+            dict(
+                state="assess",
+                problem_state="assess",
+                number="PRB0000001",
+                short_description="Test problem",
+                attachments=[],
+                sys_id="1234",
+            ),
+            dict(
+                before=dict(
+                    state="new",
+                    problem_state="new",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    attachments=[],
+                    sys_id="1234",
+                ),
+                after=dict(
+                    state="assess",
+                    problem_state="assess",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    attachments=[],
+                    sys_id="1234",
+                ),
+            ),
+        )
+
+    def test_ensure_present_update_with_problem_client(
+        self, mocker, create_module, table_client, attachment_client, problem_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state="assess",
+                number="PRB0000001",
+                sys_id=None,
+                caller=None,
+                short_description="Test problem",
+                description=None,
+                impact=None,
+                urgency=None,
+                assigned_to=None,
+                resolution_code=None,
+                fix_notes=None,
+                cause_notes=None,
+                close_notes=None,
+                duplicate_of=None,
+                attachments=None,
+                other=None,
+                base_api_path="/api/path",
+            ),
+        )
+        payload_mocker = mocker.patch.object(problem, "build_payload")
+        payload_mocker.return_value = dict(
+            state="assess",
+            problem_state="assess",
+            number="PRB0000001",
+            short_description="Test problem",
+            sys_id="1234",
+        )
+        table_client.get_record.return_value = dict(
+            state="101",
+            problem_state="101",
+            number="PRB0000001",
+            short_description="Test problem",
+            sys_id="1234",
+        )
+        table_client.update_record.return_value = dict(
+            state="101",
+            problem_state="101",
+            number="PRB0000001",
+            short_description="Test problem",
+            sys_id="1234",
+        )
+        attachment_client.update_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        problem_client.update_record.return_value = dict(
+            state="102",
+            problem_state="102",
+            number="PRB0000001",
+            short_description="Test problem",
+            sys_id="1234",
+        )
+
+        result = problem.ensure_present(module, problem_client, table_client, attachment_client)
+
+        table_client.update_record.assert_called_once()
+
+        problem_client.update_record.assert_called_once_with(
+            "PRB0000001",
+            dict(
+                state="102",
+                problem_state="102",
+                number="PRB0000001",
+                short_description="Test problem",
+                sys_id="1234",
+            ),
+        )
+
         assert result == (
             True,
             dict(
