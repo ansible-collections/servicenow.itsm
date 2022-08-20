@@ -7,6 +7,8 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import re
+
 STATE_MAPPING = [
     ("101", "new"),
     ("102", "assess"),
@@ -22,3 +24,18 @@ PAYLOAD_FIELDS_MAPPING = dict(
     problem_state=STATE_MAPPING,
     state=STATE_MAPPING,
 )
+
+
+class ProblemClient:
+    def __init__(self, client, base_api_path):
+        self.client = client
+        self.base_api_path = re.sub(
+            r"/+", "/", "/{0}/".format(base_api_path)
+        )
+
+    def update_record(self, problem_number, data):
+        new_state = data["state"]
+        path = "{0}{1}/new_state/{2}".format(
+            self.base_api_path, problem_number, new_state
+        )
+        return self.client.patch(path, data).json["result"]
