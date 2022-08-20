@@ -299,6 +299,8 @@ record:
     "workaround_communicated_by": ""
 """
 
+import re
+
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import (
@@ -422,7 +424,7 @@ def ensure_problem_state_transition(module, snow_client, old, new, mapper, paylo
         if module.check_mode:
             sn_new = dict(sn_old, **sn_payload)
         else:
-            path_template = "/{0}/{1}/new_state/{2}".replace("//", "/")
+            path_template = re.sub(r"/+", "/", "/{0}/{1}/new_state/{2}")
             path = path_template.format(
                 module.params["base_api_path"],
                 sn_old["number"], target_state
