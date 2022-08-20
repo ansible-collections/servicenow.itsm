@@ -5,6 +5,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+
 __metaclass__ = type
 
 import json
@@ -16,9 +17,8 @@ from ansible.module_utils._text import to_bytes
 
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Client
 from ansible_collections.servicenow.itsm.plugins.module_utils.table import TableClient
-from ansible_collections.servicenow.itsm.plugins.module_utils.attachment import (
-    AttachmentClient,
-)
+from ansible_collections.servicenow.itsm.plugins.module_utils.attachment import AttachmentClient
+from ansible_collections.servicenow.itsm.plugins.module_utils.problem import ProblemClient
 
 
 @pytest.fixture
@@ -34,6 +34,11 @@ def table_client(mocker):
 @pytest.fixture
 def attachment_client(mocker):
     return mocker.Mock(spec=AttachmentClient)
+
+
+@pytest.fixture
+def problem_client(mocker):
+    return mocker.Mock(spec=ProblemClient)
 
 
 @pytest.fixture
