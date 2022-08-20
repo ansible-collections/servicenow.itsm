@@ -482,12 +482,12 @@ def ensure_present(module, problem_client, table_client, attachment_client):
     # state. Try to advance state with the ServiceNow Store app.
     if sn_new["state"] != sn_payload["state"]:
         # Does not happen when check_mode is True
-        new = mapper.to_ansible(
-            problem_client.update_record(
-                sn_new["number"],
-                sn_payload,
-            )
+        sn_new = problem_client.update_record(
+            sn_new["number"],
+            sn_payload,
         )
+
+    new = mapper.to_ansible(sn_new)
 
     new["attachments"] = attachment_client.update_records(
         "problem",
