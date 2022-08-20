@@ -416,7 +416,7 @@ def validate_params(params, problem=None):
         )
 
 
-def ensure_problem_state_transition(module, snow_client, old, new, mapper, payload):
+def ensure_state_transition(module, snow_client, old, new, mapper, payload):
     target_state = module.params.get("state", old["state"])
     if new["state"] != target_state:
         sn_payload = mapper.to_snow(payload)
@@ -426,8 +426,7 @@ def ensure_problem_state_transition(module, snow_client, old, new, mapper, paylo
         else:
             path_template = re.sub(r"/+", "/", "/{0}/{1}/new_state/{2}")
             path = path_template.format(
-                module.params["base_api_path"],
-                sn_old["number"], target_state
+                module.params["base_api_path"], sn_old["number"], target_state
             )
             sn_new = snow_client.patch(path, sn_payload).json["result"]
 
@@ -483,7 +482,7 @@ def ensure_present(module, snow_client, table_client, attachment_client):
     )
 
     # Was the problem state advanced?
-    new = ensure_problem_state_transition(module, snow_client, old, new, mapper, payload)
+    new = ensure_state_transition(module, snow_client, old, new, mapper, payload)
 
     new["attachments"] = attachment_client.update_records(
         "problem",
@@ -550,8 +549,8 @@ def main():
             type="dict",
         ),
         base_api_path=dict(
-            type="str"
-        )
+            type="str",
+        ),
     )
 
     module = AnsibleModule(
@@ -566,7 +565,9 @@ def main():
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
         attachment_client = attachment.AttachmentClient(snow_client)
-        changed, record, diff = run(module, snow_client, table_client, attachment_client)
+        changed, record, diff = run(
+            module, snow_client, table_client, attachment_client
+        )
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
