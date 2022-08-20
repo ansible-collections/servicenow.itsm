@@ -17,6 +17,7 @@ author:
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
   - Matej Pevec (@mysteriouswolf)
+  - Uros Pascinski (@uscinski)
 
 short_description: Manage ServiceNow problems
 
