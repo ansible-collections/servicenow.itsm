@@ -17,8 +17,12 @@ from ansible.module_utils._text import to_bytes
 
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Client
 from ansible_collections.servicenow.itsm.plugins.module_utils.table import TableClient
-from ansible_collections.servicenow.itsm.plugins.module_utils.attachment import AttachmentClient
-from ansible_collections.servicenow.itsm.plugins.module_utils.problem import ProblemClient
+from ansible_collections.servicenow.itsm.plugins.module_utils.attachment import (
+    AttachmentClient,
+)
+from ansible_collections.servicenow.itsm.plugins.module_utils.problem import (
+    ProblemClient,
+)
 
 
 @pytest.fixture

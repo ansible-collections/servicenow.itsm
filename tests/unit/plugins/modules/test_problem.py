@@ -233,7 +233,9 @@ class TestEnsurePresent:
         )
         attachment_client.upload_records.return_value = []
 
-        result = problem.ensure_present(module, problem_client, table_client, attachment_client)
+        result = problem.ensure_present(
+            module, problem_client, table_client, attachment_client
+        )
 
         table_client.create_record.assert_called_once()
         problem_client.update_record.assert_not_called()
@@ -297,7 +299,9 @@ class TestEnsurePresent:
         attachment_client.update_records.return_value = []
         attachment_client.list_records.return_value = []
 
-        result = problem.ensure_present(module, problem_client, table_client, attachment_client)
+        result = problem.ensure_present(
+            module, problem_client, table_client, attachment_client
+        )
 
         table_client.get_record.assert_called_once()
         problem_client.update_record.assert_not_called()
@@ -381,7 +385,9 @@ class TestEnsurePresent:
         attachment_client.update_records.return_value = []
         attachment_client.list_records.return_value = []
 
-        result = problem.ensure_present(module, problem_client, table_client, attachment_client)
+        result = problem.ensure_present(
+            module, problem_client, table_client, attachment_client
+        )
 
         table_client.update_record.assert_called_once()
         problem_client.update_record.assert_not_called()
@@ -473,7 +479,9 @@ class TestEnsurePresent:
             sys_id="1234",
         )
 
-        result = problem.ensure_present(module, problem_client, table_client, attachment_client)
+        result = problem.ensure_present(
+            module, problem_client, table_client, attachment_client
+        )
 
         table_client.update_record.assert_called_once()
 

@@ -13,7 +13,9 @@ import pytest
 
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
-from ansible_collections.servicenow.itsm.plugins.module_utils.problem import ProblemClient
+from ansible_collections.servicenow.itsm.plugins.module_utils.problem import (
+    ProblemClient,
+)
 
 
 pytestmark = pytest.mark.skipif(
@@ -29,7 +31,7 @@ class TestProblemClient:
             ("/api/path", "/api/path/"),
             ("", "/"),
             ("//api///path///", "/api/path/"),
-        ]
+        ],
     )
     def test_init(self, client, in_base_api_path, out_base_api_path):
         pc = ProblemClient(client, in_base_api_path)
@@ -37,9 +39,7 @@ class TestProblemClient:
         assert pc.base_api_path == out_base_api_path
 
     def test_update_record(self, client):
-        client.patch.return_value = Response(
-            200, '{"result": []}', {}
-        )
+        client.patch.return_value = Response(200, '{"result": []}', {})
         pc = ProblemClient(client, "/api/path")
 
         data = dict(state="103")
