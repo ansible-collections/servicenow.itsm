@@ -428,9 +428,7 @@ def validate_params(params, problem=None):
         )
 
 
-def ensure_present(
-    module, problem_client, table_client, attachment_client
-):
+def ensure_present(module, problem_client, table_client, attachment_client):
     mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
@@ -573,9 +571,7 @@ def main():
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
         attachment_client = attachment.AttachmentClient(snow_client)
-        problem_client = ProblemClient(
-            snow_client, module.params["base_api_path"]
-        )
+        problem_client = ProblemClient(snow_client, module.params["base_api_path"])
         changed, record, diff = run(
             module, problem_client, table_client, attachment_client
         )

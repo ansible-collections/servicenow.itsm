@@ -29,9 +29,7 @@ PAYLOAD_FIELDS_MAPPING = dict(
 class ProblemClient:
     def __init__(self, client, base_api_path):
         self.client = client
-        self.base_api_path = re.sub(
-            r"/+", "/", "/{0}/".format(base_api_path)
-        )
+        self.base_api_path = re.sub(r"/+", "/", "/{0}/".format(base_api_path))
 
     def update_record(self, problem_number, data):
         new_state = data["state"]
