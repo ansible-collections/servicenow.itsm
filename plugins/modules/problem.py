@@ -113,6 +113,17 @@ options:
         documentation on creating problems at
         U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/task/create-a-problem-v2.html).
     type: dict
+  base_api_path:
+    description:
+      - Base API path for the ServiceNow problem state management scripted API.
+      - Used for managing problem state transitions.
+      - Requires I(API for Red Hat Ansible Automation Platform Certified Content Collection) to be installed from the ServiceNow Store.
+      - Considered mostly for development and testing purposes, as in most cases the default value should be fine.
+      - Starting with release I(Rome), I(ServiceNow Table API) no longer supports problem state transitions, which is worked around by using
+        this server-side scripted REST API resource.
+    type: str
+    default: /api/x_rhtpp_ansible/problem
+    version_added: 2.0.0
 """
 
 EXAMPLES = r"""
