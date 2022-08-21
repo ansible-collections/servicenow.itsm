@@ -480,7 +480,7 @@ def ensure_present(module, problem_client, table_client, attachment_client):
     # Was the problem state advanced?
     # Starting with release Rome, Table API no longer transitions problem
     # state. Try to advance state with the ServiceNow Store app.
-    if sn_new["state"] != sn_payload["state"]:
+    if "state" in sn_payload and sn_new["state"] != sn_payload["state"]:
         # Does not happen when check_mode is True
         sn_new = problem_client.update_record(
             sn_new["number"],
