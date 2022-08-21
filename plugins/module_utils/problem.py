@@ -36,4 +36,4 @@ class ProblemClient:
         path = "{0}{1}/new_state/{2}".format(
             self.base_api_path, problem_number, new_state
         )
-        return self.client.patch(path, data).json["result"]
+        return self.client.patch(path, data, query=dict(sysparm_exclude_reference_link=True)).json["result"]
