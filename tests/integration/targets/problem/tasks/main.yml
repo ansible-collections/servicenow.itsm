@@ -39,10 +39,11 @@
 
     - name: Verify that a new record was created
       servicenow.itsm.problem_info:
+        sys_id: "{{ first_problem.record.sys_id }}"
       register: result
     - ansible.builtin.assert:
         that:
-          - result.records | length == initial.records | length + 1
+          - result.records | length == 1
 
     - name: Create a problem (idempotence)
       servicenow.itsm.problem:
@@ -129,6 +130,19 @@
           - analyzed_problem.record.state == "root_cause_analysis"
           - analyzed_problem.record.cause_notes == "cause"
 
+    - name: Resolve a problem as a duplicate of a non-existent problem
+      servicenow.itsm.problem:
+        sys_id: "{{ analyzed_problem.record.sys_id }}"
+        state: closed
+        resolution_code: duplicate
+        duplicate_of: nonexistent-problem
+      register: result
+      ignore_errors: true
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'No problem records match' in result.msg"
+
     - name: Start fixing the problem
       servicenow.itsm.problem:
         sys_id: "{{ analyzed_problem.record.sys_id }}"
@@ -152,23 +166,23 @@
           - resolved_problem is changed
           - resolved_problem.record.state == "resolved"
           # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
-          #- resolved_problem.record.resolution_code == "fix_applied"
+          - resolved_problem.record.resolution_code == "fix_applied"
 
 # FIXME: The task below causes '403 - Data Policy Exception: The following fields are mandatory: Resolution code'
 # despite resolution_code being present in the request.
 #
-#    - name: Close the problem
-#      servicenow.itsm.problem:
-#        sys_id: "{{ resolved_problem.record.sys_id }}"
-#        state: closed
-#        resolution_code: fix_applied
-#      register: closed_problem
-#    - ansible.builtin.assert:
-#        that:
-#          - closed_problem is changed
-#          - closed_problem.record.state == "resolved"
-#          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
-#          #- closed_problem.record.resolution_code == "fix_applied"
+    - name: Close the problem
+      servicenow.itsm.problem:
+        sys_id: "{{ resolved_problem.record.sys_id }}"
+        state: closed
+        resolution_code: fix_applied
+      register: closed_problem
+    - ansible.builtin.assert:
+        that:
+          - closed_problem is changed
+          - closed_problem.record.state == "closed"
+          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
+          - closed_problem.record.resolution_code == "fix_applied"
 
 
     - name: Create a bogus problem for cancellation
@@ -178,33 +192,36 @@
         assigned_to: problem.manager
       register: bogus_problem
 
-    - name: Cancel a problem
+    - name: Cancel a problem (fail)
       servicenow.itsm.problem:
         sys_id: "{{ bogus_problem.record.sys_id }}"
         state: resolved
         resolution_code: canceled
         close_notes: closing
       register: result
-    - ansible.builtin.assert:
-        that:
-          - result is changed
-          - result.record.state == "resolved"
-          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
-          #- result.record.resolution_code == "canceled"
-          - result.record.close_notes == "closing"
-
-    - name: Resolve a problem as a duplicate of a non-existent problem
-      servicenow.itsm.problem:
-        sys_id: "{{ assigned_problem.record.sys_id }}"
-        state: closed
-        resolution_code: duplicate
-        duplicate_of: nonexistent-problem
-      register: result
       ignore_errors: true
     - ansible.builtin.assert:
         that:
           - result is failed
-          - "'No problem records match' in result.msg"
+          - "'Problem state transition from state 102 to 106 is not possible' in result.msg"
+          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
+          #- result.record.resolution_code == "canceled"
+          #- result.record.close_notes == "closing"
+
+    - name: Cancel a problem
+      servicenow.itsm.problem:
+        sys_id: "{{ bogus_problem.record.sys_id }}"
+        state: closed
+        resolution_code: canceled
+        close_notes: closing
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.state == "closed"
+          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
+          - result.record.resolution_code == "canceled"
+          - result.record.close_notes == "closing"
 
     - name: Create a resolved problem that was fixed
       servicenow.itsm.problem:
@@ -276,22 +293,30 @@
 # FIXME: The task below causes '403 - Data Policy Exception: The following fields are mandatory: Resolution code'
 # despite resolution_code being present in the request.
 #
-#    - name: Resolve a problem as a duplicate of another problem
-#      servicenow.itsm.problem:
-#        sys_id: "{{ assigned_problem.record.sys_id }}"
-#        state: closed
-#        resolution_code: duplicate
-#        duplicate_of: "{{ fixed_problem.record.number }}"
-#      register: result
-#    - ansible.builtin.debug:
-#        var: result.record
-#    - ansible.builtin.assert:
-#        that:
-#          - result is changed
-#          - result.record.state == "closed"
-#          - result.record.duplicate_of == fixed_problem.record.sys_id
-#          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
-#          #- result.record.resolution_code == "duplicate"
+
+    - name: Create a problem for resolution as a duplicate
+      servicenow.itsm.problem:
+        state: root_cause_analysis
+        assigned_to: problem.manager
+        short_description: a-duplicate
+      register: duplicated_problem
+
+    - name: Resolve a problem as a duplicate of another problem
+      servicenow.itsm.problem:
+        sys_id: "{{ duplicated_problem.record.sys_id }}"
+        state: closed
+        resolution_code: duplicate
+        duplicate_of: "{{ assigned_problem.record.number }}"
+      register: result
+    - ansible.builtin.debug:
+        msg: "{{ result.record.duplicate_of }} vs {{ assigned_problem.record.sys_id }}"
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.state == "closed"
+          - result.record.duplicate_of == assigned_problem.record.sys_id
+          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
+          - result.record.resolution_code == "duplicate"
 
     - name: Delete a problem (check mode)
       servicenow.itsm.problem: &problem-delete
