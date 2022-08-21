@@ -48,6 +48,7 @@ class TestProblemClient:
         client.patch.assert_called_once_with(
             "/api/path/PRB02/new_state/103",
             data,
+            query=dict(sysparm_exclude_reference_link=True),
         )
 
         assert result == []
@@ -64,4 +65,5 @@ class TestProblemClient:
         client.patch.assert_called_once_with(
             "/api/path/PRB02/new_state/103",
             data,
+            query=dict(sysparm_exclude_reference_link=True),
         )
