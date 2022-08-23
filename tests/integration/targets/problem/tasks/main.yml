@@ -296,8 +296,6 @@
         resolution_code: duplicate
         duplicate_of: "{{ assigned_problem.record.number }}"
       register: result
-    - ansible.builtin.debug:
-        msg: "{{ result.record.duplicate_of }} vs {{ assigned_problem.record.sys_id }}"
     - ansible.builtin.assert:
         that:
           - result is changed
