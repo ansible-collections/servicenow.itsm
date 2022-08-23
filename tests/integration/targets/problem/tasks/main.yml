@@ -165,12 +165,8 @@
         that:
           - resolved_problem is changed
           - resolved_problem.record.state == "resolved"
-          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
           - resolved_problem.record.resolution_code == "fix_applied"
 
-# FIXME: The task below causes '403 - Data Policy Exception: The following fields are mandatory: Resolution code'
-# despite resolution_code being present in the request.
-#
     - name: Close the problem
       servicenow.itsm.problem:
         sys_id: "{{ resolved_problem.record.sys_id }}"
@@ -181,7 +177,6 @@
         that:
           - closed_problem is changed
           - closed_problem.record.state == "closed"
-          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
           - closed_problem.record.resolution_code == "fix_applied"
 
 
@@ -204,9 +199,6 @@
         that:
           - result is failed
           - "'Problem state transition from state 102 to 106 is not possible' in result.msg"
-          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
-          #- result.record.resolution_code == "canceled"
-          #- result.record.close_notes == "closing"
 
     - name: Cancel a problem
       servicenow.itsm.problem:
@@ -219,7 +211,6 @@
         that:
           - result is changed
           - result.record.state == "closed"
-          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
           - result.record.resolution_code == "canceled"
           - result.record.close_notes == "closing"
 
@@ -290,9 +281,6 @@
           - result.records.0.state == "resolved"
           - result.records.0.short_description == "accepted-problem"
 
-# FIXME: The task below causes '403 - Data Policy Exception: The following fields are mandatory: Resolution code'
-# despite resolution_code being present in the request.
-#
 
     - name: Create a problem for resolution as a duplicate
       servicenow.itsm.problem:
@@ -315,7 +303,6 @@
           - result is changed
           - result.record.state == "closed"
           - result.record.duplicate_of == assigned_problem.record.sys_id
-          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
           - result.record.resolution_code == "duplicate"
 
     - name: Delete a problem (check mode)
