@@ -14,6 +14,13 @@
           104: "progress"
           106: "resolved"
           107: "closed"
+        # problem_state:
+        #   101: "my_new"
+        #   102: "asses"
+        #   103: "root_cause"
+        #   104: "progress"
+        #   106: "resolved"
+        #   107: "closed"
 
   block:
     - name: Retrieve problem records
@@ -47,24 +54,21 @@
     - name: Create a problem
       servicenow.itsm.problem: *problem-create
       register: first_problem
-    - ansible.builtin.debug:
-        var: first_problem.record
     - ansible.builtin.assert: *problem-create-assertions
 
     - name: Verify that a new record was created
       servicenow.itsm.problem_info:
+        sys_id: "{{ first_problem.record.sys_id }}"
       register: result
     - ansible.builtin.assert:
         that:
-          - result.records | length == initial.records | length + 1
+          - result.records | length == 1
 
     - name: Create a problem (idempotence)
       servicenow.itsm.problem:
         <<: *problem-create
         sys_id: "{{ first_problem.record.sys_id }}"
       register: result
-    - ansible.builtin.debug:
-        var: result.record
     - ansible.builtin.assert:
         that:
           - result is not changed
