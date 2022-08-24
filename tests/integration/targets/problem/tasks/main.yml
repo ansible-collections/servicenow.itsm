@@ -35,6 +35,8 @@
     - name: Create a problem
       servicenow.itsm.problem: *problem-create
       register: first_problem
+    - ansible.builtin.debug:
+        var: first_problem.record
     - ansible.builtin.assert: *problem-create-assertions
 
     - name: Verify that a new record was created
@@ -50,6 +52,8 @@
         <<: *problem-create
         sys_id: "{{ first_problem.record.sys_id }}"
       register: result
+    - ansible.builtin.debug:
+        var: result.record
     - ansible.builtin.assert:
         that:
           - result is not changed
@@ -160,7 +164,12 @@
         sys_id: "{{ in_progress_problem.record.sys_id }}"
         state: resolved
         resolution_code: fix_applied
+        other:
+          resolved_by: "6816f79cc0a8016401c5a33be04be441"
+          resolved_at: "2022-08-24 16:54:34"
       register: resolved_problem
+    - ansible.builtin.debug:
+        var: resolved_problem.record
     - ansible.builtin.assert:
         that:
           - resolved_problem is changed
