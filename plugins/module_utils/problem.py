@@ -9,13 +9,20 @@ __metaclass__ = type
 
 import re
 
+NEW = "101"
+ASSESS = "102"
+RCA = "103"
+FIX = "104"
+RESOLVED = "106"
+CLOSED = "107"
+
 STATE_MAPPING = [
-    ("101", "new"),
-    ("102", "assess"),
-    ("103", "root_cause_analysis"),
-    ("104", "fix_in_progress"),
-    ("106", "resolved"),
-    ("107", "closed"),
+    (NEW, "new"),
+    (ASSESS, "assess"),
+    (RCA, "root_cause_analysis"),
+    (FIX, "fix_in_progress"),
+    (RESOLVED, "resolved"),
+    (CLOSED, "closed"),
 ]
 
 PAYLOAD_FIELDS_MAPPING = dict(
