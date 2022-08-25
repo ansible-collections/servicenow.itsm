@@ -14,6 +14,9 @@ import pytest
 
 from ansible_collections.servicenow.itsm.plugins.modules import problem
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
+from ansible_collections.servicenow.itsm.plugins.module_utils.problem import (
+    NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED
+)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -31,7 +34,7 @@ class TestEnsureAbsent:
             )
         )
         table_client.get_record.return_value = dict(
-            state="107", number="PRB0000001", sys_id="1234"
+            state=CLOSED, number="PRB0000001", sys_id="1234"
         )
 
         result = problem.ensure_absent(module, table_client, attachment_client)
@@ -89,10 +92,10 @@ class TestBuildPayload:
             {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
         ]
 
-        result = problem.build_payload(module, table_client)
+        result = problem.build_payload(module.params, table_client)
 
         assert result["assigned_to"] == "681ccaf9c0a8016400b98a06818d57c7"
-        assert result["problem_state"] == "closed"
+        assert result["state"] == "closed"
         assert result["short_description"] == "Test problem"
         assert result["impact"] == "low"
         assert result["urgency"] == "low"
@@ -118,7 +121,7 @@ class TestBuildPayload:
             ),
         )
 
-        result = problem.build_payload(module, table_client)
+        result = problem.build_payload(module.params, table_client)
 
         assert "problem_state" not in result
         assert result["short_description"] == "Test problem"
@@ -131,10 +134,10 @@ class TestValidateParams:
     @pytest.mark.parametrize(
         "params",
         [
-            dict(state="new", short_description="a"),
-            dict(state="assessment", short_description="a", assigned_to="a"),
+            dict(state=NEW, short_description="a"),
+            dict(state=ASSESS, short_description="a", assigned_to="a"),
             dict(
-                state="analysis",
+                state=RCA,
                 short_description="a",
                 assigned_to="a",
                 cause_notes="a",
@@ -145,7 +148,7 @@ class TestValidateParams:
     def test_valid_unresolved_state(self, params):
         problem.validate_params(dict(params, resolution_code=None))
 
-    @pytest.mark.parametrize("state", ["resolved", "closed"])
+    @pytest.mark.parametrize("state", [RESOLVED, CLOSED])
     @pytest.mark.parametrize(
         "params",
         [
@@ -181,9 +184,9 @@ class TestValidateParams:
         problem.validate_params(dict(params, state=state))
 
     @pytest.mark.parametrize(
-        "state", ["new", "assessment", "analysis", "in_progress", "resolved", "closed"]
+        "state", [NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED]
     )
-    def test_invalid(self, state):
+    def test_missing_short_description(self, state):
         params = dict(
             state=state,
             short_description=None,
@@ -194,6 +197,80 @@ class TestValidateParams:
             cause_notes=None,
             fix_notes=None,
         )
+        with pytest.raises(errors.ServiceNowError, match="short_description"):
+            problem.validate_params(params)
+
+    @pytest.mark.parametrize(
+        "state", [ASSESS, RCA, FIX, RESOLVED, CLOSED]
+    )
+    def test_missing_assigned_to(self, state):
+        params = dict(
+            state=state,
+            short_description="short description",
+            assigned_to=None,
+            resolution_code=None,
+            duplicate_of=None,
+            close_notes=None,
+            cause_notes=None,
+            fix_notes=None,
+        )
+        with pytest.raises(errors.ServiceNowError, match="assigned_to"):
+            problem.validate_params(params)
+
+    @pytest.mark.parametrize(
+        "state", [RESOLVED, CLOSED]
+    )
+    def test_missing_resolution_code(self, state):
+        params = dict(
+            state=state,
+            short_description="short description",
+            assigned_to="some user",
+            resolution_code=None,
+            duplicate_of=None,
+            close_notes=None,
+            cause_notes=None,
+            fix_notes=None,
+        )
+        with pytest.raises(errors.ServiceNowError, match="resolution_code"):
+            problem.validate_params(params)
+
+    @pytest.mark.parametrize(
+        "param", ["cause_notes", "fix_notes"],
+    )
+    def test_in_progress_missing_params(self, param):
+        params = dict(
+            state=FIX,
+            short_description="short",
+            assigned_to="me",
+            resolution_code=None,
+            cause_notes=None,
+            fix_notes=None,
+        )
+        params.update({param: "some notes"})
+        with pytest.raises(errors.ServiceNowError, match="Missing"):
+            problem.validate_params(params)
+
+    @pytest.mark.parametrize(
+        "resolution_code,param",
+        [
+            ("fix_applied", "cause_notes"),
+            ("fix_applied", "fix_notes"),
+            ("risk_accepted", "cause_notes"),
+            ("risk_accepted", "close_notes"),
+            ("canceled", "cause_notes"),
+            ("duplicate", "fix_notes"),
+        ]
+    )
+    def test_resolution_code_missing_params(self, resolution_code, param):
+        params = dict(
+            resolution_code=resolution_code,
+            state=None,
+            cause_notes=None,
+            fix_notes=None,
+            close_notes=None,
+            duplicate_of=None,
+        )
+        params.update({param: "some notes"})
         with pytest.raises(errors.ServiceNowError, match="Missing"):
             problem.validate_params(params)
 
@@ -224,7 +301,7 @@ class TestEnsurePresent:
             ),
         )
         table_client.create_record.return_value = dict(
-            state="101",
+            state=NEW,
             number="PRB0000001",
             short_description="Test problem",
             impact="3",
@@ -290,8 +367,8 @@ class TestEnsurePresent:
             ),
         )
         table_client.get_record.return_value = dict(
-            state="101",
-            problem_state="101",
+            state=NEW,
+            problem_state=NEW,
             number="PRB0000001",
             short_description="Test problem",
             sys_id="1234",
@@ -349,7 +426,7 @@ class TestEnsurePresent:
                 description=None,
                 impact=None,
                 urgency=None,
-                assigned_to=None,
+                assigned_to="123abc",
                 resolution_code=None,
                 fix_notes=None,
                 cause_notes=None,
@@ -362,26 +439,23 @@ class TestEnsurePresent:
         )
         payload_mocker = mocker.patch.object(problem, "build_payload")
         payload_mocker.return_value = dict(
-            state="assess",
-            problem_state="assess",
+            state=ASSESS,
+            problem_state=ASSESS,
             number="PRB0000001",
             short_description="Test problem",
             sys_id="1234",
+            assigned_to="123abc",
         )
         table_client.get_record.return_value = dict(
-            state="101",
-            problem_state="101",
+            state=NEW,
+            problem_state=NEW,
             number="PRB0000001",
             short_description="Test problem",
             sys_id="1234",
+            assigned_to="",
         )
-        table_client.update_record.return_value = dict(
-            state="102",
-            problem_state="102",
-            number="PRB0000001",
-            short_description="Test problem",
-            sys_id="1234",
-        )
+        table_client.update_record.return_value = payload_mocker.return_value
+
         attachment_client.update_records.return_value = []
         attachment_client.list_records.return_value = []
 
@@ -400,6 +474,7 @@ class TestEnsurePresent:
                 short_description="Test problem",
                 attachments=[],
                 sys_id="1234",
+                assigned_to="123abc"
             ),
             dict(
                 before=dict(
@@ -409,6 +484,7 @@ class TestEnsurePresent:
                     short_description="Test problem",
                     attachments=[],
                     sys_id="1234",
+                    assigned_to="",
                 ),
                 after=dict(
                     state="assess",
@@ -417,6 +493,7 @@ class TestEnsurePresent:
                     short_description="Test problem",
                     attachments=[],
                     sys_id="1234",
+                    assigned_to="123abc",
                 ),
             ),
         )
@@ -435,7 +512,7 @@ class TestEnsurePresent:
                 description=None,
                 impact=None,
                 urgency=None,
-                assigned_to=None,
+                assigned_to="123abc",
                 resolution_code=None,
                 fix_notes=None,
                 cause_notes=None,
@@ -448,36 +525,27 @@ class TestEnsurePresent:
         )
         payload_mocker = mocker.patch.object(problem, "build_payload")
         payload_mocker.return_value = dict(
-            state="assess",
-            problem_state="assess",
+            state=ASSESS,
+            problem_state=ASSESS,
             number="PRB0000001",
             short_description="Test problem",
             sys_id="1234",
+            assigned_to="123abc"
         )
         table_client.get_record.return_value = dict(
-            state="101",
-            problem_state="101",
+            state=NEW,
+            problem_state=NEW,
             number="PRB0000001",
             short_description="Test problem",
             sys_id="1234",
+            assigned_to="",
         )
-        table_client.update_record.return_value = dict(
-            state="101",
-            problem_state="101",
-            number="PRB0000001",
-            short_description="Test problem",
-            sys_id="1234",
-        )
+        table_client.update_record.return_value = table_client.get_record.return_value
+
         attachment_client.update_records.return_value = []
         attachment_client.list_records.return_value = []
 
-        problem_client.update_record.return_value = dict(
-            state="102",
-            problem_state="102",
-            number="PRB0000001",
-            short_description="Test problem",
-            sys_id="1234",
-        )
+        problem_client.update_record.return_value = payload_mocker.return_value
 
         result = problem.ensure_present(
             module, problem_client, table_client, attachment_client
@@ -488,11 +556,12 @@ class TestEnsurePresent:
         problem_client.update_record.assert_called_once_with(
             "PRB0000001",
             dict(
-                state="102",
-                problem_state="102",
+                state=ASSESS,
+                problem_state=ASSESS,
                 number="PRB0000001",
                 short_description="Test problem",
                 sys_id="1234",
+                assigned_to="123abc"
             ),
         )
 
@@ -505,6 +574,7 @@ class TestEnsurePresent:
                 short_description="Test problem",
                 attachments=[],
                 sys_id="1234",
+                assigned_to="123abc"
             ),
             dict(
                 before=dict(
@@ -514,6 +584,7 @@ class TestEnsurePresent:
                     short_description="Test problem",
                     attachments=[],
                     sys_id="1234",
+                    assigned_to="",
                 ),
                 after=dict(
                     state="assess",
@@ -522,6 +593,7 @@ class TestEnsurePresent:
                     short_description="Test problem",
                     attachments=[],
                     sys_id="1234",
+                    assigned_to="123abc",
                 ),
             ),
         )
