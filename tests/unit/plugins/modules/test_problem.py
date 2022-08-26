@@ -597,3 +597,84 @@ class TestEnsurePresent:
                 ),
             ),
         )
+
+
+class TestProblemMapping:
+    def test_state_mapping_create_new(
+        self, create_module, table_client, problem_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state="my-new",
+                number=None,
+                sys_id=None,
+                caller=None,
+                short_description="Test problem",
+                description=None,
+                impact=None,
+                urgency=None,
+                assigned_to=None,
+                resolution_code=None,
+                fix_notes=None,
+                cause_notes=None,
+                close_notes=None,
+                duplicate_of=None,
+                attachments=None,
+                other=None,
+                base_api_path="/api/path",
+                problem_mapping=dict(
+                    state={
+                        NEW: "my-new",
+                        ASSESS: "my-assess",
+                        RCA: "rca",
+                        FIX: "fix",
+                        RESOLVED: "my-resolved",
+                        CLOSED: "my-closed",
+                    }
+                )
+            ),
+        )
+
+        table_client.create_record.return_value = dict(
+            state=NEW,
+            sys_id="123",
+            short_description="Test problem",
+            number="PRB0000001",
+        )
+
+        attachment_client.upload_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        result = problem.ensure_present(
+            module, problem_client, table_client, attachment_client
+        )
+
+        sn_payload = dict(
+            state=NEW,
+            short_description="Test problem",
+        )
+        table_client.create_record.assert_called_once_with(
+            "problem", sn_payload, False
+        )
+
+        assert result == (
+            True,
+            dict(
+                state="my-new",
+                number="PRB0000001",
+                short_description="Test problem",
+                attachments=[],
+                sys_id="123",
+            ),
+            dict(
+                before=None,
+                after=dict(
+                    state="my-new",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    attachments=[],
+                    sys_id="123",
+                ),
+            ),
+        )
