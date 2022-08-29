@@ -5,6 +5,7 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from venv import create
 
 __metaclass__ = type
 
@@ -14,8 +15,9 @@ import pytest
 
 from ansible_collections.servicenow.itsm.plugins.modules import problem
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
+from ansible_collections.servicenow.itsm.plugins.module_utils.utils import get_mapper
 from ansible_collections.servicenow.itsm.plugins.module_utils.problem import (
-    NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED
+    NEW, ASSESS, PAYLOAD_FIELDS_MAPPING, RCA, FIX, RESOLVED, CLOSED
 )
 
 pytestmark = pytest.mark.skipif(
@@ -600,41 +602,54 @@ class TestEnsurePresent:
 
 
 class TestProblemMapping:
-    def test_state_mapping_create_new(
+    def create_empty_module_params(self):
+        return dict(
+            instance=dict(host="my.host.name", username="user", password="pass"),
+            state=None,
+            number=None,
+            sys_id=None,
+            caller=None,
+            short_description=None,
+            description=None,
+            impact=None,
+            urgency=None,
+            assigned_to=None,
+            resolution_code=None,
+            fix_notes=None,
+            cause_notes=None,
+            close_notes=None,
+            duplicate_of=None,
+            attachments=None,
+            other=None,
+            base_api_path=None,
+            problem_mapping=None,
+        )
+
+    def get_state_mapping(self):
+        return {
+            NEW: "my-new",
+            ASSESS: "my-assess",
+            RCA: "rca",
+            FIX: "fix",
+            RESOLVED: "my-resolved",
+            CLOSED: "my-closed",
+        }
+
+    def test_create_mapped_problem_state_new(
         self, create_module, table_client, problem_client, attachment_client
     ):
-        module = create_module(
-            params=dict(
-                instance=dict(host="my.host.name", username="user", password="pass"),
+        module_params = self.create_empty_module_params()
+        module_params.update(
+            dict(
                 state="my-new",
-                number=None,
-                sys_id=None,
-                caller=None,
                 short_description="Test problem",
-                description=None,
-                impact=None,
-                urgency=None,
-                assigned_to=None,
-                resolution_code=None,
-                fix_notes=None,
-                cause_notes=None,
-                close_notes=None,
-                duplicate_of=None,
-                attachments=None,
-                other=None,
                 base_api_path="/api/path",
                 problem_mapping=dict(
-                    state={
-                        NEW: "my-new",
-                        ASSESS: "my-assess",
-                        RCA: "rca",
-                        FIX: "fix",
-                        RESOLVED: "my-resolved",
-                        CLOSED: "my-closed",
-                    }
-                )
-            ),
+                    state=self.get_state_mapping(),
+                ),
+            )
         )
+        module = create_module(params=module_params)
 
         table_client.create_record.return_value = dict(
             state=NEW,
@@ -678,3 +693,455 @@ class TestProblemMapping:
                 ),
             ),
         )
+
+    def test_create_mapped_problem_state_assess(
+        self, create_module, table_client, problem_client, attachment_client
+    ):
+        module_params = self.create_empty_module_params()
+        module_params.update(
+            dict(
+                state="my-assess",
+                short_description="Test problem",
+                assigned_to="problem.admin",
+                base_api_path="/api/path",
+                problem_mapping=dict(
+                    state=self.get_state_mapping(),
+                ),
+            )
+        )
+        module = create_module(params=module_params)
+
+        table_client.create_record.return_value = dict(
+            state=ASSESS,
+            sys_id="123",
+            short_description="Test problem",
+            assigned_to="123456",
+            number="PRB0000001",
+        )
+
+        table_client.get_record.side_effect = [
+            {"sys_id": "123456"},
+        ]
+
+        attachment_client.upload_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        result = problem.ensure_present(
+            module, problem_client, table_client, attachment_client
+        )
+
+        table_client.create_record.assert_called_once_with(
+            "problem",
+            dict(
+                state=ASSESS, short_description="Test problem",
+                assigned_to="123456"
+            ),
+            False,
+        )
+
+        assert result == (
+            True,
+            dict(
+                state="my-assess",
+                number="PRB0000001",
+                short_description="Test problem",
+                assigned_to="123456",
+                attachments=[],
+                sys_id="123",
+            ),
+            dict(
+                before=None,
+                after=dict(
+                    state="my-assess",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    assigned_to="123456",
+                    attachments=[],
+                    sys_id="123",
+                ),
+            ),
+        )
+
+    def test_create_mapped_problem_state_rca(
+        self, create_module, table_client, problem_client, attachment_client
+    ):
+        module_params = self.create_empty_module_params()
+        module_params.update(
+            dict(
+                state="rca",
+                short_description="Test problem",
+                assigned_to="problem.admin",
+                base_api_path="/api/path",
+                problem_mapping=dict(
+                    state=self.get_state_mapping(),
+                ),
+            )
+        )
+        module = create_module(params=module_params)
+
+        table_client.create_record.return_value = dict(
+            state=RCA,
+            sys_id="123",
+            short_description="Test problem",
+            assigned_to="123456",
+            number="PRB0000001",
+        )
+
+        table_client.get_record.side_effect = [
+            {"sys_id": "123456"},
+        ]
+
+        attachment_client.upload_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        result = problem.ensure_present(
+            module, problem_client, table_client, attachment_client
+        )
+
+        table_client.create_record.assert_called_once_with(
+            "problem",
+            dict(
+                state=RCA, short_description="Test problem",
+                assigned_to="123456"
+            ),
+            False,
+        )
+
+        assert result == (
+            True,
+            dict(
+                state="rca",
+                number="PRB0000001",
+                short_description="Test problem",
+                assigned_to="123456",
+                attachments=[],
+                sys_id="123",
+            ),
+            dict(
+                before=None,
+                after=dict(
+                    state="rca",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    assigned_to="123456",
+                    attachments=[],
+                    sys_id="123",
+                ),
+            ),
+        )
+
+    def test_create_mapped_problem_state_fix(
+        self, create_module, table_client, problem_client, attachment_client
+    ):
+        module_params = self.create_empty_module_params()
+        module_params.update(
+            dict(
+                state="fix",
+                short_description="Test problem",
+                assigned_to="problem.admin",
+                fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                base_api_path="/api/path",
+                problem_mapping=dict(
+                    state=self.get_state_mapping(),
+                ),
+            )
+        )
+        module = create_module(params=module_params)
+
+        table_client.create_record.return_value = dict(
+            state=FIX,
+            sys_id="123",
+            short_description="Test problem",
+            assigned_to="123456",
+            number="PRB0000001",
+            fix_notes="some fix notes",
+            cause_notes="some cause notes",
+        )
+
+        table_client.get_record.side_effect = [
+            {"sys_id": "123456"},
+        ]
+
+        attachment_client.upload_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        result = problem.ensure_present(
+            module, problem_client, table_client, attachment_client
+        )
+
+        table_client.create_record.assert_called_once_with(
+            "problem",
+            dict(
+                state=FIX, short_description="Test problem",
+                assigned_to="123456", fix_notes="some fix notes",
+                cause_notes="some cause notes",
+            ),
+            False,
+        )
+
+        assert result == (
+            True,
+            dict(
+                state="fix",
+                number="PRB0000001",
+                short_description="Test problem",
+                assigned_to="123456",
+                fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                attachments=[],
+                sys_id="123",
+            ),
+            dict(
+                before=None,
+                after=dict(
+                    state="fix",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    assigned_to="123456",
+                    fix_notes="some fix notes",
+                    cause_notes="some cause notes",
+                    attachments=[],
+                    sys_id="123",
+                ),
+            ),
+        )
+
+    def test_create_mapped_problem_state_resolved(
+        self, create_module, table_client, problem_client, attachment_client
+    ):
+        module_params = self.create_empty_module_params()
+        module_params.update(
+            dict(
+                state="my-resolved",
+                short_description="Test problem",
+                assigned_to="problem.admin",
+                fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                resolution_code="fix_applied",
+                base_api_path="/api/path",
+                problem_mapping=dict(
+                    state=self.get_state_mapping(),
+                ),
+            )
+        )
+        module = create_module(params=module_params)
+
+        table_client.create_record.return_value = dict(
+            state=RESOLVED,
+            sys_id="123",
+            short_description="Test problem",
+            assigned_to="123456",
+            number="PRB0000001",
+            fix_notes="some fix notes",
+            cause_notes="some cause notes",
+            resolution_code="fix_applied",
+        )
+
+        table_client.get_record.side_effect = [
+            {"sys_id": "123456"},
+        ]
+
+        attachment_client.upload_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        result = problem.ensure_present(
+            module, problem_client, table_client, attachment_client
+        )
+
+        table_client.create_record.assert_called_once_with(
+            "problem",
+            dict(
+                state=RESOLVED, short_description="Test problem",
+                assigned_to="123456", fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                resolution_code="fix_applied",
+            ),
+            False,
+        )
+
+        assert result == (
+            True,
+            dict(
+                state="my-resolved",
+                number="PRB0000001",
+                short_description="Test problem",
+                assigned_to="123456",
+                fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                resolution_code="fix_applied",
+                attachments=[],
+                sys_id="123",
+            ),
+            dict(
+                before=None,
+                after=dict(
+                    state="my-resolved",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    assigned_to="123456",
+                    fix_notes="some fix notes",
+                    cause_notes="some cause notes",
+                    resolution_code="fix_applied",
+                    attachments=[],
+                    sys_id="123",
+                ),
+            ),
+        )
+
+    def test_create_mapped_problem_state_closed(
+        self, create_module, table_client, problem_client, attachment_client
+    ):
+        module_params = self.create_empty_module_params()
+        module_params.update(
+            dict(
+                state="my-closed",
+                short_description="Test problem",
+                assigned_to="problem.admin",
+                fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                resolution_code="fix_applied",
+                base_api_path="/api/path",
+                problem_mapping=dict(
+                    state=self.get_state_mapping(),
+                ),
+            )
+        )
+        module = create_module(params=module_params)
+
+        table_client.create_record.return_value = dict(
+            state=CLOSED,
+            sys_id="123",
+            short_description="Test problem",
+            assigned_to="123456",
+            number="PRB0000001",
+            fix_notes="some fix notes",
+            cause_notes="some cause notes",
+            resolution_code="fix_applied",
+        )
+
+        table_client.get_record.side_effect = [
+            {"sys_id": "123456"},
+        ]
+
+        attachment_client.upload_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        result = problem.ensure_present(
+            module, problem_client, table_client, attachment_client
+        )
+
+        table_client.create_record.assert_called_once_with(
+            "problem",
+            dict(
+                state=CLOSED, short_description="Test problem",
+                assigned_to="123456", fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                resolution_code="fix_applied",
+            ),
+            False,
+        )
+
+        assert result == (
+            True,
+            dict(
+                state="my-closed",
+                number="PRB0000001",
+                short_description="Test problem",
+                assigned_to="123456",
+                fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                resolution_code="fix_applied",
+                attachments=[],
+                sys_id="123",
+            ),
+            dict(
+                before=None,
+                after=dict(
+                    state="my-closed",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    assigned_to="123456",
+                    fix_notes="some fix notes",
+                    cause_notes="some cause notes",
+                    resolution_code="fix_applied",
+                    attachments=[],
+                    sys_id="123",
+                ),
+            ),
+        )
+
+    def test_create_mapped_problem_state_non_mapped(self, create_module):
+        module_params = self.create_empty_module_params()
+        module_params.update(
+            dict(
+                state="closed",
+                short_description="Test problem",
+                assigned_to="problem.admin",
+                fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                resolution_code="fix_applied",
+                base_api_path="/api/path",
+                problem_mapping=dict(
+                    state=self.get_state_mapping(),
+                ),
+            )
+        )
+        module = create_module(params=module_params)
+
+        with pytest.raises(errors.ServiceNowError, match="does not use a value from the mapping"):
+            problem.ensure_present(module, None, None, None)
+
+    @pytest.mark.parametrize(
+        "mapped_param,param_value",
+        [
+            ("state", "my-new"),
+            ("state", "my-assess"),
+            ("state", "rca"),
+            ("state", "fix"),
+            ("state", "my-resolved"),
+            ("state", "my-closed"),
+            ("state", "absent"),
+
+            ("problem_state", "my-new"),
+            ("problem_state", "my-assess"),
+            ("problem_state", "rca"),
+            ("problem_state", "fix"),
+            ("problem_state", "my-resolved"),
+            ("problem_state", "my-closed"),
+
+            ("urgency", "one"),
+            ("urgency", "two"),
+            ("urgency", "three"),
+
+            ("impact", "111"),
+            ("impact", "222"),
+            ("impact", "333"),
+        ]
+    )
+    def test_validate_mapping(self, create_module, mapped_param, param_value):
+        all_mappings = dict(
+            state=self.get_state_mapping(),
+            problem_state=self.get_state_mapping(),
+            urgency={
+                "1": "one",
+                "2": "two",
+                "3": "three",
+            },
+            impact={
+                "1": "111",
+                "2": "222",
+                "3": "333",
+            },
+        )
+        problem_mapping = {mapped_param: all_mappings[mapped_param]}
+
+        module_params = self.create_empty_module_params()
+        module_params.update(problem_mapping=problem_mapping)
+        module_params.update({mapped_param: param_value})
+
+        module = create_module(params=module_params)
+
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
+
+        problem.validate_mapping(module_params, mapper)
