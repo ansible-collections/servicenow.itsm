@@ -434,21 +434,21 @@ def validate_mapping(module_params, mapper):
         impact=("1", "2", "3"),
         urgency=("1", "2", "3"),
     )
-    for key, values in accepted_values.items():
-        if key in problem_mapping and key in module_params:
-            value = module_params[key]
-            sn_value = mapper.to_snow({key: value})
-            if key in sn_value and sn_value[key] not in values:
+    for param, values in accepted_values.items():
+        if param in problem_mapping and param in module_params:
+            value = module_params[param]
+            sn_value = mapper.to_snow({param: value})
+            if sn_value.get(param) not in values:
                 raise errors.ServiceNowError(
                     "Option {0} does not use a value from the mapping: {1}".format(
-                        key,
+                        param,
                         value
                     )
                 )
 
 
 def ensure_present(module, problem_client, table_client, attachment_client):
-    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
     validate_mapping(module.params, mapper)
     query = utils.filter_dict(module.params, "sys_id", "number")
     sn_params = mapper.to_snow(module.params)
