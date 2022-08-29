@@ -118,20 +118,6 @@ record:
               sys_id: ""
               type: Depends on::Used by
               type_id: 1a9cb166f1571100a92eb60da2bce5c5
-    relations_delete_api_result:
-        description: return message from "add-rel" API call
-        returned: success
-        type: dict
-        sample:
-            - message: Delete relationship successfully."
-            - status: OK
-    relations_create_api_result:
-        description: return message from "delete-rel" API call
-        returned: success
-        type: dict
-        sample:
-            - message: Delete relationship successfully."
-            - status: OK
 """
 
 import json
@@ -160,6 +146,10 @@ def get_relationship_name_id(client, relationship_name):
         name = rel["name"]
         if name == relationship_name:
             return rel["sys_id"]
+    if relationship_id is None:
+        raise errors.ServiceNowError(
+            "Error getting relationship id: {0}".format(relationship_name)
+        )
     return relationship_id
 
 
@@ -224,30 +214,42 @@ def check_relationship_exist(client, relationship):
         raise errors.ServiceNowError("Error, cmdb_rel_ci query TOO MANY ROWS")
 
 
-def ensure_absent(result, snow_client, relations):
+def ensure_absent(snow_client, relations):
     out = delete_relationship(snow_client, relations)
-    res = json.loads(out["message"])
-    # print(res)
-    result["relations_delete_api_result"] = res
-    if res["status"] != "OK":
-        result["failed"] = True
-        result["msg"] = "Error removing relationship: {0}".format(res["message"])
+    api_res = json.loads(out["message"])
+    failed = False
+    if api_res["status"] != "OK":
+        failed = True
+        msg = "Error removing relationship: {0}".format(api_res["message"])
     else:
-        result["relations_deleted"] = len(relations)
-        result["msg"] = res["message"]
+        msg = api_res["message"]
+    return failed, msg
 
 
-def ensure_present(result, snow_client, relations):
+def ensure_present(snow_client, relations):
     out = create_relationship(snow_client, relations)
-    res = json.loads(out["message"])
-    # print(res)
-    result["relations_create_api_result"] = res
-    if res["status"] != "OK":
-        result["failed"] = True
-        result["msg"] = "Error creating relationship: {0}".format(res["message"])
+    api_res = json.loads(out["message"])
+    failed = False
+    if api_res["status"] != "OK":
+        failed = True
+        msg = "Error creating relationship: {0}".format(api_res["message"])
     else:
-        result["relations_created"] = len(relations)
-        result["msg"] = res["message"]
+        msg = api_res["message"]
+    return failed, msg
+
+
+def get_parent_sys_id(parent_ci_name, parent_ci_class_name, table_client):
+    parent = table_client.list_records(
+        parent_ci_class_name,
+        dict({"name": parent_ci_name, "sysparm_fields": "name,sys_id"}),
+    )
+    if len(parent) != 1:
+        raise errors.ServiceNowError(
+            "Error getting parent id: got {0} resuts:  for CI {1}".format(
+                len(parent), parent_ci_name
+            )
+        )
+    return parent[0]["sys_id"]
 
 
 def run(module, snow_client, table_client):
@@ -260,32 +262,20 @@ def run(module, snow_client, table_client):
     relationship_type = module.params["relationship_type"]
     state = module.params["state"]
 
-    result = dict(
-        changed=False,
-        relations_requested_changes=len(child_ci_name_list),
-        relations_created=0,
-        relations_deleted=0,
-    )
+    changed = False
+    failed = False
+    relations_created = 0
+    relations_deleted = 0
 
     # Get relationship type id
 
     id = get_relationship_name_id(snow_client, relationship_name)
-    if not id:
-        raise Exception("Error getting relationship id: {0}".format(relationship_name))
 
     # Get parent sys_id
 
-    parent = table_client.list_records(
-        parent_ci_class_name,
-        dict({"name": parent_ci_name, "sysparm_fields": "name,sys_id"}),
+    parent_sys_id = get_parent_sys_id(
+        parent_ci_name, parent_ci_class_name, table_client
     )
-    if len(parent) != 1:
-        raise Exception(
-            "Error getting parent id: got {0} resuts:  for CI {1}".format(
-                len(parent), parent_ci_name
-            )
-        )
-    parent_sys_id = parent[0]["sys_id"]
 
     # Get children sys_id's
 
@@ -324,22 +314,33 @@ def run(module, snow_client, table_client):
             # check if relationship already exists when absent
             if exist:
                 relations.append(relation)
-    result["relations_changed_detail"] = relations
 
     if len(relations) > 0:
-        result["changed"] = True
+        changed = True
         if not module.check_mode:
             if state == "present":
-                ensure_present(result, snow_client, relations)
+                failed, msg = ensure_present(snow_client, relations)
+                if not failed:
+                    relations_created = len(relations)
             else:  # absent
-                ensure_absent(result, snow_client, relations)
+                failed, msg = ensure_absent(snow_client, relations)
+                if not failed:
+                    relations_deleted = len(relations)
     else:
         if state == "present":
-            result["msg"] = "No new relationship to create"
+            msg = "No new relationship to create"
         else:
-            result["msg"] = "No relationship to delete"
+            msg = "No relationship to delete"
 
-    return result
+    detailed_info = {
+        "relations_requested_changes": len(child_ci_name_list),
+        "relations_changed_detail": relations,
+        "relations_created": relations_created,
+        "relations_deleted": relations_deleted,
+        "msg": msg,
+    }
+
+    return changed, failed, detailed_info
 
 
 def main():
@@ -366,8 +367,8 @@ def main():
     try:
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
-        result = run(module, snow_client, table_client)
-        module.exit_json(**result)
+        ch, fail, info = run(module, snow_client, table_client)
+        module.exit_json(changed=ch, failed=fail, detailed_info=info)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))
 
