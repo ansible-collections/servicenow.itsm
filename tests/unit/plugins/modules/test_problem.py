@@ -1167,7 +1167,7 @@ class TestProblemMapping:
 
         module = create_module(params=module_params)
 
-        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
 
         problem.validate_mapping(module_params, mapper)
 
