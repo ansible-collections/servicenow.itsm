@@ -424,8 +424,32 @@ def validate_params(sn_params, sn_problem=None):
         )
 
 
+def validate_mapping(module_params, mapper):
+    problem_mapping = module_params.get("problem_mapping")
+    if not problem_mapping:
+        return
+    accepted_values = dict(
+        state=(NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED, "absent"),
+        problem_state=(NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED),
+        impact=("1", "2", "3"),
+        urgency=("1", "2", "3"),
+    )
+    for key, values in accepted_values.items():
+        if key in problem_mapping and key in module_params:
+            value = module_params[key]
+            sn_value = mapper.to_snow({key: value})
+            if key in sn_value and sn_value[key] not in values:
+                raise errors.ServiceNowError(
+                    "Option {0} does not use a value from the mapping: {1}".format(
+                        key,
+                        value
+                    )
+                )
+
+
 def ensure_present(module, problem_client, table_client, attachment_client):
     mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
+    validate_mapping(module.params, mapper)
     query = utils.filter_dict(module.params, "sys_id", "number")
     sn_params = mapper.to_snow(module.params)
     sn_payload = build_payload(sn_params, table_client)
