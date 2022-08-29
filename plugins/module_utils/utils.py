@@ -28,7 +28,7 @@ def is_superset(superset, candidate):
     return True
 
 
-def get_choices(module, mapping_field, default_payload_fields_mapping):
+def get_choices(module, mapping_field, default_payload_fields_mapping, implicit=False):
     if mapping_field not in module.params:
         return default_payload_fields_mapping
     if module.params[mapping_field] is None:
@@ -38,15 +38,18 @@ def get_choices(module, mapping_field, default_payload_fields_mapping):
     clone = {}
     for key, item in default_payload_fields_mapping.items():
         override = overrides.get(key)
-        clone[key] = override if override else item
+        if implicit and override:
+            clone[key] = dict(item or dict(), **override)
+        else:
+            clone[key] = override or item
 
     return clone
 
 
 def get_mapper(
-    module, mapping_field, default_payload_fields_mapping, sysparm_display_value="false"
+    module, mapping_field, default_payload_fields_mapping, sysparm_display_value="false", implicit=False
 ):
-    choices = get_choices(module, mapping_field, default_payload_fields_mapping)
+    choices = get_choices(module, mapping_field, default_payload_fields_mapping, implicit=implicit)
     mapper = PayloadMapper(choices, module.warn, sysparm_display_value)
     return mapper
 
