@@ -1089,7 +1089,32 @@ class TestProblemMapping:
         )
         module = create_module(params=module_params)
 
-        with pytest.raises(errors.ServiceNowError, match="does not use a value from the mapping"):
+        with pytest.raises(
+            errors.ServiceNowError, match="does not use a value from the mapping"
+        ):
+            problem.ensure_present(module, None, None, None)
+
+    def test_create_mapped_problem_state_partially_non_mapped(self, create_module):
+        # FIXME: should not raise an exception!
+        module_params = self.create_empty_module_params()
+        module_params.update(
+            dict(
+                state="assess",  # implicitly mapped
+                short_description="Test problem",
+                assigned_to="problem.admin",
+                base_api_path="/api/path",
+                problem_mapping=dict(
+                    state={
+                        NEW: "my-new"
+                    },
+                ),
+            )
+        )
+        module = create_module(params=module_params)
+
+        with pytest.raises(
+            errors.ServiceNowError, match="does not use a value from the mapping"
+        ):
             problem.ensure_present(module, None, None, None)
 
     @pytest.mark.parametrize(
@@ -1143,5 +1168,55 @@ class TestProblemMapping:
         module = create_module(params=module_params)
 
         mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
+
+        problem.validate_mapping(module_params, mapper)
+
+    @pytest.mark.parametrize(
+        "mapped_param,param_value",
+        [
+            ("state", "explicitly-mapped-new"),
+            ("state", "assess"),
+            ("state", "root_cause_analysis"),
+            ("state", "fix_in_progress"),
+            ("state", "resolved"),
+            ("state", "closed"),
+            ("state", "absent"),
+
+            ("problem_state", "new"),
+            ("problem_state", "explicitly-mapped-assess"),
+            ("problem_state", "root_cause_analysis"),
+            ("problem_state", "fix_in_progress"),
+            ("problem_state", "resolved"),
+            ("problem_state", "closed"),
+
+            ("urgency", "not_too_urgent"),
+            ("urgency", "medium"),
+            ("urgency", "high"),
+
+            ("impact", "low"),
+            ("impact", "medium"),
+            ("impact", "highly_impacted"),
+        ]
+    )
+    def test_validate_mapping_implicit(self, create_module, mapped_param, param_value):
+        all_mappings = dict(
+            state={NEW: "explicitly-mapped-new"},
+            problem_state={ASSESS: "explicitly-mapped-assess"},
+            urgency={
+                "3": "not_too_urgent",
+            },
+            impact={
+                "1": "highly_impacted",
+            },
+        )
+        problem_mapping = {mapped_param: all_mappings[mapped_param]}
+
+        module_params = self.create_empty_module_params()
+        module_params.update(problem_mapping=problem_mapping)
+        module_params.update({mapped_param: param_value})
+
+        module = create_module(params=module_params)
+
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
 
         problem.validate_mapping(module_params, mapper)
