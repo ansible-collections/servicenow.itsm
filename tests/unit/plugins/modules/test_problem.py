@@ -1219,6 +1219,7 @@ class TestProblemMapping:
             ("state", "my-resolved"),
             ("state", "my-closed"),
             ("state", "absent"),
+            ("state", None),
 
             ("problem_state", "my-new"),
             ("problem_state", "my-assess"),
@@ -1226,14 +1227,17 @@ class TestProblemMapping:
             ("problem_state", "fix"),
             ("problem_state", "my-resolved"),
             ("problem_state", "my-closed"),
+            ("problem_state", None),
 
             ("urgency", "one"),
             ("urgency", "two"),
             ("urgency", "three"),
+            ("urgency", None),
 
             ("impact", "111"),
             ("impact", "222"),
             ("impact", "333"),
+            ("impact", None),
         ]
     )
     def test_validate_mapping(self, create_module, mapped_param, param_value):
@@ -1273,6 +1277,7 @@ class TestProblemMapping:
             ("state", "resolved"),
             ("state", "closed"),
             ("state", "absent"),
+            ("state", None),
 
             ("problem_state", "new"),
             ("problem_state", "explicitly-mapped-assess"),
@@ -1280,14 +1285,17 @@ class TestProblemMapping:
             ("problem_state", "fix_in_progress"),
             ("problem_state", "resolved"),
             ("problem_state", "closed"),
+            ("problem_state", None),
 
             ("urgency", "not_too_urgent"),
             ("urgency", "medium"),
             ("urgency", "high"),
+            ("urgency", None),
 
             ("impact", "low"),
             ("impact", "medium"),
             ("impact", "highly_impacted"),
+            ("impact", None),
         ]
     )
     def test_validate_mapping_implicit(self, create_module, mapped_param, param_value):
