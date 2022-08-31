@@ -343,7 +343,7 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client, attachment_client):
-    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
     query = utils.filter_dict(module.params, "sys_id", "number")
     problem = table_client.get_record("problem", query)
 
@@ -429,10 +429,10 @@ def validate_mapping(module_params, mapper):
     if not problem_mapping:
         return
     accepted_values = dict(
-        state=(NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED, "absent"),
-        problem_state=(NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED),
-        impact=("1", "2", "3"),
-        urgency=("1", "2", "3"),
+        state=(NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED, "absent", None),
+        problem_state=(NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED, None),
+        impact=("1", "2", "3", None),
+        urgency=("1", "2", "3", None),
     )
     for param, values in accepted_values.items():
         if param in problem_mapping and param in module_params:
