@@ -380,7 +380,7 @@ def build_payload(sn_params, table_client):
 def validate_params(sn_params, sn_problem=None):
     # Validation is compliant with the data policies described at
     # https://community.servicenow.com/sys_attachment_java.do?sys_id=6f37cbf0dbb87708fece0b55ca961902
-    # If we do not enforce this, the user gets 403 on invalid input.
+    # If we do not enforce this, the server refuses to advance problem state and to update supplementary fields.
     state = sn_params["state"]
     missing = []
     if state in (NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED):
