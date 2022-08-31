@@ -1,0 +1,8 @@
+minor_changes:
+- module_utils/problem.py - Added problem client for requesting problem state updates from I(API for Red Hat Ansible Automation Platform Certified Content Collection) Scripted REST API Service.
+- module_utils/util.py - Added optional Boolean parameter C(implicit) to C(get_mapper) function to provide default values for missing keys in the mapping.
+- modules/problem.py - Added optional module parameter C(base_api_path) to control the URI prefix of the endpoint exposed by I(API for Red Hat Ansible Automation Platform Certified Content Collection) Scripted REST API Service.
+- modules/problem.py - Added module parameters validation to match the mapping specification.
+
+bugfixes:
+- modules/problem.py - Uses I(API for Red Hat Ansible Automation Platform Certified Content Collection) Scripted REST API Service for transitioning problem state in case Table API fails.
