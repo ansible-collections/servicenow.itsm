@@ -94,13 +94,16 @@ class TestBuildPayload:
             {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
         ]
 
-        result = problem.build_payload(module.params, table_client)
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
+        sn_params = mapper.to_snow(module.params)
+
+        result = problem.build_payload(sn_params, table_client)
 
         assert result["assigned_to"] == "681ccaf9c0a8016400b98a06818d57c7"
-        assert result["state"] == "closed"
+        assert result["state"] == CLOSED
         assert result["short_description"] == "Test problem"
-        assert result["impact"] == "low"
-        assert result["urgency"] == "low"
+        assert result["impact"] == "3"
+        assert result["urgency"] == "3"
         assert result["resolution_code"] == "duplicate"
         assert result["duplicate_of"] == "6816f79cc0a8016401c5a33be04be441"
 
@@ -123,13 +126,60 @@ class TestBuildPayload:
             ),
         )
 
-        result = problem.build_payload(module.params, table_client)
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
+        sn_params = mapper.to_snow(module.params)
+
+        result = problem.build_payload(sn_params, table_client)
 
         assert "problem_state" not in result
         assert result["short_description"] == "Test problem"
-        assert result["impact"] == "low"
-        assert result["urgency"] == "low"
+        assert result["impact"] == "3"
+        assert result["urgency"] == "3"
         assert result["user_input"] == "notes"
+
+    def test_build_payload_with_mapping(self, create_module, table_client):
+        module = create_module(
+            params=dict(
+                instance=dict(host="my.host.name", username="user", password="pass"),
+                state="my-closed",
+                short_description="Test problem",
+                description=None,
+                impact="lowest",
+                urgency="low",
+                assigned_to="some user",
+                resolution_code="duplicate",
+                fix_notes=None,
+                cause_notes=None,
+                close_notes=None,
+                duplicate_of="PRB0000010",
+                other=None,
+                problem_mapping=dict(
+                    state={
+                        CLOSED: "my-closed",
+                    },
+                    impact={
+                        "3": "lowest",
+                    }
+                ),
+            ),
+        )
+        table_client.get_record.side_effect = [
+            {"sys_id": "681ccaf9c0a8016400b98a06818d57c7"},
+            {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
+        ]
+
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
+        sn_params = mapper.to_snow(module.params)
+
+        result = problem.build_payload(sn_params, table_client)
+
+        assert result["assigned_to"] == "681ccaf9c0a8016400b98a06818d57c7"
+        assert result["state"] == CLOSED
+        assert result["short_description"] == "Test problem"
+        assert result["impact"] == "3"
+        assert result["urgency"] == "3"
+        assert result["resolution_code"] == "duplicate"
+        assert result["duplicate_of"] == "6816f79cc0a8016401c5a33be04be441"
 
 
 class TestValidateParams:
@@ -1705,7 +1755,6 @@ class TestProblemMapping:
         )
 
     def test_updated_mapped_problem_state_assess(
-        # FIXME: side effect not going right
         self, create_module, table_client, problem_client, attachment_client
     ):
         module_params = self.create_empty_module_params()
@@ -1714,7 +1763,6 @@ class TestProblemMapping:
                 number="PRB0000001",
                 state="my-assess",
                 assigned_to="problem.manager",
-                short_description="Test problem",
                 base_api_path="/api/path",
                 problem_mapping=dict(
                     state=self.get_state_mapping(),
@@ -1730,6 +1778,7 @@ class TestProblemMapping:
                 sys_id="123",
                 short_description="Test problem",
                 number="PRB0000001",
+                assigned_to="",
             ),
         ]
 
@@ -1746,12 +1795,6 @@ class TestProblemMapping:
 
         result = problem.ensure_present(
             module, problem_client, table_client, attachment_client
-        )
-
-        table_client.get_record.assert_called_once_with(
-            "problem",
-            dict(number="PRB0000001"),
-            must_exist=True,
         )
 
         expected = dict(
@@ -1773,12 +1816,13 @@ class TestProblemMapping:
                     short_description="Test problem",
                     attachments=[],
                     sys_id="123",
+                    assigned_to="",
                 ),
                 after=expected,
             ),
         )
 
-    def test_no_change_mapped_problem_state_rca(
+    def test_updated_mapped_problem_state_rca(
         self, create_module, table_client, problem_client, attachment_client
     ):
         module_params = self.create_empty_module_params()
@@ -1786,60 +1830,65 @@ class TestProblemMapping:
             dict(
                 number="PRB0000001",
                 state="rca",
-                short_description="Test problem",
                 base_api_path="/api/path",
-                urgency="high",
-                impact="normal",
                 problem_mapping=dict(
                     state=self.get_state_mapping(),
-                    urgency={"3": "lowest"},
-                    impact={"2": "normal"},
                 ),
             )
         )
         module = create_module(params=module_params)
 
-        table_client.get_record.return_value = dict(
-            state=RCA,
-            sys_id="123",
-            urgency="1",
-            impact="2",
-            short_description="Test problem",
+        table_client.get_record.side_effect = [
+            dict(
+                state=ASSESS,
+                sys_id="123",
+                short_description="Test problem",
+                number="PRB0000001",
+                assigned_to="abc123",
+            ),
+        ]
+
+        table_client.update_record.return_value = dict(
             number="PRB0000001",
+            state=RCA,
+            short_description="Test problem",
+            assigned_to="abc123",
+            sys_id="123",
         )
 
         attachment_client.list_records.return_value = []
+        attachment_client.update_records.return_value = []
 
         result = problem.ensure_present(
             module, problem_client, table_client, attachment_client
-        )
-
-        table_client.get_record.assert_called_once_with(
-            "problem",
-            dict(number="PRB0000001"),
-            must_exist=True,
         )
 
         expected = dict(
             state="rca",
             number="PRB0000001",
             short_description="Test problem",
-            urgency="high",
-            impact="normal",
+            assigned_to="abc123",
             attachments=[],
             sys_id="123",
         )
 
         assert result == (
-            False,
+            True,
             expected,
             dict(
-                before=expected,
+                before=dict(
+                    state="my-assess",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    attachments=[],
+                    sys_id="123",
+                    assigned_to="abc123",
+                ),
                 after=expected,
             ),
         )
 
-    def test_no_change_mapped_problem_state_fix(
+    def test_updated_mapped_problem_state_fix(
         self, create_module, table_client, problem_client, attachment_client
     ):
         module_params = self.create_empty_module_params()
@@ -1847,10 +1896,9 @@ class TestProblemMapping:
             dict(
                 number="PRB0000001",
                 state="fix",
-                short_description="Test problem",
-                base_api_path="/api/path",
                 fix_notes="some fix notes",
                 cause_notes="some cause notes",
+                base_api_path="/api/path",
                 problem_mapping=dict(
                     state=self.get_state_mapping(),
                 ),
@@ -1858,47 +1906,65 @@ class TestProblemMapping:
         )
         module = create_module(params=module_params)
 
-        table_client.get_record.return_value = dict(
+        table_client.get_record.side_effect = [
+            dict(
+                state=RCA,
+                sys_id="123",
+                short_description="Test problem",
+                number="PRB0000001",
+                assigned_to="abc123",
+                fix_notes="",
+                cause_notes="",
+            ),
+        ]
+
+        table_client.update_record.return_value = dict(
+            number="PRB0000001",
             state=FIX,
+            short_description="Test problem",
+            assigned_to="abc123",
             sys_id="123",
             fix_notes="some fix notes",
             cause_notes="some cause notes",
-            short_description="Test problem",
-            number="PRB0000001",
         )
 
         attachment_client.list_records.return_value = []
+        attachment_client.update_records.return_value = []
 
         result = problem.ensure_present(
             module, problem_client, table_client, attachment_client
-        )
-
-        table_client.get_record.assert_called_once_with(
-            "problem",
-            dict(number="PRB0000001"),
-            must_exist=True,
         )
 
         expected = dict(
             state="fix",
             number="PRB0000001",
             short_description="Test problem",
-            fix_notes="some fix notes",
-            cause_notes="some cause notes",
+            assigned_to="abc123",
             attachments=[],
             sys_id="123",
+            fix_notes="some fix notes",
+            cause_notes="some cause notes",
         )
 
         assert result == (
-            False,
+            True,
             expected,
             dict(
-                before=expected,
+                before=dict(
+                    state="rca",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    attachments=[],
+                    sys_id="123",
+                    assigned_to="abc123",
+                    fix_notes="",
+                    cause_notes="",
+                ),
                 after=expected,
             ),
         )
 
-    def test_no_change_mapped_problem_state_resolved(
+    def test_updated_mapped_problem_state_resolved(
         self, create_module, table_client, problem_client, attachment_client
     ):
         module_params = self.create_empty_module_params()
@@ -1906,11 +1972,8 @@ class TestProblemMapping:
             dict(
                 number="PRB0000001",
                 state="my-resolved",
-                short_description="Test problem",
-                base_api_path="/api/path",
-                fix_notes="some fix notes",
-                cause_notes="some cause notes",
                 resolution_code="fix_applied",
+                base_api_path="/api/path",
                 problem_mapping=dict(
                     state=self.get_state_mapping(),
                 ),
@@ -1918,49 +1981,69 @@ class TestProblemMapping:
         )
         module = create_module(params=module_params)
 
-        table_client.get_record.return_value = dict(
+        table_client.get_record.side_effect = [
+            dict(
+                state=FIX,
+                sys_id="123",
+                short_description="Test problem",
+                number="PRB0000001",
+                assigned_to="abc123",
+                fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                resolution_code="",
+            ),
+        ]
+
+        table_client.update_record.return_value = dict(
+            number="PRB0000001",
             state=RESOLVED,
+            short_description="Test problem",
+            assigned_to="abc123",
             sys_id="123",
             fix_notes="some fix notes",
             cause_notes="some cause notes",
-            short_description="Test problem",
-            number="PRB0000001",
             resolution_code="fix_applied",
         )
 
         attachment_client.list_records.return_value = []
+        attachment_client.update_records.return_value = []
 
         result = problem.ensure_present(
             module, problem_client, table_client, attachment_client
-        )
-
-        table_client.get_record.assert_called_once_with(
-            "problem",
-            dict(number="PRB0000001"),
-            must_exist=True,
         )
 
         expected = dict(
             state="my-resolved",
             number="PRB0000001",
             short_description="Test problem",
+            assigned_to="abc123",
+            attachments=[],
+            sys_id="123",
             fix_notes="some fix notes",
             cause_notes="some cause notes",
             resolution_code="fix_applied",
-            attachments=[],
-            sys_id="123",
         )
 
         assert result == (
-            False,
+            True,
             expected,
             dict(
-                before=expected,
+                before=dict(
+                    state="fix",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    attachments=[],
+                    sys_id="123",
+                    assigned_to="abc123",
+                    fix_notes="some fix notes",
+                    cause_notes="some cause notes",
+                    resolution_code=""
+                ),
                 after=expected,
             ),
         )
 
-    def test_no_change_mapped_problem_state_closed(
+    def test_updated_mapped_problem_state_closed(
         self, create_module, table_client, problem_client, attachment_client
     ):
         module_params = self.create_empty_module_params()
@@ -1968,11 +2051,7 @@ class TestProblemMapping:
             dict(
                 number="PRB0000001",
                 state="my-closed",
-                short_description="Test problem",
                 base_api_path="/api/path",
-                fix_notes="some fix notes",
-                cause_notes="some cause notes",
-                resolution_code="fix_applied",
                 problem_mapping=dict(
                     state=self.get_state_mapping(),
                 ),
@@ -1980,44 +2059,64 @@ class TestProblemMapping:
         )
         module = create_module(params=module_params)
 
-        table_client.get_record.return_value = dict(
+        table_client.get_record.side_effect = [
+            dict(
+                state=RESOLVED,
+                sys_id="123",
+                short_description="Test problem",
+                number="PRB0000001",
+                assigned_to="abc123",
+                fix_notes="some fix notes",
+                cause_notes="some cause notes",
+                resolution_code="fix_applied",
+            ),
+        ]
+
+        table_client.update_record.return_value = dict(
+            number="PRB0000001",
             state=CLOSED,
+            short_description="Test problem",
+            assigned_to="abc123",
             sys_id="123",
             fix_notes="some fix notes",
             cause_notes="some cause notes",
-            short_description="Test problem",
-            number="PRB0000001",
             resolution_code="fix_applied",
         )
 
         attachment_client.list_records.return_value = []
+        attachment_client.update_records.return_value = []
 
         result = problem.ensure_present(
             module, problem_client, table_client, attachment_client
-        )
-
-        table_client.get_record.assert_called_once_with(
-            "problem",
-            dict(number="PRB0000001"),
-            must_exist=True,
         )
 
         expected = dict(
             state="my-closed",
             number="PRB0000001",
             short_description="Test problem",
+            assigned_to="abc123",
+            attachments=[],
+            sys_id="123",
             fix_notes="some fix notes",
             cause_notes="some cause notes",
             resolution_code="fix_applied",
-            attachments=[],
-            sys_id="123",
         )
 
         assert result == (
-            False,
+            True,
             expected,
             dict(
-                before=expected,
+                before=dict(
+                    state="my-resolved",
+                    number="PRB0000001",
+                    short_description="Test problem",
+                    attachments=[],
+                    sys_id="123",
+                    assigned_to="abc123",
+                    fix_notes="some fix notes",
+                    cause_notes="some cause notes",
+                    resolution_code="fix_applied",
+                ),
                 after=expected,
             ),
         )
