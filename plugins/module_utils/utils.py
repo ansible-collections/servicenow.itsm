@@ -47,9 +47,15 @@ def get_choices(module, mapping_field, default_payload_fields_mapping, implicit=
 
 
 def get_mapper(
-    module, mapping_field, default_payload_fields_mapping, sysparm_display_value="false", implicit=False
+    module,
+    mapping_field,
+    default_payload_fields_mapping,
+    sysparm_display_value="false",
+    implicit=False,
 ):
-    choices = get_choices(module, mapping_field, default_payload_fields_mapping, implicit=implicit)
+    choices = get_choices(
+        module, mapping_field, default_payload_fields_mapping, implicit=implicit
+    )
     mapper = PayloadMapper(choices, module.warn, sysparm_display_value)
     return mapper
 

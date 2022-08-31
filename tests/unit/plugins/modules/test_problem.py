@@ -5,7 +5,6 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-from venv import create
 
 __metaclass__ = type
 
@@ -17,7 +16,13 @@ from ansible_collections.servicenow.itsm.plugins.modules import problem
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
 from ansible_collections.servicenow.itsm.plugins.module_utils.utils import get_mapper
 from ansible_collections.servicenow.itsm.plugins.module_utils.problem import (
-    NEW, ASSESS, PAYLOAD_FIELDS_MAPPING, RCA, FIX, RESOLVED, CLOSED
+    NEW,
+    ASSESS,
+    PAYLOAD_FIELDS_MAPPING,
+    RCA,
+    FIX,
+    RESOLVED,
+    CLOSED,
 )
 
 pytestmark = pytest.mark.skipif(
@@ -94,7 +99,9 @@ class TestBuildPayload:
             {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
         ]
 
-        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
+        mapper = get_mapper(
+            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
+        )
         sn_params = mapper.to_snow(module.params)
 
         result = problem.build_payload(sn_params, table_client)
@@ -126,7 +133,9 @@ class TestBuildPayload:
             ),
         )
 
-        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
+        mapper = get_mapper(
+            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
+        )
         sn_params = mapper.to_snow(module.params)
 
         result = problem.build_payload(sn_params, table_client)
@@ -154,12 +163,8 @@ class TestBuildPayload:
                 duplicate_of="PRB0000010",
                 other=None,
                 problem_mapping=dict(
-                    state={
-                        CLOSED: "my-closed",
-                    },
-                    impact={
-                        "3": "lowest",
-                    }
+                    state={CLOSED: "my-closed"},
+                    impact={"3": "lowest"},
                 ),
             ),
         )
@@ -168,7 +173,9 @@ class TestBuildPayload:
             {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
         ]
 
-        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
+        mapper = get_mapper(
+            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
+        )
         sn_params = mapper.to_snow(module.params)
 
         result = problem.build_payload(sn_params, table_client)
@@ -235,9 +242,7 @@ class TestValidateParams:
     def test_valid_resolved_state(self, state, params):
         problem.validate_params(dict(params, state=state))
 
-    @pytest.mark.parametrize(
-        "state", [NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED]
-    )
+    @pytest.mark.parametrize("state", [NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED])
     def test_missing_short_description(self, state):
         params = dict(
             state=state,
@@ -252,9 +257,7 @@ class TestValidateParams:
         with pytest.raises(errors.ServiceNowError, match="short_description"):
             problem.validate_params(params)
 
-    @pytest.mark.parametrize(
-        "state", [ASSESS, RCA, FIX, RESOLVED, CLOSED]
-    )
+    @pytest.mark.parametrize("state", [ASSESS, RCA, FIX, RESOLVED, CLOSED])
     def test_missing_assigned_to(self, state):
         params = dict(
             state=state,
@@ -269,9 +272,7 @@ class TestValidateParams:
         with pytest.raises(errors.ServiceNowError, match="assigned_to"):
             problem.validate_params(params)
 
-    @pytest.mark.parametrize(
-        "state", [RESOLVED, CLOSED]
-    )
+    @pytest.mark.parametrize("state", [RESOLVED, CLOSED])
     def test_missing_resolution_code(self, state):
         params = dict(
             state=state,
@@ -286,9 +287,7 @@ class TestValidateParams:
         with pytest.raises(errors.ServiceNowError, match="resolution_code"):
             problem.validate_params(params)
 
-    @pytest.mark.parametrize(
-        "param", ["cause_notes", "fix_notes"],
-    )
+    @pytest.mark.parametrize("param", ["cause_notes", "fix_notes"])
     def test_in_progress_missing_params(self, param):
         params = dict(
             state=FIX,
@@ -311,7 +310,7 @@ class TestValidateParams:
             ("risk_accepted", "close_notes"),
             ("canceled", "cause_notes"),
             ("duplicate", "fix_notes"),
-        ]
+        ],
     )
     def test_resolution_code_missing_params(self, resolution_code, param):
         params = dict(
@@ -526,7 +525,7 @@ class TestEnsurePresent:
                 short_description="Test problem",
                 attachments=[],
                 sys_id="1234",
-                assigned_to="123abc"
+                assigned_to="123abc",
             ),
             dict(
                 before=dict(
@@ -582,7 +581,7 @@ class TestEnsurePresent:
             number="PRB0000001",
             short_description="Test problem",
             sys_id="1234",
-            assigned_to="123abc"
+            assigned_to="123abc",
         )
         table_client.get_record.return_value = dict(
             state=NEW,
@@ -613,7 +612,7 @@ class TestEnsurePresent:
                 number="PRB0000001",
                 short_description="Test problem",
                 sys_id="1234",
-                assigned_to="123abc"
+                assigned_to="123abc",
             ),
         )
 
@@ -626,7 +625,7 @@ class TestEnsurePresent:
                 short_description="Test problem",
                 attachments=[],
                 sys_id="1234",
-                assigned_to="123abc"
+                assigned_to="123abc",
             ),
             dict(
                 before=dict(
@@ -715,13 +714,8 @@ class TestProblemMapping:
             module, problem_client, table_client, attachment_client
         )
 
-        sn_payload = dict(
-            state=NEW,
-            short_description="Test problem",
-        )
-        table_client.create_record.assert_called_once_with(
-            "problem", sn_payload, False
-        )
+        sn_payload = dict(state=NEW, short_description="Test problem")
+        table_client.create_record.assert_called_once_with("problem", sn_payload, False)
 
         assert result == (
             True,
@@ -782,10 +776,7 @@ class TestProblemMapping:
 
         table_client.create_record.assert_called_once_with(
             "problem",
-            dict(
-                state=ASSESS, short_description="Test problem",
-                assigned_to="123456"
-            ),
+            dict(state=ASSESS, short_description="Test problem", assigned_to="123456"),
             False,
         )
 
@@ -850,10 +841,7 @@ class TestProblemMapping:
 
         table_client.create_record.assert_called_once_with(
             "problem",
-            dict(
-                state=RCA, short_description="Test problem",
-                assigned_to="123456"
-            ),
+            dict(state=RCA, short_description="Test problem", assigned_to="123456"),
             False,
         )
 
@@ -923,8 +911,10 @@ class TestProblemMapping:
         table_client.create_record.assert_called_once_with(
             "problem",
             dict(
-                state=FIX, short_description="Test problem",
-                assigned_to="123456", fix_notes="some fix notes",
+                state=FIX,
+                short_description="Test problem",
+                assigned_to="123456",
+                fix_notes="some fix notes",
                 cause_notes="some cause notes",
             ),
             False,
@@ -1002,8 +992,10 @@ class TestProblemMapping:
         table_client.create_record.assert_called_once_with(
             "problem",
             dict(
-                state=RESOLVED, short_description="Test problem",
-                assigned_to="123456", fix_notes="some fix notes",
+                state=RESOLVED,
+                short_description="Test problem",
+                assigned_to="123456",
+                fix_notes="some fix notes",
                 cause_notes="some cause notes",
                 resolution_code="fix_applied",
             ),
@@ -1084,8 +1076,10 @@ class TestProblemMapping:
         table_client.create_record.assert_called_once_with(
             "problem",
             dict(
-                state=CLOSED, short_description="Test problem",
-                assigned_to="123456", fix_notes="some fix notes",
+                state=CLOSED,
+                short_description="Test problem",
+                assigned_to="123456",
+                fix_notes="some fix notes",
                 cause_notes="some cause notes",
                 resolution_code="fix_applied",
             ),
@@ -1144,7 +1138,9 @@ class TestProblemMapping:
         ):
             problem.ensure_present(module, None, None, None)
 
-    def test_create_implicitly_mapped_problem_state(self, create_module, table_client, problem_client, attachment_client):
+    def test_create_implicitly_mapped_problem_state(
+        self, create_module, table_client, problem_client, attachment_client
+    ):
         module_params = self.create_empty_module_params()
         module_params.update(
             dict(
@@ -1153,9 +1149,7 @@ class TestProblemMapping:
                 assigned_to="problem.admin",
                 base_api_path="/api/path",
                 problem_mapping=dict(
-                    state={
-                        NEW: "my-new"
-                    },
+                    state={NEW: "my-new"},
                 ),
             )
         )
@@ -1181,10 +1175,7 @@ class TestProblemMapping:
 
         table_client.create_record.assert_called_once_with(
             "problem",
-            dict(
-                state=ASSESS, short_description="Test problem",
-                assigned_to="123456"
-            ),
+            dict(state=ASSESS, short_description="Test problem", assigned_to="123456"),
             False,
         )
 
@@ -1220,7 +1211,6 @@ class TestProblemMapping:
             ("state", "my-closed"),
             ("state", "absent"),
             ("state", None),
-
             ("problem_state", "my-new"),
             ("problem_state", "my-assess"),
             ("problem_state", "rca"),
@@ -1228,17 +1218,15 @@ class TestProblemMapping:
             ("problem_state", "my-resolved"),
             ("problem_state", "my-closed"),
             ("problem_state", None),
-
             ("urgency", "one"),
             ("urgency", "two"),
             ("urgency", "three"),
             ("urgency", None),
-
             ("impact", "111"),
             ("impact", "222"),
             ("impact", "333"),
             ("impact", None),
-        ]
+        ],
     )
     def test_validate_mapping(self, create_module, mapped_param, param_value):
         all_mappings = dict(
@@ -1263,7 +1251,9 @@ class TestProblemMapping:
 
         module = create_module(params=module_params)
 
-        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
+        mapper = get_mapper(
+            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
+        )
 
         problem.validate_mapping(module_params, mapper)
 
@@ -1278,7 +1268,6 @@ class TestProblemMapping:
             ("state", "closed"),
             ("state", "absent"),
             ("state", None),
-
             ("problem_state", "new"),
             ("problem_state", "explicitly-mapped-assess"),
             ("problem_state", "root_cause_analysis"),
@@ -1286,17 +1275,15 @@ class TestProblemMapping:
             ("problem_state", "resolved"),
             ("problem_state", "closed"),
             ("problem_state", None),
-
             ("urgency", "not_too_urgent"),
             ("urgency", "medium"),
             ("urgency", "high"),
             ("urgency", None),
-
             ("impact", "low"),
             ("impact", "medium"),
             ("impact", "highly_impacted"),
             ("impact", None),
-        ]
+        ],
     )
     def test_validate_mapping_implicit(self, create_module, mapped_param, param_value):
         all_mappings = dict(
@@ -1317,7 +1304,9 @@ class TestProblemMapping:
 
         module = create_module(params=module_params)
 
-        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
+        mapper = get_mapper(
+            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
+        )
 
         problem.validate_mapping(module_params, mapper)
 
@@ -2045,7 +2034,7 @@ class TestProblemMapping:
                     assigned_to="abc123",
                     fix_notes="some fix notes",
                     cause_notes="some cause notes",
-                    resolution_code=""
+                    resolution_code="",
                 ),
                 after=expected,
             ),

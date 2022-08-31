@@ -324,8 +324,14 @@ from ..module_utils import (
     validation,
 )
 from ..module_utils.problem import (
-    PAYLOAD_FIELDS_MAPPING, ProblemClient,
-    NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED
+    PAYLOAD_FIELDS_MAPPING,
+    ProblemClient,
+    NEW,
+    ASSESS,
+    RCA,
+    FIX,
+    RESOLVED,
+    CLOSED,
 )
 from ..module_utils.utils import get_mapper
 
@@ -343,7 +349,9 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client, attachment_client):
-    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
+    mapper = get_mapper(
+        module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
+    )
     query = utils.filter_dict(module.params, "sys_id", "number")
     problem = table_client.get_record("problem", query)
 
@@ -391,7 +399,9 @@ def validate_params(sn_params, sn_problem=None):
         )
     if state in (ASSESS, RCA, FIX, RESOLVED, CLOSED):
         missing.extend(
-            validation.missing_from_params_and_remote(["assigned_to"], sn_params, sn_problem)
+            validation.missing_from_params_and_remote(
+                ["assigned_to"], sn_params, sn_problem
+            )
         )
     if state in (RESOLVED, CLOSED):
         missing.extend(
@@ -441,14 +451,15 @@ def validate_mapping(module_params, mapper):
             if sn_value.get(param) not in values:
                 raise errors.ServiceNowError(
                     "Option {0} does not use a value from the mapping: {1}".format(
-                        param,
-                        value
+                        param, value
                     )
                 )
 
 
 def ensure_present(module, problem_client, table_client, attachment_client):
-    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True)
+    mapper = get_mapper(
+        module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
+    )
     validate_mapping(module.params, mapper)
     query = utils.filter_dict(module.params, "sys_id", "number")
     sn_params = mapper.to_snow(module.params)
@@ -461,9 +472,7 @@ def ensure_present(module, problem_client, table_client, attachment_client):
         # User did not specify existing problem, so we need to create a new one.
         validate_params(sn_params)
         new = mapper.to_ansible(
-            table_client.create_record(
-                "problem", sn_payload, module.check_mode
-            )
+            table_client.create_record("problem", sn_payload, module.check_mode)
         )
 
         # When we execute in check mode, new["sys_id"] is not defined.
