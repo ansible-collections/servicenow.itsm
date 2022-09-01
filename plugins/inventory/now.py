@@ -462,6 +462,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         table_client = TableClient(client)
 
         table = self.get_option("table")
+        # FIXME: remove host_source
         host_source = self.get_option("ansible_host_source")
         name_source = self.get_option("inventory_hostname_source")
         columns = self.get_option("columns")
@@ -476,10 +477,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             )
 
         # TODO: Insert caching here once we remove deprecated functionality
-        if sysparm_query:
-            records = fetch_records(table_client, table, query, raw_input=True)
-        else:
-            records = fetch_records(table_client, table, query)
+        records = fetch_records(table_client, table, query, raw_input=bool(sysparm_query))
 
         if enhanced:
             rel_records = fetch_records(
