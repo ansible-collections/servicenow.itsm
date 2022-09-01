@@ -123,43 +123,6 @@ options:
     description:
       - The column to use for inventory hostnames.
     default: name
-  group_by:
-    description:
-      - Group hosts automatically, according to the values of the specified columns.
-      - You can include or exclude records from being added to the inventory
-        by limiting the column values with I(include) or I(exclude).
-      - Mutually exclusive with I(named_groups).
-    type: dict
-    default: {}
-    deprecated:
-      why: Constructed features made this obsolete
-      version: 2.0.0
-      collection_name: servicenow.itsm
-      alternatives: Use the 'query' and 'keyed_groups' parameters instead
-    suboptions:
-      <column>:
-        type: dict
-        description: Column to use when grouping inventory hosts into groups.
-        default: {}
-        suboptions:
-          includes:
-            description:
-              - Create Ansible inventory groups only for records with <column>
-                matching any of the values specified in this list.
-              - For reference fields, you need to provide C(sys_id).
-              - Mutually exclusive with I(excludes).
-            type: list
-            default: None
-            elements: str
-          excludes:
-            description:
-              - Create Ansible inventory groups only for records with <column>
-                matching any value except the ones specified in this list.
-              - For reference fields, you need to provide C(sys_id).
-              - Mutually exclusive with I(includes).
-            type: list
-            elements: str
-            default: None
 """
 
 EXAMPLES = r"""
