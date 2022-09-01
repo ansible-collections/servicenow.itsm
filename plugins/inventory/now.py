@@ -342,12 +342,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             )
         return False
 
-    def _verify_includes_and_excludes(self, conditions):
-        if conditions and all(i in conditions for i in ["includes", "excludes"]):
-            raise AnsibleParserError(
-                "Invalid configuration: 'includes' and 'excludes' are mutually exclusive."
-            )
-
     def validate_grouping_conditions(self, named_groups, group_by):
         for group, column in named_groups.items():
             for conditions in column.values():
