@@ -241,63 +241,6 @@ compose:
 # |  |  |--{cost = 2,160 USD}
 # |  |  |--{cpu_type = Intel}
 # |  |  |--{name = INSIGHT-NY-03}
-
-# NOTE: All examples from here on are deprecated and should not be used when writing new
-# inventory sources.
-
-# Group hosts automatically, according to values of manufacturer and os columns.
-# Include only records with the specified operating systems.
-# Groups will most likely overlap.
-plugin: servicenow.itsm.now
-group_by:
-  manufacturer:
-  os:
-    includes:
-      - Linux Red Hat
-      - Windows XP
-
-# `ansible-inventory -i inventory.now.yaml --graph` output:
-# @all:
-#  |--@Dell_Inc_:
-#  |  |--DatabaseServer1
-#  |  |--DatabaseServer2
-#  |  |--INSIGHT-NY-03
-#  |--@Lenovo:
-#  |  |--FileServerFloor1
-#  |  |--FileServerFloor2
-#  |--@Linux_Red_Hat:
-#  |  |--DatabaseServer1
-#  |  |--DatabaseServer2
-#  |--@Windows_XP:
-#  |  |--FileServerFloor1
-#  |  |--FileServerFloor2
-#  |  |--INSIGHT-NY-03
-#  |--@ungrouped:
-
-
-# Group hosts into named groups, according to the specified criteria.
-# Below example creates a single group containing hosts that match
-# all the criteria.
-named_groups:
-  non_windows_prod_servers:
-    classification:
-      includes: [ Production ]
-    os:
-      excludes:
-        - Windows XP
-        - Windows 2000
-        - Windows 2000 Server
-        - Windows 2003 Standard
-
-# `ansible-inventory -i inventory.now.yaml --graph` output:
-# @all:
-#  |--@non_windows_prod_servers:
-#  |  |--DatabaseServer2
-#  |  |--PS LinuxApp01
-#  |  |--PS LinuxApp02
-#  |  |--lnux100
-#  |  |--lnux101
-#  |--@ungrouped:
 """
 
 import os
