@@ -342,13 +342,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             )
         return False
 
-    def validate_grouping_conditions(self, named_groups, group_by):
-        for group, column in named_groups.items():
-            for conditions in column.values():
-                self._verify_includes_and_excludes(conditions)
-        for column, conditions in group_by.items():
-            self._verify_includes_and_excludes(conditions)
-
     def query(self, conditions, host_source, name_source, columns):
         fields = set(columns).union(("sys_id", host_source, name_source), conditions)
         query = dict(
@@ -507,8 +500,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                 "Invalid configuration: 'named_groups' and 'group_by' are mutually "
                 "exclusive."
             )
-
-        self.validate_grouping_conditions(named_groups, group_by)
 
         try:
             client = Client(**self._get_instance())
