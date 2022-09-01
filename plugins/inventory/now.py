@@ -452,26 +452,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         self._read_config_data(path)
 
-        named_groups = self.get_option("named_groups")
-        group_by = self.get_option("group_by")
-        if named_groups and group_by:
-            raise AnsibleParserError(
-                "Invalid configuration: 'named_groups' and 'group_by' are mutually "
-                "exclusive."
-            )
-
         try:
             client = Client(**self._get_instance())
         except ServiceNowError as e:
             raise AnsibleParserError(e)
 
         enhanced = self.get_option("enhanced")
-
-        if enhanced and (named_groups or group_by):
-            raise AnsibleParserError(
-                "Option 'enhanced' is incompatible with options 'named_groups' or "
-                "'group_by'."
-            )
 
         table_client = TableClient(client)
 
