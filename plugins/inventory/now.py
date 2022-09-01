@@ -385,7 +385,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self,
         records,
         columns,
-        host_source,
         name_source,
         compose,
         groups,
@@ -477,7 +476,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self.fill_constructed(
             records,
             columns,
-            host_source,
             name_source,
             self.get_option("compose"),
             self.get_option("groups"),
