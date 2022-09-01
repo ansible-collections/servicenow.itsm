@@ -114,7 +114,6 @@ options:
   enhanced:
     description:
       - Enable enhanced inventory which provides relationship information from CMDB.
-      - Mutually exclusive with deprecated options I(named_groups) and I(group_by).
     type: bool
     default: false
     version_added: 1.3.0
