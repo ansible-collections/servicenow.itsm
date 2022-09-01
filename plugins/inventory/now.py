@@ -306,13 +306,13 @@ def construct_sysparm_query(query):
     return serialize_query(parsed)
 
 
-def fetch_records(table_client, table, query, fields=None, raw_input=False):
+def fetch_records(table_client, table, query, fields=None, is_encoded_query=False):
     snow_query = dict(
         # Make references and choice fields human-readable
         sysparm_display_value=True,
     )
     if query:
-        if raw_input:
+        if is_encoded_query:
             snow_query["sysparm_query"] = query
         else:
             snow_query["sysparm_query"] = construct_sysparm_query(query)
@@ -477,7 +477,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             )
 
         # TODO: Insert caching here once we remove deprecated functionality
-        records = fetch_records(table_client, table, query, raw_input=bool(sysparm_query))
+        records = fetch_records(table_client, table, query, is_encoded_query=bool(sysparm_query))
 
         if enhanced:
             rel_records = fetch_records(
