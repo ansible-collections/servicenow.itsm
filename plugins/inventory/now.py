@@ -501,25 +501,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         instance_env = self._get_instance_from_env()
         return self._merge_instance_config(instance_config, instance_env)
 
-    # The next function is a temporary workaround for
-    # https://github.com/ansible/ansible/issues/73051. In an ideal world, Ansible would
-    # print the deprecation messages in its own. But until that bug is fixed, we need to
-    # manually print the warning if we want our users to see the deprecation message
-    # during the runtime.
-    def _warn_about_deprecations(self):
-        for opt in ("ansible_host_source", "named_groups", "group_by"):
-            if self.get_option(opt):
-                self.display.warning(
-                    "'{0}' option is deprecated since version 1.2.0 and will be "
-                    "removed in 2.0.0.".format(opt)
-                )
-
     def parse(self, inventory, loader, path, cache=True):
         super(InventoryModule, self).parse(inventory, loader, path)
 
         self._read_config_data(path)
-
-        self._warn_about_deprecations()
 
         named_groups = self.get_option("named_groups")
         group_by = self.get_option("group_by")
