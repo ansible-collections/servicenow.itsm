@@ -356,11 +356,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         return query
 
-    def add_host(self, record, host_source, name_source):
-        if host_source not in record:
-            msg = "Ansible host source column '{0}' is not present in the record."
-            raise AnsibleParserError(msg.format(host_source))
-
+    def add_host(self, record, name_source):
         if name_source not in record:
             msg = "Inventory hostname source column '{0}' is not present in the record."
             raise AnsibleParserError(msg.format(name_source))
@@ -368,13 +364,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         inventory_hostname = record[name_source]
         if inventory_hostname:
             host = self.inventory.add_host(inventory_hostname)
-            if record[host_source]:
-                self.inventory.set_variable(host, "ansible_host", record[host_source])
-            else:
-                self.display.warning(
-                    "The ansible_host variable for host {0} is empty.".format(host)
-                )
-
             return host
 
         self.display.warning(
@@ -405,7 +394,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         enhanced,
     ):
         for record in records:
-            host = self.add_host(record, host_source, name_source)
+            host = self.add_host(record, name_source)
             if host:
                 self.set_hostvars(host, record, columns)
                 self._set_composite_vars(compose, record, host, strict)
