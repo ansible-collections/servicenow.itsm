@@ -118,16 +118,6 @@ options:
     type: bool
     default: false
     version_added: 1.3.0
-  ansible_host_source:
-    description:
-      - Host variable to use as I(ansible_host) when generating inventory hosts.
-    type: str
-    default: ip_address
-    deprecated:
-      why: Constructed features made this obsolete
-      version: 2.0.0
-      collection_name: servicenow.itsm
-      alternatives: Use the 'compose' parameter to set the 'ansible_host' variable
   inventory_hostname_source:
     type: str
     description:
