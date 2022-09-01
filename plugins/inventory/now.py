@@ -123,48 +123,6 @@ options:
     description:
       - The column to use for inventory hostnames.
     default: name
-  named_groups:
-    description:
-      - Group hosts in the provided groups, according to the specified criteria.
-      - Only the specified groups will be created.
-      - Mutually exclusive with I(group_by).
-    type: dict
-    default: {}
-    deprecated:
-      why: Constructed features made this obsolete
-      version: 2.0.0
-      collection_name: servicenow.itsm
-      alternatives: Use the 'groups' parameter instead
-    suboptions:
-      <group_name>:
-        type: dict
-        description:
-          - The group to create.
-        default: {}
-        suboptions:
-          <column>:
-            type: dict
-            description: Criteria for including a host in this group.
-            default: {}
-            suboptions:
-              includes:
-                description:
-                  - Add a host to the group only if <column> matches any of
-                    the values specified in this list.
-                  - For reference fields, you need to provide C(sys_id).
-                  - Mutually exclusive with I(excludes).
-                type: list
-                default: None
-                elements: str
-              excludes:
-                description:
-                  - Add a host to the group if <column> matches any value
-                    except the ones specified in this list.
-                  - For reference fields, you need to provide C(sys_id).
-                  - Mutually exclusive with I(includes).
-                type: list
-                elements: str
-                default: None
   group_by:
     description:
       - Group hosts automatically, according to the values of the specified columns.
