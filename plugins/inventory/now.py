@@ -392,32 +392,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         for k in columns:
             self.inventory.set_variable(host, k, record[k])
 
-    def fill_auto_groups(
-        self, table_client, table, host_source, name_source, columns, group_by
-    ):
-        records = table_client.list_records(
-            table, query=self.query(group_by, host_source, name_source, columns)
-        )
-
-        for record in records:
-            host = self.add_host(record, host_source, name_source)
-            if host:
-                for category in group_by.keys():
-                    group_name = to_safe_group_name(record[category])
-                    # Only truthy names are allowed
-                    # Column values can be set to "None", and we don't want those
-                    if group_name:
-                        self.inventory.add_group(group_name)
-                        self.inventory.add_host(host, group=group_name)
-                    else:
-                        msg = (
-                            "Encountered invalid group name '{1}' for host {0}. "
-                            "Group will not be created."
-                        ).format(group_name, host)
-                        self.display.warning(msg)
-
-                self.set_hostvars(host, record, columns)
-
     def fill_constructed(
         self,
         records,
@@ -505,12 +479,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         host_source = self.get_option("ansible_host_source")
         name_source = self.get_option("inventory_hostname_source")
         columns = self.get_option("columns")
-
-        if group_by:
-            self.fill_auto_groups(
-                table_client, table, host_source, name_source, columns, group_by
-            )
-            return
 
         query = self.get_option("query")
         sysparm_query = self.get_option("sysparm_query")
