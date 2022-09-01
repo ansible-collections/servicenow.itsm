@@ -450,8 +450,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         table_client = TableClient(client)
 
         table = self.get_option("table")
-        # FIXME: remove host_source
-        host_source = self.get_option("ansible_host_source")
         name_source = self.get_option("inventory_hostname_source")
         columns = self.get_option("columns")
 
