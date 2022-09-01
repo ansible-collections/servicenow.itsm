@@ -418,21 +418,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
                 self.set_hostvars(host, record, columns)
 
-    def fill_desired_groups(
-        self, table_client, table, host_source, name_source, columns, named_groups
-    ):
-        for group_name, group_conditions in named_groups.items():
-            self.inventory.add_group(group_name)
-
-            records = table_client.list_records(
-                table,
-                query=self.query(group_conditions, host_source, name_source, columns),
-            )
-            for r in records:
-                host = self.add_host(r, host_source, name_source)
-                self.inventory.add_host(host, group=group_name)
-                self.set_hostvars(host, r, columns)
-
     def fill_constructed(
         self,
         records,
@@ -520,14 +505,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         host_source = self.get_option("ansible_host_source")
         name_source = self.get_option("inventory_hostname_source")
         columns = self.get_option("columns")
-
-        if named_groups:
-            # Creates exactly the specified groups (which might be empty).
-            # Leaves nothing ungrouped.
-            self.fill_desired_groups(
-                table_client, table, host_source, name_source, columns, named_groups
-            )
-            return
 
         if group_by:
             self.fill_auto_groups(
