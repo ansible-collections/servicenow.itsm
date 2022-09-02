@@ -39,6 +39,9 @@ class TestContructSysparmQuery:
         with pytest.raises(AnsibleParserError, match="INVALID"):
             now.construct_sysparm_query([dict(column="INVALID operator")], False)
 
+    def test_valid_encoded_query(self):
+        assert "column=value^ORfield=something" == now.construct_sysparm_query("column=value^ORfield=something", True)
+
 
 class TestFetchRecords:
     def test_no_query(self, table_client):
