@@ -134,6 +134,33 @@ class TestInventoryModuleSetHostvars:
             )
 
 
+class TestMergeInstanceConfig:
+    @pytest.mark.parametrize(
+        "instance_conf,instance_env,expected",
+        [
+            (
+                dict(), dict(), dict()
+            ),
+            (
+                dict(a="a"), dict(), dict()
+            ),
+            (
+                dict(), dict(a="a"), dict(a="a")
+            ),
+            (
+                dict(a="a", b="b"), dict(a="c"), dict(a="a")
+            ),
+            (
+                dict(a="a"), dict(a="c", b="b"), dict(a="a", b="b")
+            ),
+        ]
+    )
+    def test_merge_instance_config(self, inventory_plugin, instance_conf, instance_env, expected):
+        merged_conf = inventory_plugin._merge_instance_config(instance_conf, instance_env)
+
+        assert merged_conf == expected
+
+
 class TestInventoryModuleFillEnhancedAutoGroups:
     def test_construction(self, inventory_plugin):
         record = dict(
