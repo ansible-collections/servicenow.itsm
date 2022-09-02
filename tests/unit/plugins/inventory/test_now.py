@@ -458,6 +458,62 @@ class TestInventoryModuleFillConstructed:
                 enhanced,
             )
 
+    def test_construction_composite_vars_ansible_host(self, inventory_plugin):
+        records = [
+            dict(
+                sys_id="1",
+                fqdn="a1",
+            ),
+            dict(
+                sys_id="2",
+                fqdn="a2",
+            ),
+        ]
+
+        columns = []
+        name_source = "fqdn"
+        compose = dict(
+            ansible_host='fqdn + "_" + sys_id'
+        )
+        groups = {}
+        keyed_groups = []
+        strict = False
+        enhanced = False
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+        )
+
+        assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
+        assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        a1_groups = (group.name for group in a1.groups)
+        assert set(a1_groups) == set()
+
+        assert a1.vars == dict(
+            inventory_file=None,
+            inventory_dir=None,
+            ansible_host="a1_1",
+        )
+
+        a2 = inventory_plugin.inventory.get_host("a2")
+        a2_groups = (group.name for group in a2.groups)
+        assert set(a2_groups) == set()
+
+        assert a2.vars == dict(
+            inventory_file=None,
+            inventory_dir=None,
+            ansible_host="a2_2",
+        )
+
     def test_construction_composed_groups(self, inventory_plugin):
         records = [
             dict(sys_id="1", ip_address="1.1.1.1", fqdn="a1"),
