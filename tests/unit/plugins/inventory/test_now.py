@@ -33,14 +33,18 @@ def inventory_plugin():
 
 class TestContructSysparmQuery:
     def test_valid_query(self):
-        assert "column=value" == now.construct_sysparm_query([dict(column="= value")], False)
+        assert "column=value" == now.construct_sysparm_query(
+            [dict(column="= value")], False
+        )
 
     def test_invalid_query(self):
         with pytest.raises(AnsibleParserError, match="INVALID"):
             now.construct_sysparm_query([dict(column="INVALID operator")], False)
 
     def test_valid_encoded_query(self):
-        assert "column=value^ORfield=something" == now.construct_sysparm_query("column=value^ORfield=something", True)
+        assert "column=value^ORfield=something" == now.construct_sysparm_query(
+            "column=value^ORfield=something", True
+        )
 
 
 class TestFetchRecords:
