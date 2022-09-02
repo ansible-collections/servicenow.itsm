@@ -210,14 +210,10 @@ class TestInventoryModuleFillEnhancedAutoGroups:
             )
         )
 
-        assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
     def test_construction_empty(self, inventory_plugin):
-        record = dict(
-            sys_id="1", fqdn="a1", relationship_groups=set()
-        )
+        record = dict(sys_id="1", fqdn="a1", relationship_groups=set())
 
         host = inventory_plugin.add_host(record, "fqdn")
         inventory_plugin.fill_enhanced_auto_groups(record, host)
@@ -230,9 +226,7 @@ class TestInventoryModuleFillEnhancedAutoGroups:
         a1_groups = (group.name for group in a1.groups)
         assert set(a1_groups) == set()
 
-        assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
 
 class TestInventoryModuleFillConstructed:
@@ -298,17 +292,13 @@ class TestInventoryModuleFillConstructed:
         a1_groups = (group.name for group in a1.groups)
         assert set(a1_groups) == set()
 
-        assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
         assert set(a2_groups) == set()
 
-        assert a2.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a2.vars == dict(inventory_file=None, inventory_dir=None)
 
     def test_construction_hostvars(self, inventory_plugin):
         records = [
@@ -472,9 +462,7 @@ class TestInventoryModuleFillConstructed:
 
         columns = []
         name_source = "fqdn"
-        compose = dict(
-            ansible_host='fqdn + "_" + sys_id'
-        )
+        compose = dict(ansible_host='fqdn + "_" + sys_id')
         groups = {}
         keyed_groups = []
         strict = False
@@ -553,17 +541,13 @@ class TestInventoryModuleFillConstructed:
         a1_groups = (group.name for group in a1.groups)
         assert set(a1_groups) == set(("ip1",))
 
-        assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
         assert set(a2_groups) == set(("ip2",))
 
-        assert a2.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a2.vars == dict(inventory_file=None, inventory_dir=None)
 
     def test_construction_composed_groups_strict(self, inventory_plugin):
         records = [
@@ -636,17 +620,13 @@ class TestInventoryModuleFillConstructed:
         a1_groups = (group.name for group in a1.groups)
         assert set(a1_groups) == set(("cc_EUR",))
 
-        assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
         assert set(a2_groups) == set(("cc_USD",))
 
-        assert a2.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a2.vars == dict(inventory_file=None, inventory_dir=None)
 
     def test_construction_keyed_groups_with_parent(self, inventory_plugin):
         records = [
@@ -690,17 +670,13 @@ class TestInventoryModuleFillConstructed:
         a1_groups = (group.name for group in a1.groups)
         assert set(a1_groups) == set(("cc_EUR", "ip_address"))
 
-        assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
         assert set(a2_groups) == set(("cc_USD", "ip_address"))
 
-        assert a2.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a2.vars == dict(inventory_file=None, inventory_dir=None)
 
     def test_construction_enhanced(self, inventory_plugin):
         records = [
@@ -755,9 +731,7 @@ class TestInventoryModuleFillConstructed:
         a1_groups = (group.name for group in a1.groups)
         assert set(a1_groups) == set(("NY_01_01_Rack_contains",))
 
-        assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
@@ -765,6 +739,4 @@ class TestInventoryModuleFillConstructed:
             ("Storage_Area_Network_002_Sends_data_to", "OWA_SD_01_Runs_on")
         )
 
-        assert a2.vars == dict(
-            inventory_file=None, inventory_dir=None
-        )
+        assert a2.vars == dict(inventory_file=None, inventory_dir=None)

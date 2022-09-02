@@ -463,7 +463,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             )
 
         # TODO: Insert caching here once we remove deprecated functionality
-        records = fetch_records(table_client, table, query, is_encoded_query=bool(sysparm_query))
+        records = fetch_records(
+            table_client, table, query, is_encoded_query=bool(sysparm_query)
+        )
 
         if enhanced:
             rel_records = fetch_records(
