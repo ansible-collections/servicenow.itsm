@@ -265,7 +265,9 @@ from ..module_utils.relations import (
 )
 
 
-def construct_sysparm_query(query):
+def construct_sysparm_query(query, is_encoded_query):
+    if is_encoded_query:
+        return query
     parsed, err = parse_query(query)
     if err:
         raise AnsibleParserError(err)
@@ -278,10 +280,7 @@ def fetch_records(table_client, table, query, fields=None, is_encoded_query=Fals
         sysparm_display_value=True,
     )
     if query:
-        if is_encoded_query:
-            snow_query["sysparm_query"] = query
-        else:
-            snow_query["sysparm_query"] = construct_sysparm_query(query)
+        snow_query["sysparm_query"] = construct_sysparm_query(query, is_encoded_query)
     if fields:
         snow_query["sysparm_fields"] = ",".join(fields)
 
