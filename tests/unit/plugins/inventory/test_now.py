@@ -63,34 +63,6 @@ class TestFetchRecords:
         )
 
 
-class TestSysparmQueryFromConditions:
-    def test_empty_conditions(self):
-        assert now.sysparm_query_from_conditions({}) is None
-
-    @pytest.mark.parametrize(
-        "conditions,expected",
-        [
-            (dict(a=dict(includes=["b"])), "a=b"),
-            (dict(a=dict(includes=["b", "c"])), "a=b^ORa=c"),
-            (dict(a=dict(excludes=["b"])), "a!=b"),
-            (dict(a=dict(excludes=["b", "c"])), "a!=b^a!=c"),
-        ],
-    )
-    def test_conditions_single_field(self, conditions, expected):
-        assert expected == now.sysparm_query_from_conditions(conditions)
-
-    def test_conditions_multiple_fields(self):
-        conditions = dict(
-            a=dict(includes=["a1", "a2"]),
-            b=dict(excludes=["b1", "b2"]),
-        )
-        sysparm_query = now.sysparm_query_from_conditions(conditions)
-
-        # We do not care about the order, we just want to make sure
-        # that there is "and" between conditions for both fields.
-        assert sysparm_query in ("a=a1^ORa=a2^b!=b1^b!=b2", "b!=b1^b!=b2^a=a1^ORa=a2")
-
-
 class TestInventoryModuleVerifyFile:
     @pytest.mark.parametrize(
         "name,valid",
