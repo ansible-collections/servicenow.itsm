@@ -103,98 +103,30 @@ class TestInventoryModuleVerifyFile:
         assert inventory_plugin.verify_file(to_text(config)) is valid
 
 
-class TestInventoryModuleValidateGroupingConditions:
-    def test_valid_named_groups(self, inventory_plugin):
-        inventory_plugin.validate_grouping_conditions(
-            dict(
-                group1=dict(
-                    col1=dict(includes=[1, 2, 3]),
-                    col2=dict(excludes=[4, 5, 6]),
-                ),
-                group2=dict(
-                    col3=dict(excludes=["a", "b"]),
-                    col4=dict(includes=["c", "d"]),
-                ),
-            ),
-            dict(),
-        )
-
-    def test_invalid_named_groups(self, inventory_plugin):
-        with pytest.raises(AnsibleParserError, match="mutually exclusive"):
-            inventory_plugin.validate_grouping_conditions(
-                dict(
-                    group=dict(
-                        col=dict(includes=[1], excludes=[2]),
-                    ),
-                ),
-                dict(),
-            )
-
-    def test_valid_group_by(self, inventory_plugin):
-        inventory_plugin.validate_grouping_conditions(
-            dict(),
-            dict(
-                col1=dict(includes=[1, 2, 3]),
-                col2=dict(excludes=[4, 5, 6]),
-            ),
-        )
-
-    def test_invalid_group_by(self, inventory_plugin):
-        with pytest.raises(AnsibleParserError, match="mutually exclusive"):
-            inventory_plugin.validate_grouping_conditions(
-                dict(),
-                dict(
-                    col=dict(includes=[4, 5], excludes=["test"]),
-                ),
-            )
-
-
 class TestInventoryModuleAddHost:
     def test_valid(self, inventory_plugin):
         host = inventory_plugin.add_host(
-            dict(host_source="1.2.3.4", name_source="dummy_host", sys_id="123"),
-            "host_source",
+            dict(name_source="dummy_host", sys_id="123"),
             "name_source",
         )
 
         assert host == "dummy_host"
         hostvars = inventory_plugin.inventory.get_host("dummy_host").vars
-        assert hostvars["ansible_host"] == "1.2.3.4"
-
-    def test_valid_empty_host(self, inventory_plugin):
-        host = inventory_plugin.add_host(
-            dict(host_source="", name_source="dummy_host", sys_id="123"),
-            "host_source",
-            "name_source",
-        )
-
-        assert host == "dummy_host"
-        hostvars = inventory_plugin.inventory.get_host("dummy_host").vars
-        assert "ansible_host" not in hostvars
+        assert hostvars is not None
 
     def test_valid_empty_name(self, inventory_plugin):
         host = inventory_plugin.add_host(
-            dict(host_source="1.2.3.4", name_source="", sys_id="123"),
-            "host_source",
+            dict(name_source="", sys_id="123"),
             "name_source",
         )
 
         assert host is None
         assert inventory_plugin.inventory.get_host("dummy_host") is None
 
-    def test_invalid_host(self, inventory_plugin):
-        with pytest.raises(AnsibleParserError, match="invalid_host"):
-            inventory_plugin.add_host(
-                dict(host_source="1.2.3.4", name_source="dummy_host", sys_id="123"),
-                "invalid_host",
-                "name_source",
-            )
-
     def test_invalid_name(self, inventory_plugin):
         with pytest.raises(AnsibleParserError, match="invalid_name"):
             inventory_plugin.add_host(
-                dict(host_source="1.2.3.4", name_source="dummy_host", sys_id="123"),
-                "host_source",
+                dict(name_source="dummy_host", sys_id="123"),
                 "invalid_name",
             )
 
@@ -236,78 +168,10 @@ class TestInventoryModuleQuery:
         assert result["sysparm_query"] == "cname=b"
 
 
-class TestInventoryModuleFillDesiredGroups:
-    def test_inventory_construction(self, inventory_plugin, table_client):
-        table_client.list_records.return_value = [
-            dict(sys_id="1", host="1.1.1.1", name="a1", material="wood"),
-            dict(sys_id="2", host="1.1.1.2", name="a2", material="metal"),
-        ]
-
-        inventory_plugin.fill_desired_groups(
-            table_client,
-            "cmdb_ci_abacuses",
-            "host",
-            "name",
-            ("material", "sys_id"),
-            dict(g1=dict(material={})),
-        )
-
-        a1 = inventory_plugin.inventory.get_host("a1")
-        assert a1.vars["sys_id"] == "1"
-        assert a1.vars["material"] == "wood"
-        assert a1.vars["ansible_host"] == "1.1.1.1"
-
-        a2 = inventory_plugin.inventory.get_host("a2")
-        assert a2.vars["sys_id"] == "2"
-        assert a2.vars["material"] == "metal"
-        assert a2.vars["ansible_host"] == "1.1.1.2"
-
-        groups = inventory_plugin.inventory.get_groups_dict()
-        assert set(groups["g1"]) == set(("a1", "a2"))
-
-
-class TestInventoryModuleFillAutoGroups:
-    def test_inventory_construction(self, inventory_plugin, table_client):
-        table_client.list_records.return_value = [
-            dict(sys_id="3", host_source="1.1.1.3", name_source="a3", material="b-a-d"),
-            dict(sys_id="4", host_source="1.1.1.4", name_source="a4", material="glass"),
-            dict(sys_id="5", host_source="1.1.1.5", name_source="a5", material=""),
-        ]
-
-        inventory_plugin.fill_auto_groups(
-            table_client,
-            "cmdb_ci_abacuses",
-            "host_source",
-            "name_source",
-            ("material", "sys_id"),
-            dict(material={}),
-        )
-
-        a3 = inventory_plugin.inventory.get_host("a3")
-        assert a3.vars["sys_id"] == "3"
-        assert a3.vars["material"] == "b-a-d"
-        assert a3.vars["ansible_host"] == "1.1.1.3"
-
-        a4 = inventory_plugin.inventory.get_host("a4")
-        assert a4.vars["sys_id"] == "4"
-        assert a4.vars["material"] == "glass"
-        assert a4.vars["ansible_host"] == "1.1.1.4"
-
-        a5 = inventory_plugin.inventory.get_host("a5")
-        assert a5.vars["sys_id"] == "5"
-        assert a5.vars["material"] == ""
-        assert a5.vars["ansible_host"] == "1.1.1.5"
-
-        groups = inventory_plugin.inventory.get_groups_dict()
-        assert set(groups["b_a_d"]) == set(("a3",))
-        assert set(groups["glass"]) == set(("a4",))
-
-
 class TestInventoryModuleFillEnhancedAutoGroups:
     def test_construction(self, inventory_plugin):
         record = dict(
             sys_id="1",
-            ip_address="1.1.1.1",
             fqdn="a1",
             relationship_groups=set(
                 (
@@ -319,7 +183,7 @@ class TestInventoryModuleFillEnhancedAutoGroups:
             ),
         )
 
-        host = inventory_plugin.add_host(record, "ip_address", "fqdn")
+        host = inventory_plugin.add_host(record, "fqdn")
         inventory_plugin.fill_enhanced_auto_groups(record, host)
 
         assert set(inventory_plugin.inventory.groups) == set(
@@ -347,15 +211,15 @@ class TestInventoryModuleFillEnhancedAutoGroups:
         )
 
         assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+            inventory_file=None, inventory_dir=None
         )
 
     def test_construction_empty(self, inventory_plugin):
         record = dict(
-            sys_id="1", ip_address="1.1.1.1", fqdn="a1", relationship_groups=set()
+            sys_id="1", fqdn="a1", relationship_groups=set()
         )
 
-        host = inventory_plugin.add_host(record, "ip_address", "fqdn")
+        host = inventory_plugin.add_host(record, "fqdn")
         inventory_plugin.fill_enhanced_auto_groups(record, host)
 
         assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
@@ -367,7 +231,7 @@ class TestInventoryModuleFillEnhancedAutoGroups:
         assert set(a1_groups) == set()
 
         assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+            inventory_file=None, inventory_dir=None
         )
 
 
@@ -375,7 +239,6 @@ class TestInventoryModuleFillConstructed:
     def test_construction_empty(self, inventory_plugin):
         records = []
         columns = []
-        host_source = "ip_address"
         name_source = "fqdn"
         compose = {}
         groups = {}
@@ -386,7 +249,6 @@ class TestInventoryModuleFillConstructed:
         inventory_plugin.fill_constructed(
             records,
             columns,
-            host_source,
             name_source,
             compose,
             groups,
@@ -402,18 +264,15 @@ class TestInventoryModuleFillConstructed:
         records = [
             dict(
                 sys_id="1",
-                ip_address="1.1.1.1",
                 fqdn="a1",
             ),
             dict(
                 sys_id="2",
-                ip_address="1.1.1.2",
                 fqdn="a2",
             ),
         ]
 
         columns = []
-        host_source = "ip_address"
         name_source = "fqdn"
         compose = {}
         groups = {}
@@ -424,7 +283,6 @@ class TestInventoryModuleFillConstructed:
         inventory_plugin.fill_constructed(
             records,
             columns,
-            host_source,
             name_source,
             compose,
             groups,
@@ -441,7 +299,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a1_groups) == set()
 
         assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+            inventory_file=None, inventory_dir=None
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
@@ -449,17 +307,16 @@ class TestInventoryModuleFillConstructed:
         assert set(a2_groups) == set()
 
         assert a2.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.2"
+            inventory_file=None, inventory_dir=None
         )
 
     def test_construction_hostvars(self, inventory_plugin):
         records = [
-            dict(sys_id="1", ip_address="1.1.1.1", fqdn="a1", cost="82", cost_cc="EUR"),
-            dict(sys_id="2", ip_address="1.1.1.2", fqdn="a2", cost="94", cost_cc="USD"),
+            dict(sys_id="1", fqdn="a1", cost="82", cost_cc="EUR"),
+            dict(sys_id="2", fqdn="a2", cost="94", cost_cc="USD"),
         ]
 
         columns = ["cost", "cost_cc"]
-        host_source = "ip_address"
         name_source = "fqdn"
         compose = {}
         groups = {}
@@ -470,7 +327,6 @@ class TestInventoryModuleFillConstructed:
         inventory_plugin.fill_constructed(
             records,
             columns,
-            host_source,
             name_source,
             compose,
             groups,
@@ -489,7 +345,6 @@ class TestInventoryModuleFillConstructed:
         assert a1.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            ansible_host="1.1.1.1",
             cost="82",
             cost_cc="EUR",
         )
@@ -501,7 +356,6 @@ class TestInventoryModuleFillConstructed:
         assert a2.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            ansible_host="1.1.1.2",
             cost="94",
             cost_cc="USD",
         )
@@ -510,7 +364,6 @@ class TestInventoryModuleFillConstructed:
         records = [
             dict(
                 sys_id="1",
-                ip_address="1.1.1.1",
                 fqdn="a1",
                 cost="82",
                 cost_cc="EUR",
@@ -518,7 +371,6 @@ class TestInventoryModuleFillConstructed:
             ),
             dict(
                 sys_id="2",
-                ip_address="1.1.1.2",
                 fqdn="a2",
                 cost="94",
                 cost_cc="USD",
@@ -527,7 +379,6 @@ class TestInventoryModuleFillConstructed:
         ]
 
         columns = []
-        host_source = "ip_address"
         name_source = "fqdn"
         compose = dict(
             cost_res='"%s %s" % (cost, cost_cc)',
@@ -544,7 +395,6 @@ class TestInventoryModuleFillConstructed:
         inventory_plugin.fill_constructed(
             records,
             columns,
-            host_source,
             name_source,
             compose,
             groups,
@@ -563,7 +413,6 @@ class TestInventoryModuleFillConstructed:
         assert a1.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            ansible_host="1.1.1.1",
             cost_res="82 EUR",
             amortized_cost="41",
             sys_updated_on_date="2021-09-17",
@@ -577,7 +426,6 @@ class TestInventoryModuleFillConstructed:
         assert a2.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            ansible_host="1.1.1.2",
             cost_res="94 USD",
             amortized_cost="47",
             sys_updated_on_date="2021-08-30",
@@ -586,12 +434,11 @@ class TestInventoryModuleFillConstructed:
 
     def test_construction_composite_vars_strict(self, inventory_plugin):
         records = [
-            dict(sys_id="1", ip_address="1.1.1.1", fqdn="a1"),
-            dict(sys_id="2", ip_address="1.1.1.2", fqdn="a2"),
+            dict(sys_id="1", fqdn="a1"),
+            dict(sys_id="2", fqdn="a2"),
         ]
 
         columns = []
-        host_source = "ip_address"
         name_source = "fqdn"
         compose = dict(failed="non_existing + 3")
         groups = {}
@@ -603,7 +450,6 @@ class TestInventoryModuleFillConstructed:
             inventory_plugin.fill_constructed(
                 records,
                 columns,
-                host_source,
                 name_source,
                 compose,
                 groups,
@@ -619,7 +465,6 @@ class TestInventoryModuleFillConstructed:
         ]
 
         columns = []
-        host_source = "ip_address"
         name_source = "fqdn"
         compose = {}
         groups = dict(
@@ -634,7 +479,6 @@ class TestInventoryModuleFillConstructed:
         inventory_plugin.fill_constructed(
             records,
             columns,
-            host_source,
             name_source,
             compose,
             groups,
@@ -654,7 +498,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a1_groups) == set(("ip1",))
 
         assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+            inventory_file=None, inventory_dir=None
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
@@ -662,7 +506,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a2_groups) == set(("ip2",))
 
         assert a2.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.2"
+            inventory_file=None, inventory_dir=None
         )
 
     def test_construction_composed_groups_strict(self, inventory_plugin):
@@ -672,7 +516,6 @@ class TestInventoryModuleFillConstructed:
         ]
 
         columns = []
-        host_source = "ip_address"
         name_source = "fqdn"
         compose = {}
         groups = dict(
@@ -688,7 +531,6 @@ class TestInventoryModuleFillConstructed:
             inventory_plugin.fill_constructed(
                 records,
                 columns,
-                host_source,
                 name_source,
                 compose,
                 groups,
@@ -699,12 +541,11 @@ class TestInventoryModuleFillConstructed:
 
     def test_construction_keyed_groups(self, inventory_plugin):
         records = [
-            dict(sys_id="1", ip_address="1.1.1.1", fqdn="a1", cost_cc="EUR"),
-            dict(sys_id="2", ip_address="1.1.1.2", fqdn="a2", cost_cc="USD"),
+            dict(sys_id="1", fqdn="a1", cost_cc="EUR"),
+            dict(sys_id="2", fqdn="a2", cost_cc="USD"),
         ]
 
         columns = []
-        host_source = "ip_address"
         name_source = "fqdn"
         compose = {}
         groups = {}
@@ -721,7 +562,6 @@ class TestInventoryModuleFillConstructed:
         inventory_plugin.fill_constructed(
             records,
             columns,
-            host_source,
             name_source,
             compose,
             groups,
@@ -741,7 +581,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a1_groups) == set(("cc_EUR",))
 
         assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+            inventory_file=None, inventory_dir=None
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
@@ -749,7 +589,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a2_groups) == set(("cc_USD",))
 
         assert a2.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.2"
+            inventory_file=None, inventory_dir=None
         )
 
     def test_construction_keyed_groups_with_parent(self, inventory_plugin):
@@ -759,7 +599,6 @@ class TestInventoryModuleFillConstructed:
         ]
 
         columns = []
-        host_source = "ip_address"
         name_source = "fqdn"
         compose = {}
         groups = {}
@@ -777,7 +616,6 @@ class TestInventoryModuleFillConstructed:
         inventory_plugin.fill_constructed(
             records,
             columns,
-            host_source,
             name_source,
             compose,
             groups,
@@ -797,7 +635,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a1_groups) == set(("cc_EUR", "ip_address"))
 
         assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+            inventory_file=None, inventory_dir=None
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
@@ -805,7 +643,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a2_groups) == set(("cc_USD", "ip_address"))
 
         assert a2.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.2"
+            inventory_file=None, inventory_dir=None
         )
 
     def test_construction_enhanced(self, inventory_plugin):
@@ -827,7 +665,6 @@ class TestInventoryModuleFillConstructed:
         ]
 
         columns = []
-        host_source = "ip_address"
         name_source = "fqdn"
         compose = {}
         groups = {}
@@ -838,7 +675,6 @@ class TestInventoryModuleFillConstructed:
         inventory_plugin.fill_constructed(
             records,
             columns,
-            host_source,
             name_source,
             compose,
             groups,
@@ -864,7 +700,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a1_groups) == set(("NY_01_01_Rack_contains",))
 
         assert a1.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.1"
+            inventory_file=None, inventory_dir=None
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
@@ -874,5 +710,5 @@ class TestInventoryModuleFillConstructed:
         )
 
         assert a2.vars == dict(
-            inventory_file=None, inventory_dir=None, ansible_host="1.1.1.2"
+            inventory_file=None, inventory_dir=None
         )
