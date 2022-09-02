@@ -342,20 +342,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             )
         return False
 
-    def query(self, conditions, host_source, name_source, columns):
-        fields = set(columns).union(("sys_id", host_source, name_source), conditions)
-        query = dict(
-            # Request only the table columns we're interested in
-            sysparm_fields=",".join(fields),
-            # Make references and choice fields human-readable
-            sysparm_display_value=True,
-        )
-        sysparm_query = sysparm_query_from_conditions(conditions)
-        if sysparm_query:
-            query["sysparm_query"] = sysparm_query
-
-        return query
-
     def add_host(self, record, name_source):
         if name_source not in record:
             msg = "Inventory hostname source column '{0}' is not present in the record."
