@@ -275,30 +275,6 @@ def _excludes_query(column, excludes):
     return "^".join("{0}!={1}".format(column, i) for i in excludes)
 
 
-def sysparm_query_from_conditions(conditions):
-    """
-    From a dictionary that holds conditions for the specified fields
-    dict(
-       a=dict(includes=["a1", "a2"]),
-       b=dict(excludes=["b1", "b2"]),
-    )
-    creates the value directly usable for the sysparm_query ServiceNow API
-    query parameter: "a=a1^ORa=a2^b!=b1^b!=b2"
-    """
-    param_queries = []
-    for column, val in conditions.items():
-        if val:
-            includes = val.get("includes")
-            if includes:
-                param_queries.append(_includes_query(column, includes))
-            excludes = val.get("excludes")
-            if excludes:
-                param_queries.append(_excludes_query(column, excludes))
-    if param_queries:
-        return "^".join(param_queries)
-    return None
-
-
 def construct_sysparm_query(query):
     parsed, err = parse_query(query)
     if err:
