@@ -265,11 +265,6 @@ from ..module_utils.relations import (
 )
 
 
-def _excludes_query(column, excludes):
-    """column, [v1, v2] -> 'column!=v1^column!=v2'"""
-    return "^".join("{0}!={1}".format(column, i) for i in excludes)
-
-
 def construct_sysparm_query(query):
     parsed, err = parse_query(query)
     if err:
