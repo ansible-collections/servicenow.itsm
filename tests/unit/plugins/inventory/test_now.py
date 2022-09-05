@@ -186,6 +186,26 @@ class TestInstance:
             timeout="timeout",
         )
 
+    def test_get_instance(self, inventory_plugin, mocker):
+        def get_option(_):
+            return dict(a="a", password="b", host="host")
+
+        mocker.patch("os.getenv", new=lambda x: x)
+        mocker.patch.object(inventory_plugin, "get_option", new=get_option)
+
+        instance = inventory_plugin._get_instance()
+
+        assert instance == dict(
+            host="host",
+            username="SN_USERNAME",
+            password="b",
+            client_id="SN_CLIENT_ID",
+            client_secret="SN_SECRET_ID",
+            refresh_token="SN_REFRESH_TOKEN",
+            grant_type="SN_GRANT_TYPE",
+            timeout="SN_TIMEOUT"
+        )
+
 
 class TestInventoryModuleFillEnhancedAutoGroups:
     def test_construction(self, inventory_plugin):
