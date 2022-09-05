@@ -35,9 +35,14 @@ PAYLOAD_FIELDS_MAPPING = dict(
 )
 
 ALLOWED_FIELDS = [
-        "assigned_to", "resolution_code", "short_description",
-        "fix_notes", "cause_notes", "close_notes", "duplicate_of"
-    ]
+    "assigned_to",
+    "resolution_code",
+    "short_description",
+    "fix_notes",
+    "cause_notes",
+    "close_notes",
+    "duplicate_of",
+]
 
 
 class ProblemClient:
