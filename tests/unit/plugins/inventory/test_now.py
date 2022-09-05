@@ -134,7 +134,7 @@ class TestInventoryModuleSetHostvars:
             )
 
 
-class TestMergeInstanceConfig:
+class TestInstance:
     @pytest.mark.parametrize(
         "instance_conf,instance_env,expected",
         [
@@ -159,6 +159,32 @@ class TestMergeInstanceConfig:
         merged_conf = inventory_plugin._merge_instance_config(instance_conf, instance_env)
 
         assert merged_conf == expected
+
+    def test_get_instance_from_env(self, inventory_plugin, mocker):
+        def getenv(key):
+            return dict(
+                SN_HOST="host",
+                SN_USERNAME="username",
+                SN_PASSWORD="password",
+                SN_CLIENT_ID="client_id",
+                SN_SECRET_ID="client_secret",
+                SN_REFRESH_TOKEN="refresh_token",
+                SN_GRANT_TYPE="grant_type",
+                SN_TIMEOUT="timeout",
+            ).get(key)
+        mocker.patch("os.getenv", new=getenv)
+
+        config = inventory_plugin._get_instance_from_env()
+        assert config == dict(
+            host="host",
+            username="username",
+            password="password",
+            client_id="client_id",
+            client_secret="client_secret",
+            refresh_token="refresh_token",
+            grant_type="grant_type",
+            timeout="timeout",
+        )
 
 
 class TestInventoryModuleFillEnhancedAutoGroups:
