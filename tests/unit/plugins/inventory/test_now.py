@@ -138,25 +138,19 @@ class TestInstance:
     @pytest.mark.parametrize(
         "instance_conf,instance_env,expected",
         [
-            (
-                dict(), dict(), dict()
-            ),
-            (
-                dict(a="a"), dict(), dict()
-            ),
-            (
-                dict(), dict(a="a"), dict(a="a")
-            ),
-            (
-                dict(a="a", b="b"), dict(a="c"), dict(a="a")
-            ),
-            (
-                dict(a="a"), dict(a="c", b="b"), dict(a="a", b="b")
-            ),
-        ]
+            (dict(), dict(), dict()),
+            (dict(a="a"), dict(), dict()),
+            (dict(), dict(a="a"), dict(a="a")),
+            (dict(a="a", b="b"), dict(a="c"), dict(a="a")),
+            (dict(a="a"), dict(a="c", b="b"), dict(a="a", b="b")),
+        ],
     )
-    def test_merge_instance_config(self, inventory_plugin, instance_conf, instance_env, expected):
-        merged_conf = inventory_plugin._merge_instance_config(instance_conf, instance_env)
+    def test_merge_instance_config(
+        self, inventory_plugin, instance_conf, instance_env, expected
+    ):
+        merged_conf = inventory_plugin._merge_instance_config(
+            instance_conf, instance_env
+        )
 
         assert merged_conf == expected
 
@@ -172,6 +166,7 @@ class TestInstance:
                 SN_GRANT_TYPE="grant_type",
                 SN_TIMEOUT="timeout",
             ).get(key)
+
         mocker.patch("os.getenv", new=getenv)
 
         config = inventory_plugin._get_instance_from_env()
@@ -187,7 +182,7 @@ class TestInstance:
         )
 
     def test_get_instance(self, inventory_plugin, mocker):
-        def get_option(_):
+        def get_option(*args):
             return dict(a="a", password="b", host="host")
 
         mocker.patch("os.getenv", new=lambda x: x)
@@ -203,7 +198,7 @@ class TestInstance:
             client_secret="SN_SECRET_ID",
             refresh_token="SN_REFRESH_TOKEN",
             grant_type="SN_GRANT_TYPE",
-            timeout="SN_TIMEOUT"
+            timeout="SN_TIMEOUT",
         )
 
 
