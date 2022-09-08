@@ -118,7 +118,8 @@ options:
     description:
       - Base API path for the ServiceNow problem state management scripted API.
       - Used for managing problem state transitions.
-      - Requires I(API for Red Hat Ansible Automation Platform Certified Content Collection) to be installed from the ServiceNow Store.
+      - Requires I(API for Red Hat Ansible Automation Platform Certified Content Collection) application to be installed from the ServiceNow Store
+        U(https://store.servicenow.com/sn_appstore_store.do#!/store/application/9b33c83a1bcc5510b76a0d0fdc4bcb21/1.0.0?sl=sh).
       - Considered mostly for development and testing purposes, as in most cases the default value should be fine.
       - Starting with release I(Rome), I(ServiceNow Table API) no longer supports problem state transitions, which is worked around by using
         this server-side scripted REST API resource.
