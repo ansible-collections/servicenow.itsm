@@ -1,2 +1,2 @@
 breaking_changes:
-- plugins/inventory/now.py - Removed parameters ansible_host_source, named_groups and group_by (https://github.com/ansible-collections/servicenow.itsm/pull/213)
+- plugins/inventory/now.py - Removed parameters ``ansible_host_source``, ``named_groups`` and ``group_by`` (https://github.com/ansible-collections/servicenow.itsm/pull/213).
