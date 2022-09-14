@@ -9,6 +9,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+
 DOCUMENTATION = r"""
 module: problem
 
@@ -17,6 +18,7 @@ author:
   - Miha Dolinar (@mdolin)
   - Tadej Borovsak (@tadeboro)
   - Matej Pevec (@mysteriouswolf)
+  - Uros Pascinski (@uscinski)
 
 short_description: Manage ServiceNow problems
 
@@ -112,6 +114,18 @@ options:
         documentation on creating problems at
         U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/task/create-a-problem-v2.html).
     type: dict
+  base_api_path:
+    description:
+      - Base API path for the ServiceNow problem state management scripted API.
+      - Used for managing problem state transitions.
+      - Requires I(API for Red Hat Ansible Automation Platform Certified Content Collection) application to be installed from the ServiceNow Store
+        U(https://store.servicenow.com/sn_appstore_store.do#!/store/application/9b33c83a1bcc5510b76a0d0fdc4bcb21/1.0.0?sl=sh).
+      - Considered mostly for development and testing purposes, as in most cases the default value should be fine.
+      - Starting with release I(Rome), I(ServiceNow Table API) no longer supports problem state transitions, which is worked around by using
+        this server-side scripted REST API resource.
+    type: str
+    default: /api/x_rhtpp_ansible/problem
+    version_added: 2.0.0
 """
 
 EXAMPLES = r"""
@@ -310,7 +324,16 @@ from ..module_utils import (
     utils,
     validation,
 )
-from ..module_utils.problem import PAYLOAD_FIELDS_MAPPING
+from ..module_utils.problem import (
+    PAYLOAD_FIELDS_MAPPING,
+    ProblemClient,
+    NEW,
+    ASSESS,
+    RCA,
+    FIX,
+    RESOLVED,
+    CLOSED,
+)
 from ..module_utils.utils import get_mapper
 
 DIRECT_PAYLOAD_FIELDS = (
@@ -327,7 +350,9 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client, attachment_client):
-    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(
+        module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
+    )
     query = utils.filter_dict(module.params, "sys_id", "number")
     problem = table_client.get_record("problem", query)
 
@@ -343,56 +368,52 @@ def ensure_absent(module, table_client, attachment_client):
     return False, None, dict(before=None, after=None)
 
 
-def build_payload(module, table_client):
-    payload = (module.params["other"] or {}).copy()
-    payload.update(utils.filter_dict(module.params, *DIRECT_PAYLOAD_FIELDS))
+def build_payload(sn_params, table_client):
+    sn_payload = (sn_params["other"] or {}).copy()
+    sn_payload.update(utils.filter_dict(sn_params, *DIRECT_PAYLOAD_FIELDS))
 
-    if module.params["state"]:
-        # If we set 'state' field directly when modifying an existing record,
-        # ServiceNow API sometimes ignores the desired state.
-        # This happens for state transitions other than new -> assessment.
-        # Using 'problem_state' instead of 'state' resolves the issue.
-        payload["problem_state"] = module.params["state"]
-    if module.params["assigned_to"]:
-        user = table.find_user(table_client, module.params["assigned_to"])
-        payload["assigned_to"] = user["sys_id"]
-    if module.params["duplicate_of"]:
+    if sn_params["assigned_to"]:
+        user = table.find_user(table_client, sn_params["assigned_to"])
+        sn_payload["assigned_to"] = user["sys_id"]
+    if sn_params["duplicate_of"]:
         problem = table_client.get_record(
             "problem",
-            query=dict(number=module.params["duplicate_of"]),
+            query=dict(number=sn_params["duplicate_of"]),
             must_exist=True,
         )
-        payload["duplicate_of"] = problem["sys_id"]
+        sn_payload["duplicate_of"] = problem["sys_id"]
 
-    return payload
+    return sn_payload
 
 
-def validate_params(params, problem=None):
+def validate_params(sn_params, sn_problem=None):
     # Validation is compliant with the data policies described at
-    # https://docs.servicenow.com/bundle/madrid-release-notes/page/release-notes/it-service-management/problem-management-rn.html
-    # If we do not enforce this, the user gets 403 on invalid input.
-    state = params["state"]
+    # https://community.servicenow.com/sys_attachment_java.do?sys_id=6f37cbf0dbb87708fece0b55ca961902
+    # If we do not enforce this, the server refuses to advance problem state and to update supplementary fields.
+    state = sn_params["state"]
     missing = []
-    if state in ("new", "assessment", "analysis", "in_progress", "resolved", "closed"):
+    if state in (NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED):
         missing.extend(
             validation.missing_from_params_and_remote(
-                ["short_description"], params, problem
+                ["short_description"], sn_params, sn_problem
             )
         )
-    if state in ("assessment", "analysis", "in_progress", "resolved", "closed"):
-        missing.extend(
-            validation.missing_from_params_and_remote(["assigned_to"], params, problem)
-        )
-    if state in ("resolved", "closed"):
+    if state in (ASSESS, RCA, FIX, RESOLVED, CLOSED):
         missing.extend(
             validation.missing_from_params_and_remote(
-                ["resolution_code"], params, problem
+                ["assigned_to"], sn_params, sn_problem
             )
         )
-    if state == "in_progress":
+    if state in (RESOLVED, CLOSED):
         missing.extend(
             validation.missing_from_params_and_remote(
-                ["cause_notes", "fix_notes"], params, problem
+                ["resolution_code"], sn_params, sn_problem
+            )
+        )
+    if state == FIX:
+        missing.extend(
+            validation.missing_from_params_and_remote(
+                ["cause_notes", "fix_notes"], sn_params, sn_problem
             )
         )
     resolution_params = dict(
@@ -401,10 +422,10 @@ def validate_params(params, problem=None):
         canceled=["close_notes"],
         duplicate=["duplicate_of"],
     )
-    if params["resolution_code"]:
+    if sn_params["resolution_code"]:
         missing.extend(
             validation.missing_from_params_and_remote(
-                resolution_params[params["resolution_code"]], params, problem
+                resolution_params[sn_params["resolution_code"]], sn_params, sn_problem
             )
         )
 
@@ -414,21 +435,45 @@ def validate_params(params, problem=None):
         )
 
 
-def ensure_present(module, table_client, attachment_client):
-    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
+def validate_mapping(module_params, mapper):
+    problem_mapping = module_params.get("problem_mapping")
+    if not problem_mapping:
+        return
+    accepted_values = dict(
+        state=(NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED, "absent", None),
+        problem_state=(NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED, None),
+        impact=("1", "2", "3", None),
+        urgency=("1", "2", "3", None),
+    )
+    for param, values in accepted_values.items():
+        if param in problem_mapping and param in module_params:
+            value = module_params[param]
+            sn_value = mapper.to_snow({param: value})
+            if sn_value.get(param) not in values:
+                raise errors.ServiceNowError(
+                    "Option {0} does not use a value from the mapping: {1}".format(
+                        param, value
+                    )
+                )
+
+
+def ensure_present(module, problem_client, table_client, attachment_client):
+    mapper = get_mapper(
+        module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
+    )
+    validate_mapping(module.params, mapper)
     query = utils.filter_dict(module.params, "sys_id", "number")
-    payload = build_payload(module, table_client)
+    sn_params = mapper.to_snow(module.params)
+    sn_payload = build_payload(sn_params, table_client)
     attachments = attachment.transform_metadata_list(
         module.params["attachments"], module.sha256
     )
 
     if not query:
         # User did not specify existing problem, so we need to create a new one.
-        validate_params(module.params)
+        validate_params(sn_params)
         new = mapper.to_ansible(
-            table_client.create_record(
-                "problem", mapper.to_snow(payload), module.check_mode
-            )
+            table_client.create_record("problem", sn_payload, module.check_mode)
         )
 
         # When we execute in check mode, new["sys_id"] is not defined.
@@ -443,24 +488,37 @@ def ensure_present(module, table_client, attachment_client):
 
         return True, new, dict(before=None, after=new)
 
-    old = mapper.to_ansible(table_client.get_record("problem", query, must_exist=True))
+    sn_old = table_client.get_record("problem", query, must_exist=True)
 
-    old["attachments"] = attachment_client.list_records(
-        dict(table_name="problem", table_sys_id=old["sys_id"])
+    sn_old["attachments"] = attachment_client.list_records(
+        dict(table_name="problem", table_sys_id=sn_old["sys_id"])
     )
 
-    if utils.is_superset(old, payload) and not any(
+    old = mapper.to_ansible(sn_old)
+
+    if utils.is_superset(sn_old, sn_payload) and not any(
         attachment.are_changed(old["attachments"], attachments)
     ):
-        # No change in parameters we are interested in - nothing to do.
+        # No change in parameters we are interested in -- nothing to do.
         return False, old, dict(before=old, after=old)
 
-    validate_params(module.params, old)
-    new = mapper.to_ansible(
-        table_client.update_record(
-            "problem", mapper.to_snow(old), mapper.to_snow(payload), module.check_mode
-        )
+    validate_params(sn_params, sn_old)
+    sn_new = table_client.update_record(
+        "problem", sn_old, sn_payload, module.check_mode
     )
+
+    # Was the problem state advanced?
+    # Starting with release Rome, Table API no longer transitions problem
+    # state. Try to advance state with the ServiceNow Store app.
+    if "state" in sn_payload and sn_new["state"] != sn_payload["state"]:
+        # Does not happen when check_mode is True
+        sn_new = problem_client.update_record(
+            sn_new["number"],
+            sn_payload,
+        )
+
+    new = mapper.to_ansible(sn_new)
+
     new["attachments"] = attachment_client.update_records(
         "problem",
         old["sys_id"],
@@ -472,10 +530,10 @@ def ensure_present(module, table_client, attachment_client):
     return True, new, dict(before=old, after=new)
 
 
-def run(module, table_client, attachment_client):
+def run(module, problem_client, table_client, attachment_client):
     if module.params["state"] == "absent":
         return ensure_absent(module, table_client, attachment_client)
-    return ensure_present(module, table_client, attachment_client)
+    return ensure_present(module, problem_client, table_client, attachment_client)
 
 
 def main():
@@ -525,6 +583,10 @@ def main():
         other=dict(
             type="dict",
         ),
+        base_api_path=dict(
+            type="str",
+            default="/api/x_rhtpp_ansible/problem",
+        ),
     )
 
     module = AnsibleModule(
@@ -539,7 +601,10 @@ def main():
         snow_client = client.Client(**module.params["instance"])
         table_client = table.TableClient(snow_client)
         attachment_client = attachment.AttachmentClient(snow_client)
-        changed, record, diff = run(module, table_client, attachment_client)
+        problem_client = ProblemClient(snow_client, module.params["base_api_path"])
+        changed, record, diff = run(
+            module, problem_client, table_client, attachment_client
+        )
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))

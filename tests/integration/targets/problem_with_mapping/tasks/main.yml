@@ -9,11 +9,15 @@
       problem:
         state:
           101: "my_new"
-          102: "asses"
+          102: "assess"
           103: "root_cause"
           104: "progress"
           106: "resolved"
           107: "closed"
+        impact:
+          1: "highest"
+        urgency:
+          2: "normal"
 
   block:
     - name: Retrieve problem records
@@ -51,10 +55,11 @@
 
     - name: Verify that a new record was created
       servicenow.itsm.problem_info:
+        sys_id: "{{ first_problem.record.sys_id }}"
       register: result
     - ansible.builtin.assert:
         that:
-          - result.records | length == initial.records | length + 1
+          - result.records | length == 1
 
     - name: Create a problem (idempotence)
       servicenow.itsm.problem:
@@ -68,9 +73,10 @@
     - name: Update the problem (check mode)
       servicenow.itsm.problem: &problem-update
         sys_id: "{{ first_problem.record.sys_id }}"
+        problem_mapping: "{{ mapping.problem }}"
         description: abc
-        impact: high
-        urgency: medium
+        impact: highest
+        urgency: normal
         other:
           user_input: notes
       check_mode: true
@@ -80,8 +86,8 @@
           - updated_problem is changed
           - updated_problem.record.sys_id == first_problem.record.sys_id
           - updated_problem.record.description == "abc"
-          - updated_problem.record.impact == "high"
-          - updated_problem.record.urgency == "medium"
+          - updated_problem.record.impact == "highest"
+          - updated_problem.record.urgency == "normal"
           - updated_problem.record.user_input == "notes"
 
     - name: Verify modification in check mode did not update the record
@@ -107,6 +113,7 @@
     - name: Assign the problem to a non-existent user
       servicenow.itsm.problem:
         sys_id: "{{ first_problem.record.sys_id }}"
+        problem_mapping: "{{ mapping.problem }}"
         state: assess
         assigned_to: nonexistent.user
       register: result
@@ -119,95 +126,35 @@
     - name: Assign the problem for assessment
       servicenow.itsm.problem:
         sys_id: "{{ first_problem.record.sys_id }}"
+        problem_mapping: "{{ mapping.problem }}"
         state: assess
         assigned_to: problem.manager
+        urgency: normal
       register: assigned_problem
-
     - ansible.builtin.assert:
         that:
           - assigned_problem is changed
           - assigned_problem.record.state == "assess"
           - assigned_problem.record.assigned_to != ""
+          - assigned_problem.record.urgency == "normal"
 
     - name: Mark the problem for root cause analysis
       servicenow.itsm.problem:
         sys_id: "{{ assigned_problem.record.sys_id }}"
-        state: root_cause_analysis
+        problem_mapping: "{{ mapping.problem }}"
+        state: root_cause
         cause_notes: cause
       register: analyzed_problem
     - ansible.builtin.assert:
         that:
           - analyzed_problem is changed
-          - analyzed_problem.record.state == "root_cause_analysis"
+          - analyzed_problem.record.state == "root_cause"
           - analyzed_problem.record.cause_notes == "cause"
-
-    - name: Start fixing the problem
-      servicenow.itsm.problem:
-        sys_id: "{{ analyzed_problem.record.sys_id }}"
-        state: fix_in_progress
-        fix_notes: fix
-      register: in_progress_problem
-    - ansible.builtin.assert:
-        that:
-          - in_progress_problem is changed
-          - in_progress_problem.record.state == "fix_in_progress"
-          - in_progress_problem.record.fix_notes == "fix"
-
-    - name: Resolve the problem
-      servicenow.itsm.problem:
-        sys_id: "{{ in_progress_problem.record.sys_id }}"
-        state: resolved
-        resolution_code: fix_applied
-      register: resolved_problem
-    - ansible.builtin.assert:
-        that:
-          - resolved_problem is changed
-          - resolved_problem.record.state == "resolved"
-          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
-          #- resolved_problem.record.resolution_code == "fix_applied"
-
-# FIXME: The task below causes '403 - Data Policy Exception: The following fields are mandatory: Resolution code'
-# despite resolution_code being present in the request.
-#
-#    - name: Close the problem
-#      servicenow.itsm.problem:
-#        sys_id: "{{ resolved_problem.record.sys_id }}"
-#        state: closed
-#        resolution_code: fix_applied
-#      register: closed_problem
-#    - ansible.builtin.assert:
-#        that:
-#          - closed_problem is changed
-#          - closed_problem.record.state == "resolved"
-#          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
-#          #- closed_problem.record.resolution_code == "fix_applied"
-
-
-    - name: Create a bogus problem for cancellation
-      servicenow.itsm.problem:
-        state: assess
-        short_description: cancel-me
-        assigned_to: problem.manager
-      register: bogus_problem
-
-    - name: Cancel a problem
-      servicenow.itsm.problem:
-        sys_id: "{{ bogus_problem.record.sys_id }}"
-        state: resolved
-        resolution_code: canceled
-        close_notes: closing
-      register: result
-    - ansible.builtin.assert:
-        that:
-          - result is changed
-          - result.record.state == "resolved"
-          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
-          #- result.record.resolution_code == "canceled"
-          - result.record.close_notes == "closing"
 
     - name: Resolve a problem as a duplicate of a non-existent problem
       servicenow.itsm.problem:
-        sys_id: "{{ assigned_problem.record.sys_id }}"
+        sys_id: "{{ analyzed_problem.record.sys_id }}"
+        problem_mapping: "{{ mapping.problem }}"
         state: closed
         resolution_code: duplicate
         duplicate_of: nonexistent-problem
@@ -218,9 +165,89 @@
           - result is failed
           - "'No problem records match' in result.msg"
 
+    - name: Start fixing the problem
+      servicenow.itsm.problem:
+        sys_id: "{{ analyzed_problem.record.sys_id }}"
+        problem_mapping: "{{ mapping.problem }}"
+        state: progress
+        fix_notes: fix
+      register: in_progress_problem
+    - ansible.builtin.assert:
+        that:
+          - in_progress_problem is changed
+          - in_progress_problem.record.state == "progress"
+          - in_progress_problem.record.fix_notes == "fix"
+
+    - name: Resolve the problem
+      servicenow.itsm.problem:
+        sys_id: "{{ in_progress_problem.record.sys_id }}"
+        problem_mapping: "{{ mapping.problem }}"
+        state: resolved
+        resolution_code: fix_applied
+      register: resolved_problem
+    - ansible.builtin.assert:
+        that:
+          - resolved_problem is changed
+          - resolved_problem.record.state == "resolved"
+          - resolved_problem.record.resolution_code == "fix_applied"
+
+    - name: Close the problem
+      servicenow.itsm.problem:
+        sys_id: "{{ resolved_problem.record.sys_id }}"
+        problem_mapping: "{{ mapping.problem }}"
+        state: closed
+        resolution_code: fix_applied
+        impact: highest
+      register: closed_problem
+    - ansible.builtin.assert:
+        that:
+          - closed_problem is changed
+          - closed_problem.record.state == "closed"
+          - closed_problem.record.resolution_code == "fix_applied"
+          - closed_problem.record.impact == "highest"
+
+
+    - name: Create a bogus problem for cancellation
+      servicenow.itsm.problem:
+        problem_mapping: "{{ mapping.problem }}"
+        state: assess
+        short_description: cancel-me
+        assigned_to: problem.manager
+      register: bogus_problem
+
+    - name: Cancel a problem (fail)
+      servicenow.itsm.problem:
+        sys_id: "{{ bogus_problem.record.sys_id }}"
+        problem_mapping: "{{ mapping.problem }}"
+        state: resolved
+        resolution_code: canceled
+        close_notes: closing
+      register: result
+      ignore_errors: true
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Problem state transition from state 102 to 106 is not possible' in result.msg"
+
+    - name: Cancel a problem
+      servicenow.itsm.problem:
+        sys_id: "{{ bogus_problem.record.sys_id }}"
+        problem_mapping: "{{ mapping.problem }}"
+        state: closed
+        resolution_code: canceled
+        close_notes: closing
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.state == "closed"
+          - result.record.resolution_code == "canceled"
+          - result.record.close_notes == "closing"
+
     - name: Create a resolved problem that was fixed
       servicenow.itsm.problem:
         state: resolved
+        problem_mapping: "{{ mapping.problem }}"
         short_description: fixed-problem
         assigned_to: problem.manager
         resolution_code: fix_applied
@@ -236,6 +263,7 @@
 
     - name: Create a resolved problem with accepted risk
       servicenow.itsm.problem:
+        problem_mapping: "{{ mapping.problem }}"
         state: resolved
         short_description: accepted-problem
         assigned_to: problem.manager
@@ -250,7 +278,7 @@
           - risk_accepted_problem.record.cause_notes == "cause"
           - risk_accepted_problem.record.close_notes == "close"
 
-    - name: Get specific problem info by sysparm query
+    - name: Get specific problem info by query
       servicenow.itsm.problem_info:
         query:
          - number: = {{ risk_accepted_problem.record.number }}
@@ -273,40 +301,43 @@
           - result.records.0.cause_notes == "cause"
           - result.records.0.close_notes == "close"
 
-    - name: Get problem info by sysparm query - state and short_description
+    - name: Get problem info by query - state and short_description
       servicenow.itsm.problem_info:
         query:
          - state: = resolved
            short_description: = accepted-problem
       register: result
-
     - ansible.builtin.assert:
         that:
           - result.records.0.state == "resolved"
           - result.records.0.short_description == "accepted-problem"
 
-# FIXME: The task below causes '403 - Data Policy Exception: The following fields are mandatory: Resolution code'
-# despite resolution_code being present in the request.
-#
-#    - name: Resolve a problem as a duplicate of another problem
-#      servicenow.itsm.problem:
-#        sys_id: "{{ assigned_problem.record.sys_id }}"
-#        state: closed
-#        resolution_code: duplicate
-#        duplicate_of: "{{ fixed_problem.record.number }}"
-#      register: result
-#    - ansible.builtin.debug:
-#        var: result.record
-#    - ansible.builtin.assert:
-#        that:
-#          - result is changed
-#          - result.record.state == "closed"
-#          - result.record.duplicate_of == fixed_problem.record.sys_id
-#          # FIXME: Uncomment the line below once the issue with setting resolution code at the ServiceNow side is resolved.
-#          #- result.record.resolution_code == "duplicate"
+    - name: Create a problem for resolution as a duplicate
+      servicenow.itsm.problem:
+        problem_mapping: "{{ mapping.problem }}"
+        state: root_cause
+        assigned_to: problem.manager
+        short_description: a-duplicate
+      register: duplicated_problem
+
+    - name: Resolve a problem as a duplicate of another problem
+      servicenow.itsm.problem:
+        problem_mapping: "{{ mapping.problem }}"
+        sys_id: "{{ duplicated_problem.record.sys_id }}"
+        state: closed
+        resolution_code: duplicate
+        duplicate_of: "{{ assigned_problem.record.number }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.state == "closed"
+          - result.record.duplicate_of == assigned_problem.record.sys_id
+          - result.record.resolution_code == "duplicate"
 
     - name: Delete a problem (check mode)
       servicenow.itsm.problem: &problem-delete
+        problem_mapping: "{{ mapping.problem }}"
         sys_id: "{{ first_problem.record.sys_id }}"
         state: absent
       check_mode: true
@@ -353,7 +384,6 @@
          - subcategory: = email
       ignore_errors: true
       register: result
-
     - ansible.builtin.assert:
         that:
           - result is failed
@@ -366,7 +396,6 @@
          - subcategory: == email
       ignore_errors: true
       register: result
-
     - ansible.builtin.assert:
         that:
           - result is failed
@@ -378,7 +407,6 @@
         query:
          - subcategory: = email
       register: result
-
     - ansible.builtin.assert:
         that:
           - "'email' in result.records[0].subcategory"
@@ -390,7 +418,6 @@
          - short_description: ISEMPTY SAP
       ignore_errors: true
       register: result
-
     - ansible.builtin.assert:
         that:
           - result is failed
@@ -402,7 +429,6 @@
         query:
          - short_description: ISNOTEMPTY
       register: result
-
     - ansible.builtin.assert:
         that:
           - result.records[0].short_description != ""
