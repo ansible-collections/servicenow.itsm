@@ -114,104 +114,14 @@ options:
   enhanced:
     description:
       - Enable enhanced inventory which provides relationship information from CMDB.
-      - Mutually exclusive with deprecated options I(named_groups) and I(group_by).
     type: bool
     default: false
     version_added: 1.3.0
-  ansible_host_source:
-    description:
-      - Host variable to use as I(ansible_host) when generating inventory hosts.
-    type: str
-    default: ip_address
-    deprecated:
-      why: Constructed features made this obsolete
-      version: 2.0.0
-      collection_name: servicenow.itsm
-      alternatives: Use the 'compose' parameter to set the 'ansible_host' variable
   inventory_hostname_source:
     type: str
     description:
       - The column to use for inventory hostnames.
     default: name
-  named_groups:
-    description:
-      - Group hosts in the provided groups, according to the specified criteria.
-      - Only the specified groups will be created.
-      - Mutually exclusive with I(group_by).
-    type: dict
-    default: {}
-    deprecated:
-      why: Constructed features made this obsolete
-      version: 2.0.0
-      collection_name: servicenow.itsm
-      alternatives: Use the 'groups' parameter instead
-    suboptions:
-      <group_name>:
-        type: dict
-        description:
-          - The group to create.
-        default: {}
-        suboptions:
-          <column>:
-            type: dict
-            description: Criteria for including a host in this group.
-            default: {}
-            suboptions:
-              includes:
-                description:
-                  - Add a host to the group only if <column> matches any of
-                    the values specified in this list.
-                  - For reference fields, you need to provide C(sys_id).
-                  - Mutually exclusive with I(excludes).
-                type: list
-                default: None
-                elements: str
-              excludes:
-                description:
-                  - Add a host to the group if <column> matches any value
-                    except the ones specified in this list.
-                  - For reference fields, you need to provide C(sys_id).
-                  - Mutually exclusive with I(includes).
-                type: list
-                elements: str
-                default: None
-  group_by:
-    description:
-      - Group hosts automatically, according to the values of the specified columns.
-      - You can include or exclude records from being added to the inventory
-        by limiting the column values with I(include) or I(exclude).
-      - Mutually exclusive with I(named_groups).
-    type: dict
-    default: {}
-    deprecated:
-      why: Constructed features made this obsolete
-      version: 2.0.0
-      collection_name: servicenow.itsm
-      alternatives: Use the 'query' and 'keyed_groups' parameters instead
-    suboptions:
-      <column>:
-        type: dict
-        description: Column to use when grouping inventory hosts into groups.
-        default: {}
-        suboptions:
-          includes:
-            description:
-              - Create Ansible inventory groups only for records with <column>
-                matching any of the values specified in this list.
-              - For reference fields, you need to provide C(sys_id).
-              - Mutually exclusive with I(excludes).
-            type: list
-            default: None
-            elements: str
-          excludes:
-            description:
-              - Create Ansible inventory groups only for records with <column>
-                matching any value except the ones specified in this list.
-              - For reference fields, you need to provide C(sys_id).
-              - Mutually exclusive with I(includes).
-            type: list
-            elements: str
-            default: None
 """
 
 EXAMPLES = r"""
@@ -331,63 +241,6 @@ compose:
 # |  |  |--{cost = 2,160 USD}
 # |  |  |--{cpu_type = Intel}
 # |  |  |--{name = INSIGHT-NY-03}
-
-# NOTE: All examples from here on are deprecated and should not be used when writing new
-# inventory sources.
-
-# Group hosts automatically, according to values of manufacturer and os columns.
-# Include only records with the specified operating systems.
-# Groups will most likely overlap.
-plugin: servicenow.itsm.now
-group_by:
-  manufacturer:
-  os:
-    includes:
-      - Linux Red Hat
-      - Windows XP
-
-# `ansible-inventory -i inventory.now.yaml --graph` output:
-# @all:
-#  |--@Dell_Inc_:
-#  |  |--DatabaseServer1
-#  |  |--DatabaseServer2
-#  |  |--INSIGHT-NY-03
-#  |--@Lenovo:
-#  |  |--FileServerFloor1
-#  |  |--FileServerFloor2
-#  |--@Linux_Red_Hat:
-#  |  |--DatabaseServer1
-#  |  |--DatabaseServer2
-#  |--@Windows_XP:
-#  |  |--FileServerFloor1
-#  |  |--FileServerFloor2
-#  |  |--INSIGHT-NY-03
-#  |--@ungrouped:
-
-
-# Group hosts into named groups, according to the specified criteria.
-# Below example creates a single group containing hosts that match
-# all the criteria.
-named_groups:
-  non_windows_prod_servers:
-    classification:
-      includes: [ Production ]
-    os:
-      excludes:
-        - Windows XP
-        - Windows 2000
-        - Windows 2000 Server
-        - Windows 2003 Standard
-
-# `ansible-inventory -i inventory.now.yaml --graph` output:
-# @all:
-#  |--@non_windows_prod_servers:
-#  |  |--DatabaseServer2
-#  |  |--PS LinuxApp01
-#  |  |--PS LinuxApp02
-#  |  |--lnux100
-#  |  |--lnux101
-#  |--@ungrouped:
 """
 
 import os
@@ -412,57 +265,22 @@ from ..module_utils.relations import (
 )
 
 
-def _includes_query(column, includes):
-    """column, [v1, v2] -> 'column=v1^ORcolumn=v2'"""
-    return "^OR".join("{0}={1}".format(column, i) for i in includes)
-
-
-def _excludes_query(column, excludes):
-    """column, [v1, v2] -> 'column!=v1^column!=v2'"""
-    return "^".join("{0}!={1}".format(column, i) for i in excludes)
-
-
-def sysparm_query_from_conditions(conditions):
-    """
-    From a dictionary that holds conditions for the specified fields
-    dict(
-       a=dict(includes=["a1", "a2"]),
-       b=dict(excludes=["b1", "b2"]),
-    )
-    creates the value directly usable for the sysparm_query ServiceNow API
-    query parameter: "a=a1^ORa=a2^b!=b1^b!=b2"
-    """
-    param_queries = []
-    for column, val in conditions.items():
-        if val:
-            includes = val.get("includes")
-            if includes:
-                param_queries.append(_includes_query(column, includes))
-            excludes = val.get("excludes")
-            if excludes:
-                param_queries.append(_excludes_query(column, excludes))
-    if param_queries:
-        return "^".join(param_queries)
-    return None
-
-
-def construct_sysparm_query(query):
+def construct_sysparm_query(query, is_encoded_query):
+    if is_encoded_query:
+        return query
     parsed, err = parse_query(query)
     if err:
         raise AnsibleParserError(err)
     return serialize_query(parsed)
 
 
-def fetch_records(table_client, table, query, fields=None, raw_input=False):
+def fetch_records(table_client, table, query, fields=None, is_encoded_query=False):
     snow_query = dict(
         # Make references and choice fields human-readable
         sysparm_display_value=True,
     )
     if query:
-        if raw_input:
-            snow_query["sysparm_query"] = query
-        else:
-            snow_query["sysparm_query"] = construct_sysparm_query(query)
+        snow_query["sysparm_query"] = construct_sysparm_query(query, is_encoded_query)
     if fields:
         snow_query["sysparm_fields"] = ",".join(fields)
 
@@ -489,38 +307,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             )
         return False
 
-    def _verify_includes_and_excludes(self, conditions):
-        if conditions and all(i in conditions for i in ["includes", "excludes"]):
-            raise AnsibleParserError(
-                "Invalid configuration: 'includes' and 'excludes' are mutually exclusive."
-            )
-
-    def validate_grouping_conditions(self, named_groups, group_by):
-        for group, column in named_groups.items():
-            for conditions in column.values():
-                self._verify_includes_and_excludes(conditions)
-        for column, conditions in group_by.items():
-            self._verify_includes_and_excludes(conditions)
-
-    def query(self, conditions, host_source, name_source, columns):
-        fields = set(columns).union(("sys_id", host_source, name_source), conditions)
-        query = dict(
-            # Request only the table columns we're interested in
-            sysparm_fields=",".join(fields),
-            # Make references and choice fields human-readable
-            sysparm_display_value=True,
-        )
-        sysparm_query = sysparm_query_from_conditions(conditions)
-        if sysparm_query:
-            query["sysparm_query"] = sysparm_query
-
-        return query
-
-    def add_host(self, record, host_source, name_source):
-        if host_source not in record:
-            msg = "Ansible host source column '{0}' is not present in the record."
-            raise AnsibleParserError(msg.format(host_source))
-
+    def add_host(self, record, name_source):
         if name_source not in record:
             msg = "Inventory hostname source column '{0}' is not present in the record."
             raise AnsibleParserError(msg.format(name_source))
@@ -528,13 +315,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         inventory_hostname = record[name_source]
         if inventory_hostname:
             host = self.inventory.add_host(inventory_hostname)
-            if record[host_source]:
-                self.inventory.set_variable(host, "ansible_host", record[host_source])
-            else:
-                self.display.warning(
-                    "The ansible_host variable for host {0} is empty.".format(host)
-                )
-
             return host
 
         self.display.warning(
@@ -552,52 +332,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         for k in columns:
             self.inventory.set_variable(host, k, record[k])
 
-    def fill_auto_groups(
-        self, table_client, table, host_source, name_source, columns, group_by
-    ):
-        records = table_client.list_records(
-            table, query=self.query(group_by, host_source, name_source, columns)
-        )
-
-        for record in records:
-            host = self.add_host(record, host_source, name_source)
-            if host:
-                for category in group_by.keys():
-                    group_name = to_safe_group_name(record[category])
-                    # Only truthy names are allowed
-                    # Column values can be set to "None", and we don't want those
-                    if group_name:
-                        self.inventory.add_group(group_name)
-                        self.inventory.add_host(host, group=group_name)
-                    else:
-                        msg = (
-                            "Encountered invalid group name '{1}' for host {0}. "
-                            "Group will not be created."
-                        ).format(group_name, host)
-                        self.display.warning(msg)
-
-                self.set_hostvars(host, record, columns)
-
-    def fill_desired_groups(
-        self, table_client, table, host_source, name_source, columns, named_groups
-    ):
-        for group_name, group_conditions in named_groups.items():
-            self.inventory.add_group(group_name)
-
-            records = table_client.list_records(
-                table,
-                query=self.query(group_conditions, host_source, name_source, columns),
-            )
-            for r in records:
-                host = self.add_host(r, host_source, name_source)
-                self.inventory.add_host(host, group=group_name)
-                self.set_hostvars(host, r, columns)
-
     def fill_constructed(
         self,
         records,
         columns,
-        host_source,
         name_source,
         compose,
         groups,
@@ -606,7 +344,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         enhanced,
     ):
         for record in records:
-            host = self.add_host(record, host_source, name_source)
+            host = self.add_host(record, name_source)
             if host:
                 self.set_hostvars(host, record, columns)
                 self._set_composite_vars(compose, record, host, strict)
@@ -648,35 +386,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         instance_env = self._get_instance_from_env()
         return self._merge_instance_config(instance_config, instance_env)
 
-    # The next function is a temporary workaround for
-    # https://github.com/ansible/ansible/issues/73051. In an ideal world, Ansible would
-    # print the deprecation messages in its own. But until that bug is fixed, we need to
-    # manually print the warning if we want our users to see the deprecation message
-    # during the runtime.
-    def _warn_about_deprecations(self):
-        for opt in ("ansible_host_source", "named_groups", "group_by"):
-            if self.get_option(opt):
-                self.display.warning(
-                    "'{0}' option is deprecated since version 1.2.0 and will be "
-                    "removed in 2.0.0.".format(opt)
-                )
-
     def parse(self, inventory, loader, path, cache=True):
         super(InventoryModule, self).parse(inventory, loader, path)
 
         self._read_config_data(path)
-
-        self._warn_about_deprecations()
-
-        named_groups = self.get_option("named_groups")
-        group_by = self.get_option("group_by")
-        if named_groups and group_by:
-            raise AnsibleParserError(
-                "Invalid configuration: 'named_groups' and 'group_by' are mutually "
-                "exclusive."
-            )
-
-        self.validate_grouping_conditions(named_groups, group_by)
 
         try:
             client = Client(**self._get_instance())
@@ -685,32 +398,11 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
 
         enhanced = self.get_option("enhanced")
 
-        if enhanced and (named_groups or group_by):
-            raise AnsibleParserError(
-                "Option 'enhanced' is incompatible with options 'named_groups' or "
-                "'group_by'."
-            )
-
         table_client = TableClient(client)
 
         table = self.get_option("table")
-        host_source = self.get_option("ansible_host_source")
         name_source = self.get_option("inventory_hostname_source")
         columns = self.get_option("columns")
-
-        if named_groups:
-            # Creates exactly the specified groups (which might be empty).
-            # Leaves nothing ungrouped.
-            self.fill_desired_groups(
-                table_client, table, host_source, name_source, columns, named_groups
-            )
-            return
-
-        if group_by:
-            self.fill_auto_groups(
-                table_client, table, host_source, name_source, columns, group_by
-            )
-            return
 
         query = self.get_option("query")
         sysparm_query = self.get_option("sysparm_query")
@@ -722,10 +414,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             )
 
         # TODO: Insert caching here once we remove deprecated functionality
-        if sysparm_query:
-            records = fetch_records(table_client, table, query, raw_input=True)
-        else:
-            records = fetch_records(table_client, table, query)
+        records = fetch_records(
+            table_client, table, query, is_encoded_query=bool(sysparm_query)
+        )
 
         if enhanced:
             rel_records = fetch_records(
@@ -736,7 +427,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self.fill_constructed(
             records,
             columns,
-            host_source,
             name_source,
             self.get_option("compose"),
             self.get_option("groups"),
