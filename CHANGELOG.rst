@@ -5,6 +5,19 @@ servicenow.itsm Release Notes
 .. contents:: Topics
 
 
+v1.4.1
+======
+
+Release Summary
+---------------
+
+This is the minor release of the ``servicenow.itsm`` collection.
+
+Minor Changes
+-------------
+
+- added documentation for user mapping (https://github.com/ansible-collections/servicenow.itsm/pull/202).
+
 v1.4.0
 ======
 

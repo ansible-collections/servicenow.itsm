@@ -161,3 +161,12 @@ releases:
     - now_inv_docs.yaml
     - validate.yml
     release_date: '2022-05-12'
+  1.4.1:
+    changes:
+      minor_changes:
+      - added documentation for user mapping (https://github.com/ansible-collections/servicenow.itsm/pull/202).
+      release_summary: This is the minor release of the ``servicenow.itsm`` collection.
+    fragments:
+    - 1.4.1_release_summary.yml
+    - user_mapping.yml
+    release_date: '2022-09-21'

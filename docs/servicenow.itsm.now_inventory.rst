@@ -935,31 +935,6 @@ Examples
     # |  |  |--{cpu_type = Intel}
     # |  |  |--{name = INSIGHT-NY-03}
 
-    # Example of a query which returns hosts where ip_address is not like 192.29.32 AND the name starts with lnux.
-    # AND Query Example
-    plugin: servicenow.itsm.now
-    query:
-      - ip_address: NOT LIKE 192.29.32
-        name: STARTSWITH lnux
-
-    # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
-    # @all:
-    #   |--@ungrouped:
-    #   |  |--lnux101
-
-    # Example of a query which returns hosts where ip_address is not like 192.29.32 OR the name starts with lnux.
-    # OR Query Example
-    plugin: servicenow.itsm.now
-    query:
-      - ip_address: NOT LIKE 192.29.32
-      - name: STARTSWITH lnux
-
-    # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
-    # @all:
-    #   |--@ungrouped:
-    #   |  |--lnux100
-    #   |  |--lnux101
-
     # NOTE: All examples from here on are deprecated and should not be used when writing new
     # inventory sources.
 

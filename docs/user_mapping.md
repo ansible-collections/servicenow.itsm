@@ -10,7 +10,7 @@ Users can customize any `Choice list` within the ServiceNow application. One of 
 |     3 | On hold     | on_hold       |
 |     6 | Resolved    | resolved      |
 |     7 | Closed      | closed        |
-|     8 | Canceled    | canceled      | 
+|     8 | Canceled    | canceled      |
 
 For example, we also want to have the `Testing` state inside the ServiceNow app, so we simply add it under `System Definition -> Choice Lists`.
 
@@ -19,7 +19,7 @@ For example, we also want to have the `Testing` state inside the ServiceNow app,
 |   ... | ...         | ...           |
 |     9 | Testing     | /             |
 
-When we do that, the `servicenow.itsm` collection does not have mapping for the `incident state` named `Testing`. 
+When we do that, the `servicenow.itsm` collection does not have mapping for the `incident state` named `Testing`.
 
 ## Solution
 
