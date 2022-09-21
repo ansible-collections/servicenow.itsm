@@ -123,6 +123,27 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>base_api_path</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0 </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"/api/x_rhtpp_ansible/problem"</div>
+                </td>
+                <td>
+                        <div>Base API path for the ServiceNow problem state management scripted API.</div>
+                        <div>Used for managing problem state transitions.</div>
+                        <div>Requires <em>API for Red Hat Ansible Automation Platform Certified Content Collection</em> application to be installed from the ServiceNow Store <a href='https://store.servicenow.com/sn_appstore_store.do#!/store/application/9b33c83a1bcc5510b76a0d0fdc4bcb21/1.0.0?sl=sh'>https://store.servicenow.com/sn_appstore_store.do#!/store/application/9b33c83a1bcc5510b76a0d0fdc4bcb21/1.0.0?sl=sh</a>.</div>
+                        <div>Considered mostly for development and testing purposes, as in most cases the default value should be fine.</div>
+                        <div>Starting with release <em>Rome</em>, <em>ServiceNow Table API</em> no longer supports problem state transitions, which is worked around by using this server-side scripted REST API resource.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>cause_notes</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -710,3 +731,4 @@ Authors
 - Miha Dolinar (@mdolin)
 - Tadej Borovsak (@tadeboro)
 - Matej Pevec (@mysteriouswolf)
+- Uros Pascinski (@uscinski)

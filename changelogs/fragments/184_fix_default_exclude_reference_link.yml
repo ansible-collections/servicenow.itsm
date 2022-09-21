@@ -1,3 +1,0 @@
----
-minor_changes:
-- TableClient - Remove hardcoded value of sysparm_exclude_reference_link when querying on table api.

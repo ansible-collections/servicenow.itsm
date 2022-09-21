@@ -1,2 +1,0 @@
-minor_changes:
- - configuration_batch_item - now returns result instead only if something was changed or not.

@@ -1,14 +1,14 @@
-.. _servicenow.itsm.configuration_item_batch_module:
+.. _servicenow.itsm.api_module:
 
 
-****************************************
-servicenow.itsm.configuration_item_batch
-****************************************
+*******************
+servicenow.itsm.api
+*******************
 
-**Manage ServiceNow configuration items in batch mode**
+**Manage ServiceNow POST, PATCH and DELETE requests**
 
 
-Version added: 1.2.0
+Version added: 2.0.0
 
 .. contents::
    :local:
@@ -17,8 +17,8 @@ Version added: 1.2.0
 
 Synopsis
 --------
-- Create, update ServiceNow configuration items in batch mode.
-- For more information, refer to the ServiceNow configuration management documentation at https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html.
+- Create, delete or update a ServiceNow record from the given resource.
+- For more information, refer to the ServiceNow REST Table API documentation at https://docs.servicenow.com/bundle/sandiego-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html.
 
 
 
@@ -37,36 +37,42 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>dataset</b>
+                    <b>action</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=dictionary</span>
+                        <span style="color: purple">string</span>
                          / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>post</li>
+                                    <li>patch</li>
+                                    <li>delete</li>
+                        </ul>
                 </td>
                 <td>
-                        <div>List of dictionaries that will be used as a data source.</div>
-                        <div>Each item in a list represents one CMDB item.</div>
+                        <div>The action to perform.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>id_column_set</b>
+                    <b>data</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                         / <span style="color: red">required</span>
+                        <span style="color: purple">dictionary</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>Columns that should be used to identify an existing record that we need to update.</div>
+                        <div>The data that we want to update or create the resource with.</div>
+                        <div>Mutually exclusive with <em>template</em>.</div>
+                        <div>Only relevant if <em>action==patch</em> or <em>action==post</em>.</div>
+                        <div>A Dict consists of resource&#x27;s column names as keys (such as description, number, priority, and so on) and the patching values as values (the value we want to change the column to).</div>
+                        <div>When updating a resource&#x27;s record, if no datum is specified for a specific column, the value of that column will remain intact.</div>
+                        <div>When creating a resource&#x27;s record, if no datum is specified for a specific column, the default value of the column will be used.</div>
                 </td>
             </tr>
             <tr>
@@ -236,25 +242,7 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>map</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Transformation instructions on how to convert input data to CMDB items.</div>
-                        <div>Keys represent the CMDB item column names and the values are Jinja expressions that extract the value from the source data.</div>
-                        <div>Data is returned as string because ServiceNow API expect this</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>sys_class_name</b>
+                    <b>resource</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -264,7 +252,41 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Table name (configuration item type) that we would like to manipulate.</div>
+                        <div>The name of the table in which a record is to be created, updated or deleted from.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>sys_id</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Required if <em>action==patch</em> or <em>action==delete</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>template</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Provide a valid YAML template definition file for creating or updating a record.</div>
+                        <div>Provides built-in template processing capabilities as an alternative to its data parameter.</div>
+                        <div>Mutually exclusive with <em>data</em>.</div>
+                        <div>If template starts with <code>&quot;/&quot;</code>, it is assumed you have specified absolute path to the file. Otherwise, it is assumed you have specified relative path to the file.</div>
+                        <div>Template file needs to be present on the Ansible Controller&#x27;s system. Otherwise, an error is raised.</div>
                 </td>
             </tr>
     </table>
@@ -277,10 +299,8 @@ See Also
 
 .. seealso::
 
-   :ref:`servicenow.itsm.configuration_item_module`
-      The official documentation on the **servicenow.itsm.configuration_item** module.
-   :ref:`servicenow.itsm.configuration_item_info_module`
-      The official documentation on the **servicenow.itsm.configuration_item_info** module.
+   :ref:`servicenow.itsm.api_info_module`
+      The official documentation on the **servicenow.itsm.api_info** module.
 
 
 Examples
@@ -288,34 +308,74 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Update CMDB with some data
-      servicenow.itsm.configuration_item_batch:
-        sys_class_name: cmdb_ci_ec2_instance
-        id_column_set: vm_inst_id
-        dataset:
-          - instance_id: 12345
-            public_ip_address: 1.2.3.4
-            tags:
-              Name: my_name
-          - instance_id: 54321
-            public_ip_address: 4.3.2.1
-            tags:
-              Name: other_name
-        map:
-          vm_inst_id: instance_id
-          ip_address: public_ip_address
-          name: tags.Name
+    - name: Create a record in table incident with specified short_description (which is read from data)
+      servicenow.itsm.api:
+        resource: incident
+        action: post
+        data:
+          short_description: my-incident
+      register: result
 
-    - name: Identify CMDB item using combination of two columns
-      servicenow.itsm.configuration_item_batch:
-        sys_class_name: cmdb_ci_server
-        id_column_set:
-          - name
-          - ip_address
-        dataset: "{{ input_data }}"
-        map:
-          name: tags.Name
-          ip_address: private_ip_address
+    - name: Create a record in table incident with column values set in template, located in Ansible controller file system
+      servicenow.itsm.api:
+        resource: incident
+        action: post
+        template: '/testing/deployment.j2'
+      register: result
+
+    - name: Update a record with given sys_id in table incident with template, located in Ansible controller file system
+      servicenow.itsm.api:
+        resource: incident
+        action: patch
+        sys_id: 46b66a40a9fe198101f243dfbc79033d
+        template: '/testing/deployment.j2'
+      register: result
+
+    - name: Update column short_description (specified in data) in table incident of a record with given sys_id
+      servicenow.itsm.api:
+        resource: incident
+        action: patch
+        sys_id: 46b66a40a9fe198101f243dfbc79033d
+        data:
+          short_description: my-incident-updated
+      register: result
+
+    - name: Delete the resource the table incident with given sys_id
+      servicenow.itsm.api:
+        resource: incident
+        action: delete
+        sys_id: 46b66a40a9fe198101f243dfbc79033d
+      register: result
+
+    - name: Create a record in the table sc_req_item and set short_description's value to demo-description2
+      servicenow.itsm.api:
+        resource: sc_req_item
+        action: post
+        data:
+          short_description: demo-description2
+      register: result
+
+    - name: Create a record in the table sc_req_item and set short_description's value to demo-description2
+      servicenow.itsm.api:
+        resource: sc_req_item
+        action: post
+        data:
+          short_description: demo-description2
+      register: result
+
+    - name: Create a record in sc_req_item with column values set in template, located in Ansible controller file system
+      servicenow.itsm.api:
+        resource: sc_req_item
+        action: post
+        template: '/testing/deployment.j2'
+      register: result
+
+    - name: Delete a record by sys_id from table sc_req_item
+      servicenow.itsm.api:
+        resource: sc_req_item
+        action: delete
+        sys_id: b82adae197201110949235dfe153afec
+      register: result
 
 
 
@@ -334,20 +394,18 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>records</b>
+                    <b>record</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
+                      <span style="color: purple">dictionary</span>
                     </div>
                 </td>
                 <td>success</td>
                 <td>
-                            <div>A list of configuration item records.</div>
-                            <div>Note that the fields of the returned records depend on the configuration item&#x27;s <em>sys_class_name</em>.</div>
-                            <div>Returning of values added in version 2.0.0.</div>
+                            <div>The created, updated or deleted record.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;skip_sync&#x27;: &#x27;false&#x27;, &#x27;assignment_group&#x27;: &#x27;&#x27;, &#x27;managed_by&#x27;: &#x27;&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2022-03-18 03:59:41&#x27;, &#x27;sys_class_name&#x27;: &#x27;cmdb_ci_computer&#x27;, &#x27;manufacturer&#x27;: {&#x27;link&#x27;: &#x27;https://www.example.com/api/now/table/core_company/b7e9e843c0a80169009a5a485bb2a2b5&#x27;, &#x27;value&#x27;: &#x27;b7e9e843c0a80169009a5a485bb2a2b5&#x27;}, &#x27;sys_id&#x27;: &#x27;00a96c0d3790200044e0bfc8bcbe5db4&#x27;, &#x27;po_number&#x27;: &#x27;PO100003&#x27;, &#x27;sys_updated_by&#x27;: &#x27;system&#x27;, &#x27;due_in&#x27;: &#x27;&#x27;, &#x27;checked_in&#x27;: &#x27;&#x27;, &#x27;sys_class_path&#x27;: &#x27;/!!/!2/!(&#x27;, &#x27;sys_created_on&#x27;: &#x27;2012-02-18 08:14:21&#x27;, &#x27;vendor&#x27;: {&#x27;link&#x27;: &#x27;https://www.example.com/api/now/table/core_company/b7e9e843c0a80169009a5a485bb2a2b5&#x27;, &#x27;value&#x27;: &#x27;b7e9e843c0a80169009a5a485bb2a2b5&#x27;}, &#x27;sys_domain&#x27;: {&#x27;link&#x27;: &#x27;https://www.example.com/api/now/table/sys_user_group/global&#x27;, &#x27;value&#x27;: &#x27;global&#x27;}, &#x27;company&#x27;: {&#x27;link&#x27;: &#x27;https://www.example.com/api/now/table/core_company/81fbfe03ac1d55eb286d832de58ae1fd&#x27;, &#x27;value&#x27;: &#x27;81fbfe03ac1d55eb286d832de58ae1fd&#x27;}, &#x27;install_date&#x27;: &#x27;2019-07-28 07:00:00&#x27;, &#x27;justification&#x27;: &#x27;&#x27;, &#x27;department&#x27;: {&#x27;link&#x27;: &#x27;https://www.example.com/api/now/table/cmn_department/221f79b7c6112284005d646b76ab978c&#x27;, &#x27;value&#x27;: &#x27;221f79b7c6112284005d646b76ab978c&#x27;}, &#x27;gl_account&#x27;: &#x27;&#x27;, &#x27;invoice_number&#x27;: &#x27;&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;assigned_to&#x27;: {&#x27;link&#x27;: &#x27;https://www.example.comapi/now/table/sys_user/92826bf03710200044e0bfc8bcbe5dbb&#x27;, &#x27;value&#x27;: &#x27;92826bf03710200044e0bfc8bcbe5dbb&#x27;}, &#x27;warranty_expiration&#x27;: &#x27;2022-07-27&#x27;, &#x27;asset_tag&#x27;: &#x27;P1000503&#x27;, &#x27;cost&#x27;: &#x27;1799.99&#x27;, &#x27;sys_mod_count&#x27;: &#x27;6&#x27;, &#x27;owned_by&#x27;: &#x27;&#x27;, &#x27;serial_number&#x27;: &#x27;ABE-486-V17263-DO&#x27;, &#x27;checked_out&#x27;: &#x27;&#x27;, &#x27;model_id&#x27;: {&#x27;link&#x27;: &#x27;https://www.example.com/api/now/table/cmdb_model/d501454f1b1310002502fbcd2c071334&#x27;, &#x27;value&#x27;: &#x27;d501454f1b1310002502fbcd2c071334&#x27;}, &#x27;sys_domain_path&#x27;: &#x27;/&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;cost_cc&#x27;: &#x27;USD&#x27;, &#x27;order_date&#x27;: &#x27;2019-05-13 08:00:00&#x27;, &#x27;support_group&#x27;: &#x27;&#x27;, &#x27;delivery_date&#x27;: &#x27;2019-06-09 08:00:00&#x27;, &#x27;install_status&#x27;: &#x27;1&#x27;, &#x27;cost_center&#x27;: {&#x27;link&#x27;: &#x27;https://www.example.com/api/now/table/cmn_cost_center/d9d0a971c0a80a641c20b13d99a48576&#x27;, &#x27;value&#x27;: &#x27;d9d0a971c0a80a641c20b13d99a48576&#x27;}, &#x27;due&#x27;: &#x27;&#x27;, &#x27;supported_by&#x27;: &#x27;&#x27;, &#x27;name&#x27;: &#x27;MacBook Pro 15&quot;&#x27;, &#x27;unverified&#x27;: &#x27;false&#x27;, &#x27;assigned&#x27;: &#x27;2019-11-10 07:00:00&#x27;, &#x27;location&#x27;: {&#x27;link&#x27;: &#x27;https://www.example.com/api/now/table/cmn_location/8226baa4ac1d55eb40eb653c02649519&#x27;, &#x27;value&#x27;: &#x27;8226baa4ac1d55eb40eb653c02649519&#x27;}, &#x27;asset&#x27;: {&#x27;link&#x27;: &#x27;https://www.example.com/api/now/table/alm_asset/04a96c0d3790200044e0bfc8bcbe5db3&#x27;, &#x27;value&#x27;: &#x27;04a96c0d3790200044e0bfc8bcbe5db3&#x27;}, &#x27;purchase_date&#x27;: &#x27;2019-05-25&#x27;, &#x27;lease_id&#x27;: &#x27;&#x27;}]</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;active&#x27;: &#x27;true&#x27;, &#x27;activity_due&#x27;: &#x27;&#x27;, &#x27;additional_assignee_list&#x27;: &#x27;&#x27;, &#x27;approval&#x27;: &#x27;not requested&#x27;, &#x27;approval_history&#x27;: &#x27;&#x27;, &#x27;approval_set&#x27;: &#x27;&#x27;, &#x27;assigned_to&#x27;: &#x27;&#x27;, &#x27;assignment_group&#x27;: &#x27;&#x27;, &#x27;business_duration&#x27;: &#x27;&#x27;, &#x27;business_impact&#x27;: &#x27;&#x27;, &#x27;business_service&#x27;: &#x27;&#x27;, &#x27;business_stc&#x27;: &#x27;&#x27;, &#x27;calendar_duration&#x27;: &#x27;&#x27;, &#x27;calendar_stc&#x27;: &#x27;&#x27;, &#x27;caller_id&#x27;: &#x27;&#x27;, &#x27;category&#x27;: &#x27;inquiry&#x27;, &#x27;cause&#x27;: &#x27;&#x27;, &#x27;caused_by&#x27;: &#x27;&#x27;, &#x27;child_incidents&#x27;: &#x27;0&#x27;, &#x27;close_code&#x27;: &#x27;&#x27;, &#x27;close_notes&#x27;: &#x27;&#x27;, &#x27;closed_at&#x27;: &#x27;&#x27;, &#x27;closed_by&#x27;: &#x27;&#x27;, &#x27;cmdb_ci&#x27;: &#x27;&#x27;, &#x27;comments&#x27;: &#x27;&#x27;, &#x27;comments_and_work_notes&#x27;: &#x27;&#x27;, &#x27;company&#x27;: &#x27;&#x27;, &#x27;contact_type&#x27;: &#x27;&#x27;, &#x27;contract&#x27;: &#x27;&#x27;, &#x27;correlation_display&#x27;: &#x27;&#x27;, &#x27;correlation_id&#x27;: &#x27;&#x27;, &#x27;delivery_plan&#x27;: &#x27;&#x27;, &#x27;delivery_task&#x27;: &#x27;&#x27;, &#x27;description&#x27;: &#x27;&#x27;, &#x27;due_date&#x27;: &#x27;&#x27;, &#x27;escalation&#x27;: &#x27;0&#x27;, &#x27;expected_start&#x27;: &#x27;&#x27;, &#x27;follow_up&#x27;: &#x27;&#x27;, &#x27;group_list&#x27;: &#x27;&#x27;, &#x27;hold_reason&#x27;: &#x27;&#x27;, &#x27;impact&#x27;: &#x27;3&#x27;, &#x27;incident_state&#x27;: &#x27;1&#x27;, &#x27;knowledge&#x27;: &#x27;false&#x27;, &#x27;location&#x27;: &#x27;&#x27;, &#x27;made_sla&#x27;: &#x27;true&#x27;, &#x27;notify&#x27;: &#x27;1&#x27;, &#x27;number&#x27;: &#x27;INC0010204&#x27;, &#x27;opened_at&#x27;: &#x27;2022-07-06 08:53:05&#x27;, &#x27;opened_by&#x27;: &#x27;6816f79cc0a8016401c5a33be04be441&#x27;, &#x27;order&#x27;: &#x27;&#x27;, &#x27;origin_id&#x27;: &#x27;&#x27;, &#x27;origin_table&#x27;: &#x27;&#x27;, &#x27;parent&#x27;: &#x27;&#x27;, &#x27;parent_incident&#x27;: &#x27;&#x27;, &#x27;priority&#x27;: &#x27;5&#x27;, &#x27;problem_id&#x27;: &#x27;&#x27;, &#x27;reassignment_count&#x27;: &#x27;0&#x27;, &#x27;reopen_count&#x27;: &#x27;0&#x27;, &#x27;reopened_by&#x27;: &#x27;&#x27;, &#x27;reopened_time&#x27;: &#x27;&#x27;, &#x27;resolved_at&#x27;: &#x27;&#x27;, &#x27;resolved_by&#x27;: &#x27;&#x27;, &#x27;rfc&#x27;: &#x27;&#x27;, &#x27;route_reason&#x27;: &#x27;&#x27;, &#x27;service_offering&#x27;: &#x27;&#x27;, &#x27;severity&#x27;: &#x27;3&#x27;, &#x27;short_description&#x27;: &#x27;my-incident&#x27;, &#x27;sla_due&#x27;: &#x27;&#x27;, &#x27;state&#x27;: &#x27;1&#x27;, &#x27;subcategory&#x27;: &#x27;&#x27;, &#x27;sys_class_name&#x27;: &#x27;incident&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2022-07-06 08:53:05&#x27;, &#x27;sys_domain&#x27;: &#x27;global&#x27;, &#x27;sys_domain_path&#x27;: &#x27;/&#x27;, &#x27;sys_id&#x27;: &#x27;35b5fb4197245110949235dfe153af06&#x27;, &#x27;sys_mod_count&#x27;: &#x27;0&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;admin&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2022-07-06 08:53:05&#x27;, &#x27;task_effective_number&#x27;: &#x27;INC0010204&#x27;, &#x27;time_worked&#x27;: &#x27;&#x27;, &#x27;universal_request&#x27;: &#x27;&#x27;, &#x27;upon_approval&#x27;: &#x27;proceed&#x27;, &#x27;upon_reject&#x27;: &#x27;cancel&#x27;, &#x27;urgency&#x27;: &#x27;3&#x27;, &#x27;user_input&#x27;: &#x27;&#x27;, &#x27;watch_list&#x27;: &#x27;&#x27;, &#x27;work_end&#x27;: &#x27;&#x27;, &#x27;work_notes&#x27;: &#x27;&#x27;, &#x27;work_notes_list&#x27;: &#x27;&#x27;, &#x27;work_start&#x27;: &#x27;&#x27;}</div>
                 </td>
             </tr>
     </table>
@@ -361,6 +419,4 @@ Status
 Authors
 ~~~~~~~
 
-- Manca Bizjak (@mancabizjak)
-- Miha Dolinar (@mdolin)
-- Tadej Borovsak (@tadeboro)
+- Tjaž Eržen (@tjazsch)

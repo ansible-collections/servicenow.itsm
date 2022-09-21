@@ -31,31 +31,13 @@ Parameters
 
     <table  border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="4">Parameter</th>
+            <th colspan="2">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
                 <th>Configuration</th>
             <th width="100%">Comments</th>
         </tr>
             <tr>
-                <td colspan="4">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>ansible_host_source</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"ip_address"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Host variable to use as <em>ansible_host</em> when generating inventory hosts.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>columns</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -74,7 +56,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>compose</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -92,7 +74,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>enhanced</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -111,98 +93,10 @@ Parameters
                     </td>
                 <td>
                         <div>Enable enhanced inventory which provides relationship information from CMDB.</div>
-                        <div>Mutually exclusive with deprecated options <em>named_groups</em> and <em>group_by</em>.</div>
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>group_by</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Group hosts automatically, according to the values of the specified columns.</div>
-                        <div>You can include or exclude records from being added to the inventory by limiting the column values with <em>include</em> or <em>exclude</em>.</div>
-                        <div>Mutually exclusive with <em>named_groups</em>.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="3">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b><column></b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Column to use when grouping inventory hosts into groups.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
                 <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>excludes</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"None"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Create Ansible inventory groups only for records with &lt;column&gt; matching any value except the ones specified in this list.</div>
-                        <div>For reference fields, you need to provide <code>sys_id</code>.</div>
-                        <div>Mutually exclusive with <em>includes</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>includes</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"None"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Create Ansible inventory groups only for records with &lt;column&gt; matching any of the values specified in this list.</div>
-                        <div>For reference fields, you need to provide <code>sys_id</code>.</div>
-                        <div>Mutually exclusive with <em>excludes</em>.</div>
-                </td>
-            </tr>
-
-
-            <tr>
-                <td colspan="4">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>groups</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -220,7 +114,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>instance</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -239,7 +133,7 @@ Parameters
             </tr>
                                 <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>client_id</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -259,7 +153,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>client_secret</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -279,7 +173,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>grant_type</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -304,7 +198,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>host</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -324,7 +218,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>password</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -344,7 +238,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>refresh_token</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -366,7 +260,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>timeout</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -385,7 +279,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>username</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -405,7 +299,7 @@ Parameters
             </tr>
 
             <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>inventory_hostname_source</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -423,7 +317,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>keyed_groups</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -443,7 +337,7 @@ Parameters
             </tr>
                                 <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>default_value</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -463,7 +357,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>key</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -481,7 +375,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>parent_group</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -499,7 +393,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>prefix</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -518,7 +412,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>separator</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -537,7 +431,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="3">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>trailing_separator</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -561,7 +455,7 @@ Parameters
             </tr>
 
             <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>leading_separator</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -585,117 +479,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>named_groups</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Group hosts in the provided groups, according to the specified criteria.</div>
-                        <div>Only the specified groups will be created.</div>
-                        <div>Mutually exclusive with <em>group_by</em>.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="3">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b><group_name></b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>The group to create.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
                 <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b><column></b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Criteria for including a host in this group.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>excludes</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"None"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Add a host to the group if &lt;column&gt; matches any value except the ones specified in this list.</div>
-                        <div>For reference fields, you need to provide <code>sys_id</code>.</div>
-                        <div>Mutually exclusive with <em>includes</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>includes</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"None"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Add a host to the group only if &lt;column&gt; matches any of the values specified in this list.</div>
-                        <div>For reference fields, you need to provide <code>sys_id</code>.</div>
-                        <div>Mutually exclusive with <em>excludes</em>.</div>
-                </td>
-            </tr>
-
-
-
-            <tr>
-                <td colspan="4">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>plugin</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -717,7 +501,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>query</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -733,10 +517,11 @@ Parameters
                 <td>
                         <div>Provides a set of operators for use with filters, condition builders, and encoded queries.</div>
                         <div>The data type of a field determines what operators are available for it. Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</div>
+                        <div>Mutually exclusive with <code>sysparm_query</code>.</div>
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>strict</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -758,7 +543,28 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>sysparm_query</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0 of servicenow.itsm</div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>An encoded query string used to filter the results as an alternative to <code>query</code>.</div>
+                        <div>Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</div>
+                        <div>If not set, the value of the <code>SN_SYSPARM_QUERY</code> environment, if specified.</div>
+                        <div>Mutually exclusive with <code>query</code>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>table</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -776,7 +582,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>use_extra_vars</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -934,88 +740,6 @@ Examples
     # |  |  |--{cost = 2,160 USD}
     # |  |  |--{cpu_type = Intel}
     # |  |  |--{name = INSIGHT-NY-03}
-
-    # Example of a query which returns hosts where ip_address is not like 192.29.32 AND the name starts with lnux.
-    # AND Query Example
-    plugin: servicenow.itsm.now
-    query:
-      - ip_address: NOT LIKE 192.29.32
-        name: STARTSWITH lnux
-
-    # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
-    # @all:
-    #   |--@ungrouped:
-    #   |  |--lnux101
-
-    # Example of a query which returns hosts where ip_address is not like 192.29.32 OR the name starts with lnux.
-    # OR Query Example
-    plugin: servicenow.itsm.now
-    query:
-      - ip_address: NOT LIKE 192.29.32
-      - name: STARTSWITH lnux
-
-    # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
-    # @all:
-    #   |--@ungrouped:
-    #   |  |--lnux100
-    #   |  |--lnux101
-
-    # NOTE: All examples from here on are deprecated and should not be used when writing new
-    # inventory sources.
-
-    # Group hosts automatically, according to values of manufacturer and os columns.
-    # Include only records with the specified operating systems.
-    # Groups will most likely overlap.
-    plugin: servicenow.itsm.now
-    group_by:
-      manufacturer:
-      os:
-        includes:
-          - Linux Red Hat
-          - Windows XP
-
-    # `ansible-inventory -i inventory.now.yaml --graph` output:
-    # @all:
-    #  |--@Dell_Inc_:
-    #  |  |--DatabaseServer1
-    #  |  |--DatabaseServer2
-    #  |  |--INSIGHT-NY-03
-    #  |--@Lenovo:
-    #  |  |--FileServerFloor1
-    #  |  |--FileServerFloor2
-    #  |--@Linux_Red_Hat:
-    #  |  |--DatabaseServer1
-    #  |  |--DatabaseServer2
-    #  |--@Windows_XP:
-    #  |  |--FileServerFloor1
-    #  |  |--FileServerFloor2
-    #  |  |--INSIGHT-NY-03
-    #  |--@ungrouped:
-
-
-    # Group hosts into named groups, according to the specified criteria.
-    # Below example creates a single group containing hosts that match
-    # all the criteria.
-    named_groups:
-      non_windows_prod_servers:
-        classification:
-          includes: [ Production ]
-        os:
-          excludes:
-            - Windows XP
-            - Windows 2000
-            - Windows 2000 Server
-            - Windows 2003 Standard
-
-    # `ansible-inventory -i inventory.now.yaml --graph` output:
-    # @all:
-    #  |--@non_windows_prod_servers:
-    #  |  |--DatabaseServer2
-    #  |  |--PS LinuxApp01
-    #  |  |--PS LinuxApp02
-    #  |  |--lnux100
-    #  |  |--lnux101
-    #  |--@ungrouped:
 
 
 

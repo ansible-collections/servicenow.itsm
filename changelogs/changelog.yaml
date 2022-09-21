@@ -161,3 +161,80 @@ releases:
     - now_inv_docs.yaml
     - validate.yml
     release_date: '2022-05-12'
+  2.0.0:
+    changes:
+      breaking_changes:
+      - configuration_item - Added name as a unique identifier. This means that the
+        idempotence is based on name, while previously there was no idempotence (except
+        for sys_id). When state=present if a configuration item with given name does
+        not exist, the item is created. If it already exists, it is updated. (https://github.com/ansible-collections/servicenow.itsm/pull/192)
+      - plugins/inventory/now.py - Removed parameters ``ansible_host_source``, ``named_groups``
+        and ``group_by`` (https://github.com/ansible-collections/servicenow.itsm/pull/213).
+      bugfixes:
+      - modules/problem.py - Uses I(API for Red Hat Ansible Automation Platform Certified
+        Content Collection) Scripted REST API Service for transitioning problem state
+        in case of Table API fails.
+      minor_changes:
+      - Attachment integration tests - Add missing register variables (https://github.com/ansible-collections/servicenow.itsm/pull/194)
+      - TableClient - Remove hardcoded value of sysparm_exclude_reference_link when
+        querying on table api.
+      - \*_info modules - Added additional module parameter sysparm_display_value
+        to all info modules, which, if set to either true or all, enables the user
+        to see the values of sys_tags.
+      - \*_info modules - Added field sysparm_query, which represents an encoded query
+        string used to filter the results as an alternative to C(query) (https://github.com/ansible-collections/servicenow.itsm/pull/190).
+      - api - Added module api, which essentially codifies the ServiceNow REST API
+        explorer in Ansible-native way for POST, PATCH and DELETE operations.
+      - api - Enhanced api module with template processing capabilities as an alternative
+        to its data parameter for creating or updating a resource (https://github.com/ansible-collections/servicenow.itsm/pull/201).
+      - api_info - Added module api_info, which essentially codifies the ServiceNow
+        REST API explorer in Ansible-native way for retrieving records (GET operations).
+      - attachment integration tests - Adapt integration tests for attachment module
+        due to changes on PR 192 (https://github.com/ansible-collections/servicenow.itsm/pull/193)
+      - configuration_batch_item - now returns result instead only if something was
+        changed or not.
+      - configuration_item_info - Added option name to simplify queries based on that
+        parameter.
+      - module_utils/attachments.py - Add ``get_attachment`` and ``save_attachment``
+        (https://github.com/ansible-collections/servicenow.itsm/pull/186).
+      - module_utils/problem.py - Added problem client for requesting problem state
+        updates from the I(API for Red Hat Ansible Automation Platform Certified Content
+        Collection) Scripted REST API Service.
+      - module_utils/util.py - Added optional Boolean parameter C(implicit) to C(get_mapper)
+        function to provide default values for missing keys in the mapping.
+      - modules/problem.py - Added module parameters validation to match the mapping
+        specification.
+      - modules/problem.py - Added optional module parameter C(base_api_path) to control
+        the URI prefix of the endpoint exposed by the I(API for Red Hat Ansible Automation
+        Platform Certified Content Collection) Scripted REST API Service.
+      - now - Added field sysparm_query, which represents an encoded query string
+        used to filter the results as an alternative to C(query) (https://github.com/ansible-collections/servicenow.itsm/pull/190).
+      - test_api - Remove unused import which caused sanity error. (https://github.com/ansible-collections/servicenow.itsm/pull/204)
+      release_summary: This is the major release of the ``servicenow.itsm`` collection.
+    fragments:
+    - 179_encode_servicenow_rest_api_module_in_ansible.yml
+    - 180_enhance_api_module_by_adding_field_template.yml
+    - 184_fix_default_exclude_reference_link.yml
+    - 188_control_sysparm_display_value_in_info_modules.yml
+    - 190_add_alternative_way_to_filter_results.yml
+    - 2.0.0.release_summary.yml
+    - 71_configuration_item_implement_idempotence.yml
+    - adapt_attachment_integration_tests.yml
+    - attachment_integration_tests_missing_register_variables.yml
+    - attachments.yaml
+    - configuration_batch_item_return_value.yml
+    - inventory_remove_deprecated_options.yml
+    - problem_management.yaml
+    - test-attachment.yaml
+    - test_api_remove_unused_import.yml
+    modules:
+    - description: Manage ServiceNow POST, PATCH and DELETE requests
+      name: api
+      namespace: ''
+    - description: Manage ServiceNow GET requests
+      name: api_info
+      namespace: ''
+    - description: a module that users can use to download attachment using sys_id
+      name: attachment
+      namespace: ''
+    release_date: '2022-09-21'

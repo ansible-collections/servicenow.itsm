@@ -1,3 +1,0 @@
----
-minor_changes:
-- Attachment integration tests - Add missing register variables (https://github.com/ansible-collections/servicenow.itsm/pull/194)

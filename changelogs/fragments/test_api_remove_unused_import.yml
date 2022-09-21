@@ -1,3 +1,0 @@
----
-minor_changes:
-- test_api - Remove unused import which caused sanity error. (https://github.com/ansible-collections/servicenow.itsm/pull/204)
