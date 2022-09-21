@@ -29,6 +29,9 @@ Name | Description
 ### Modules
 Name | Description
 --- | ---
+[servicenow.itsm.api](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.api_module.rst)|Manage ServiceNow POST, PATCH and DELETE requests
+[servicenow.itsm.api_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.api_info_module.rst)|Manage ServiceNow GET requests
+[servicenow.itsm.attachment](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.attachment_module.rst)|a module that users can use to download attachment using sys_id
 [servicenow.itsm.change_request](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_module.rst)|Manage ServiceNow change requests
 [servicenow.itsm.change_request_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_info_module.rst)|List ServiceNow change requests
 [servicenow.itsm.change_request_task](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_task_module.rst)|Manage ServiceNow change request tasks

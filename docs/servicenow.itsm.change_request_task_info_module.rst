@@ -263,6 +263,7 @@ Parameters
                 <td>
                         <div>Provides a set of operators for use with filters, condition builders, and encoded queries.</div>
                         <div>The data type of a field determines what operators are available for it. Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</div>
+                        <div>Mutually exclusive with <code>sysparm_query</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -278,6 +279,46 @@ Parameters
                 </td>
                 <td>
                         <div>Unique identifier of the record to retrieve.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>sysparm_display_value</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0 of servicenow.itsm</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>true</li>
+                                    <li><div style="color: blue"><b>false</b>&nbsp;&larr;</div></li>
+                                    <li>all</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Return field display values <code>true</code>, actual values <code>false</code>, or both <code>all</code>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>sysparm_query</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0 of servicenow.itsm</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>An encoded query string used to filter the results as an alternative to <code>query</code>.</div>
+                        <div>Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</div>
+                        <div>If not set, the value of the <code>SN_SYSPARM_QUERY</code> environment, if specified.</div>
+                        <div>Mutually exclusive with <code>query</code>.</div>
                 </td>
             </tr>
     </table>
@@ -313,10 +354,15 @@ Examples
         number: CTASK0000001
       register: result
 
-    - name: Retrieve change request tasks that contain SAP in their short description
+    - name: Retrieve change request tasks that contain SAP in their short description by using field query
       servicenow.itsm.change_request_task_info:
         query:
           - short_description: LIKE SAP
+      register: result
+
+    - name: Retrieve change request tasks that contain SAP in their short description by using field sysparm-query
+      servicenow.itsm.change_request_task_info:
+        sysparm_query: short_descriptionLIKESAP
       register: result
 
     - name: Retrieve new change requests assigned to abel.tuter or bertie.luby

@@ -18,7 +18,10 @@ Version added: 1.0.0
 Synopsis
 --------
 - Create, delete or update a ServiceNow configuration item.
-- For more information, refer to the ServiceNow configuration management documentation at https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html.
+- Configuration items can be managed using sys_id or name.
+- Operations create and delete are idempotent on parameter ``name``.
+- When ``state`` is set to ``present``, a record identified by ``name`` is only created once. Further invocations will update the record.
+- For more information, refer to the ServiceNow configuration management documentation at https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html.
 
 
 
@@ -670,3 +673,4 @@ Authors
 - Miha Dolinar (@mdolin)
 - Tadej Borovsak (@tadeboro)
 - Matej Pevec (@mysteriouswolf)
+- Polona Mihalič (@PolonaM)

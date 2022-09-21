@@ -1,3 +1,0 @@
----
-minor_changes:
-- api - Enhanced api module with template processing capabilities as an alternative to its data parameter for creating or updating a resource (https://github.com/ansible-collections/servicenow.itsm/pull/201).

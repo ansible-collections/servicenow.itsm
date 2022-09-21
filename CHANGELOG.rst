@@ -5,6 +5,53 @@ servicenow.itsm Release Notes
 .. contents:: Topics
 
 
+v2.0.0
+======
+
+Release Summary
+---------------
+
+This is the major release of the ``servicenow.itsm`` collection.
+
+Minor Changes
+-------------
+
+- Attachment integration tests - Add missing register variables (https://github.com/ansible-collections/servicenow.itsm/pull/194)
+- TableClient - Remove hardcoded value of sysparm_exclude_reference_link when querying on table api.
+- \*_info modules - Added additional module parameter sysparm_display_value to all info modules, which, if set to either true or all, enables the user to see the values of sys_tags.
+- \*_info modules - Added field sysparm_query, which represents an encoded query string used to filter the results as an alternative to C(query) (https://github.com/ansible-collections/servicenow.itsm/pull/190).
+- api - Added module api, which essentially codifies the ServiceNow REST API explorer in Ansible-native way for POST, PATCH and DELETE operations.
+- api - Enhanced api module with template processing capabilities as an alternative to its data parameter for creating or updating a resource (https://github.com/ansible-collections/servicenow.itsm/pull/201).
+- api_info - Added module api_info, which essentially codifies the ServiceNow REST API explorer in Ansible-native way for retrieving records (GET operations).
+- attachment integration tests - Adapt integration tests for attachment module due to changes on PR 192 (https://github.com/ansible-collections/servicenow.itsm/pull/193)
+- configuration_batch_item - now returns result instead only if something was changed or not.
+- configuration_item_info - Added option name to simplify queries based on that parameter.
+- module_utils/attachments.py - Add ``get_attachment`` and ``save_attachment`` (https://github.com/ansible-collections/servicenow.itsm/pull/186).
+- module_utils/problem.py - Added problem client for requesting problem state updates from the I(API for Red Hat Ansible Automation Platform Certified Content Collection) Scripted REST API Service.
+- module_utils/util.py - Added optional Boolean parameter C(implicit) to C(get_mapper) function to provide default values for missing keys in the mapping.
+- modules/problem.py - Added module parameters validation to match the mapping specification.
+- modules/problem.py - Added optional module parameter C(base_api_path) to control the URI prefix of the endpoint exposed by the I(API for Red Hat Ansible Automation Platform Certified Content Collection) Scripted REST API Service.
+- now - Added field sysparm_query, which represents an encoded query string used to filter the results as an alternative to C(query) (https://github.com/ansible-collections/servicenow.itsm/pull/190).
+- test_api - Remove unused import which caused sanity error. (https://github.com/ansible-collections/servicenow.itsm/pull/204)
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- configuration_item - Added name as a unique identifier. This means that the idempotence is based on name, while previously there was no idempotence (except for sys_id). When state=present if a configuration item with given name does not exist, the item is created. If it already exists, it is updated. (https://github.com/ansible-collections/servicenow.itsm/pull/192)
+- plugins/inventory/now.py - Removed parameters ``ansible_host_source``, ``named_groups`` and ``group_by`` (https://github.com/ansible-collections/servicenow.itsm/pull/213).
+
+Bugfixes
+--------
+
+- modules/problem.py - Uses I(API for Red Hat Ansible Automation Platform Certified Content Collection) Scripted REST API Service for transitioning problem state in case of Table API fails.
+
+New Modules
+-----------
+
+- servicenow.itsm.api - Manage ServiceNow POST, PATCH and DELETE requests
+- servicenow.itsm.api_info - Manage ServiceNow GET requests
+- servicenow.itsm.attachment - a module that users can use to download attachment using sys_id
+
 v1.4.0
 ======
 
