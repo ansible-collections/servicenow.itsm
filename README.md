@@ -2,6 +2,14 @@
 
 The Ansible Collection for ServiceNow IT Service Management ([ITSM](https://www.servicenow.com/products/itsm.html)) includes a variety of Ansible content to help automate the management of ServiceNow IT Service Management.
 
+
+## Releases and maintenance
+
+| Release | Status                      | Expected end of life |
+| ------: | --------------------------: | -------------------: |
+|       2 | Maintained                  | TBA                  |
+|       1 | Maintained (bug fixes only) | September 2023       |
+
 <!--start requires_ansible-->
 ## Ansible version compatibility
 
