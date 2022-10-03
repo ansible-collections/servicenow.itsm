@@ -1,0 +1,2 @@
+bugfixes:
+ - inventory plugin - sysparm_query attribute is taken into account.
