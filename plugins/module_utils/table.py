@@ -63,20 +63,22 @@ class TableClient:
 
         return records[0] if records else None
 
-    def create_record(self, table, payload, check_mode):
+    def create_record(self, table, payload, check_mode, query=None):
         if check_mode:
             # Approximate the result using the payload.
             return payload
 
-        return self.client.post(_path(table), payload, query=_query()).json["result"]
+        return self.client.post(_path(table), payload, query=_query(query)).json[
+            "result"
+        ]
 
-    def update_record(self, table, record, payload, check_mode):
+    def update_record(self, table, record, payload, check_mode, query=None):
         if check_mode:
             # Approximate the result by manually patching the existing state.
             return dict(record, **payload)
 
         return self.client.patch(
-            _path(table, record["sys_id"]), payload, query=_query()
+            _path(table, record["sys_id"]), payload, query=_query(query)
         ).json["result"]
 
     def delete_record(self, table, record, check_mode):
