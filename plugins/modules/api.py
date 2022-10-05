@@ -43,6 +43,11 @@ options:
       - post
       - patch
       - delete
+  query_params:
+    version_added: "2.1.0"
+    description:
+      - Query parameters that may be used on POST or PATCH request.
+    type: dict
   data:
     description:
       - The data that we want to update or create the resource with.
