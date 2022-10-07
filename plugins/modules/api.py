@@ -13,6 +13,7 @@ module: api
 
 author:
   - Tjaž Eržen (@tjazsch)
+  - Jure Medvešek (@juremedvesek)
 
 short_description: Manage ServiceNow POST, PATCH and DELETE requests
 description:
