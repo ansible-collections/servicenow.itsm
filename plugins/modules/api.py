@@ -13,6 +13,7 @@ module: api
 
 author:
   - Tjaž Eržen (@tjazsch)
+  - Jure Medvešek (@juremedvesek)
 
 short_description: Manage ServiceNow POST, PATCH and DELETE requests
 description:
@@ -43,6 +44,11 @@ options:
       - post
       - patch
       - delete
+  query_params:
+    version_added: "2.1.0"
+    description:
+      - Query parameters that may be used on POST or PATCH request.
+    type: dict
   data:
     description:
       - The data that we want to update or create the resource with.
@@ -122,6 +128,22 @@ EXAMPLES = """
     data:
       short_description: demo-description2
   register: result
+
+- name: create user (object with encrypted fields)
+  servicenow.itsm.api:
+    resource: sys_user
+    action: post
+    query_params:
+      sysparm_input_display_value: true
+    data:
+      user_name: "demo_username"
+      user_password: "demo_password"
+      first_name: "first_name"
+      last_name: Demouser
+      department: IT
+      email: "demo_username@example.com"
+      title: Demo user
+  register: user
 
 - name: Create a record in sc_req_item with column values set in template, located in Ansible controller file system
   servicenow.itsm.api:
@@ -252,6 +274,7 @@ from ..module_utils.api import (
     FIELD_SYS_ID,
     FIELD_DATA,
     FIELD_TEMPLATE,
+    FIELD_QUERY_PARAMS,
 )
 
 
@@ -265,6 +288,7 @@ def update_resource(module, table_client):
         record=record_old,
         payload=module.params.get(FIELD_DATA, dict()),
         check_mode=module.check_mode,
+        query=module.params.get(FIELD_QUERY_PARAMS, dict()),
     )
     return True, record_new, dict(before=record_old, after=record_new)
 
@@ -276,6 +300,7 @@ def create_resource(module, table_client):
         table=table_name(module),
         payload=module.params.get(FIELD_DATA, dict()),
         check_mode=module.check_mode,
+        query=module.params.get(FIELD_QUERY_PARAMS, dict()),
     )
     return True, new, dict(before=None, after=new)
 
@@ -315,6 +340,7 @@ def main():
                 ACTION_DELETE,  # delete
             ],
         ),
+        query_params=dict(type="dict", default=dict()),
         data=dict(type="dict", default=dict()),
         template=dict(
             type="str",

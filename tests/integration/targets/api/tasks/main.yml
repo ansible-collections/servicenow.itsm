@@ -5,6 +5,29 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
+    - name: create user (object with encryped fields)
+      servicenow.itsm.api:
+        resource: sys_user
+        action: post
+        query_params:
+          sysparm_input_display_value: true
+        data:
+          user_name: "demo_username"
+          user_password: "demo_password"
+          first_name: "first_name"
+          last_name: Demouser
+          department: IT
+          email: "demo_username@example.com"
+          title: Demo user
+      register: user
+
+    - name: Delete user
+      servicenow.itsm.api:
+        resource: sys_user
+        action: delete
+        sys_id: "{{ user.record.sys_id }}"
+      register: deleted_user
+
     - name: Retrieve all incidents
       servicenow.itsm.api_info:
         resource: incident

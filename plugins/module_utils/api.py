@@ -31,6 +31,7 @@ FIELD_SYS_ID = "sys_id"
 FIELD_DATA = "data"
 FIELD_TEMPLATE = "template"
 FIELD_DATA_RENDERED = "data_rendered"
+FIELD_QUERY_PARAMS = "query_params"
 
 POSSIBLE_FILTER_PARAMETERS = [
     FIELD_QUERY_NAME,
