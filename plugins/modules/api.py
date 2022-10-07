@@ -129,7 +129,7 @@ EXAMPLES = """
       short_description: demo-description2
   register: result
 
-- name: create user (object with encrzped fields)
+- name: create user (object with encrypted fields)
   servicenow.itsm.api:
     resource: sys_user
     action: post
