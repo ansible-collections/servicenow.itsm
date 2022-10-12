@@ -99,9 +99,7 @@ class TestBuildPayload:
             {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
         ]
 
-        mapper = get_mapper(
-            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-        )
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
         sn_params = mapper.to_snow(module.params)
 
         result = problem.build_payload(sn_params, table_client)
@@ -133,9 +131,7 @@ class TestBuildPayload:
             ),
         )
 
-        mapper = get_mapper(
-            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-        )
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
         sn_params = mapper.to_snow(module.params)
 
         result = problem.build_payload(sn_params, table_client)
@@ -173,9 +169,7 @@ class TestBuildPayload:
             {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
         ]
 
-        mapper = get_mapper(
-            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-        )
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
         sn_params = mapper.to_snow(module.params)
 
         result = problem.build_payload(sn_params, table_client)
@@ -1251,9 +1245,7 @@ class TestProblemMapping:
 
         module = create_module(params=module_params)
 
-        mapper = get_mapper(
-            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-        )
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
 
         problem.validate_mapping(module_params, mapper)
 
@@ -1304,9 +1296,7 @@ class TestProblemMapping:
 
         module = create_module(params=module_params)
 
-        mapper = get_mapper(
-            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-        )
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
 
         problem.validate_mapping(module_params, mapper)
 

@@ -16,9 +16,10 @@
           107: "closed"
         impact:
           1: "highest"
+          3: "lowest"
         urgency:
           2: "normal"
-
+          3: "lowest"
   block:
     - name: Retrieve problem records
       servicenow.itsm.problem_info:
