@@ -49,6 +49,7 @@ options:
     description:
       - Query parameters that may be used on POST or PATCH request.
     type: dict
+    default: {}
   data:
     description:
       - The data that we want to update or create the resource with.
@@ -61,6 +62,7 @@ options:
       - When creating a resource's record, if no datum is specified for a specific column, the default value of the
         column will be used.
     type: dict
+    default: {}
   template:
     description:
       - Provide a valid YAML template definition file for creating or updating a record.
