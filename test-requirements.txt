@@ -5,4 +5,5 @@ mock ; python_version < '3.5'
 pytest-xdist
 # We should avoid these two modules with py3
 pytest-mock
+pytest-forked
 mock
