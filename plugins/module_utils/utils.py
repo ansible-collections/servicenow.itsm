@@ -40,7 +40,6 @@ def get_choices(module, mapping_field, default_payload_fields_mapping):
         override = overrides.get(key)
         clone[key] = override if override else dict(item)
 
-    # raise Exception(clone)
     return clone
 
 
