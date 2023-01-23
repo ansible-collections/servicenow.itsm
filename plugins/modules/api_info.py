@@ -56,6 +56,7 @@ options:
       - List of fields/columns to return in the response.
     type: list
     elements: str
+    default: []
   query_category:
     description:
       - Name of the query category to use for queries.

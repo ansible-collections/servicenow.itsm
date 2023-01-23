@@ -30,6 +30,18 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+def validate_mapping(module_params, mapper, param, expected_value):
+    problem_mapping = module_params.get("problem_mapping")
+    if not problem_mapping:
+        return
+
+    if param in problem_mapping and param in module_params:
+        value = module_params[param]
+        sn_value = mapper.to_snow({param: value})
+        mapped_value = sn_value.get(param)
+        assert mapped_value == expected_value
+
+
 class TestEnsureAbsent:
     def test_delete_problem(self, create_module, table_client, attachment_client):
         module = create_module(
@@ -99,9 +111,7 @@ class TestBuildPayload:
             {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
         ]
 
-        mapper = get_mapper(
-            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-        )
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
         sn_params = mapper.to_snow(module.params)
 
         result = problem.build_payload(sn_params, table_client)
@@ -133,9 +143,7 @@ class TestBuildPayload:
             ),
         )
 
-        mapper = get_mapper(
-            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-        )
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
         sn_params = mapper.to_snow(module.params)
 
         result = problem.build_payload(sn_params, table_client)
@@ -173,9 +181,7 @@ class TestBuildPayload:
             {"sys_id": "6816f79cc0a8016401c5a33be04be441"},
         ]
 
-        mapper = get_mapper(
-            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-        )
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
         sn_params = mapper.to_snow(module.params)
 
         result = problem.build_payload(sn_params, table_client)
@@ -1134,9 +1140,14 @@ class TestProblemMapping:
         module = create_module(params=module_params)
 
         with pytest.raises(
-            errors.ServiceNowError, match="does not use a value from the mapping"
+            AttributeError, match="'NoneType' object has no attribute 'get_record'"
         ):
             problem.ensure_present(module, None, None, None)
+
+        assert module.warn.call_count == 1
+        assert module.warn.call_args.args == (
+            "Encountered unknown value closed while mapping field state.",
+        )
 
     def test_create_implicitly_mapped_problem_state(
         self, create_module, table_client, problem_client, attachment_client
@@ -1148,9 +1159,6 @@ class TestProblemMapping:
                 short_description="Test problem",
                 assigned_to="problem.admin",
                 base_api_path="/api/path",
-                problem_mapping=dict(
-                    state={NEW: "my-new"},
-                ),
             )
         )
         module = create_module(params=module_params)
@@ -1201,34 +1209,36 @@ class TestProblemMapping:
         )
 
     @pytest.mark.parametrize(
-        "mapped_param,param_value",
+        "mapped_param,param_value,expected_value",
         [
-            ("state", "my-new"),
-            ("state", "my-assess"),
-            ("state", "rca"),
-            ("state", "fix"),
-            ("state", "my-resolved"),
-            ("state", "my-closed"),
-            ("state", "absent"),
-            ("state", None),
-            ("problem_state", "my-new"),
-            ("problem_state", "my-assess"),
-            ("problem_state", "rca"),
-            ("problem_state", "fix"),
-            ("problem_state", "my-resolved"),
-            ("problem_state", "my-closed"),
-            ("problem_state", None),
-            ("urgency", "one"),
-            ("urgency", "two"),
-            ("urgency", "three"),
-            ("urgency", None),
-            ("impact", "111"),
-            ("impact", "222"),
-            ("impact", "333"),
-            ("impact", None),
+            ("state", "my-new", "101"),
+            ("state", "my-assess", "102"),
+            ("state", "rca", "103"),
+            ("state", "fix", "104"),
+            ("state", "my-resolved", "106"),
+            ("state", "my-closed", "107"),
+            ("state", "absent", "absent"),
+            ("state", None, None),
+            ("problem_state", "my-new", "101"),
+            ("problem_state", "my-assess", "102"),
+            ("problem_state", "rca", "103"),
+            ("problem_state", "fix", "104"),
+            ("problem_state", "my-resolved", "106"),
+            ("problem_state", "my-closed", "107"),
+            ("problem_state", None, None),
+            ("urgency", "one", "1"),
+            ("urgency", "two", "2"),
+            ("urgency", "three", "3"),
+            ("urgency", None, None),
+            ("impact", "111", "1"),
+            ("impact", "222", "2"),
+            ("impact", "333", "3"),
+            ("impact", None, None),
         ],
     )
-    def test_validate_mapping(self, create_module, mapped_param, param_value):
+    def test_validate_mapping(
+        self, create_module, mapped_param, param_value, expected_value
+    ):
         all_mappings = dict(
             state=self.get_state_mapping(),
             problem_state=self.get_state_mapping(),
@@ -1251,41 +1261,32 @@ class TestProblemMapping:
 
         module = create_module(params=module_params)
 
-        mapper = get_mapper(
-            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-        )
-
-        problem.validate_mapping(module_params, mapper)
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
+        validate_mapping(module_params, mapper, mapped_param, expected_value)
 
     @pytest.mark.parametrize(
-        "mapped_param,param_value",
+        "mapped_param,param_value,expected_value",
         [
-            ("state", "explicitly-mapped-new"),
-            ("state", "assess"),
-            ("state", "root_cause_analysis"),
-            ("state", "fix_in_progress"),
-            ("state", "resolved"),
-            ("state", "closed"),
-            ("state", "absent"),
-            ("state", None),
-            ("problem_state", "new"),
-            ("problem_state", "explicitly-mapped-assess"),
-            ("problem_state", "root_cause_analysis"),
-            ("problem_state", "fix_in_progress"),
-            ("problem_state", "resolved"),
-            ("problem_state", "closed"),
-            ("problem_state", None),
-            ("urgency", "not_too_urgent"),
-            ("urgency", "medium"),
-            ("urgency", "high"),
-            ("urgency", None),
-            ("impact", "low"),
-            ("impact", "medium"),
-            ("impact", "highly_impacted"),
-            ("impact", None),
+            ("state", "assess", "assess"),
+            ("state", "root_cause_analysis", "root_cause_analysis"),
+            ("state", "fix_in_progress", "fix_in_progress"),
+            ("state", "resolved", "resolved"),
+            ("state", "closed", "closed"),
+            ("state", "absent", "absent"),
+            ("problem_state", "new", "new"),
+            ("problem_state", "root_cause_analysis", "root_cause_analysis"),
+            ("problem_state", "fix_in_progress", "fix_in_progress"),
+            ("problem_state", "resolved", "resolved"),
+            ("problem_state", "closed", "closed"),
+            ("urgency", "medium", "medium"),
+            ("urgency", "high", "high"),
+            ("impact", "low", "low"),
+            ("impact", "medium", "medium"),
         ],
     )
-    def test_validate_mapping_implicit(self, create_module, mapped_param, param_value):
+    def test_validate_mapping_implicit(
+        self, create_module, mapped_param, param_value, expected_value
+    ):
         all_mappings = dict(
             state={NEW: "explicitly-mapped-new"},
             problem_state={ASSESS: "explicitly-mapped-assess"},
@@ -1304,11 +1305,17 @@ class TestProblemMapping:
 
         module = create_module(params=module_params)
 
-        mapper = get_mapper(
-            module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-        )
+        mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
 
-        problem.validate_mapping(module_params, mapper)
+        validate_mapping(module_params, mapper, mapped_param, expected_value)
+        assert module.warn.call_count == 1
+        assert module.warn.call_args.args == (
+            "Encountered unknown value "
+            + expected_value
+            + " while mapping field "
+            + mapped_param
+            + ".",
+        )
 
     def test_no_change_mapped_problem_state_new(
         self, create_module, table_client, problem_client, attachment_client
@@ -1385,8 +1392,6 @@ class TestProblemMapping:
                 impact="high",
                 problem_mapping=dict(
                     state=self.get_state_mapping(),
-                    urgency={"3": "lowest"},
-                    impact={"2": "normal"},
                 ),
             )
         )
@@ -1446,7 +1451,6 @@ class TestProblemMapping:
                 impact="normal",
                 problem_mapping=dict(
                     state=self.get_state_mapping(),
-                    urgency={"3": "lowest"},
                     impact={"2": "normal"},
                 ),
             )

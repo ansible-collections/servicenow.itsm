@@ -350,9 +350,7 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client, attachment_client):
-    mapper = get_mapper(
-        module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-    )
+    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     problem = table_client.get_record("problem", query)
 
@@ -435,33 +433,8 @@ def validate_params(sn_params, sn_problem=None):
         )
 
 
-def validate_mapping(module_params, mapper):
-    problem_mapping = module_params.get("problem_mapping")
-    if not problem_mapping:
-        return
-    accepted_values = dict(
-        state=(NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED, "absent", None),
-        problem_state=(NEW, ASSESS, RCA, FIX, RESOLVED, CLOSED, None),
-        impact=("1", "2", "3", None),
-        urgency=("1", "2", "3", None),
-    )
-    for param, values in accepted_values.items():
-        if param in problem_mapping and param in module_params:
-            value = module_params[param]
-            sn_value = mapper.to_snow({param: value})
-            if sn_value.get(param) not in values:
-                raise errors.ServiceNowError(
-                    "Option {0} does not use a value from the mapping: {1}".format(
-                        param, value
-                    )
-                )
-
-
 def ensure_present(module, problem_client, table_client, attachment_client):
-    mapper = get_mapper(
-        module, "problem_mapping", PAYLOAD_FIELDS_MAPPING, implicit=True
-    )
-    validate_mapping(module.params, mapper)
+    mapper = get_mapper(module, "problem_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     sn_params = mapper.to_snow(module.params)
     sn_payload = build_payload(sn_params, table_client)
@@ -471,7 +444,6 @@ def ensure_present(module, problem_client, table_client, attachment_client):
 
     if not query:
         # User did not specify existing problem, so we need to create a new one.
-        validate_params(sn_params)
         new = mapper.to_ansible(
             table_client.create_record("problem", sn_payload, module.check_mode)
         )
