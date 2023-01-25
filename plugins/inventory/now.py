@@ -477,7 +477,8 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
                 fields=referenced_columns + ["sys_id"],
                 is_encoded_query=bool(sysparm_query),
             )
-            referenced_dict = {x["sys_id"]: x for x in referenced_records}
+
+            referenced_dict = dict((x["sys_id"], x) for x in referenced_records)
             for record in records:
                 referenced = referenced_dict.get(record["sys_id"], None)
                 if referenced:
