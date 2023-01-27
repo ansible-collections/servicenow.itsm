@@ -1,0 +1,2 @@
+minor_changes:
+ - inventory plugin - Plugin now supports mapping of reference fields inside 'compose' block.

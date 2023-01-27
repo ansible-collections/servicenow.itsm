@@ -20,6 +20,8 @@ description:
   - Builds inventory from ServiceNow table records.
   - Requires a configuration file ending in C(now.yml) or C(now.yaml).
   - The plugin sets host variables denoted by I(columns).
+  - For variables with dots (for example 'location.country') use lookup('ansible.builtin.vars', 'variable.name') notation.
+    See the example section for more details. This feature is added in version 2.1.0.
 version_added: 1.0.0
 extends_documentation_fragment:
   - ansible.builtin.constructed
@@ -241,7 +243,32 @@ compose:
 # |  |  |--{cost = 2,160 USD}
 # |  |  |--{cpu_type = Intel}
 # |  |  |--{name = INSIGHT-NY-03}
+
+plugin: servicenow.itsm.now
+enhanced: false
+strict: true
+table: cmdb_ci_server
+columns:
+  - name
+  - ip_address
+  - location
+  - location.country
+compose:
+  street: location
+  country: lookup('ansible.builtin.vars', 'location.country')
+
+# `ansible-inventory -i inventory.now.yaml --graph --vars` output:
+# @all:
+# |--@ungrouped:
+# |  |--OWA-SD-01
+# |  |  |--{country = Italy}
+# |  |  |--{ip_address = }
+# |  |  |--{location = Via Nomentana 56, Rome}
+# |  |  |--{location.country = Italy}
+# |  |  |--{name = OWA-SD-01}
+# |  |  |--{street = Via Nomentana 56, Rome}
 """
+
 
 import os
 
@@ -252,6 +279,7 @@ from ansible.plugins.inventory import (
     Constructable,
     to_safe_group_name,
 )
+from ansible.utils.vars import combine_vars
 
 from ..module_utils.client import Client
 from ..module_utils.errors import ServiceNowError
@@ -287,7 +315,27 @@ def fetch_records(table_client, table, query, fields=None, is_encoded_query=Fals
     return table_client.list_records(table, snow_query)
 
 
-class InventoryModule(BaseInventoryPlugin, Constructable):
+class ConstructableWithLookup(Constructable):
+
+    def _compose(self, template, variables):
+        ''' helper method for plugins to compose variables for Ansible based on jinja2 expression and inventory vars'''
+        t = self.templar
+
+        try:
+            use_extra = self.get_option('use_extra_vars')
+        except Exception:
+            use_extra = False
+
+        if use_extra:
+            t.available_variables = combine_vars(variables, self._vars)
+        else:
+            t.available_variables = variables
+
+        ''' Only change that we have overriden is that we do not disable lookups'''
+        return t.template('%s%s%s' % (t.environment.variable_start_string, template, t.environment.variable_end_string), disable_lookups=False)
+
+
+class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
 
     NAME = "servicenow.itsm.now"
 
@@ -418,9 +466,26 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             table_client,
             table,
             query or sysparm_query,
-            fields=columns,
             is_encoded_query=bool(sysparm_query),
         )
+
+        referenced_columns = [x for x in columns if '.' in x]
+        if referenced_columns:
+            referenced_records = fetch_records(
+                table_client,
+                table,
+                query or sysparm_query,
+                fields=referenced_columns + ["sys_id"],
+                is_encoded_query=bool(sysparm_query),
+            )
+
+            referenced_dict = dict((x["sys_id"], x) for x in referenced_records)
+            for record in records:
+                referenced = referenced_dict.get(record["sys_id"], None)
+                if referenced:
+                    referenced.pop("sys_id")
+                    for key, value in referenced.items():
+                        record[key] = value
 
         if enhanced:
             rel_records = fetch_records(
