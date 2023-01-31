@@ -1,3 +1,0 @@
-bugfixes:
- - mapping - When creating custom mapping, one now can again list unknown fields
-   and map them to values. Before that fix there was a bug, where one could only rename fields inside mapping.

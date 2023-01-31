@@ -5,6 +5,29 @@ servicenow.itsm Release Notes
 .. contents:: Topics
 
 
+v2.1.0
+======
+
+Release Summary
+---------------
+
+This is the minor release of the ``servicenow.itsm`` collection.
+This changelog contains all changes to the modules in this collection that
+have been added after the release of ``servicenow.itsm`` 2.0.0.
+
+
+Minor Changes
+-------------
+
+- api - Added parameter query_params to api module (https://github.com/ansible-collections/servicenow.itsm/pull/225).
+- inventory plugin - Plugin now supports mapping of reference fields inside 'compose' block.
+
+Bugfixes
+--------
+
+- inventory plugin - sysparm_query attribute is taken into account.
+- mapping - When creating custom mapping, one can list unknown fields and map them to values. Before the fix there was a bug, where one could only rename fields inside mapping.
+
 v2.0.0
 ======
 
