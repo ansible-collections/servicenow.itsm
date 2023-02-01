@@ -65,6 +65,7 @@ Parameters
                     </div>
                 </td>
                 <td>
+                        <b>Default:</b><br/><div style="color: blue">{}</div>
                 </td>
                 <td>
                         <div>The data that we want to update or create the resource with.</div>
@@ -242,6 +243,23 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>query_params</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.1.0 </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">{}</div>
+                </td>
+                <td>
+                        <div>Query parameters that may be used on POST or PATCH request.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>resource</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -363,6 +381,22 @@ Examples
           short_description: demo-description2
       register: result
 
+    - name: create user (object with encrypted fields)
+      servicenow.itsm.api:
+        resource: sys_user
+        action: post
+        query_params:
+          sysparm_input_display_value: true
+        data:
+          user_name: "demo_username"
+          user_password: "demo_password"
+          first_name: "first_name"
+          last_name: Demouser
+          department: IT
+          email: "demo_username@example.com"
+          title: Demo user
+      register: user
+
     - name: Create a record in sc_req_item with column values set in template, located in Ansible controller file system
       servicenow.itsm.api:
         resource: sc_req_item
@@ -420,3 +454,4 @@ Authors
 ~~~~~~~
 
 - Tjaž Eržen (@tjazsch)
+- Jure Medvešek (@juremedvesek)

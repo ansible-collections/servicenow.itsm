@@ -20,6 +20,7 @@ Synopsis
 - Builds inventory from ServiceNow table records.
 - Requires a configuration file ending in ``now.yml`` or ``now.yaml``.
 - The plugin sets host variables denoted by *columns*.
+- For variables with dots (for example 'location.country') use lookup('ansible.builtin.vars', 'variable.name') notation. See the example section for more details. This feature is added in version 2.1.0.
 
 
 
@@ -740,6 +741,30 @@ Examples
     # |  |  |--{cost = 2,160 USD}
     # |  |  |--{cpu_type = Intel}
     # |  |  |--{name = INSIGHT-NY-03}
+
+    plugin: servicenow.itsm.now
+    enhanced: false
+    strict: true
+    table: cmdb_ci_server
+    columns:
+      - name
+      - ip_address
+      - location
+      - location.country
+    compose:
+      street: location
+      country: lookup('ansible.builtin.vars', 'location.country')
+
+    # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
+    # @all:
+    # |--@ungrouped:
+    # |  |--OWA-SD-01
+    # |  |  |--{country = Italy}
+    # |  |  |--{ip_address = }
+    # |  |  |--{location = Via Nomentana 56, Rome}
+    # |  |  |--{location.country = Italy}
+    # |  |  |--{name = OWA-SD-01}
+    # |  |  |--{street = Via Nomentana 56, Rome}
 
 
 
