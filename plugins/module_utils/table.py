@@ -10,8 +10,8 @@ __metaclass__ = type
 from . import errors
 
 
-def _path(table, *subpaths):
-    return "/".join(("api", "now") + ("table", table) + subpaths)
+def _path(api_path, table, *subpaths):
+    return "/".join(api_path + ("table", table) + subpaths)
 
 
 def _query(original=None):
@@ -37,7 +37,7 @@ class TableClient:
 
         while offset < total:
             response = self.client.get(
-                _path(table), query=dict(base_query, sysparm_offset=offset)
+                _path(self.client.api_path, table), query=dict(base_query, sysparm_offset=offset)
             )
 
             result.extend(response.json["result"])
@@ -76,7 +76,7 @@ class TableClient:
             # Approximate the result using the payload.
             return payload
 
-        return self.client.post(_path(table), payload, query=_query(query)).json[
+        return self.client.post(_path(self.client.api_path, table), payload, query=_query(query)).json[
             "result"
         ]
 
@@ -86,12 +86,12 @@ class TableClient:
             return dict(record, **payload)
 
         return self.client.patch(
-            _path(table, record["sys_id"]), payload, query=_query(query)
+            _path(self.client.api_path, table, record["sys_id"]), payload, query=_query(query)
         ).json["result"]
 
     def delete_record(self, table, record, check_mode):
         if not check_mode:
-            self.client.delete(_path(table, record["sys_id"]))
+            self.client.delete(_path(self.client.api_path, table, record["sys_id"]))
 
 
 def find_user(table_client, user_id):
