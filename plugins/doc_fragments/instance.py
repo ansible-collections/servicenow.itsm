@@ -45,6 +45,11 @@ options:
         default: password
         type: str
         version_added: '1.1.0'
+      api_path:
+        description:
+          - Change the API endpoint of SNOW instance from default api/now
+        type: str
+        default: api/now
       client_id:
         description:
           - ID of the client application used for OAuth authentication.
@@ -59,6 +64,10 @@ options:
             variable will be used.
           - If provided, it requires I(client_id).
         type: str
+      custom_headers:
+        description:
+          - Dictionary containing any extra headers which will be passed with request
+        type: dict
       refresh_token:
         description:
           - Refresh token used for OAuth authentication.

@@ -14,7 +14,7 @@ import os
 from . import errors
 
 
-def _path(*subpaths, api_path=("api", "now")):
+def _path(api_path, *subpaths):
     return "/".join(
         api_path
         + ("attachment",)
@@ -38,7 +38,7 @@ class AttachmentClient:
 
         while offset < total:
             response = self.client.get(
-                _path(api_path=self.client.api_path), query=dict(base_query, sysparm_offset=offset)
+                _path(self.client.api_path), query=dict(base_query, sysparm_offset=offset)
             )
 
             result.extend(response.json["result"])
@@ -52,7 +52,7 @@ class AttachmentClient:
             return query
         return self.client.request(
             "POST",
-            _path("file", api_path=self.client.api_path),
+            _path(self.client.api_path, "file"),
             query=query,
             headers={"Accept": "application/json", "Content-type": mime_type},
             bytes=data,
@@ -85,7 +85,7 @@ class AttachmentClient:
 
     def delete_record(self, record, check_mode):
         if not check_mode:
-            self.client.delete(_path(record["sys_id"], api_path=self.client.api_path))
+            self.client.delete(_path(self.client.api_path, record["sys_id"]))
 
     def delete_attached_records(self, table, table_sys_id, check_mode):
         for record in self.list_records(
@@ -108,7 +108,7 @@ class AttachmentClient:
         return list(mapped_records.values())
 
     def get_attachment(self, attachment_sys_id):
-        return self.client.get(_path(attachment_sys_id, "file", api_path=self.client.api_path))
+        return self.client.get(_path(self.client.api_path, attachment_sys_id, "file"))
 
     def save_attachment(self, binary_data, dest):
         try:
