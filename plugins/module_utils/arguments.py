@@ -99,7 +99,7 @@ SHARED_SPECS = dict(
             ),
             api_path=dict(
                 type="str",
-                default="api/path",
+                default="api/now",
             ),
             client_id=dict(
                 type="str",
