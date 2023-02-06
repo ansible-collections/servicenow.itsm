@@ -132,6 +132,23 @@ Parameters
                         <div>ServiceNow instance information.</div>
                 </td>
             </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>api_path</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">api/now</div>
+                </td>
+                <td>
+                        <div>Adjust path to api endpoint in case you have custom api path.</div>
+                </td>
+            </tr>
                                 <tr>
                     <td class="elbow-placeholder"></td>
                 <td colspan="1">
@@ -170,6 +187,23 @@ Parameters
                 <td>
                         <div>Secret associated with <em>client_id</em>. Used for OAuth authentication.</div>
                         <div>If provided, it requires <em>client_id</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>custom_headers</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">{}</div>
+                </td>
+                <td>
+                        <div>Any custom headers you want to add to the requests.</div>
                 </td>
             </tr>
             <tr>
