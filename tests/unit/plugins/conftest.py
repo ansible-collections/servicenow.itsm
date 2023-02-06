@@ -27,7 +27,9 @@ from ansible_collections.servicenow.itsm.plugins.module_utils.problem import (
 
 @pytest.fixture
 def client(mocker):
-    return mocker.Mock(spec=Client)
+    return_client = mocker.Mock(spec=Client)
+    return_client.api_path = ("api", "now")
+    return return_client
 
 
 @pytest.fixture
