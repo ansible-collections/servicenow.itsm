@@ -53,6 +53,8 @@ class Client:
         refresh_token=None,
         client_id=None,
         client_secret=None,
+        custom_headers=None,
+        api_path="api/now",
         timeout=None,
     ):
         if not (host or "").startswith(("https://", "http://")):
@@ -67,6 +69,8 @@ class Client:
         self.grant_type = grant_type
         self.client_id = client_id
         self.client_secret = client_secret
+        self.custom_headers = custom_headers
+        self.api_path = tuple(api_path.strip("/").split("/"))
         self.refresh_token = refresh_token
         self.timeout = timeout
 
@@ -157,6 +161,8 @@ class Client:
         if query:
             url = "{0}?{1}".format(url, urlencode(query))
         headers = dict(headers or DEFAULT_HEADERS, **self.auth_header)
+        if self.custom_headers:
+            headers = dict(headers, **self.custom_headers)
         if data is not None:
             data = json.dumps(data, separators=(",", ":"))
             headers["Content-type"] = "application/json"
