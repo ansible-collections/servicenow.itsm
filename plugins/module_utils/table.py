@@ -9,8 +9,9 @@ __metaclass__ = type
 
 from . import errors
 
+
 def _path(api_path, table, *subpaths):
-    return "/".join(api_path + ("table", table)  + subpaths)
+    return "/".join(api_path + ("table", table) + subpaths)
 
 
 def _query(original=None):
