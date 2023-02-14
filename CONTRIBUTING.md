@@ -11,7 +11,7 @@ https://docs.ansible.com/ansible/latest/community/index.html).
 
 ### servicenow.itsm
 
-The Ansible Collection for ServiceNow IT Service Management (ITSM) includes a variety of Ansible content to help automate the management of ServiceNow IT Service Management.
+The Ansible Collection for ServiceNow IT Service Management ([ITSM](https://www.servicenow.com/products/itsm.html)) includes a variety of Ansible content to help automate the management of ServiceNow IT Service Management.
 
 New modules and plugins developed by the community should be proposed to `servicenow.itsm`.
 
@@ -36,7 +36,7 @@ For new features and bug fixes on existing modules, clone this repository and tr
 This command will take care of installing requirements and running them.
 
 ### Unit tests
-We use unit tests to test the logic and implementation of our helper functions and various Ansible plugins that are part of the Sensu Go collection.
+We use unit tests to test the logic and implementation of our helper functions and various Ansible plugins that are part of the `servicenow.itsm` collection.
 ```
 (venv) $ make units
 ```
@@ -75,7 +75,7 @@ Please read and familiarize yourself with this document.
 Our IRC channels may require you to register your nickname. If you receive an error when you connect, see
 [Libera.Chat's Nickname Registration guide](https://libera.chat/guides/registration) for instructions.
 
-The `#ansible-community` channel on [libera.chat](https://libera.chat/) IRC is the main and official place to discuss use and development of the `ServiceNow.ITSM` collection.
+The `#ansible-community` channel on [libera.chat](https://libera.chat/) IRC is the main and official place to discuss the use and development of the `serviceNow.itsm` collection.
 
 ### For more information
 * [Ansible Collection overview](https://github.com/ansible-collections/overview)
