@@ -26,9 +26,10 @@ issue, or by reporting any additional information.
 ## Environment setup
 1. Sign up for a [ServiceNow ID](https://signon.service-now.com/x_snc_sso_auth.do#/sign-up) 
 1. Request and setup an Instance. 
-1. When the instance is ready, you will be redirected to the Developer Portal `e.g. https://dev12345.service-now.com/`. In All, search for Application Registry then New - Create an OAuth API endpoint for external clients.
-1. Ensure that you have changed the Integration tests configuration file accordingly with your Personal Developer Instance credentials for connection and access. A template is available [here](https://github.com/ansible-collections/servicenow.itsm/blob/main/tests/integration/integration_config.yml.template).
-1. For more information, check [General usage pattenrs](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/general_usage_patterns.md).
+1. When the instance is ready, you will be redirected to the Developer Portal, for example `https://dev12345.service-now.com/`. In All, search for `Application Registry` then New - Create an OAuth API endpoint for external clients.
+1. Ensure that you have changed the Integration tests configuration file accordingly with your Personal Developer Instance credentials for the connection and access. A template is available [here](https://github.com/ansible-collections/servicenow.itsm/blob/main/tests/integration/integration_config.yml.template).
+1. For more information, check [General usage patterns](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/general_usage_patterns.md).
+1. If you are running unit tests or integration tests included in `servicenow.itsm` source using `make` command, it is advised to installed container runtimes such as Podman or Docker. For more information please refer [Ansible Testing Guidelines](https://docs.ansible.com/ansible/latest/dev_guide/testing_integration.html#tests-in-containers).
 
 
 ## Writing New Code
