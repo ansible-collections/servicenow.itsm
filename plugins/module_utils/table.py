@@ -65,8 +65,8 @@ class TableClient:
 
     def get_record_by_sys_id(self, table, sys_id):
         response = self.client.get(
-                _path(table, sys_id)
-            )
+            _path(table, sys_id)
+        )
         record = response.json["result"]
 
         return record

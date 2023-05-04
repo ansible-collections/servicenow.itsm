@@ -18,13 +18,16 @@ author:
 short_description: a module that users can use to upload attachment to selected table
 
 description:
-  - Upload attachment using table name and table sys_id.
+  - Upload attachment to selected table using table name and table sys_id.
+  - Name of the attachment serves as a unique identifier. If attachment with a certain name already exists,
+    but the content is different, attachment to be uploaded will overwrite the existing attachment.
+    If attachment with a certain name already exists and the content is the same, attachment will not be uploaded.
 version_added: 2.0.0 # WHICH VERSION?
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.attachments
 seealso:
-  - module: servicenow.itsm.attachement # SHOULD BE RENAMED TO ATTACHMENT_INFO
+  - module: servicenow.itsm.attachement_info
 
 options:
   table_name:
@@ -61,32 +64,32 @@ EXAMPLES = r"""
 
 RETURN = r"""
 records:
-  description: List of attachments # update
+  description: List of attachments that were uploaded, overwritten or unchanged
   returned: success
   type: list
   elements: dict
   sample:
-    "average_image_color": "",
-    "chunk_size_bytes": "700000",
-    "compressed": "true",
-    "content_type": "text/plain",
-    "download_link": "https://dev139037.service-now.com/api/now/attachment/f2d5cb9647222110afc6fa37536d4361/file",
-    "file_name": "sample_file2.txt",
-    "hash": "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902",
-    "image_height": "",
-    "image_width": "",
-    "size_bytes": "210",
-    "size_compressed": "207",
-    "state": "pending",
-    "sys_created_by": "admin",
-    "sys_created_on": "2023-05-04 08:53:07",
-    "sys_id": "f2d5cb9647222110afc6fa37536d4361",
-    "sys_mod_count": "0",
-    "sys_tags": "",
-    "sys_updated_by": "admin",
-    "sys_updated_on": "2023-05-04 08:53:07",
-    "table_name": "incident",
-    "table_sys_id": "7cd58f1647222110afc6fa37536d43ed"
+    average_image_color: "",
+    chunk_size_bytes: "700000",
+    compressed: "true",
+    content_type: "text/plain",
+    download_link: "https://dev139037.service-now.com/api/now/attachment/f2d5cb9647222110afc6fa37536d4361/file",
+    file_name: "sample_file2.txt",
+    hash: "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902",
+    image_height: "",
+    image_width: "",
+    size_bytes: "210",
+    size_compressed: "207",
+    state: "pending",
+    sys_created_by: "admin",
+    sys_created_on: "2023-05-04 08:53:07",
+    sys_id: "f2d5cb9647222110afc6fa37536d4361",
+    sys_mod_count: "0",
+    sys_tags: "",
+    sys_updated_by: "admin",
+    sys_updated_on: "2023-05-04 08:53:07",
+    table_name: "incident",
+    table_sys_id: "7cd58f1647222110afc6fa37536d43ed"
 """
 
 
@@ -110,9 +113,6 @@ def run(module, attachment_client):
 
     changed, unchanged = attachment.are_changed_return_records(old_attachments, attachments)
     if not changed:
-    # if not any(
-    #     attachment.are_changed(old_attachments, attachments)
-    # ):
         return False, unchanged, dict(before=unchanged, after=unchanged)
 
     updated_attachments = attachment_client.update_records(

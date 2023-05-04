@@ -155,7 +155,6 @@ class TestTableGetRecordBySysId:
         client.get.assert_called_with("api/now/table/my_table/sys_id")
 
 
-
 class TestTableCreateRecord:
     def test_normal_mode(self, client):
         client.post.return_value = Response(201, '{"result": {"a": 3, "b": "sys_id"}}')
