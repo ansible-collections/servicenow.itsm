@@ -11,7 +11,7 @@ import sys
 
 import pytest
 
-from ansible_collections.servicenow.itsm.plugins.modules import attachment
+from ansible_collections.servicenow.itsm.plugins.modules import attachment_info
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
 from ansible.module_utils._text import to_bytes
@@ -32,12 +32,12 @@ class TestMain:
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
             dest="tmp",
         )
-        success, result = run_main(attachment, params)
+        success, result = run_main(attachment_info, params)
 
         assert success is True
 
     def test_fail(self, run_main):
-        success, result = run_main(attachment)
+        success, result = run_main(attachment_info)
 
         assert success is False
         assert "missing required arguments" in result["msg"]
@@ -49,7 +49,7 @@ class TestMain:
             ),
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
         )
-        success, result = run_main(attachment, params)
+        success, result = run_main(attachment_info, params)
 
         assert success is False
         assert "missing required arguments: dest" in result["msg"]
@@ -61,7 +61,7 @@ class TestMain:
             ),
             dest="tmp",
         )
-        success, result = run_main(attachment, params)
+        success, result = run_main(attachment_info, params)
 
         assert success is False
         assert "missing required arguments: sys_id" in result["msg"]
@@ -87,7 +87,7 @@ class TestRun:
             "ansible_collections.servicenow.itsm.plugins.modules.attachment.time.time"
         ).return_value = 0
 
-        records = attachment.run(module, attachment_client)
+        records = attachment_info.run(module, attachment_client)
 
         assert records == {
             "elapsed": 0.0,
@@ -125,7 +125,7 @@ class TestRun:
             "ansible_collections.servicenow.itsm.plugins.modules.attachment.os.path.getsize"
         ).return_value = 2000
 
-        records = attachment.run(module, attachment_client)
+        records = attachment_info.run(module, attachment_client)
 
         assert records == {
             "elapsed": 0.0,
@@ -155,7 +155,7 @@ class TestRun:
         )
 
         with pytest.raises(errors.ServiceNowError) as exc:
-            attachment.run(module, attachment_client)
+            attachment_info.run(module, attachment_client)
 
         assert "Status code: 404, Details: Record does not exist" in str(exc.value)
 
@@ -180,6 +180,6 @@ class TestRun:
         )
 
         with pytest.raises(errors.ServiceNowError) as exc:
-            attachment.run(module, attachment_client)
+            attachment_info.run(module, attachment_client)
 
         assert "Status code: 404, Details: Not found" in str(exc.value)
