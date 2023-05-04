@@ -81,6 +81,22 @@
           - result.records | map(attribute="hash") | sort | list == ["f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902", "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902"]
 
 
+    - name: Overwrite only one attachment
+      servicenow.itsm.attachment_upload:
+        table_name: incident
+        table_sys_id: "{{ test_incident.record.sys_id }}"
+        attachments:
+          - path: targets/attachment_upload/res/sample_file1.txt
+            name: sample_file1.txt
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.records | map(attribute="file_name") | sort | list == ["sample_file1.txt"]
+          - result.records | map(attribute="hash") | sort | list == ["6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e"]
+
+
     - name: Delete incident attachment - check mode
       servicenow.itsm.incident:
         number: "{{ test_incident.record.number }}"
