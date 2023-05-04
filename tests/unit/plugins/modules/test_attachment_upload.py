@@ -101,6 +101,13 @@ class TestMain:
             ),
             table_name="incident",
             table_sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
+            attachments=[
+                {
+                    "name": "attachment_name1.txt",
+                    "path": "path1",
+                    "type": "text/plain",
+                },
+            ]
         )
         success, result = run_main(attachment_upload, params)
 
