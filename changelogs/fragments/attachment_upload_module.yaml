@@ -1,0 +1,3 @@
+---
+major_changes:
+  - Added attachment_upload module (https://github.com/ansible-collections/servicenow.itsm/pull/248).
