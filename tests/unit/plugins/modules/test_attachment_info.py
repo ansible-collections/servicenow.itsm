@@ -84,7 +84,7 @@ class TestRun:
             {"x-attachment-metadata": '{  "size_bytes" : "1000"}'},
         )
         mocker.patch(
-            "ansible_collections.servicenow.itsm.plugins.modules.attachment.time.time"
+            "ansible_collections.servicenow.itsm.plugins.modules.attachment_info.time.time"
         ).return_value = 0
 
         records = attachment_info.run(module, attachment_client)
@@ -118,11 +118,11 @@ class TestRun:
             {"bad_key": '{"bad_key": "1000"}'},
         )
         mocker.patch(
-            "ansible_collections.servicenow.itsm.plugins.modules.attachment.time.time"
+            "ansible_collections.servicenow.itsm.plugins.modules.attachment_info.time.time"
         ).return_value = 0
 
         mocker.patch(
-            "ansible_collections.servicenow.itsm.plugins.modules.attachment.os.path.getsize"
+            "ansible_collections.servicenow.itsm.plugins.modules.attachment_info.os.path.getsize"
         ).return_value = 2000
 
         records = attachment_info.run(module, attachment_client)
