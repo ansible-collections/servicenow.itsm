@@ -15,8 +15,7 @@ module: attachment_upload
 author:
   - Polona Mihalič (@PolonaM)
 
-short_description: a module that users can use to upload attachment to selected table
-
+short_description: Upload attachment to selected table
 description:
   - Upload attachment to selected table using table name and table sys_id.
   - Name of the attachment serves as a unique identifier. If attachment with a certain name already exists,
@@ -28,11 +27,10 @@ extends_documentation_fragment:
   - servicenow.itsm.attachments
 seealso:
   - module: servicenow.itsm.attachement_info
-
 options:
   table_name:
     description:
-      - Table to attach the file to.
+      - Table type to attach the file to.
     type: str
     required: true
   table_sys_id:
@@ -40,7 +38,6 @@ options:
       - Record to attach the file to.
     type: str
     required: true
-
 notes:
   - Supports check_mode.
 """
@@ -61,7 +58,6 @@ EXAMPLES = r"""
         name: attachment2
 """
 
-
 RETURN = r"""
 records:
   description: List of attachments that were uploaded, overwritten or unchanged
@@ -69,26 +65,26 @@ records:
   type: list
   elements: dict
   sample:
-    average_image_color: "",
-    chunk_size_bytes: "700000",
-    compressed: "true",
-    content_type: "text/plain",
-    download_link: "https://dev139037.service-now.com/api/now/attachment/f2d5cb9647222110afc6fa37536d4361/file",
-    file_name: "sample_file2.txt",
-    hash: "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902",
-    image_height: "",
-    image_width: "",
-    size_bytes: "210",
-    size_compressed: "207",
-    state: "pending",
-    sys_created_by: "admin",
-    sys_created_on: "2023-05-04 08:53:07",
-    sys_id: "f2d5cb9647222110afc6fa37536d4361",
-    sys_mod_count: "0",
-    sys_tags: "",
-    sys_updated_by: "admin",
-    sys_updated_on: "2023-05-04 08:53:07",
-    table_name: "incident",
+    average_image_color: ""
+    chunk_size_bytes: "700000"
+    compressed: "true"
+    content_type: "text/plain"
+    download_link: "https://dev139037.service-now.com/api/now/attachment/f2d5cb9647222110afc6fa37536d4361/file"
+    file_name: "sample_file2.txt"
+    hash: "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902"
+    image_height: ""
+    image_width: ""
+    size_bytes: "210"
+    size_compressed: "207"
+    state: "pending"
+    sys_created_by: "admin"
+    sys_created_on: "2023-05-04 08:53:07"
+    sys_id: "f2d5cb9647222110afc6fa37536d4361"
+    sys_mod_count: "0"
+    sys_tags: ""
+    sys_updated_by: "admin"
+    sys_updated_on: "2023-05-04 08:53:07"
+    table_name: "incident"
     table_sys_id: "7cd58f1647222110afc6fa37536d43ed"
 """
 
