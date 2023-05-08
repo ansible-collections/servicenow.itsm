@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright: (c) 2022, XLAB Steampunk <steampunk@xlab.si>
+# Copyright: (c) 2023, XLAB Steampunk <steampunk@xlab.si>
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -15,13 +15,13 @@ module: attachment_upload
 author:
   - Polona Mihalič (@PolonaM)
 
-short_description: Upload attachment to selected table
+short_description: Upload attachment to the selected table
 description:
-  - Upload attachment to selected table using table name and table sys_id.
-  - Name of the attachment serves as a unique identifier. If attachment with a certain name already exists,
-    but the content is different, attachment to be uploaded will overwrite the existing attachment.
-    If attachment with a certain name already exists and the content is the same, attachment will not be uploaded.
-version_added: 2.0.0 # WHICH VERSION?
+  - Upload the attachment to the selected table using table name and table sys_id.
+  - Name of the attachment serves as a unique identifier. If an attachment with a certain name already exists,
+    but the content is different, the attachment to be uploaded will overwrite the existing attachment.
+    If an attachment with a certain name already exists and the content is the same, the attachment will not be uploaded.
+version_added: 2.2.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.attachments
