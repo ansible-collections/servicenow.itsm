@@ -1,9 +1,9 @@
-.. _servicenow.itsm.attachment_module:
+.. _servicenow.itsm.attachment_info_module:
 
 
-**************************
-servicenow.itsm.attachment
-**************************
+*******************************
+servicenow.itsm.attachment_info
+*******************************
 
 **a module that users can use to download attachment using sys_id**
 
