@@ -111,7 +111,8 @@ class AttachmentClient:
         return list(mapped_records.values())
 
     def get_attachment(self, attachment_sys_id):
-        return self.client.get(_path(attachment_sys_id, "file"))
+        path = _path(attachment_sys_id, "file")
+        return self.client.get(path)
 
     def save_attachment(self, binary_data, dest):
         try:
