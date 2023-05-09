@@ -111,7 +111,8 @@ class AttachmentClient:
         return list(mapped_records.values())
 
     def get_attachment(self, attachment_sys_id):
-        return self.client.get(_path(attachment_sys_id, "file"))
+        path = _path(attachment_sys_id, "file")
+        return self.client.get(path)
 
     def save_attachment(self, binary_data, dest):
         try:
@@ -160,3 +161,15 @@ def are_changed(records, metadata_dict):
         metadata["hash"] != mapped_records.get(name, {}).get("hash")
         for name, metadata in metadata_dict.items()
     ]
+
+
+def are_changed_return_records(records, metadata_dict):
+    mapped_records = dict((r["file_name"], r) for r in records)
+    changed = []
+    unchanged = []
+    for name, metadata in metadata_dict.items():
+        if metadata["hash"] == mapped_records.get(name, {}).get("hash"):
+            unchanged.append(mapped_records[name])
+        elif mapped_records.get(name, {}):  # if record with the same file_name already exists
+            changed.append(mapped_records[name])
+    return changed, unchanged
