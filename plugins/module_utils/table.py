@@ -105,9 +105,9 @@ def find_assignment_group(table_client, assignment_id):
     )
 
 
-def find_standard_change_template(table_client, template_name):
+def find_standard_change_template(table_client, template_name, template_table):
     return table_client.get_record(
-        "std_change_producer_version",
+        template_table,
         dict(name=template_name),
         must_exist=True,
     )

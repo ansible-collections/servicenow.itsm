@@ -352,7 +352,7 @@ def build_payload(module, table_client):
 
     if module.params["template"]:
         standard_change_template = table.find_standard_change_template(
-            table_client, module.params["template"]
+            table_client, module.params["template"], module.params["template_table"]
         )
         payload["std_change_producer_version"] = standard_change_template["sys_id"]
 
@@ -383,6 +383,10 @@ def main():
         ),
         template=dict(
             type="str",
+        ),
+        template_table=dict(
+            type="str",
+            default="std_change_producer_version",
         ),
         requested_by=dict(
             type="str",
