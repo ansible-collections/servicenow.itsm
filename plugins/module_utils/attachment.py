@@ -165,6 +165,7 @@ def are_changed(records, metadata_dict):
 
 def are_changed_return_records(records, metadata_dict):
     mapped_records = dict((r["file_name"], r) for r in records)
+    update = {}  # filtered metadata_dict of the attachments to be added/updated
     changed = []
     unchanged = []
     for name, metadata in metadata_dict.items():
@@ -172,4 +173,7 @@ def are_changed_return_records(records, metadata_dict):
             unchanged.append(mapped_records[name])
         elif mapped_records.get(name, {}):  # if record with the same file_name already exists
             changed.append(mapped_records[name])
-    return changed, unchanged
+            update[name] = metadata
+        else:
+            update[name] = metadata
+    return update, changed, unchanged
