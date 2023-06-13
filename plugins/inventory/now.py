@@ -459,7 +459,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
             username=os.getenv("SN_USERNAME"),
             password=os.getenv("SN_PASSWORD"),
             client_id=os.getenv("SN_CLIENT_ID"),
-            client_secret=os.getenv("SN_SECRET_ID"),
+            client_secret=os.getenv("SN_CLIENT_SECRET"),
             refresh_token=os.getenv("SN_REFRESH_TOKEN"),
             grant_type=os.getenv("SN_GRANT_TYPE"),
             timeout=os.getenv("SN_TIMEOUT"),

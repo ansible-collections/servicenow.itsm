@@ -1,0 +1,2 @@
+bugfixes:
+- now - use correct environment variable for SN_CLIENT_SECRET (https://github.com/ansible-collections/servicenow.itsm/issues/261).
