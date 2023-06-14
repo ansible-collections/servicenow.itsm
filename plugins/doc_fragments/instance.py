@@ -73,4 +73,10 @@ options:
           - If not set, the value of the C(SN_TIMEOUT) environment
             variable will be used.
         type: float
+      validate_certs:
+        description:
+          - If host's certificate is validated or not.
+        default: True
+        type: bool
+        version_added: # TODO add version
 """

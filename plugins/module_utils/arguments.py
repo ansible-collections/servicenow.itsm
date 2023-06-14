@@ -115,6 +115,10 @@ SHARED_SPECS = dict(
                 type="float",
                 fallback=(env_fallback, ["SN_TIMEOUT"]),
             ),
+            validate_certs=dict(
+                type="bool",
+                default=True,
+            ),
         ),
         required_together=[("client_id", "client_secret"), ("username", "password")],
         required_one_of=[("username", "refresh_token")],

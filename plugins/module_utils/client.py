@@ -54,6 +54,7 @@ class Client:
         client_id=None,
         client_secret=None,
         timeout=None,
+        validate_certs=None,
     ):
         if not (host or "").startswith(("https://", "http://")):
             raise ServiceNowError(
@@ -69,6 +70,7 @@ class Client:
         self.client_secret = client_secret
         self.refresh_token = refresh_token
         self.timeout = timeout
+        self.validate_certs = validate_certs
 
         self._auth_header = None
         self._client = Request()
@@ -123,7 +125,7 @@ class Client:
     def _request(self, method, path, data=None, headers=None):
         try:
             raw_resp = self._client.open(
-                method, path, data=data, headers=headers, timeout=self.timeout
+                method, path, data=data, headers=headers, timeout=self.timeout, validate_certs=self.validate_certs
             )
         except HTTPError as e:
             # Wrong username/password, or expired access token
