@@ -78,5 +78,5 @@ options:
           - If host's certificate is validated or not.
         default: True
         type: bool
-        version_added: # TODO add version
+        version_added: '2.3.0'
 """
