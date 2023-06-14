@@ -479,3 +479,18 @@ class TestClientDelete:
         request_mock.assert_called_with(
             "DELETE", "api/now/table/resource/1", query=dict(x="y")
         )
+
+
+class TestClientValidateCerts:
+    @pytest.mark.parametrize("value", [True, False])
+    def test_validate_certs(self, create_module, value):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass", validate_certs=value,
+                ),
+            )
+        )
+        snow_client = client.Client(**module.params["instance"])
+
+        assert snow_client.validate_certs == value

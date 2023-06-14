@@ -28,3 +28,8 @@ class TestGetSpec:
         result = arguments.get_spec()
 
         assert result == dict()
+
+    def test_instance_validate_certs_default_value(self):
+        result = arguments.get_spec("instance")
+
+        assert result["instance"]["options"]["validate_certs"]["default"] is True
