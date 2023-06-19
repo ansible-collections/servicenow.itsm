@@ -458,7 +458,8 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
         if client_secret:
             # Remove this in 3.0.0
             self.display.deprecated("Setting environment variable 'SN_SECRET_ID' is being removed "
-                                    "in favor of 'SN_CLIENT_SECRET'", version='3.0.0')
+                                    "in favor of 'SN_CLIENT_SECRET'",
+                                    version='3.0.0', collection_name='servicenow.itsm')
         else:
             client_secret = os.getenv("SN_CLIENT_SECRET")
 
