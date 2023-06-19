@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - Fix issue with attachment_upload module not working properly (https://github.com/ansible-collections/servicenow.itsm/pull/260).

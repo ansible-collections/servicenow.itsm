@@ -25,7 +25,8 @@ options:
         type: str
       name:
         description:
-          - Name of the file to be uploaded without the file extension.
+          - Name of the file to be uploaded.
+          - Serves as unique identifier.
           - If not specified, the module will use I(path)'s base name.
         type: str
       type:

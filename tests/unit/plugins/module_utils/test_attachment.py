@@ -837,7 +837,168 @@ class TestAttachmentSaveAttachment:
 
 
 class TestAreChangedReturnRecords:
-    def test_are_changed_return_records(self):
+    def test_no_records(self):
+        records = []
+
+        metadata_dict = {
+            "attachment_name1.txt": {
+                "path": "path1",
+                "type": "text/plain",
+                "hash": "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902",
+            },
+            "attachment_name2.txt": {
+                "path": "path2",
+                "type": "text/markdown",
+                "hash": "7f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
+            },
+        }
+
+        update, changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
+
+        assert changed == []
+        assert unchanged == []
+        assert update == metadata_dict
+
+    def test_record_alreday_exists(self):
+        records = [
+            {
+                "average_image_color": "",
+                "chunk_size_bytes": "700000",
+                "compressed": "true",
+                "content_type": "text/plain",
+                "download_link": "https://dev139037.service-now.com/api/now/attachment/f2d5cb9647222110afc6fa37536d4361/file",
+                "file_name": "attachment_name1.txt",
+                "hash": "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902",
+                "image_height": "",
+                "image_width": "",
+                "size_bytes": "210",
+                "size_compressed": "207",
+                "state": "pending",
+                "sys_created_by": "admin",
+                "sys_created_on": "2023-05-04 08:53:07",
+                "sys_id": "f2d5cb9647222110afc6fa37536d4361",
+                "sys_mod_count": "0",
+                "sys_tags": "",
+                "sys_updated_by": "admin",
+                "sys_updated_on": "2023-05-04 08:53:07",
+                "table_name": "incident",
+                "table_sys_id": "7cd58f1647222110afc6fa37536d43ed",
+            },
+        ]
+
+        metadata_dict = {
+            "attachment_name1.txt": {
+                "path": "path1",
+                "type": "text/plain",
+                "hash": "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902",
+            },
+        }
+
+        update, changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
+
+        assert changed == []
+        assert unchanged == records
+        assert update == {}
+
+    def test_record_alreday_exists_and_add_new(self):
+        records = [
+            {
+                "average_image_color": "",
+                "chunk_size_bytes": "700000",
+                "compressed": "true",
+                "content_type": "text/plain",
+                "download_link": "https://dev139037.service-now.com/api/now/attachment/f2d5cb9647222110afc6fa37536d4361/file",
+                "file_name": "attachment_name1.txt",
+                "hash": "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902",
+                "image_height": "",
+                "image_width": "",
+                "size_bytes": "210",
+                "size_compressed": "207",
+                "state": "pending",
+                "sys_created_by": "admin",
+                "sys_created_on": "2023-05-04 08:53:07",
+                "sys_id": "f2d5cb9647222110afc6fa37536d4361",
+                "sys_mod_count": "0",
+                "sys_tags": "",
+                "sys_updated_by": "admin",
+                "sys_updated_on": "2023-05-04 08:53:07",
+                "table_name": "incident",
+                "table_sys_id": "7cd58f1647222110afc6fa37536d43ed",
+            },
+        ]
+
+        metadata_dict = {
+            "attachment_name1.txt": {
+                "path": "path1",
+                "type": "text/plain",
+                "hash": "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902",
+            },
+            "attachment_name2.txt": {
+                "path": "path2",
+                "type": "text/markdown",
+                "hash": "7f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
+            }
+        }
+
+        update, changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
+
+        assert changed == []
+        assert unchanged == [records[0]]
+        assert update == {
+            "attachment_name2.txt": {
+                "path": "path2",
+                "type": "text/markdown",
+                "hash": "7f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
+            },
+        }
+
+    def test_update_record_and_add_new(self):
+        records = [
+            {
+                "average_image_color": "",
+                "chunk_size_bytes": "700000",
+                "compressed": "true",
+                "content_type": "text/plain",
+                "download_link": "https://dev139037.service-now.com/api/now/attachment/f2d5cb9647222110afc6fa37536d4361/file",
+                "file_name": "attachment_name1.txt",
+                "hash": "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902",
+                "image_height": "",
+                "image_width": "",
+                "size_bytes": "210",
+                "size_compressed": "207",
+                "state": "pending",
+                "sys_created_by": "admin",
+                "sys_created_on": "2023-05-04 08:53:07",
+                "sys_id": "f2d5cb9647222110afc6fa37536d4361",
+                "sys_mod_count": "0",
+                "sys_tags": "",
+                "sys_updated_by": "admin",
+                "sys_updated_on": "2023-05-04 08:53:07",
+                "table_name": "incident",
+                "table_sys_id": "7cd58f1647222110afc6fa37536d43ed",
+            },
+        ]
+
+        metadata_dict = {
+            "attachment_name1.txt": {
+                "path": "path1",
+                "type": "text/plain",
+                "hash": "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
+            },
+            "attachment_name2.txt": {
+                "path": "path2",
+                "type": "text/markdown",
+                "hash": "7f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
+            }
+        }
+
+        update, changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
+
+        assert changed == records
+        assert unchanged == []
+        assert update == metadata_dict
+
+    def test_record_alreday_exists_update_record_and_add_new(self):
         records = [
             {
                 "average_image_color": "",
@@ -885,29 +1046,6 @@ class TestAreChangedReturnRecords:
                 "table_name": "incident",
                 "table_sys_id": "7cd58f1647222110afc6fa37536d43ed",
             },
-            {
-                "average_image_color": "",
-                "chunk_size_bytes": "700000",
-                "compressed": "true",
-                "content_type": "text/plain",
-                "download_link": "https://dev139037.service-now.com/api/now/attachment/f2d5cb9647222110afc6fa37536d4361/file",
-                "file_name": "attachment_name3.txt",
-                "hash": "6f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
-                "image_height": "",
-                "image_width": "",
-                "size_bytes": "210",
-                "size_compressed": "207",
-                "state": "pending",
-                "sys_created_by": "admin",
-                "sys_created_on": "2023-05-04 08:53:07",
-                "sys_id": "f2d5cb9647222110afc6fa37536d4361",
-                "sys_mod_count": "0",
-                "sys_tags": "",
-                "sys_updated_by": "admin",
-                "sys_updated_on": "2023-05-04 08:53:07",
-                "table_name": "incident",
-                "table_sys_id": "9cd58f1647222110afc6fa37536d43ed",
-            },
         ]
 
         metadata_dict = {
@@ -921,14 +1059,26 @@ class TestAreChangedReturnRecords:
                 "type": "text/markdown",
                 "hash": "7f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
             },
-            "attachment_name_new.txt": {
+            "attachment_name3.txt": {
                 "path": "path3",
                 "type": "text/markdown",
                 "hash": "8f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
             },
         }
 
-        changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
+        update, changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
 
         assert changed == [records[1]]
         assert unchanged == [records[0]]
+        assert update == {
+            "attachment_name2.txt": {
+                "path": "path2",
+                "type": "text/markdown",
+                "hash": "7f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
+            },
+            "attachment_name3.txt": {
+                "path": "path3",
+                "type": "text/markdown",
+                "hash": "8f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
+            },
+        }

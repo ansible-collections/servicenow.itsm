@@ -107,14 +107,14 @@ def run(module, attachment_client):
         dict(table_name=module.params["table_name"], table_sys_id=module.params["table_sys_id"])
     )
 
-    changed, unchanged = attachment.are_changed_return_records(old_attachments, attachments)
-    if not changed:
+    update, changed, unchanged = attachment.are_changed_return_records(old_attachments, attachments)
+    if not update:
         return False, unchanged, dict(before=unchanged, after=unchanged)
 
     updated_attachments = attachment_client.update_records(
         module.params["table_name"],
         module.params["table_sys_id"],
-        attachments,
+        update,
         changed,
         module.check_mode,  # if check_mode = True then list of queries is returned
     )

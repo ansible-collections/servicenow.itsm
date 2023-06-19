@@ -166,33 +166,18 @@ class TestRun:
                 table_sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                 attachments=[
                     {
-                        "name": "attachment_name1.txt",
+                        "name": "attachment_name1.txt",  # no changes
                         "path": "path1",
                         "type": "text/plain",
                     },
                     {
-                        "name": "attachment_name2.txt",
+                        "name": "attachment_name2.txt",  # changes
                         "path": "path2",
                         "type": "text/markdown",
                     },
                 ],
             )
         )
-
-        mocker.patch(
-            "ansible_collections.servicenow.itsm.plugins.modules.attachment_upload.attachment.transform_metadata_list"
-        ).return_value = {
-            "attachment_name1.txt": {
-                "path": "path1",
-                "type": "text/plain",
-                "hash": "f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902",
-            },
-            "attachment_name2.txt": {
-                "path": "path2",
-                "type": "text/markdown",
-                "hash": "new_hash",
-            },
-        }
 
         metadata_dict = {
             "attachment_name1.txt": {
@@ -246,7 +231,7 @@ class TestRun:
         attachment_client.update_records.assert_called_with(
             module.params["table_name"],
             module.params["table_sys_id"],
-            metadata_dict,
+            {"attachment_name2.txt": metadata_dict["attachment_name2.txt"]},
             [list_of_records[1]],
             module.check_mode,
         )
