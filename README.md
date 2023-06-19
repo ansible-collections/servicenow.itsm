@@ -96,7 +96,21 @@ See the [Ansible Community Guide](https://docs.ansible.com/ansible/latest/commun
 
 
 ## Release notes
-<!--Add a link to a changelog.rst file or an external docsite to cover this information. -->
+See the [CHANGELOG.rst](https://github.com/ansible-collections/servicenow.itsm/blob/main/CHANGELOG.rst)
+
+## Publishing New Version
+
+Assuming your (local) repository has set `origin` to your GitHub fork and this repository is added as `upstream`:
+
+Prepare the release:
+- Make sure your fork is up to date: `git checkout main && git pull && git fetch upstream && git merge upstream/main`.
+- Run `ansible-playbook scripts/prepare_release.yml`. The playbook tries to generate the next minor release automatically, but you can also set the version explicitly with `--extra-vars "version=$VERSION"`. You *will* have to set the version explicitly when publishing a new major release.
+- Push the created release branch to your GitHub repo (`git push --set-upstream origin prepare_$VERSION_release`) and open a pull request for the review.
+
+Push the release:
+- After the PR has been merged, make sure your fork is up to date: `git checkout main && git pull && git fetch upstream && git merge upstream/main`.
+- Tag the release: `git tag -s $VERSION`
+- Push the tag: `git push upstream $VERSION`
 
 ## Roadmap
 
