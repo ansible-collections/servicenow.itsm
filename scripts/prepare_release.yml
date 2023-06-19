@@ -12,7 +12,7 @@
       when: version is not defined
 
     - name: Create release branch
-      ansible.builtin.shell: git checkout -b "prepare_{{ version }}_release"
+      ansible.builtin.command: git checkout -b "prepare_{{ version }}_release"
 
     - name: Update galaxy.yml
       ansible.builtin.lineinfile:
@@ -21,10 +21,10 @@
         line: "version: {{ version }}"
 
     - name: Update documentation
-      ansible.builtin.shell: 'collection_prep_add_docs -p {{ playbook_dir }}/..'
+      ansible.builtin.command: 'collection_prep_add_docs -p {{ playbook_dir }}/..'
 
     - name: Refresh the changelog
-      ansible.builtin.shell: 'antsibull-changelog release --verbose --version {{ version }}'
+      ansible.builtin.command: 'antsibull-changelog release --verbose --version {{ version }}'
 
     - name: Clean up the changelog fragments
       ansible.builtin.file:
@@ -32,7 +32,7 @@
         state: absent
 
     - name: Add everything
-      ansible.builtin.shell: git add --all
+      ansible.builtin.command: git add --all
 
     # git diff-index --quiet HEAD
     #   0 -> repository is clean, nothing to commit
