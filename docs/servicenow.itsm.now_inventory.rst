@@ -767,23 +767,7 @@ Examples
     # |  |  |--{street = Via Nomentana 56, Rome}
 
 
-    # Use a javascript function defined in ServiceNow under "Script Includes",
-    # which returns a list of the sys_ids that match a certain criteria
-    plugin: servicenow.itsm.now
-    table: cmdb_ci_server
-    query:
-      - sys_id: 'IN javascript:MyFunction("Mykeys")'
-    keyed_groups:
-      - key: os
-        prefix: os
 
-    # `ansible-inventory -i inventory.now.yaml --graph` output:
-    # @all:
-    # |--@ungrouped:
-    # |--@os_linux:
-    # |  |--node2
-    # |  |--node3
-    # |  |--node1
 
 Status
 ------
