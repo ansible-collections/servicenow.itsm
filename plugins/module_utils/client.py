@@ -51,10 +51,10 @@ class Client:
         password=None,
         grant_type=None,
         refresh_token=None,
+        access_token=None,
         client_id=None,
         client_secret=None,
         timeout=None,
-        validate_certs=None,
     ):
         if not (host or "").startswith(("https://", "http://")):
             raise ServiceNowError(
@@ -69,8 +69,8 @@ class Client:
         self.client_id = client_id
         self.client_secret = client_secret
         self.refresh_token = refresh_token
+        self.access_token = access_token
         self.timeout = timeout
-        self.validate_certs = validate_certs
 
         self._auth_header = None
         self._client = Request()
@@ -84,10 +84,21 @@ class Client:
     def _login(self):
         if self.client_id and self.client_secret:
             return self._login_oauth()
+        elif self.access_token:
+            return self._login_access_token()
         return self._login_username_password()
 
     def _login_username_password(self):
         return dict(Authorization=basic_auth_header(self.username, self.password))
+
+    def _login_access_token(self):
+        auth_data = urlencode(
+            dict(
+                grant_type=self.grant_type,
+                access_token=self.access_token,
+            )
+        )
+        return dict(Authorization="Bearer {0}".format(self.access_token))
 
     def _login_oauth(self):
         if self.grant_type == "refresh_token":
@@ -125,7 +136,7 @@ class Client:
     def _request(self, method, path, data=None, headers=None):
         try:
             raw_resp = self._client.open(
-                method, path, data=data, headers=headers, timeout=self.timeout, validate_certs=self.validate_certs
+                method, path, data=data, headers=headers, timeout=self.timeout
             )
         except HTTPError as e:
             # Wrong username/password, or expired access token
