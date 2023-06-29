@@ -41,7 +41,7 @@ options:
         description:
           - Grant type used for OAuth authentication.
           - If not set, the value of the C(SN_GRANT_TYPE) environment variable will be used.
-        choices: [ 'password', 'refresh_token' ]
+        choices: [ 'password', 'refresh_token', 'access_token']
         default: password
         type: str
         version_added: '1.1.0'
@@ -67,16 +67,18 @@ options:
           - Required when I(grant_type=refresh_token).
         type: str
         version_added: '1.1.0'
+      access_token:
+        description:
+          - Access token used for OAuth authentication.
+          - If not set, the value of the C(SN_ACCESS_TOKEN) environment
+            variable will be used.
+          - Required when I(grant_type=access_token).
+        type: str
+        version_added: '2.2.1'
       timeout:
         description:
           - Timeout in seconds for the connection with the ServiceNow instance.
           - If not set, the value of the C(SN_TIMEOUT) environment
             variable will be used.
         type: float
-      validate_certs:
-        description:
-          - If host's certificate is validated or not.
-        default: True
-        type: bool
-        version_added: '2.3.0'
 """
