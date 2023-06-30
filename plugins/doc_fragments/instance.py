@@ -74,7 +74,7 @@ options:
             variable will be used.
           - Required when I(grant_type=access_token).
         type: str
-        version_added: '2.2.1'
+        version_added: '2.2.0'
       timeout:
         description:
           - Timeout in seconds for the connection with the ServiceNow instance.
