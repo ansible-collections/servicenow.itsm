@@ -93,7 +93,7 @@ SHARED_SPECS = dict(
             ),
             grant_type=dict(
                 type="str",
-                choices=["password", "refresh_token"],
+                choices=["password", "refresh_token", "access_token"],
                 default="password",
                 fallback=(env_fallback, ["SN_GRANT_TYPE"]),
             ),
@@ -111,6 +111,11 @@ SHARED_SPECS = dict(
                 no_log=True,
                 fallback=(env_fallback, ["SN_REFRESH_TOKEN"]),
             ),
+            access_token=dict(
+                type="str",
+                no_log=True,
+                fallback=(env_fallback, ["SN_ACCESS_TOKEN"]),
+            ),
             timeout=dict(
                 type="float",
                 fallback=(env_fallback, ["SN_TIMEOUT"]),
@@ -121,11 +126,12 @@ SHARED_SPECS = dict(
             ),
         ),
         required_together=[("client_id", "client_secret"), ("username", "password")],
-        required_one_of=[("username", "refresh_token")],
-        mutually_exclusive=[("username", "refresh_token")],
+        required_one_of=[("username", "refresh_token", "access_token")],
+        mutually_exclusive=[("username", "refresh_token", "access_token")],
         required_if=[
             ("grant_type", "password", ("username", "password")),
             ("grant_type", "refresh_token", ("refresh_token",)),
+            ("grant_type", "access_token", ("access_token",)),
         ],
     ),
     sys_id=dict(type="str"),

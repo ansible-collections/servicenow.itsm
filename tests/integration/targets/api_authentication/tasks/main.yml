@@ -79,6 +79,7 @@
       register: result
     - ansible.builtin.set_fact:
         sn_refresh_token: "{{ result.json.refresh_token }}"
+        sn_access_token: "{{ result.json.access_token }}"        # To be used in the test with access_token
 
     - name: OAuth authentication success with refresh_token
       servicenow.itsm.incident_info:
@@ -99,6 +100,28 @@
         SN_REFRESH_TOKEN: bad-token
         SN_CLIENT_ID: "{{ sn_client_id }}"
         SN_CLIENT_SECRET: "{{ sn_client_secret }}"
+      register: result
+      ignore_errors: true
+    - assert:
+        that:
+          - result is failed
+          - "'Failed to authenticate with the instance' in result.msg"
+
+    - name: Authentication success with access token obtained previously
+      servicenow.itsm.incident_info:
+      environment:
+        SN_GRANT_TYPE: access_token
+        SN_ACCESS_TOKEN: "{{ sn_access_token }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is success
+
+    - name: Authentication failure with bad access token
+      servicenow.itsm.incident_info:
+      environment:
+        SN_GRANT_TYPE: access_token
+        SN_ACCESS_TOKEN: bad-token
       register: result
       ignore_errors: true
     - assert:
