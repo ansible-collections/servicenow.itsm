@@ -267,7 +267,6 @@ compose:
 # |  |  |--{location.country = Italy}
 # |  |  |--{name = OWA-SD-01}
 # |  |  |--{street = Via Nomentana 56, Rome}
-
 """
 
 
