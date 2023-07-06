@@ -41,7 +41,7 @@ options:
         description:
           - Grant type used for OAuth authentication.
           - If not set, the value of the C(SN_GRANT_TYPE) environment variable will be used.
-        choices: [ 'password', 'refresh_token']
+        choices: [ 'password', 'refresh_token' ]
         default: password
         type: str
         version_added: '1.1.0'
