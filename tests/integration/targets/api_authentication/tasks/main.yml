@@ -119,7 +119,6 @@
     - name: Authentication failure with bad access token
       servicenow.itsm.incident_info:
       environment:
-        SN_GRANT_TYPE: access_token
         SN_ACCESS_TOKEN: bad-token
       register: result
       ignore_errors: true
