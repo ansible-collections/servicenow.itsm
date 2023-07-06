@@ -131,7 +131,6 @@ SHARED_SPECS = dict(
         required_if=[
             ("grant_type", "password", ("username", "password")),
             ("grant_type", "refresh_token", ("refresh_token",)),
-            ("grant_type", "access_token", ("access_token",)),
         ],
     ),
     sys_id=dict(type="str"),
