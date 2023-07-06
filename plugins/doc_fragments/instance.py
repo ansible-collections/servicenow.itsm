@@ -72,7 +72,6 @@ options:
           - Access token obtained via OAuth authentication.
           - If not set, the value of the C(SN_ACCESS_TOKEN) environment
             variable will be used.
-          - Required when I(grant_type=access_token).
         type: str
         version_added: '2.2.0'
       timeout:
