@@ -94,12 +94,6 @@ class Client:
         return dict(Authorization=basic_auth_header(self.username, self.password))
 
     def _login_access_token(self):
-        auth_data = urlencode(
-            dict(
-                grant_type=self.grant_type,
-                access_token=self.access_token,
-            )
-        )
         return dict(Authorization="Bearer {0}".format(self.access_token))
 
     def _login_oauth(self):
