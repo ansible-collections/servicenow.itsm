@@ -110,7 +110,6 @@
     - name: Authentication success with access token obtained previously
       servicenow.itsm.incident_info:
       environment:
-        SN_GRANT_TYPE: access_token
         SN_ACCESS_TOKEN: "{{ sn_access_token }}"
       register: result
     - ansible.builtin.assert:
