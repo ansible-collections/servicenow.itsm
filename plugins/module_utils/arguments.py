@@ -93,7 +93,7 @@ SHARED_SPECS = dict(
             ),
             grant_type=dict(
                 type="str",
-                choices=["password", "refresh_token", "access_token"],
+                choices=["password", "refresh_token"],
                 default="password",
                 fallback=(env_fallback, ["SN_GRANT_TYPE"]),
             ),
