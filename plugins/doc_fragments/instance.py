@@ -43,7 +43,7 @@ options:
           - If not set, the value of the C(SN_GRANT_TYPE) environment variable will be used.
           - Since version 2.3.0, it no longer has a default value in the argument
             specifications.
-          - If not set by any means, the default value (i.e., I(password)) will be set
+          - If not set by any means, the default value (that is, I(password)) will be set
             internally to preserve backwards compatibility.
         choices: [ 'password', 'refresh_token' ]
         type: str
