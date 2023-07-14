@@ -14,7 +14,7 @@ commonly-used resource fields, and a catch-all parameter for custom data.
 
 The first set contains a single parameter called `instance` that includes:
 
- 1. Instance address, e.g. `https://dev12345.service-now.com/`.
+ 1. Instance address, for example `https://dev12345.service-now.com/`. This value must start with `https://`.
  2. Username and password that Ansible modules should use to authenticate with
     the ServiceNow instance.
  3. The optional client id and secret that indicate modules should use OAuth
@@ -129,6 +129,7 @@ environment variables:
     $ export SN_CLIENT_ID='cid'
     $ export SN_CLIENT_SECRET='csecret'
 
+Make sure that `SN_HOST` environment variable starts with `https://`.
 Once we set all instance parameters through the environment variables, we can
 omit the `instance` parameter entirely and end up with a much shorter playbook:
 
