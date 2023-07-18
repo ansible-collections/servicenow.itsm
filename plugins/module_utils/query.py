@@ -172,8 +172,9 @@ def get_operator_and_value(condition):
         if condition == o:
             return (o, "")
 
-        elif condition.startswith(o) and condition[len(o)] == " ":
-            return (o, condition[len(o) + 1:])
+        if condition.startswith(o) and condition[len(o)] == " ":
+            new_len = len(o) + 1
+            return (o, condition[new_len:])
 
     return None, None
 

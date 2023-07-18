@@ -57,7 +57,6 @@ def get_template_args(template):
 
 
 class ActionModule(ActionBase):
-
     MUTUALLY_EXCLUSIVE = [(FIELD_DATA, FIELD_TEMPLATE)]
 
     def run(self, _tmp=None, task_vars=None):

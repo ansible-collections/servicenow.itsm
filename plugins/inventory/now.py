@@ -346,13 +346,12 @@ def fetch_records(table_client, table, query, fields=None, is_encoded_query=Fals
 
 
 class ConstructableWithLookup(Constructable):
-
     def _compose(self, template, variables):
-        ''' helper method for plugins to compose variables for Ansible based on jinja2 expression and inventory vars'''
+        """helper method for plugins to compose variables for Ansible based on jinja2 expression and inventory vars"""
         t = self.templar
 
         try:
-            use_extra = self.get_option('use_extra_vars')
+            use_extra = self.get_option("use_extra_vars")
         except Exception:
             use_extra = False
 
@@ -361,12 +360,19 @@ class ConstructableWithLookup(Constructable):
         else:
             t.available_variables = variables
 
-        ''' Only change that we have overriden is that we do not disable lookups'''
-        return t.template('%s%s%s' % (t.environment.variable_start_string, template, t.environment.variable_end_string), disable_lookups=False)
+        """ Only change that we have overriden is that we do not disable lookups"""
+        return t.template(
+            "%s%s%s"
+            % (
+                t.environment.variable_start_string,
+                template,
+                t.environment.variable_end_string,
+            ),
+            disable_lookups=False,
+        )
 
 
 class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
-
     NAME = "servicenow.itsm.now"
 
     # Constructable methods use the _sanitize_group_name class method to filter out
@@ -499,7 +505,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
             is_encoded_query=bool(sysparm_query),
         )
 
-        referenced_columns = [x for x in columns if '.' in x]
+        referenced_columns = [x for x in columns if "." in x]
         if referenced_columns:
             referenced_records = fetch_records(
                 table_client,
