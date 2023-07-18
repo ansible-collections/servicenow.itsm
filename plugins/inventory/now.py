@@ -454,21 +454,27 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
         return instance
 
     def _get_instance_from_env(self):
-        client_secret = os.getenv("SN_SECRET_ID")
-        if client_secret:
-            # Remove this in 3.0.0
-            self.display.deprecated("Setting environment variable 'SN_SECRET_ID' is being removed "
-                                    "in favor of 'SN_CLIENT_SECRET'",
-                                    version='3.0.0', collection_name='servicenow.itsm')
-        else:
-            client_secret = os.getenv("SN_CLIENT_SECRET")
+        def get_secret_from_env():
+            for arg in ("SN_CLIENT_SECRET", "SN_SECRET_ID"):
+                value = os.getenv(arg)
+                if value is not None:
+                    if arg == "SN_SECRET_ID":
+                        # Remove this in 3.0.0
+                        self.display.deprecated(
+                            "Setting environment variable 'SN_SECRET_ID' is being removed "
+                            "in favor of 'SN_CLIENT_SECRET'",
+                            version="3.0.0",
+                            collection_name="servicenow.itsm",
+                        )
+                    return value
+            return None
 
         return dict(
             host=os.getenv("SN_HOST"),
             username=os.getenv("SN_USERNAME"),
             password=os.getenv("SN_PASSWORD"),
             client_id=os.getenv("SN_CLIENT_ID"),
-            client_secret=client_secret,
+            client_secret=get_secret_from_env(),
             refresh_token=os.getenv("SN_REFRESH_TOKEN"),
             grant_type=os.getenv("SN_GRANT_TYPE"),
             timeout=os.getenv("SN_TIMEOUT"),
