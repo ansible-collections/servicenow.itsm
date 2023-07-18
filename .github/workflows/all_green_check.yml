@@ -1,0 +1,34 @@
+---
+name: all_green
+
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - labeled
+      - unlabeled
+      - synchronize
+    branches:
+      - main
+      - 'stable-*'
+    tags:
+      - '*'
+
+jobs:
+  sanity:
+    uses: ./.github/workflows/sanity.yml  # use the callable sanity job to run tests
+  all_green:
+    if: ${{ always() }}
+    needs:
+      - sanity
+    runs-on: ubuntu-latest
+    steps:
+      - run: >-
+          python -c "assert set([
+          '${{ needs.sanity.result }}',
+          ]) == {'success'}"
