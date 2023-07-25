@@ -1,3 +1,0 @@
----
-minor_changes:
-  - Add validate_certs option to instance (https://github.com/ansible-collections/servicenow.itsm/pull/264).

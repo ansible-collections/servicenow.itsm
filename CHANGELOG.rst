@@ -5,6 +5,29 @@ servicenow.itsm Release Notes
 .. contents:: Topics
 
 
+v2.3.0
+======
+
+Release Summary
+---------------
+
+This is the minor release of the ``servicenow.itsm`` collection.
+This changelog contains all changes to the modules in this collection that
+have been added after the release of ``servicenow.itsm`` 2.2.0.
+
+
+Minor Changes
+-------------
+
+- Add validate_certs option to instance (https://github.com/ansible-collections/servicenow.itsm/pull/264).
+- Added option to pass OAuth2 access token previously obtained from ServiceNow (https://github.com/ansible-collections/servicenow.itsm/pull/272).
+
+Bugfixes
+--------
+
+- Fix issue with attachment_upload module not working properly (https://github.com/ansible-collections/servicenow.itsm/pull/260).
+- now - use correct environment variable for SN_CLIENT_SECRET (https://github.com/ansible-collections/servicenow.itsm/issues/261).
+
 v2.2.0
 ======
 

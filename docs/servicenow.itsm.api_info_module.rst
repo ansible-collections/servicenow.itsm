@@ -111,6 +111,24 @@ Parameters
                     <td class="elbow-placeholder"></td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>access_token</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.3.0 of servicenow.itsm</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Access token obtained via OAuth authentication.</div>
+                        <div>If not set, the value of the <code>SN_ACCESS_TOKEN</code> environment variable will be used.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>client_id</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -156,13 +174,15 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>password</b>&nbsp;&larr;</div></li>
+                                    <li>password</li>
                                     <li>refresh_token</li>
                         </ul>
                 </td>
                 <td>
                         <div>Grant type used for OAuth authentication.</div>
                         <div>If not set, the value of the <code>SN_GRANT_TYPE</code> environment variable will be used.</div>
+                        <div>Since version 2.3.0, it no longer has a default value in the argument specifications.</div>
+                        <div>If not set by any means, the default value (that is, <em>password</em>) will be set internally to preserve backwards compatibility.</div>
                 </td>
             </tr>
             <tr>
@@ -253,6 +273,27 @@ Parameters
                         <div>Username used for authentication.</div>
                         <div>If not set, the value of the <code>SN_USERNAME</code> environment variable will be used.</div>
                         <div>Required when using basic authentication or when <em>grant_type=password</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>validate_certs</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.3.0 of servicenow.itsm</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                        </ul>
+                </td>
+                <td>
+                        <div>If host&#x27;s certificate is validated or not.</div>
                 </td>
             </tr>
 
@@ -398,7 +439,7 @@ Examples
       servicenow.itsm.api_info:
         resource: incident
         sysparm_query: numberSTARTSWITHINC^ORnumberSTARTSWITHABC^state!=7^stateBETWEEN1@4^short_descriptionISNOTEMPTY
-        display_value: true
+        display_value: "true"
         exclude_reference_link: true
         columns:
           - state

@@ -275,10 +275,33 @@ releases:
 
         '
     fragments:
-    - release_2_2_0.yml
     - attachment_upload_module.yaml
+    - release_2_2_0.yml
     modules:
     - description: Upload attachment to the selected table
       name: attachment_upload
       namespace: ''
     release_date: '2023-05-09'
+  2.3.0:
+    changes:
+      bugfixes:
+      - Fix issue with attachment_upload module not working properly (https://github.com/ansible-collections/servicenow.itsm/pull/260).
+      - now - use correct environment variable for SN_CLIENT_SECRET (https://github.com/ansible-collections/servicenow.itsm/issues/261).
+      minor_changes:
+      - Add validate_certs option to instance (https://github.com/ansible-collections/servicenow.itsm/pull/264).
+      - Added option to pass OAuth2 access token previously obtained from ServiceNow
+        (https://github.com/ansible-collections/servicenow.itsm/pull/272).
+      release_summary: 'This is the minor release of the ``servicenow.itsm`` collection.
+
+        This changelog contains all changes to the modules in this collection that
+
+        have been added after the release of ``servicenow.itsm`` 2.2.0.
+
+        '
+    fragments:
+    - 261_fix_env_variable.yml
+    - attachment_upload_module_bugfix.yml
+    - client_access_token.yaml
+    - client_validate_certs.yaml
+    - release_2_3_0.yml
+    release_date: '2023-07-25'
