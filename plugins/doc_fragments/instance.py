@@ -70,14 +70,9 @@ options:
         type: str
       custom_headers:
         description:
-<<<<<<< HEAD
-          - Dictionary containing any extra headers which will be passed with request
-        type: dict
-=======
           - A dictionary containing any extra headers which will be passed with the request.
         type: dict
         version_added: '2.3.0'
->>>>>>> 635aec06ece5191b4d7de67aaa2af900da4e86d7
       refresh_token:
         description:
           - Refresh token used for OAuth authentication.
