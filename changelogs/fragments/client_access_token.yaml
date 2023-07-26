@@ -1,3 +1,0 @@
----
-minor_changes:
-  - Added option to pass OAuth2 access token previously obtained from ServiceNow (https://github.com/ansible-collections/servicenow.itsm/pull/272).
