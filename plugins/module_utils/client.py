@@ -51,11 +51,13 @@ class Client:
         password=None,
         grant_type=None,
         refresh_token=None,
+        access_token=None,
         client_id=None,
         client_secret=None,
         custom_headers=None,
         api_path="api/now",
         timeout=None,
+        validate_certs=None,
     ):
         if not (host or "").startswith(("https://", "http://")):
             raise ServiceNowError(
@@ -66,13 +68,16 @@ class Client:
         self.host = host
         self.username = username
         self.password = password
-        self.grant_type = grant_type
+        # Since version: 2.3.0: make up for removed default from arg specs to preserve backward compatibility.
+        self.grant_type = "password" if grant_type is None else grant_type
         self.client_id = client_id
         self.client_secret = client_secret
         self.custom_headers = custom_headers
         self.api_path = tuple(api_path.strip("/").split("/"))
         self.refresh_token = refresh_token
+        self.access_token = access_token
         self.timeout = timeout
+        self.validate_certs = validate_certs
 
         self._auth_header = None
         self._client = Request()
@@ -86,10 +91,15 @@ class Client:
     def _login(self):
         if self.client_id and self.client_secret:
             return self._login_oauth()
+        elif self.access_token:
+            return self._login_access_token(self.access_token)
         return self._login_username_password()
 
     def _login_username_password(self):
         return dict(Authorization=basic_auth_header(self.username, self.password))
+
+    def _login_access_token(self, access_token):
+        return dict(Authorization="Bearer {0}".format(access_token))
 
     def _login_oauth(self):
         if self.grant_type == "refresh_token":
@@ -122,12 +132,17 @@ class Client:
             raise UnexpectedAPIResponse(resp.status, resp.data)
 
         access_token = resp.json["access_token"]
-        return dict(Authorization="Bearer {0}".format(access_token))
+        return self._login_access_token(access_token)
 
     def _request(self, method, path, data=None, headers=None):
         try:
             raw_resp = self._client.open(
-                method, path, data=data, headers=headers, timeout=self.timeout
+                method,
+                path,
+                data=data,
+                headers=headers,
+                timeout=self.timeout,
+                validate_certs=self.validate_certs,
             )
         except HTTPError as e:
             # Wrong username/password, or expired access token

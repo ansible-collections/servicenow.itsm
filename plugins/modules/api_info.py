@@ -97,7 +97,7 @@ EXAMPLES = """
   servicenow.itsm.api_info:
     resource: incident
     sysparm_query: numberSTARTSWITHINC^ORnumberSTARTSWITHABC^state!=7^stateBETWEEN1@4^short_descriptionISNOTEMPTY
-    display_value: true
+    display_value: "true"
     exclude_reference_link: true
     columns:
       - state

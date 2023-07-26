@@ -142,6 +142,19 @@ class TestTableGetRecord:
             t.get_record("my_table", dict(our="query"), must_exist=True)
 
 
+class TestTableGetRecordBySysId:
+    def test_get_record_by_sys_id(self, client):
+        client.get.return_value = Response(
+            200, '{"result": {"a": 3, "b": "sys_id"}}', {"X-Total-Count": "1"}
+        )
+        t = table.TableClient(client)
+
+        record = t.get_record_by_sys_id("my_table", "sys_id")
+
+        assert dict(a=3, b="sys_id") == record
+        client.get.assert_called_with("api/now/table/my_table/sys_id")
+
+
 class TestTableCreateRecord:
     def test_normal_mode(self, client):
         client.post.return_value = Response(201, '{"result": {"a": 3, "b": "sys_id"}}')

@@ -41,15 +41,19 @@ options:
         description:
           - Grant type used for OAuth authentication.
           - If not set, the value of the C(SN_GRANT_TYPE) environment variable will be used.
+          - Since version 2.3.0, it no longer has a default value in the argument
+            specifications.
+          - If not set by any means, the default value (that is, I(password)) will be set
+            internally to preserve backwards compatibility.
         choices: [ 'password', 'refresh_token' ]
-        default: password
         type: str
         version_added: '1.1.0'
       api_path:
         description:
-          - Change the API endpoint of SNOW instance from default api/now
+          - Change the API endpoint of SNOW instance from default 'api/now'.
         type: str
-        default: api/now
+        default: 'api/now'
+        version_added: '2.3.0'
       client_id:
         description:
           - ID of the client application used for OAuth authentication.
@@ -66,8 +70,14 @@ options:
         type: str
       custom_headers:
         description:
+<<<<<<< HEAD
           - Dictionary containing any extra headers which will be passed with request
         type: dict
+=======
+          - A dictionary containing any extra headers which will be passed with the request.
+        type: dict
+        version_added: '2.3.0'
+>>>>>>> 635aec06ece5191b4d7de67aaa2af900da4e86d7
       refresh_token:
         description:
           - Refresh token used for OAuth authentication.
@@ -76,10 +86,23 @@ options:
           - Required when I(grant_type=refresh_token).
         type: str
         version_added: '1.1.0'
+      access_token:
+        description:
+          - Access token obtained via OAuth authentication.
+          - If not set, the value of the C(SN_ACCESS_TOKEN) environment
+            variable will be used.
+        type: str
+        version_added: '2.3.0'
       timeout:
         description:
           - Timeout in seconds for the connection with the ServiceNow instance.
           - If not set, the value of the C(SN_TIMEOUT) environment
             variable will be used.
         type: float
+      validate_certs:
+        description:
+          - If host's certificate is validated or not.
+        default: True
+        type: bool
+        version_added: '2.3.0'
 """

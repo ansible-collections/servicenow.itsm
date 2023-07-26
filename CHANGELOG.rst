@@ -5,6 +5,27 @@ servicenow.itsm Release Notes
 .. contents:: Topics
 
 
+v2.2.0
+======
+
+Release Summary
+---------------
+
+This is the minor release of the ``servicenow.itsm`` collection.
+This changelog contains all changes to the modules in this collection that
+have been added after the release of ``servicenow.itsm`` 2.1.0.
+
+
+Minor Changes
+-------------
+
+- Added attachment_upload module (https://github.com/ansible-collections/servicenow.itsm/pull/248).
+
+New Modules
+-----------
+
+- servicenow.itsm.attachment_upload - Upload attachment to the selected table
+
 v2.1.0
 ======
 

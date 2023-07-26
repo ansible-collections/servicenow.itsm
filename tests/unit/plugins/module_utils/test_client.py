@@ -105,6 +105,29 @@ class TestClientAuthHeader:
 
         assert c.auth_header == {"Authorization": "Bearer token"}
 
+    def test_oauth_refresh_token(self, mocker):
+        resp_mock = mocker.MagicMock()
+        resp_mock.status = 200  # Used when testing on Python 3
+        resp_mock.getcode.return_value = 200  # Used when testing on Python 2
+        resp_mock.read.return_value = '{"access_token": "token"}'
+
+        request_mock = mocker.patch.object(client, "Request").return_value
+        request_mock.open.return_value = resp_mock
+
+        c = client.Client(
+            "https://instance.com",
+            refresh_token="refresh_token",
+            grant_type="refresh_token",
+            client_id="id",
+            client_secret="secret",
+        )
+
+        assert c.refresh_token == "refresh_token"
+        assert c.grant_type == "refresh_token"
+        assert c.client_id == "id"
+        assert c.client_secret == "secret"
+        assert c.auth_header == {"Authorization": "Bearer token"}
+
     def test_oauth_failure(self, mocker):
         request_mock = mocker.patch.object(client, "Request").return_value
         request_mock.open.side_effect = HTTPError(
@@ -141,6 +164,22 @@ class TestClientAuthHeader:
         c.auth_header
 
         assert request_mock.open.call_count == 1
+
+    def test_login_username_password(self, mocker):
+        mocker.patch.object(client, "Request")
+        c = client.Client("https://instance.com", username="user", password="pass")
+
+        assert c.grant_type == "password"
+        assert c.username == "user"
+        assert c.password == "pass"
+        assert c.auth_header == {"Authorization": b"Basic dXNlcjpwYXNz"}  # user:pass
+
+    def test_login_access_token(self, mocker):
+        mocker.patch.object(client, "Request")
+        c = client.Client("https://instance.com", access_token="token")
+
+        assert c.access_token == "token"
+        assert c.auth_header == {"Authorization": "Bearer token"}
 
 
 class TestClientRequest:
@@ -479,3 +518,21 @@ class TestClientDelete:
         request_mock.assert_called_with(
             "DELETE", "api/now/table/resource/1", query=dict(x="y")
         )
+
+
+class TestClientValidateCerts:
+    @pytest.mark.parametrize("value", [True, False])
+    def test_validate_certs(self, create_module, value):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name",
+                    username="user",
+                    password="pass",
+                    validate_certs=value,
+                ),
+            )
+        )
+        snow_client = client.Client(**module.params["instance"])
+
+        assert snow_client.validate_certs == value

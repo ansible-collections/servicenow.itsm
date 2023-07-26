@@ -143,7 +143,7 @@ EXAMPLES = r"""
 
     state: closed
     number: PTASK0010005
-    close_code:
+    close_code: canceled
     close_notes: Closed
 
 - name: Delete problem task

@@ -267,6 +267,36 @@ compose:
 # |  |  |--{location.country = Italy}
 # |  |  |--{name = OWA-SD-01}
 # |  |  |--{street = Via Nomentana 56, Rome}
+
+# Use a javascript function defined in ServiceNow under "Script Includes",
+# which returns a list of the sys_ids that match a certain criteria
+# Example of script:
+# function MyFunction(key_entry) {
+#   var cis = [];
+#   var key_value = new GlideRecord("cmdb_key_value");
+#   key_value.addEncodedQuery("keyLIKE"+key_entry);
+#   key_value.query();
+#   while (key_value.next()) {
+#     cis.push(key_value.configuration_item + '');
+#   }
+#   return cis;
+# }
+# Other examples in https://docs.servicenow.com/bundle/utah-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html
+plugin: servicenow.itsm.now
+table: cmdb_ci_server
+query:
+  - sys_id: 'IN javascript:MyFunction("xyz")'
+keyed_groups:
+  - key: os
+    prefix: os
+
+# `ansible-inventory -i inventory.now.yaml --graph` output:
+# @all:
+# |--@ungrouped:
+# |--@os_linux:
+# |  |--node2
+# |  |--node3
+# |  |--node1
 """
 
 

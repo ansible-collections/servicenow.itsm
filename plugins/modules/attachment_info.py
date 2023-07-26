@@ -10,7 +10,7 @@ __metaclass__ = type
 
 
 DOCUMENTATION = r"""
-module: attachment
+module: attachment_info
 
 author:
   - Polona Mihalič (@PolonaM)
@@ -122,6 +122,7 @@ def run(module, attachment_client):
         "elapsed": elapsed,
         "status_code": status_code,
         "msg": msg,
+        # add sys_id
     }
 
 

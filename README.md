@@ -15,8 +15,8 @@ The Ansible Collection for ServiceNow IT Service Management ([ITSM](https://www.
 
 This collection has been tested against following Ansible versions: **>=2.9.10**.
 
-For collections that support Ansible 2.9, please ensure you update your `network_os` to use the 
-fully qualified collection name (for example, `cisco.ios.ios`). 
+For collections that support Ansible 2.9, please ensure you update your `network_os` to use the
+fully qualified collection name (for example, `cisco.ios.ios`).
 Plugins and modules within a collection may be tested with only specific Ansible versions.
 A collection may contain metadata that identifies these versions.
 PEP440 is the schema used to describe the versions of Ansible.
@@ -39,7 +39,8 @@ Name | Description
 --- | ---
 [servicenow.itsm.api](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.api_module.rst)|Manage ServiceNow POST, PATCH and DELETE requests
 [servicenow.itsm.api_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.api_info_module.rst)|Manage ServiceNow GET requests
-[servicenow.itsm.attachment](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.attachment_module.rst)|a module that users can use to download attachment using sys_id
+[servicenow.itsm.attachment_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.attachment_info_module.rst)|a module that users can use to download attachment using sys_id
+[servicenow.itsm.attachment_upload](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.attachment_upload_module.rst)|Upload attachment to the selected table
 [servicenow.itsm.change_request](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_module.rst)|Manage ServiceNow change requests
 [servicenow.itsm.change_request_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_info_module.rst)|List ServiceNow change requests
 [servicenow.itsm.change_request_task](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_task_module.rst)|Manage ServiceNow change request tasks
@@ -95,7 +96,21 @@ See the [Ansible Community Guide](https://docs.ansible.com/ansible/latest/commun
 
 
 ## Release notes
-<!--Add a link to a changelog.rst file or an external docsite to cover this information. -->
+See the [CHANGELOG.rst](https://github.com/ansible-collections/servicenow.itsm/blob/main/CHANGELOG.rst)
+
+## Publishing New Version
+
+Assuming your (local) repository has set `origin` to your GitHub fork and this repository is added as `upstream`:
+
+Prepare the release:
+- Make sure your fork is up to date: `git checkout main && git pull && git fetch upstream && git merge upstream/main`.
+- Run `ansible-playbook scripts/prepare_release.yml`. The playbook tries to generate the next minor release automatically, but you can also set the version explicitly with `--extra-vars "version=$VERSION"`. You *will* have to set the version explicitly when publishing a new major release.
+- Push the created release branch to your GitHub repo (`git push --set-upstream origin prepare_$VERSION_release`) and open a pull request for the review.
+
+Push the release:
+- After the PR has been merged, make sure your fork is up to date: `git checkout main && git pull && git fetch upstream && git merge upstream/main`.
+- Tag the release: `git tag -s $VERSION`
+- Push the tag: `git push upstream $VERSION`
 
 ## Roadmap
 
