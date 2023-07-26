@@ -1,14 +1,19 @@
-.. _servicenow.itsm.change_request_task_info_module:
 
+.. Created with antsibull-docs 2.6.1
 
-****************************************
-servicenow.itsm.change_request_task_info
-****************************************
+servicenow.itsm.change_request_task_info module -- List ServiceNow change request tasks
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-**List ServiceNow change request tasks**
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.3.0).
 
+It is not included in ``ansible-core``.
+To check whether it is installed, run ``ansible-galaxy collection list``.
 
-Version added: 1.3.0
+To install it, use: :code:`ansible-galaxy collection install servicenow.itsm`.
+
+To use it in a playbook, specify: ``servicenow.itsm.change_request_task_info``.
+
+New in servicenow.itsm 1.3.0
 
 .. contents::
    :local:
@@ -17,8 +22,13 @@ Version added: 1.3.0
 
 Synopsis
 --------
+
 - Retrieve information about ServiceNow change request tasks.
-- For more information, refer to the ServiceNow change management documentation at https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html.
+- For more information, refer to the ServiceNow change management documentation at \ https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html\ .
+
+
+
+
 
 
 
@@ -28,359 +38,363 @@ Parameters
 
 .. raw:: html
 
-    <table  border=0 cellpadding=0 class="documentation-table">
-        <tr>
-            <th colspan="2">Parameter</th>
-            <th>Choices/<font color="blue">Defaults</font></th>
-            <th width="100%">Comments</th>
-        </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>change_request_task_mapping</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0 of servicenow.itsm</div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>User mapping for <em>Change request task</em> object, where user can override Choice Lists values for objects.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>state</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The state of the change request task.</div>
-                        <div>Cannot be changed to <code>pending</code> when <em>on_hold</em> is <code>true</code> (module fails and does nothing).</div>
-                </td>
-            </tr>
+  <table style="width: 100%;">
+  <thead>
+    <tr>
+    <th colspan="2"><p>Parameter</p></th>
+    <th><p>Comments</p></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-change_request_task_mapping"></div>
+      <p style="display: inline;"><strong>change_request_task_mapping</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-change_request_task_mapping" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">dictionary</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 1.3.0</i></p>
+    </td>
+    <td valign="top">
+      <p>User mapping for <em>Change request task</em> object, where user can override Choice Lists values for objects.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-change_request_task_mapping/state"></div>
+      <p style="display: inline;"><strong>state</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-change_request_task_mapping/state" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">dictionary</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The state of the change request task.</p>
+      <p>Cannot be changed to <code class='docutils literal notranslate'>pending</code> when <em>on_hold</em> is <code class='docutils literal notranslate'>true</code> (module fails and does nothing).</p>
+    </td>
+  </tr>
 
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>instance</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>ServiceNow instance information.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>access_token</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.3.0 of servicenow.itsm</div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Access token obtained via OAuth authentication.</div>
-                        <div>If not set, the value of the <code>SN_ACCESS_TOKEN</code> environment variable will be used.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>client_id</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>ID of the client application used for OAuth authentication.</div>
-                        <div>If not set, the value of the <code>SN_CLIENT_ID</code> environment variable will be used.</div>
-                        <div>If provided, it requires <em>client_secret</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>client_secret</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Secret associated with <em>client_id</em>. Used for OAuth authentication.</div>
-                        <div>If not set, the value of the <code>SN_CLIENT_SECRET</code> environment variable will be used.</div>
-                        <div>If provided, it requires <em>client_id</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>grant_type</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.1.0 of servicenow.itsm</div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>password</li>
-                                    <li>refresh_token</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Grant type used for OAuth authentication.</div>
-                        <div>If not set, the value of the <code>SN_GRANT_TYPE</code> environment variable will be used.</div>
-                        <div>Since version 2.3.0, it no longer has a default value in the argument specifications.</div>
-                        <div>If not set by any means, the default value (that is, <em>password</em>) will be set internally to preserve backwards compatibility.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>host</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The ServiceNow host name.</div>
-                        <div>If not set, the value of the <code>SN_HOST</code> environment variable will be used.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>password</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Password used for authentication.</div>
-                        <div>If not set, the value of the <code>SN_PASSWORD</code> environment variable will be used.</div>
-                        <div>Required when using basic authentication or when <em>grant_type=password</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>refresh_token</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.1.0 of servicenow.itsm</div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Refresh token used for OAuth authentication.</div>
-                        <div>If not set, the value of the <code>SN_REFRESH_TOKEN</code> environment variable will be used.</div>
-                        <div>Required when <em>grant_type=refresh_token</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>timeout</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">float</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Timeout in seconds for the connection with the ServiceNow instance.</div>
-                        <div>If not set, the value of the <code>SN_TIMEOUT</code> environment variable will be used.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>username</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Username used for authentication.</div>
-                        <div>If not set, the value of the <code>SN_USERNAME</code> environment variable will be used.</div>
-                        <div>Required when using basic authentication or when <em>grant_type=password</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>validate_certs</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.3.0 of servicenow.itsm</div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
-                        </ul>
-                </td>
-                <td>
-                        <div>If host&#x27;s certificate is validated or not.</div>
-                </td>
-            </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance"></div>
+      <p style="display: inline;"><strong>instance</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">dictionary</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>ServiceNow instance information.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/access_token"></div>
+      <p style="display: inline;"><strong>access_token</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/access_token" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.3.0</i></p>
+    </td>
+    <td valign="top">
+      <p>Access token obtained via OAuth authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_ACCESS_TOKEN</code> environment variable will be used.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/api_path"></div>
+      <p style="display: inline;"><strong>api_path</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/api_path" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.4.0</i></p>
+    </td>
+    <td valign="top">
+      <p>Change the API endpoint of SNOW instance from default &#x27;api/now&#x27;.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;api/now&#34;</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/client_id"></div>
+      <p style="display: inline;"><strong>client_id</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/client_id" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>ID of the client application used for OAuth authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_CLIENT_ID</code> environment variable will be used.</p>
+      <p>If provided, it requires <em>client_secret</em>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/client_secret"></div>
+      <p style="display: inline;"><strong>client_secret</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/client_secret" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>Secret associated with <em>client_id</em>. Used for OAuth authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_CLIENT_SECRET</code> environment variable will be used.</p>
+      <p>If provided, it requires <em>client_id</em>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/custom_headers"></div>
+      <p style="display: inline;"><strong>custom_headers</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/custom_headers" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">dictionary</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.4.0</i></p>
+    </td>
+    <td valign="top">
+      <p>A dictionary containing any extra headers which will be passed with the request.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/grant_type"></div>
+      <p style="display: inline;"><strong>grant_type</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/grant_type" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 1.1.0</i></p>
+    </td>
+    <td valign="top">
+      <p>Grant type used for OAuth authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_GRANT_TYPE</code> environment variable will be used.</p>
+      <p>Since version 2.3.0, it no longer has a default value in the argument specifications.</p>
+      <p>If not set by any means, the default value (that is, <em>password</em>) will be set internally to preserve backwards compatibility.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code>&#34;password&#34;</code></p></li>
+        <li><p><code>&#34;refresh_token&#34;</code></p></li>
+      </ul>
 
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>number</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Number of the record to retrieve.</div>
-                        <div>Note that contrary to <em>sys_id</em>, <em>number</em> may not uniquely identify a record.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>query</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Provides a set of operators for use with filters, condition builders, and encoded queries.</div>
-                        <div>The data type of a field determines what operators are available for it. Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</div>
-                        <div>Mutually exclusive with <code>sysparm_query</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>sys_id</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Unique identifier of the record to retrieve.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>sysparm_display_value</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0 of servicenow.itsm</div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>true</li>
-                                    <li><div style="color: blue"><b>false</b>&nbsp;&larr;</div></li>
-                                    <li>all</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Return field display values <code>true</code>, actual values <code>false</code>, or both <code>all</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>sysparm_query</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0 of servicenow.itsm</div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>An encoded query string used to filter the results as an alternative to <code>query</code>.</div>
-                        <div>Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</div>
-                        <div>If not set, the value of the <code>SN_SYSPARM_QUERY</code> environment, if specified.</div>
-                        <div>Mutually exclusive with <code>query</code>.</div>
-                </td>
-            </tr>
-    </table>
-    <br/>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/host"></div>
+      <p style="display: inline;"><strong>host</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/host" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+        / <span style="color: red;">required</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The ServiceNow host name.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_HOST</code> environment variable will be used.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/password"></div>
+      <p style="display: inline;"><strong>password</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/password" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>Password used for authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_PASSWORD</code> environment variable will be used.</p>
+      <p>Required when using basic authentication or when <em>grant_type=password</em>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/refresh_token"></div>
+      <p style="display: inline;"><strong>refresh_token</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/refresh_token" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 1.1.0</i></p>
+    </td>
+    <td valign="top">
+      <p>Refresh token used for OAuth authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_REFRESH_TOKEN</code> environment variable will be used.</p>
+      <p>Required when <em>grant_type=refresh_token</em>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/timeout"></div>
+      <p style="display: inline;"><strong>timeout</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/timeout" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">float</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>Timeout in seconds for the connection with the ServiceNow instance.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_TIMEOUT</code> environment variable will be used.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/username"></div>
+      <p style="display: inline;"><strong>username</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/username" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>Username used for authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_USERNAME</code> environment variable will be used.</p>
+      <p>Required when using basic authentication or when <em>grant_type=password</em>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/validate_certs"></div>
+      <p style="display: inline;"><strong>validate_certs</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/validate_certs" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">boolean</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.3.0</i></p>
+    </td>
+    <td valign="top">
+      <p>If host&#x27;s certificate is validated or not.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code>false</code></p></li>
+        <li><p><code style="color: blue;"><b>true</b></code> <span style="color: blue;">← (default)</span></p></li>
+      </ul>
+
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-number"></div>
+      <p style="display: inline;"><strong>number</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-number" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>Number of the record to retrieve.</p>
+      <p>Note that contrary to <em>sys_id</em>, <em>number</em> may not uniquely identify a record.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-query"></div>
+      <p style="display: inline;"><strong>query</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-query" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">list</span>
+        / <span style="color: purple;">elements=dictionary</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>Provides a set of operators for use with filters, condition builders, and encoded queries.</p>
+      <p>The data type of a field determines what operators are available for it. Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</p>
+      <p>Mutually exclusive with <code class='docutils literal notranslate'>sysparm_query</code>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-sys_id"></div>
+      <p style="display: inline;"><strong>sys_id</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-sys_id" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>Unique identifier of the record to retrieve.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-sysparm_display_value"></div>
+      <p style="display: inline;"><strong>sysparm_display_value</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-sysparm_display_value" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.0.0</i></p>
+    </td>
+    <td valign="top">
+      <p>Return field display values <code class='docutils literal notranslate'>true</code>, actual values <code class='docutils literal notranslate'>false</code>, or both <code class='docutils literal notranslate'>all</code>.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code>&#34;true&#34;</code></p></li>
+        <li><p><code style="color: blue;"><b>&#34;false&#34;</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>&#34;all&#34;</code></p></li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-sysparm_query"></div>
+      <p style="display: inline;"><strong>sysparm_query</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-sysparm_query" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.0.0</i></p>
+    </td>
+    <td valign="top">
+      <p>An encoded query string used to filter the results as an alternative to <code class='docutils literal notranslate'>query</code>.</p>
+      <p>Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_SYSPARM_QUERY</code> environment, if specified.</p>
+      <p>Mutually exclusive with <code class='docutils literal notranslate'>query</code>.</p>
+    </td>
+  </tr>
+  </tbody>
+  </table>
+
+
 
 
 
 See Also
 --------
 
-.. seealso::
+* \ `servicenow.itsm.change\_request\_task <change_request_task_module.rst>`__\ 
 
-   :ref:`servicenow.itsm.change_request_task_module`
-      The official documentation on the **servicenow.itsm.change_request_task** module.
-
+  Manage ServiceNow change request tasks.
 
 Examples
 --------
 
 .. code-block:: yaml
 
+    
     - name: Retrieve all change request tasks
       servicenow.itsm.change_request_task_info:
       register: result
@@ -416,41 +430,42 @@ Examples
 
 
 
+
+
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
+The following are the fields unique to this module:
 
 .. raw:: html
 
-    <table border=0 cellpadding=0 class="documentation-table">
-        <tr>
-            <th colspan="1">Key</th>
-            <th>Returned</th>
-            <th width="100%">Description</th>
-        </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>records</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                    </div>
-                </td>
-                <td>success</td>
-                <td>
-                            <div>A list of change task records.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;active&#x27;: &#x27;true&#x27;, &#x27;activity_due&#x27;: &#x27;&#x27;, &#x27;additional_assignee_list&#x27;: &#x27;&#x27;, &#x27;approval&#x27;: &#x27;not requested&#x27;, &#x27;approval_history&#x27;: &#x27;&#x27;, &#x27;approval_set&#x27;: &#x27;&#x27;, &#x27;assigned_to&#x27;: &#x27;f298d2d2c611227b0106c6be7f154bc8&#x27;, &#x27;assignment_group&#x27;: &#x27;&#x27;, &#x27;business_duration&#x27;: &#x27;&#x27;, &#x27;business_service&#x27;: &#x27;&#x27;, &#x27;calendar_duration&#x27;: &#x27;&#x27;, &#x27;change_request&#x27;: &#x27;a9e9c33dc61122760072455df62663d2&#x27;, &#x27;change_task_type&#x27;: &#x27;&#x27;, &#x27;close_code&#x27;: &#x27;&#x27;, &#x27;close_notes&#x27;: &#x27;&#x27;, &#x27;closed_at&#x27;: &#x27;&#x27;, &#x27;closed_by&#x27;: &#x27;&#x27;, &#x27;cmdb_ci&#x27;: &#x27;&#x27;, &#x27;comments&#x27;: &#x27;&#x27;, &#x27;comments_and_work_notes&#x27;: &#x27;&#x27;, &#x27;company&#x27;: &#x27;&#x27;, &#x27;contact_type&#x27;: &#x27;phone&#x27;, &#x27;contract&#x27;: &#x27;&#x27;, &#x27;correlation_display&#x27;: &#x27;&#x27;, &#x27;correlation_id&#x27;: &#x27;&#x27;, &#x27;created_from&#x27;: &#x27;&#x27;, &#x27;delivery_plan&#x27;: &#x27;&#x27;, &#x27;delivery_task&#x27;: &#x27;&#x27;, &#x27;description&#x27;: &#x27;Preliminary System Testing&#x27;, &#x27;due_date&#x27;: &#x27;2020-09-05 22:22:39&#x27;, &#x27;escalation&#x27;: &#x27;0&#x27;, &#x27;expected_start&#x27;: &#x27;&#x27;, &#x27;follow_up&#x27;: &#x27;&#x27;, &#x27;group_list&#x27;: &#x27;&#x27;, &#x27;impact&#x27;: &#x27;3&#x27;, &#x27;knowledge&#x27;: &#x27;false&#x27;, &#x27;location&#x27;: &#x27;&#x27;, &#x27;made_sla&#x27;: &#x27;false&#x27;, &#x27;number&#x27;: &#x27;CTASK0010005&#x27;, &#x27;on_hold&#x27;: False, &#x27;on_hold_reason&#x27;: &#x27;&#x27;, &#x27;opened_at&#x27;: &#x27;2020-08-30 22:22:48&#x27;, &#x27;opened_by&#x27;: &#x27;6816f79cc0a8016401c5a33be04be441&#x27;, &#x27;order&#x27;: &#x27;&#x27;, &#x27;parent&#x27;: &#x27;&#x27;, &#x27;planned_end_date&#x27;: &#x27;&#x27;, &#x27;planned_start_date&#x27;: &#x27;&#x27;, &#x27;priority&#x27;: &#x27;3&#x27;, &#x27;reassignment_count&#x27;: &#x27;&#x27;, &#x27;route_reason&#x27;: &#x27;&#x27;, &#x27;service_offering&#x27;: &#x27;&#x27;, &#x27;short_description&#x27;: &#x27;Preliminary System Testing&#x27;, &#x27;sla_due&#x27;: &#x27;&#x27;, &#x27;state&#x27;: &#x27;open&#x27;, &#x27;sys_class_name&#x27;: &#x27;change_task&#x27;, &#x27;sys_created_by&#x27;: &#x27;admin&#x27;, &#x27;sys_created_on&#x27;: &#x27;2020-08-30 22:22:48&#x27;, &#x27;sys_domain&#x27;: &#x27;global&#x27;, &#x27;sys_domain_path&#x27;: &#x27;/&#x27;, &#x27;sys_id&#x27;: &#x27;a9f2e5bdc61122760052c1250f7ac503&#x27;, &#x27;sys_mod_count&#x27;: &#x27;0&#x27;, &#x27;sys_tags&#x27;: &#x27;&#x27;, &#x27;sys_updated_by&#x27;: &#x27;admin&#x27;, &#x27;sys_updated_on&#x27;: &#x27;2020-08-30 22:22:48&#x27;, &#x27;task_effective_number&#x27;: &#x27;CTASK0010005&#x27;, &#x27;time_worked&#x27;: &#x27;&#x27;, &#x27;universal_request&#x27;: &#x27;&#x27;, &#x27;upon_approval&#x27;: &#x27;&#x27;, &#x27;upon_reject&#x27;: &#x27;&#x27;, &#x27;urgency&#x27;: &#x27;3&#x27;, &#x27;user_input&#x27;: &#x27;&#x27;, &#x27;watch_list&#x27;: &#x27;&#x27;, &#x27;work_end&#x27;: &#x27;&#x27;, &#x27;work_notes&#x27;: &#x27;&#x27;, &#x27;work_notes_list&#x27;: &#x27;&#x27;, &#x27;work_start&#x27;: &#x27;&#x27;}]</div>
-                </td>
-            </tr>
-    </table>
-    <br/><br/>
+  <table style="width: 100%;">
+  <thead>
+    <tr>
+    <th><p>Key</p></th>
+    <th><p>Description</p></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="return-records"></div>
+      <p style="display: inline;"><strong>records</strong></p>
+      <a class="ansibleOptionLink" href="#return-records" title="Permalink to this return value"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">list</span>
+        / <span style="color: purple;">elements=string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>A list of change task records.</p>
+      <p style="margin-top: 8px;"><b>Returned:</b> success</p>
+      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>[{&#34;active&#34;: &#34;true&#34;, &#34;activity_due&#34;: &#34;&#34;, &#34;additional_assignee_list&#34;: &#34;&#34;, &#34;approval&#34;: &#34;not requested&#34;, &#34;approval_history&#34;: &#34;&#34;, &#34;approval_set&#34;: &#34;&#34;, &#34;assigned_to&#34;: &#34;f298d2d2c611227b0106c6be7f154bc8&#34;, &#34;assignment_group&#34;: &#34;&#34;, &#34;business_duration&#34;: &#34;&#34;, &#34;business_service&#34;: &#34;&#34;, &#34;calendar_duration&#34;: &#34;&#34;, &#34;change_request&#34;: &#34;a9e9c33dc61122760072455df62663d2&#34;, &#34;change_task_type&#34;: &#34;&#34;, &#34;close_code&#34;: &#34;&#34;, &#34;close_notes&#34;: &#34;&#34;, &#34;closed_at&#34;: &#34;&#34;, &#34;closed_by&#34;: &#34;&#34;, &#34;cmdb_ci&#34;: &#34;&#34;, &#34;comments&#34;: &#34;&#34;, &#34;comments_and_work_notes&#34;: &#34;&#34;, &#34;company&#34;: &#34;&#34;, &#34;contact_type&#34;: &#34;phone&#34;, &#34;contract&#34;: &#34;&#34;, &#34;correlation_display&#34;: &#34;&#34;, &#34;correlation_id&#34;: &#34;&#34;, &#34;created_from&#34;: &#34;&#34;, &#34;delivery_plan&#34;: &#34;&#34;, &#34;delivery_task&#34;: &#34;&#34;, &#34;description&#34;: &#34;Preliminary System Testing&#34;, &#34;due_date&#34;: &#34;2020-09-05 22:22:39&#34;, &#34;escalation&#34;: &#34;0&#34;, &#34;expected_start&#34;: &#34;&#34;, &#34;follow_up&#34;: &#34;&#34;, &#34;group_list&#34;: &#34;&#34;, &#34;impact&#34;: &#34;3&#34;, &#34;knowledge&#34;: &#34;false&#34;, &#34;location&#34;: &#34;&#34;, &#34;made_sla&#34;: &#34;false&#34;, &#34;number&#34;: &#34;CTASK0010005&#34;, &#34;on_hold&#34;: false, &#34;on_hold_reason&#34;: &#34;&#34;, &#34;opened_at&#34;: &#34;2020-08-30 22:22:48&#34;, &#34;opened_by&#34;: &#34;6816f79cc0a8016401c5a33be04be441&#34;, &#34;order&#34;: &#34;&#34;, &#34;parent&#34;: &#34;&#34;, &#34;planned_end_date&#34;: &#34;&#34;, &#34;planned_start_date&#34;: &#34;&#34;, &#34;priority&#34;: &#34;3&#34;, &#34;reassignment_count&#34;: &#34;&#34;, &#34;route_reason&#34;: &#34;&#34;, &#34;service_offering&#34;: &#34;&#34;, &#34;short_description&#34;: &#34;Preliminary System Testing&#34;, &#34;sla_due&#34;: &#34;&#34;, &#34;state&#34;: &#34;open&#34;, &#34;sys_class_name&#34;: &#34;change_task&#34;, &#34;sys_created_by&#34;: &#34;admin&#34;, &#34;sys_created_on&#34;: &#34;2020-08-30 22:22:48&#34;, &#34;sys_domain&#34;: &#34;global&#34;, &#34;sys_domain_path&#34;: &#34;/&#34;, &#34;sys_id&#34;: &#34;a9f2e5bdc61122760052c1250f7ac503&#34;, &#34;sys_mod_count&#34;: &#34;0&#34;, &#34;sys_tags&#34;: &#34;&#34;, &#34;sys_updated_by&#34;: &#34;admin&#34;, &#34;sys_updated_on&#34;: &#34;2020-08-30 22:22:48&#34;, &#34;task_effective_number&#34;: &#34;CTASK0010005&#34;, &#34;time_worked&#34;: &#34;&#34;, &#34;universal_request&#34;: &#34;&#34;, &#34;upon_approval&#34;: &#34;&#34;, &#34;upon_reject&#34;: &#34;&#34;, &#34;urgency&#34;: &#34;3&#34;, &#34;user_input&#34;: &#34;&#34;, &#34;watch_list&#34;: &#34;&#34;, &#34;work_end&#34;: &#34;&#34;, &#34;work_notes&#34;: &#34;&#34;, &#34;work_notes_list&#34;: &#34;&#34;, &#34;work_start&#34;: &#34;&#34;}]</code></p>
+    </td>
+  </tr>
+  </tbody>
+  </table>
 
 
-Status
-------
 
 
 Authors
@@ -460,3 +475,12 @@ Authors
 - Manca Bizjak (@mancabizjak)
 - Miha Dolinar (@mdolin)
 - Tadej Borovsak (@tadeboro)
+
+
+
+Collection links
+~~~~~~~~~~~~~~~~
+
+* `Issue Tracker <https://github.com/ansible-collections/servicenow.itsm/issues>`__
+* `Repository (Sources) <https://github.com/ansible-collections/servicenow.itsm>`__
+

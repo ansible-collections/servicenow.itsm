@@ -20,16 +20,27 @@
         regexp: "^version: "
         line: "version: {{ version }}"
 
+    - name: Install antsibull-docs
+      ansible.builtin.pip:
+        name: antsibull-docs
+
     - name: Update documentation
-      ansible.builtin.command: 'collection_prep_add_docs -p {{ playbook_dir }}/..'
+      ansible.builtin.command: 'antsibull-docs collection-plugins servicenow.itsm --dest-dir {{ playbook_dir }}/../docs --use-current --output-format simplified-rst --fqcn-plugin-names'
 
     - name: Refresh the changelog
       ansible.builtin.command: 'antsibull-changelog release --verbose --version {{ version }}'
 
+    - name: Find the yaml file
+      find:
+        paths: "{{ playbook_dir }}/../changelogs/fragments"
+        excludes: ".gitkeep,"
+      register: files_to_delete
+
     - name: Clean up the changelog fragments
       ansible.builtin.file:
-        path: "{{ playbook_dir }}/../changelogs/fragments"
+        path: "{{ item.path }}"
         state: absent
+      with_items: "{{ files_to_delete.files }}"
 
     - name: Add everything
       ansible.builtin.command: git add --all

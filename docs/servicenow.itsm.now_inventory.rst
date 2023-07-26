@@ -1,14 +1,19 @@
-.. _servicenow.itsm.now_inventory:
 
+.. Created with antsibull-docs 2.6.1
 
-*******************
-servicenow.itsm.now
-*******************
+servicenow.itsm.now inventory -- Inventory source for ServiceNow table records.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-**Inventory source for ServiceNow table records.**
+This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.3.0).
 
+It is not included in ``ansible-core``.
+To check whether it is installed, run ``ansible-galaxy collection list``.
 
-Version added: 1.0.0
+To install it, use: :code:`ansible-galaxy collection install servicenow.itsm`.
+
+To use it in a playbook, specify: ``servicenow.itsm.now``.
+
+New in servicenow.itsm 1.0.0
 
 .. contents::
    :local:
@@ -17,10 +22,15 @@ Version added: 1.0.0
 
 Synopsis
 --------
+
 - Builds inventory from ServiceNow table records.
-- Requires a configuration file ending in ``now.yml`` or ``now.yaml``.
-- The plugin sets host variables denoted by *columns*.
+- Requires a configuration file ending in \ :literal:`now.yml`\  or \ :literal:`now.yaml`\ .
+- The plugin sets host variables denoted by \ :emphasis:`columns`\ .
 - For variables with dots (for example 'location.country') use lookup('ansible.builtin.vars', 'variable.name') notation. See the example section for more details. This feature is added in version 2.1.0.
+
+
+
+
 
 
 
@@ -30,594 +40,585 @@ Parameters
 
 .. raw:: html
 
-    <table  border=0 cellpadding=0 class="documentation-table">
-        <tr>
-            <th colspan="2">Parameter</th>
-            <th>Choices/<font color="blue">Defaults</font></th>
-                <th>Configuration</th>
-            <th width="100%">Comments</th>
-        </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>columns</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">["name", "host_name", "fqdn", "ip_address"]</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>List of <em>table</em> columns to be included as hostvars.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>compose</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Create vars from jinja2 expressions.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>enhanced</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0 </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Enable enhanced inventory which provides relationship information from CMDB.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>groups</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Add hosts to group based on Jinja2 conditionals.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>instance</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>ServiceNow instance information.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>client_id</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                                <div>env:SN_CLIENT_ID</div>
-                    </td>
-                <td>
-                        <div>ID of the client application used for OAuth authentication.</div>
-                        <div>If provided, it requires <em>client_secret</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>client_secret</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                                <div>env:SN_CLIENT_SECRET</div>
-                    </td>
-                <td>
-                        <div>Secret associated with <em>client_id</em>. Used for OAuth authentication.</div>
-                        <div>If provided, it requires <em>client_id</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>grant_type</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.4.0 </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>password</b>&nbsp;&larr;</div></li>
-                                    <li>refresh_token</li>
-                        </ul>
-                </td>
-                    <td>
-                                <div>env:SN_GRANT_TYPE</div>
-                    </td>
-                <td>
-                        <div>Grant type used for OAuth authentication.</div>
-                        <div>If not set, the value of the <code>SN_GRANT_TYPE</code> environment variable will be used.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>host</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                                <div>env:SN_HOST</div>
-                    </td>
-                <td>
-                        <div>The ServiceNow host name.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>password</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                                <div>env:SN_PASSWORD</div>
-                    </td>
-                <td>
-                        <div>Password used for authentication.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>refresh_token</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.4.0 </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                                <div>env:SN_REFRESH_TOKEN</div>
-                    </td>
-                <td>
-                        <div>Refresh token used for OAuth authentication.</div>
-                        <div>If not set, the value of the <code>SN_REFRESH_TOKEN</code> environment variable will be used.</div>
-                        <div>Required when <em>grant_type=refresh_token</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>timeout</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">float</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                                <div>env:SN_TIMEOUT</div>
-                    </td>
-                <td>
-                        <div>Timeout in seconds for the connection with the ServiceNow instance.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>username</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                                <div>env:SN_USERNAME</div>
-                    </td>
-                <td>
-                        <div>Username used for authentication.</div>
-                </td>
-            </tr>
+  <table style="width: 100%;">
+  <thead>
+    <tr>
+    <th colspan="2"><p>Parameter</p></th>
+    <th><p>Comments</p></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-columns"></div>
+      <p style="display: inline;"><strong>columns</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-columns" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">list</span>
+        / <span style="color: purple;">elements=string</span>
+      </p>
 
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>inventory_hostname_source</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"name"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>The column to use for inventory hostnames.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>keyed_groups</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=dictionary</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">[]</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Add hosts to group based on the values of a variable.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>default_value</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.12 of ansible.builtin</div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>The default value when the host variable&#x27;s value is an empty string.</div>
-                        <div>This option is mutually exclusive with <code>trailing_separator</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>key</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>The key from input dictionary used to generate groups</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>parent_group</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>parent group for keyed group</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>prefix</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">""</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>A keyed group name will start with this prefix</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>separator</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"_"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>separator used to build the keyed group name</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>trailing_separator</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.12 of ansible.builtin</div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
-                        </ul>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Set this option to <em>False</em> to omit the <code>separator</code> after the host variable when the value is an empty string.</div>
-                        <div>This option is mutually exclusive with <code>default_value</code>.</div>
-                </td>
-            </tr>
+    </td>
+    <td valign="top">
+      <p>List of <em>table</em> columns to be included as hostvars.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">[&#34;name&#34;, &#34;host_name&#34;, &#34;fqdn&#34;, &#34;ip_address&#34;]</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-compose"></div>
+      <p style="display: inline;"><strong>compose</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-compose" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">dictionary</span>
+      </p>
 
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>leading_separator</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.11 of ansible.builtin</div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"yes"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Use in conjunction with keyed_groups.</div>
-                        <div>By default, a keyed group that does not have a prefix or a separator provided will have a name that starts with an underscore.</div>
-                        <div>This is because the default prefix is &quot;&quot; and the default separator is &quot;_&quot;.</div>
-                        <div>Set this option to False to omit the leading underscore (or other separator) if no prefix is given.</div>
-                        <div>If the group name is derived from a mapping the separator is still used to concatenate the items.</div>
-                        <div>To not use a separator in the group name at all, set the separator for the keyed group to an empty string instead.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>plugin</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>servicenow.itsm.now</li>
-                        </ul>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>The name of the ServiceNow Inventory Plugin.</div>
-                        <div>This should always be <code>servicenow.itsm.now</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>query</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>Provides a set of operators for use with filters, condition builders, and encoded queries.</div>
-                        <div>The data type of a field determines what operators are available for it. Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</div>
-                        <div>Mutually exclusive with <code>sysparm_query</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>strict</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>If <code>yes</code> make invalid entries a fatal error, otherwise skip and continue.</div>
-                        <div>Since it is possible to use facts in the expressions they might not always be available and we ignore those errors by default.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>sysparm_query</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0 of servicenow.itsm</div>
-                </td>
-                <td>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>An encoded query string used to filter the results as an alternative to <code>query</code>.</div>
-                        <div>Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</div>
-                        <div>If not set, the value of the <code>SN_SYSPARM_QUERY</code> environment, if specified.</div>
-                        <div>Mutually exclusive with <code>query</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>table</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"cmdb_ci_server"</div>
-                </td>
-                    <td>
-                    </td>
-                <td>
-                        <div>The ServiceNow table to use as the inventory source.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>use_extra_vars</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.11 of ansible.builtin</div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                    <td>
-                            <div> ini entries:
-                                    <p>[inventory_plugins]<br>use_extra_vars = no</p>
-                            </div>
-                                <div>env:ANSIBLE_INVENTORY_USE_EXTRA_VARS</div>
-                    </td>
-                <td>
-                        <div>Merge extra vars into the available variables for composition (highest precedence).</div>
-                </td>
-            </tr>
-    </table>
-    <br/>
+    </td>
+    <td valign="top">
+      <p>Create vars from jinja2 expressions.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">{}</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-enhanced"></div>
+      <p style="display: inline;"><strong>enhanced</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-enhanced" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">boolean</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 1.3.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Enable enhanced inventory which provides relationship information from CMDB.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code style="color: blue;"><b>false</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>true</code></p></li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-groups"></div>
+      <p style="display: inline;"><strong>groups</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-groups" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">dictionary</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Add hosts to group based on Jinja2 conditionals.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">{}</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance"></div>
+      <p style="display: inline;"><strong>instance</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">dictionary</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>ServiceNow instance information.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">{}</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/client_id"></div>
+      <p style="display: inline;"><strong>client_id</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/client_id" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>ID of the client application used for OAuth authentication.</p>
+      <p>If provided, it requires <em>client_secret</em>.</p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>Environment variable: <code>SN_CLIENT_ID</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/client_secret"></div>
+      <p style="display: inline;"><strong>client_secret</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/client_secret" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Secret associated with <em>client_id</em>. Used for OAuth authentication.</p>
+      <p>If provided, it requires <em>client_id</em>.</p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>Environment variable: <code>SN_CLIENT_SECRET</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/grant_type"></div>
+      <p style="display: inline;"><strong>grant_type</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/grant_type" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 1.4.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Grant type used for OAuth authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_GRANT_TYPE</code> environment variable will be used.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code style="color: blue;"><b>&#34;password&#34;</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>&#34;refresh_token&#34;</code></p></li>
+      </ul>
+
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>Environment variable: <code>SN_GRANT_TYPE</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/host"></div>
+      <p style="display: inline;"><strong>host</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/host" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+        / <span style="color: red;">required</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>The ServiceNow host name.</p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>Environment variable: <code>SN_HOST</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/password"></div>
+      <p style="display: inline;"><strong>password</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/password" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+        / <span style="color: red;">required</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Password used for authentication.</p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>Environment variable: <code>SN_PASSWORD</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/refresh_token"></div>
+      <p style="display: inline;"><strong>refresh_token</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/refresh_token" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 1.4.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Refresh token used for OAuth authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_REFRESH_TOKEN</code> environment variable will be used.</p>
+      <p>Required when <em>grant_type=refresh_token</em>.</p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>Environment variable: <code>SN_REFRESH_TOKEN</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/timeout"></div>
+      <p style="display: inline;"><strong>timeout</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/timeout" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">float</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Timeout in seconds for the connection with the ServiceNow instance.</p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>Environment variable: <code>SN_TIMEOUT</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/username"></div>
+      <p style="display: inline;"><strong>username</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/username" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+        / <span style="color: red;">required</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Username used for authentication.</p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>Environment variable: <code>SN_USERNAME</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-inventory_hostname_source"></div>
+      <p style="display: inline;"><strong>inventory_hostname_source</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-inventory_hostname_source" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>The column to use for inventory hostnames.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;name&#34;</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-keyed_groups"></div>
+      <p style="display: inline;"><strong>keyed_groups</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-keyed_groups" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">list</span>
+        / <span style="color: purple;">elements=dictionary</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Add hosts to group based on the values of a variable.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">[]</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-keyed_groups/default_value"></div>
+      <p style="display: inline;"><strong>default_value</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-keyed_groups/default_value" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in ansible-core 2.12</i></p>
+
+    </td>
+    <td valign="top">
+      <p>The default value when the host variable&#x27;s value is an empty string.</p>
+      <p>This option is mutually exclusive with <code class='docutils literal notranslate'>trailing_separator</code>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-keyed_groups/key"></div>
+      <p style="display: inline;"><strong>key</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-keyed_groups/key" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>The key from input dictionary used to generate groups</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-keyed_groups/parent_group"></div>
+      <p style="display: inline;"><strong>parent_group</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-keyed_groups/parent_group" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>parent group for keyed group</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-keyed_groups/prefix"></div>
+      <p style="display: inline;"><strong>prefix</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-keyed_groups/prefix" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>A keyed group name will start with this prefix</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;&#34;</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-keyed_groups/separator"></div>
+      <p style="display: inline;"><strong>separator</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-keyed_groups/separator" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>separator used to build the keyed group name</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;_&#34;</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-keyed_groups/trailing_separator"></div>
+      <p style="display: inline;"><strong>trailing_separator</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-keyed_groups/trailing_separator" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">boolean</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in ansible-core 2.12</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Set this option to <em>False</em> to omit the <code class='docutils literal notranslate'>separator</code> after the host variable when the value is an empty string.</p>
+      <p>This option is mutually exclusive with <code class='docutils literal notranslate'>default_value</code>.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code>false</code></p></li>
+        <li><p><code style="color: blue;"><b>true</b></code> <span style="color: blue;">← (default)</span></p></li>
+      </ul>
+
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-leading_separator"></div>
+      <p style="display: inline;"><strong>leading_separator</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-leading_separator" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">boolean</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in ansible-core 2.11</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Use in conjunction with keyed_groups.</p>
+      <p>By default, a keyed group that does not have a prefix or a separator provided will have a name that starts with an underscore.</p>
+      <p>This is because the default prefix is "" and the default separator is "_".</p>
+      <p>Set this option to False to omit the leading underscore (or other separator) if no prefix is given.</p>
+      <p>If the group name is derived from a mapping the separator is still used to concatenate the items.</p>
+      <p>To not use a separator in the group name at all, set the separator for the keyed group to an empty string instead.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code>false</code></p></li>
+        <li><p><code style="color: blue;"><b>true</b></code> <span style="color: blue;">← (default)</span></p></li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-plugin"></div>
+      <p style="display: inline;"><strong>plugin</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-plugin" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+        / <span style="color: red;">required</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>The name of the ServiceNow Inventory Plugin.</p>
+      <p>This should always be <code class='docutils literal notranslate'>servicenow.itsm.now</code>.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code>&#34;servicenow.itsm.now&#34;</code></p></li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-query"></div>
+      <p style="display: inline;"><strong>query</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-query" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">list</span>
+        / <span style="color: purple;">elements=dictionary</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Provides a set of operators for use with filters, condition builders, and encoded queries.</p>
+      <p>The data type of a field determines what operators are available for it. Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</p>
+      <p>Mutually exclusive with <code class='docutils literal notranslate'>sysparm_query</code>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-strict"></div>
+      <p style="display: inline;"><strong>strict</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-strict" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">boolean</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>If <code class='docutils literal notranslate'>yes</code> make invalid entries a fatal error, otherwise skip and continue.</p>
+      <p>Since it is possible to use facts in the expressions they might not always be available and we ignore those errors by default.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code style="color: blue;"><b>false</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>true</code></p></li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-sysparm_query"></div>
+      <p style="display: inline;"><strong>sysparm_query</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-sysparm_query" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.0.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>An encoded query string used to filter the results as an alternative to <code class='docutils literal notranslate'>query</code>.</p>
+      <p>Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/quebec-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_SYSPARM_QUERY</code> environment, if specified.</p>
+      <p>Mutually exclusive with <code class='docutils literal notranslate'>query</code>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-table"></div>
+      <p style="display: inline;"><strong>table</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-table" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>The ServiceNow table to use as the inventory source.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;cmdb_ci_server&#34;</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-use_extra_vars"></div>
+      <p style="display: inline;"><strong>use_extra_vars</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-use_extra_vars" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">boolean</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in ansible-core 2.11</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Merge extra vars into the available variables for composition (highest precedence).</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code style="color: blue;"><b>false</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>true</code></p></li>
+      </ul>
+
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>INI entry</p>
+        <pre>[inventory_plugins]
+  use_extra_vars = false</pre>
+
+      </li>
+      <li>
+        <p>Environment variable: <code>ANSIBLE_INVENTORY_USE_EXTRA_VARS</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  </tbody>
+  </table>
+
+
 
 
 Notes
 -----
 
-.. note::
-   - Query feature and constructed groups were added in version 1.2.0.
-
+- Query feature and constructed groups were added in version 1.2.0.
 
 
 Examples
@@ -625,6 +626,7 @@ Examples
 
 .. code-block:: yaml
 
+    
     # A trivial example that creates a host from every record of the
     # ServiceNow cmdb_ci_server table. The ip_address column is used for
     # for ansible host, and server name for inventory hostname.
@@ -799,8 +801,7 @@ Examples
 
 
 
-Status
-------
+
 
 
 Authors
@@ -814,3 +815,10 @@ Authors
 
 .. hint::
     Configuration entries for each entry type have a low to high priority order. For example, a variable that is lower in the list will override a variable that is higher up.
+
+Collection links
+~~~~~~~~~~~~~~~~
+
+* `Issue Tracker <https://github.com/ansible-collections/servicenow.itsm/issues>`__
+* `Repository (Sources) <https://github.com/ansible-collections/servicenow.itsm>`__
+
