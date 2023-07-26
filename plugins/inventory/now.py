@@ -346,13 +346,12 @@ def fetch_records(table_client, table, query, fields=None, is_encoded_query=Fals
 
 
 class ConstructableWithLookup(Constructable):
-
     def _compose(self, template, variables):
-        ''' helper method for plugins to compose variables for Ansible based on jinja2 expression and inventory vars'''
+        """helper method for plugins to compose variables for Ansible based on jinja2 expression and inventory vars"""
         t = self.templar
 
         try:
-            use_extra = self.get_option('use_extra_vars')
+            use_extra = self.get_option("use_extra_vars")
         except Exception:
             use_extra = False
 
@@ -361,12 +360,19 @@ class ConstructableWithLookup(Constructable):
         else:
             t.available_variables = variables
 
-        ''' Only change that we have overriden is that we do not disable lookups'''
-        return t.template('%s%s%s' % (t.environment.variable_start_string, template, t.environment.variable_end_string), disable_lookups=False)
+        """ Only change that we have overriden is that we do not disable lookups"""
+        return t.template(
+            "%s%s%s"
+            % (
+                t.environment.variable_start_string,
+                template,
+                t.environment.variable_end_string,
+            ),
+            disable_lookups=False,
+        )
 
 
 class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
-
     NAME = "servicenow.itsm.now"
 
     # Constructable methods use the _sanitize_group_name class method to filter out
@@ -448,12 +454,27 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
         return instance
 
     def _get_instance_from_env(self):
+        def get_secret_from_env():
+            for arg in ("SN_CLIENT_SECRET", "SN_SECRET_ID"):
+                value = os.getenv(arg)
+                if value is not None:
+                    if arg == "SN_SECRET_ID":
+                        # Remove this in 3.0.0
+                        self.display.deprecated(
+                            "Setting environment variable 'SN_SECRET_ID' is being removed "
+                            "in favor of 'SN_CLIENT_SECRET'",
+                            version="3.0.0",
+                            collection_name="servicenow.itsm",
+                        )
+                    return value
+            return None
+
         return dict(
             host=os.getenv("SN_HOST"),
             username=os.getenv("SN_USERNAME"),
             password=os.getenv("SN_PASSWORD"),
             client_id=os.getenv("SN_CLIENT_ID"),
-            client_secret=os.getenv("SN_SECRET_ID"),
+            client_secret=get_secret_from_env(),
             refresh_token=os.getenv("SN_REFRESH_TOKEN"),
             grant_type=os.getenv("SN_GRANT_TYPE"),
             timeout=os.getenv("SN_TIMEOUT"),
@@ -499,7 +520,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
             is_encoded_query=bool(sysparm_query),
         )
 
-        referenced_columns = [x for x in columns if '.' in x]
+        referenced_columns = [x for x in columns if "." in x]
         if referenced_columns:
             referenced_records = fetch_records(
                 table_client,

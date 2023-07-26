@@ -167,7 +167,8 @@ def are_changed_return_records(records, metadata_dict):
     for name, metadata in metadata_dict.items():
         if metadata["hash"] == mapped_records.get(name, {}).get("hash"):
             unchanged.append(mapped_records[name])
-        elif mapped_records.get(name, {}):  # if record with the same file_name already exists
+        elif mapped_records.get(name, {}):
+            # if record with the same file_name already exists
             changed.append(mapped_records[name])
             update[name] = metadata
         else:

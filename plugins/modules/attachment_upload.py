@@ -104,10 +104,15 @@ def run(module, attachment_client):
         module.params["attachments"], module.sha256
     )
     old_attachments = attachment_client.list_records(
-        dict(table_name=module.params["table_name"], table_sys_id=module.params["table_sys_id"])
+        dict(
+            table_name=module.params["table_name"],
+            table_sys_id=module.params["table_sys_id"],
+        )
     )
 
-    update, changed, unchanged = attachment.are_changed_return_records(old_attachments, attachments)
+    update, changed, unchanged = attachment.are_changed_return_records(
+        old_attachments, attachments
+    )
     if not update:
         return False, unchanged, dict(before=unchanged, after=unchanged)
 
@@ -119,7 +124,11 @@ def run(module, attachment_client):
         module.check_mode,  # if check_mode = True then list of queries is returned
     )
 
-    return True, updated_attachments + unchanged, dict(before=changed + unchanged, after=updated_attachments + unchanged)
+    return (
+        True,
+        updated_attachments + unchanged,
+        dict(before=changed + unchanged, after=updated_attachments + unchanged),
+    )
 
 
 def main():
