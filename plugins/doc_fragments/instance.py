@@ -53,7 +53,7 @@ options:
           - Change the API endpoint of SNOW instance from default 'api/now'.
         type: str
         default: 'api/now'
-        version_added: '2.3.0'
+        version_added: '2.4.0'
       client_id:
         description:
           - ID of the client application used for OAuth authentication.
@@ -72,7 +72,7 @@ options:
         description:
           - A dictionary containing any extra headers which will be passed with the request.
         type: dict
-        version_added: '2.3.0'
+        version_added: '2.4.0'
       refresh_token:
         description:
           - Refresh token used for OAuth authentication.
