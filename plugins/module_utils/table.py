@@ -37,7 +37,8 @@ class TableClient:
 
         while offset < total:
             response = self.client.get(
-                _path(self.client.api_path, table), query=dict(base_query, sysparm_offset=offset)
+                _path(self.client.api_path, table),
+                query=dict(base_query, sysparm_offset=offset),
             )
 
             result.extend(response.json["result"])
@@ -64,9 +65,7 @@ class TableClient:
         return records[0] if records else None
 
     def get_record_by_sys_id(self, table, sys_id):
-        response = self.client.get(
-            _path(self.client.api_path, table, sys_id)
-        )
+        response = self.client.get(_path(self.client.api_path, table, sys_id))
         record = response.json["result"]
 
         return record
@@ -76,9 +75,9 @@ class TableClient:
             # Approximate the result using the payload.
             return payload
 
-        return self.client.post(_path(self.client.api_path, table), payload, query=_query(query)).json[
-            "result"
-        ]
+        return self.client.post(
+            _path(self.client.api_path, table), payload, query=_query(query)
+        ).json["result"]
 
     def update_record(self, table, record, payload, check_mode, query=None):
         if check_mode:
@@ -86,7 +85,9 @@ class TableClient:
             return dict(record, **payload)
 
         return self.client.patch(
-            _path(self.client.api_path, table, record["sys_id"]), payload, query=_query(query)
+            _path(self.client.api_path, table, record["sys_id"]),
+            payload,
+            query=_query(query),
         ).json["result"]
 
     def delete_record(self, table, record, check_mode):

@@ -9,7 +9,6 @@ __metaclass__ = type
 
 import re
 
-
 REL_TABLE = "cmdb_rel_ci"
 # sysparm_fields to be used when querying REL_TABLE. Uses dot-walking
 # notation to extract fields from linked tables in a single REST API call.

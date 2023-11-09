@@ -325,14 +325,14 @@ from ..module_utils import (
     validation,
 )
 from ..module_utils.problem import (
-    PAYLOAD_FIELDS_MAPPING,
-    ProblemClient,
-    NEW,
     ASSESS,
-    RCA,
-    FIX,
-    RESOLVED,
     CLOSED,
+    FIX,
+    NEW,
+    PAYLOAD_FIELDS_MAPPING,
+    RCA,
+    RESOLVED,
+    ProblemClient,
 )
 from ..module_utils.utils import get_mapper
 

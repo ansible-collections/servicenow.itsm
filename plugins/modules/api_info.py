@@ -210,10 +210,10 @@ from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table, utils
 from ..module_utils.api import (
-    transform_query_to_servicenow_query,
+    FIELD_COLUMNS_NAME,
     POSSIBLE_FILTER_PARAMETERS,
     table_name,
-    FIELD_COLUMNS_NAME,
+    transform_query_to_servicenow_query,
 )
 
 

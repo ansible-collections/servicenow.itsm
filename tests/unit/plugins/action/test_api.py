@@ -3,13 +3,10 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import pytest
-
-from ansible.playbook.task import Task
-
-from ansible_collections.servicenow.itsm.plugins.action import api
-
 from ansible.parsing.dataloader import DataLoader
+from ansible.playbook.task import Task
 from ansible.template import Templar
+from ansible_collections.servicenow.itsm.plugins.action import api
 
 
 class TestRun:

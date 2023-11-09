@@ -10,7 +10,6 @@ __metaclass__ = type
 import sys
 
 import pytest
-
 from ansible_collections.servicenow.itsm.plugins.module_utils import utils
 
 pytestmark = pytest.mark.skipif(

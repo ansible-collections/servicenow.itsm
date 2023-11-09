@@ -1,0 +1,36 @@
+---
+name: all_green
+
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    branches:
+      - main
+      - 'stable-*'
+    tags:
+      - '*'
+
+jobs:
+  linters:
+    uses: ./.github/workflows/linters.yml  # use the callable linters job to run tests
+  sanity:
+    uses: ./.github/workflows/sanity.yml  # use the callable sanity job to run tests
+  all_green:
+    if: ${{ always() }}
+    needs:
+      - linters
+      - sanity
+    runs-on: ubuntu-latest
+    steps:
+      - run: >-
+          python -c "assert set([
+          '${{ needs.linters.result }}',
+          '${{ needs.sanity.result }}'
+          ]) == {'success'}"

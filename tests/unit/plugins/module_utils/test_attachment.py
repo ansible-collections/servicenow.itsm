@@ -10,11 +10,9 @@ __metaclass__ = type
 import sys
 
 import pytest
-
-from ansible_collections.servicenow.itsm.plugins.module_utils import errors, attachment
-from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
 from ansible.module_utils._text import to_bytes, to_text
-
+from ansible_collections.servicenow.itsm.plugins.module_utils import attachment, errors
+from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -92,9 +90,9 @@ class TestAttachmentGetFileType:
 class TestAttachmentTransformMetadataList:
     def test_normal(self, tmp_path):
         path1 = tmp_path / "name1.txt"
-        path1.write_text(u"file_contents")
+        path1.write_text(u"file_contents")  # fmt: skip
         path2 = tmp_path / "name2.txt"
-        path2.write_text(u"another_file_contents")
+        path2.write_text(u"another_file_contents")  # fmt: skip
 
         assert attachment.transform_metadata_list(
             [
@@ -124,7 +122,7 @@ class TestAttachmentTransformMetadataList:
 
     def test_same_file_different_name(self, tmp_path):
         path = tmp_path / "name.txt"
-        path.write_text(u"file_contents")
+        path.write_text(u"file_contents")  # fmt: skip
 
         assert attachment.transform_metadata_list(
             [
@@ -154,9 +152,9 @@ class TestAttachmentTransformMetadataList:
 
     def test_duplicate(self, tmp_path):
         path1 = tmp_path / "name1.txt"
-        path1.write_text(u"file_contents")
+        path1.write_text(u"file_contents")  # fmt: skip
         path2 = tmp_path / "name2.txt"
-        path2.write_text(u"another_file_contents")
+        path2.write_text(u"another_file_contents")  # fmt: skip
 
         with pytest.raises(
             errors.ServiceNowError,
@@ -181,50 +179,44 @@ class TestAttachmentTransformMetadataList:
 
 class TestAttachmentAreChanged:
     def test_unchanged(self):
-        assert (
-            attachment.are_changed(
-                [
-                    {"hash": "hash", "file_name": "attachment_name.txt"},
-                    {"hash": "hash", "file_name": "another_file_name.txt"},
-                ],
-                {
-                    "attachment_name.txt": {
-                        "path": "some/path/file_name.txt",
-                        "type": "text/markdown",
-                        "hash": "hash",
-                    },
-                    "another_file_name.txt": {
-                        "path": "some/path/another_file_name.txt",
-                        "type": "text/plain",
-                        "hash": "hash",
-                    },
+        assert attachment.are_changed(
+            [
+                {"hash": "hash", "file_name": "attachment_name.txt"},
+                {"hash": "hash", "file_name": "another_file_name.txt"},
+            ],
+            {
+                "attachment_name.txt": {
+                    "path": "some/path/file_name.txt",
+                    "type": "text/markdown",
+                    "hash": "hash",
                 },
-            )
-            == [False, False]
-        )
+                "another_file_name.txt": {
+                    "path": "some/path/another_file_name.txt",
+                    "type": "text/plain",
+                    "hash": "hash",
+                },
+            },
+        ) == [False, False]
 
     def test_changed(self):
-        assert (
-            attachment.are_changed(
-                [
-                    {"hash": "oldhash", "file_name": "attachment_name.txt"},
-                    {"hash": "oldhash", "file_name": "another_file_name.txt"},
-                ],
-                {
-                    "attachment_name.txt": {
-                        "path": "some/path/file_name.txt",
-                        "type": "text/markdown",
-                        "hash": "hash",
-                    },
-                    "another_file_name.txt": {
-                        "path": "some/path/another_file_name.txt",
-                        "type": "text/plain",
-                        "hash": "hash",
-                    },
+        assert attachment.are_changed(
+            [
+                {"hash": "oldhash", "file_name": "attachment_name.txt"},
+                {"hash": "oldhash", "file_name": "another_file_name.txt"},
+            ],
+            {
+                "attachment_name.txt": {
+                    "path": "some/path/file_name.txt",
+                    "type": "text/markdown",
+                    "hash": "hash",
                 },
-            )
-            == [True, True]
-        )
+                "another_file_name.txt": {
+                    "path": "some/path/another_file_name.txt",
+                    "type": "text/plain",
+                    "hash": "hash",
+                },
+            },
+        ) == [True, True]
 
 
 class TestAttachmentListRecords:
@@ -345,7 +337,7 @@ class TestAttachmentUploadRecord:
         a = attachment.AttachmentClient(client)
 
         path = tmp_path / "name.txt"
-        path.write_text(u"file_content")
+        path.write_text(u"file_content")  # fmt: skip
 
         record = a.upload_record(
             "table",
@@ -381,7 +373,7 @@ class TestAttachmentUploadRecord:
         a = attachment.AttachmentClient(client)
 
         path = tmp_path / "name.txt"
-        path.write_text(u"file_contents")
+        path.write_text(u"file_contents")  # fmt: skip
 
         record = a.upload_record(
             "table",
@@ -414,9 +406,9 @@ class TestAttachmentUploadRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text(u"file_content1")
+        path1.write_text(u"file_content1")  # fmt: skip
         path2 = tmp_path / "name2.txt"
-        path2.write_text(u"file_content2")
+        path2.write_text(u"file_content2")  # fmt: skip
 
         record = a.upload_records(
             "table",
@@ -472,9 +464,9 @@ class TestAttachmentUploadRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text(u"file_content1")
+        path1.write_text(u"file_content1")  # fmt: skip
         path2 = tmp_path / "name2.txt"
-        path2.write_text(u"file_content2")
+        path2.write_text(u"file_content2")  # fmt: skip
 
         record = a.upload_records(
             "table",
@@ -607,9 +599,9 @@ class TestAttachmentUpdateRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text(u"file_content1")
+        path1.write_text(u"file_content1")  # fmt: skip
         path2 = tmp_path / "name2.txt"
-        path2.write_text(u"file_content2")
+        path2.write_text(u"file_content2")  # fmt: skip
 
         changes = a.update_records(
             "table",
@@ -655,9 +647,9 @@ class TestAttachmentUpdateRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text(u"file_content1")
+        path1.write_text(u"file_content1")  # fmt: skip
         path2 = tmp_path / "name2.txt"
-        path2.write_text(u"file_content2")
+        path2.write_text(u"file_content2")  # fmt: skip
 
         changes = a.update_records(
             "table",
@@ -700,9 +692,9 @@ class TestAttachmentUpdateRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text(u"file_content1")
+        path1.write_text(u"file_content1")  # fmt: skip
         path2 = tmp_path / "name2.txt"
-        path2.write_text(u"file_content2")
+        path2.write_text(u"file_content2")  # fmt: skip
 
         changes = a.update_records(
             "table",
@@ -748,9 +740,9 @@ class TestAttachmentUpdateRecords:
         a = attachment.AttachmentClient(client)
 
         path1 = tmp_path / "name1.txt"
-        path1.write_text(u"file_content1")
+        path1.write_text(u"file_content1")  # fmt: skip
         path2 = tmp_path / "name2.txt"
-        path2.write_text(u"file_content2")
+        path2.write_text(u"file_content2")  # fmt: skip
 
         record = a.update_records(
             "table",
@@ -853,7 +845,9 @@ class TestAreChangedReturnRecords:
             },
         }
 
-        update, changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
+        update, changed, unchanged = attachment.are_changed_return_records(
+            records, metadata_dict
+        )
 
         assert changed == []
         assert unchanged == []
@@ -894,7 +888,9 @@ class TestAreChangedReturnRecords:
             },
         }
 
-        update, changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
+        update, changed, unchanged = attachment.are_changed_return_records(
+            records, metadata_dict
+        )
 
         assert changed == []
         assert unchanged == records
@@ -937,10 +933,12 @@ class TestAreChangedReturnRecords:
                 "path": "path2",
                 "type": "text/markdown",
                 "hash": "7f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
-            }
+            },
         }
 
-        update, changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
+        update, changed, unchanged = attachment.are_changed_return_records(
+            records, metadata_dict
+        )
 
         assert changed == []
         assert unchanged == [records[0]]
@@ -989,10 +987,12 @@ class TestAreChangedReturnRecords:
                 "path": "path2",
                 "type": "text/markdown",
                 "hash": "7f2b0dec698566114435a23f15dcac848a40e1fd3e0eda4afe24a663dda23f2e",
-            }
+            },
         }
 
-        update, changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
+        update, changed, unchanged = attachment.are_changed_return_records(
+            records, metadata_dict
+        )
 
         assert changed == records
         assert unchanged == []
@@ -1066,7 +1066,9 @@ class TestAreChangedReturnRecords:
             },
         }
 
-        update, changed, unchanged = attachment.are_changed_return_records(records, metadata_dict)
+        update, changed, unchanged = attachment.are_changed_return_records(
+            records, metadata_dict
+        )
 
         assert changed == [records[1]]
         assert unchanged == [records[0]]

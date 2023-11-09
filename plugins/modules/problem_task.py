@@ -248,8 +248,8 @@ from datetime import datetime
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table, utils
-from ..module_utils.utils import get_mapper
 from ..module_utils.problem_task import PAYLOAD_FIELDS_MAPPING
+from ..module_utils.utils import get_mapper
 
 DIRECT_PAYLOAD_FIELDS = (
     "state",
