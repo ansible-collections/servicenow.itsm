@@ -10,8 +10,8 @@ __metaclass__ = type
 import sys
 
 import pytest
-
-from ansible_collections.servicenow.itsm.plugins.modules import change_request_task_info
+from ansible_collections.servicenow.itsm.plugins.modules import \
+    change_request_task_info
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"

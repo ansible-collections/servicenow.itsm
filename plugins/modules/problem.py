@@ -315,25 +315,11 @@ record:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import (
-    arguments,
-    attachment,
-    client,
-    errors,
-    table,
-    utils,
-    validation,
-)
-from ..module_utils.problem import (
-    PAYLOAD_FIELDS_MAPPING,
-    ProblemClient,
-    NEW,
-    ASSESS,
-    RCA,
-    FIX,
-    RESOLVED,
-    CLOSED,
-)
+from ..module_utils import (arguments, attachment, client, errors, table,
+                            utils, validation)
+from ..module_utils.problem import (ASSESS, CLOSED, FIX, NEW,
+                                    PAYLOAD_FIELDS_MAPPING, RCA, RESOLVED,
+                                    ProblemClient)
 from ..module_utils.utils import get_mapper
 
 DIRECT_PAYLOAD_FIELDS = (

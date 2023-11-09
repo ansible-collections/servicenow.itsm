@@ -266,18 +266,10 @@ record:
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table
-from ..module_utils.api import (
-    table_name,
-    get_query_by_sys_id,
-    ACTION_POST,
-    ACTION_PATCH,
-    ACTION_DELETE,
-    field_present,
-    FIELD_SYS_ID,
-    FIELD_DATA,
-    FIELD_TEMPLATE,
-    FIELD_QUERY_PARAMS,
-)
+from ..module_utils.api import (ACTION_DELETE, ACTION_PATCH, ACTION_POST,
+                                FIELD_DATA, FIELD_QUERY_PARAMS, FIELD_SYS_ID,
+                                FIELD_TEMPLATE, field_present,
+                                get_query_by_sys_id, table_name)
 
 
 def update_resource(module, table_client):

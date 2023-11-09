@@ -205,7 +205,8 @@ record:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, attachment, client, errors, query, table, utils
+from ..module_utils import (arguments, attachment, client, errors, query,
+                            table, utils)
 from ..module_utils.configuration_item import PAYLOAD_FIELDS_MAPPING
 from ..module_utils.utils import get_mapper
 

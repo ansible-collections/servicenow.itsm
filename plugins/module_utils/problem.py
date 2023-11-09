@@ -5,7 +5,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-from ansible_collections.servicenow.itsm.plugins.module_utils.utils import filter_dict
+from ansible_collections.servicenow.itsm.plugins.module_utils.utils import \
+    filter_dict
 
 __metaclass__ = type
 

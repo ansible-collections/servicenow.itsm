@@ -151,17 +151,9 @@ EXAMPLES = r"""
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import (
-    arguments,
-    attachment,
-    client,
-    errors,
-    table,
-    utils,
-    validation,
-)
+from ..module_utils import (arguments, attachment, client, errors, table,
+                            utils, validation)
 from ..module_utils.incident import PAYLOAD_FIELDS_MAPPING
-
 from ..module_utils.utils import get_mapper
 
 DIRECT_PAYLOAD_FIELDS = (

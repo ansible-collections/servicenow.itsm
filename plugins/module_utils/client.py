@@ -11,11 +11,10 @@ import json
 
 from ansible.module_utils.six import PY2
 from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
-from ansible.module_utils.six.moves.urllib.parse import urlencode, quote
+from ansible.module_utils.six.moves.urllib.parse import quote, urlencode
 from ansible.module_utils.urls import Request, basic_auth_header
 
-from .errors import ServiceNowError, AuthError, UnexpectedAPIResponse
-
+from .errors import AuthError, ServiceNowError, UnexpectedAPIResponse
 
 DEFAULT_HEADERS = dict(Accept="application/json")
 

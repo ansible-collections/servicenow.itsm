@@ -304,23 +304,16 @@ import os
 
 from ansible.errors import AnsibleParserError
 from ansible.inventory.group import to_safe_group_name as orig_safe
-from ansible.plugins.inventory import (
-    BaseInventoryPlugin,
-    Constructable,
-    to_safe_group_name,
-)
+from ansible.plugins.inventory import (BaseInventoryPlugin, Constructable,
+                                       to_safe_group_name)
 from ansible.utils.vars import combine_vars
 
 from ..module_utils.client import Client
 from ..module_utils.errors import ServiceNowError
 from ..module_utils.query import parse_query, serialize_query
+from ..module_utils.relations import (REL_FIELDS, REL_QUERY, REL_TABLE,
+                                      enhance_records_with_rel_groups)
 from ..module_utils.table import TableClient
-from ..module_utils.relations import (
-    REL_FIELDS,
-    REL_QUERY,
-    REL_TABLE,
-    enhance_records_with_rel_groups,
-)
 
 
 def construct_sysparm_query(query, is_encoded_query):

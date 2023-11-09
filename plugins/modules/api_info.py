@@ -209,12 +209,9 @@ records:
 from ansible.module_utils.basic import AnsibleModule
 
 from ..module_utils import arguments, client, errors, table, utils
-from ..module_utils.api import (
-    transform_query_to_servicenow_query,
-    POSSIBLE_FILTER_PARAMETERS,
-    table_name,
-    FIELD_COLUMNS_NAME,
-)
+from ..module_utils.api import (FIELD_COLUMNS_NAME, POSSIBLE_FILTER_PARAMETERS,
+                                table_name,
+                                transform_query_to_servicenow_query)
 
 
 def run(module, table_client):

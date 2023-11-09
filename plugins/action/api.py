@@ -9,22 +9,17 @@ __metaclass__ = type
 
 import copy
 from contextlib import contextmanager
+
 import yaml
-from yaml import Loader
-from ansible.errors import (
-    AnsibleActionFail,
-    AnsibleError,
-    AnsibleFileNotFound,
-    AnsibleAction,
-)
-from ansible.module_utils._text import to_text, to_bytes
+from ansible.errors import (AnsibleAction, AnsibleActionFail, AnsibleError,
+                            AnsibleFileNotFound)
+from ansible.module_utils._text import to_bytes, to_text
 from ansible.module_utils.common.validation import check_mutually_exclusive
 from ansible.module_utils.six import iteritems
 from ansible.plugins.action import ActionBase
-from ..module_utils.api import (
-    FIELD_TEMPLATE,
-    FIELD_DATA,
-)
+from yaml import Loader
+
+from ..module_utils.api import FIELD_DATA, FIELD_TEMPLATE
 
 
 def get_template_args(template):

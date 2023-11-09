@@ -83,18 +83,13 @@ record:
 """
 
 
-import time
 import json
 import os
+import time
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import (
-    arguments,
-    client,
-    attachment,
-    errors,
-)
+from ..module_utils import arguments, attachment, client, errors
 
 
 def run(module, attachment_client):
