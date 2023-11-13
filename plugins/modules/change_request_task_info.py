@@ -155,7 +155,7 @@ records:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors, query, utils, table
+from ..module_utils import arguments, client, errors, query, table, utils
 from ..module_utils.change_request_task import PAYLOAD_FIELDS_MAPPING
 from ..module_utils.utils import get_mapper
 

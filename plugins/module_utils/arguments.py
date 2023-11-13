@@ -109,9 +109,7 @@ SHARED_SPECS = dict(
                 no_log=True,
                 fallback=(env_fallback, ["SN_CLIENT_SECRET"]),
             ),
-            custom_headers=dict(
-                type="dict"
-            ),
+            custom_headers=dict(type="dict"),
             refresh_token=dict(
                 type="str",
                 no_log=True,

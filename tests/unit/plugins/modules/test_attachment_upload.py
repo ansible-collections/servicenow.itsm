@@ -10,7 +10,6 @@ __metaclass__ = type
 import sys
 
 import pytest
-
 from ansible_collections.servicenow.itsm.plugins.modules import attachment_upload
 
 pytestmark = pytest.mark.skipif(
@@ -107,7 +106,7 @@ class TestMain:
                     "path": "path1",
                     "type": "text/plain",
                 },
-            ]
+            ],
         )
         success, result = run_main(attachment_upload, params)
 
@@ -121,7 +120,9 @@ class TestMain:
 
 
 class TestRun:
-    def test_run_unchanged(self, create_module, attachment_client, list_of_records, mocker):
+    def test_run_unchanged(
+        self, create_module, attachment_client, list_of_records, mocker
+    ):
         module = create_module(
             params=dict(
                 instance=dict(
@@ -151,12 +152,19 @@ class TestRun:
 
         changed, records, diff = attachment_upload.run(module, attachment_client)
 
-        attachment_client.list_records.assert_called_with(dict(table_name=module.params["table_name"], table_sys_id=module.params["table_sys_id"]))
+        attachment_client.list_records.assert_called_with(
+            dict(
+                table_name=module.params["table_name"],
+                table_sys_id=module.params["table_sys_id"],
+            )
+        )
         assert changed is False
         assert records == [list_of_records[0]]
         assert diff == dict(before=[list_of_records[0]], after=[list_of_records[0]])
 
-    def test_run_changed(self, create_module, attachment_client, list_of_records, mocker):
+    def test_run_changed(
+        self, create_module, attachment_client, list_of_records, mocker
+    ):
         module = create_module(
             params=dict(
                 instance=dict(

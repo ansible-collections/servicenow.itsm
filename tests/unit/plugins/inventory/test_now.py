@@ -10,12 +10,10 @@ __metaclass__ = type
 import sys
 
 import pytest
-
-from ansible.errors import AnsibleParserError, AnsibleError
+from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.inventory.data import InventoryData
 from ansible.module_utils.common.text.converters import to_text
 from ansible.template import Templar
-
 from ansible_collections.servicenow.itsm.plugins.inventory import now
 
 pytestmark = pytest.mark.skipif(

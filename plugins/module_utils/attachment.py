@@ -15,11 +15,7 @@ from . import errors
 
 
 def _path(api_path, *subpaths):
-    return "/".join(
-        api_path
-        + ("attachment",)
-        + subpaths
-    )
+    return "/".join(api_path + ("attachment",) + subpaths)
 
 
 class AttachmentClient:
@@ -38,7 +34,8 @@ class AttachmentClient:
 
         while offset < total:
             response = self.client.get(
-                _path(self.client.api_path), query=dict(base_query, sysparm_offset=offset)
+                _path(self.client.api_path),
+                query=dict(base_query, sysparm_offset=offset),
             )
 
             result.extend(response.json["result"])

@@ -10,7 +10,6 @@ __metaclass__ = type
 
 from ansible.plugins.action import ActionBase
 from ansible.utils.vars import merge_hash
-
 from jinja2 import Environment
 
 
