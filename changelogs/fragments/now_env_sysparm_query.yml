@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - now - added missing SN_SYSPARM_QUERY environment variable (https://github.com/ansible-collections/servicenow.itsm/issues/293).
