@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - incident - allow incident_mapping for close_code parameter.

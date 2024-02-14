@@ -36,4 +36,10 @@ options:
         description:
           - The extent to which resolution of an incident can bear delay.
         type: dict
+      close_code:
+        description:
+          - Provide information on how the incident was resolved.
+          - Required if I(state) value is C(closed).
+          - This option is introduce in 2.4.0.
+        type: dict
 """

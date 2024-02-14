@@ -129,6 +129,19 @@
           - "'close_code' in result.msg"
           - "'close_notes' in result.msg"
 
+    - name: Update incident choices
+      servicenow.itsm.api:
+        resource: sys_choice
+        action: post
+        data:
+          name: incident
+          element: close_code
+          value: 1
+          label: Solved Remotely (Permanently)
+      register: incident_choices
+
+    - set_fact:
+        solved_remotely_choice: "{{ incident_choices.record.sys_id }}"
 
     - name: Update incident state - check mode
       servicenow.itsm.incident: &update-incident-state
@@ -298,3 +311,9 @@
     - ansible.builtin.assert:
         that:
           - result.records[0].short_description != ""
+
+    - name: Delete incident choices
+      servicenow.itsm.api:
+        resource: sys_choice
+        action: delete
+        sys_id: "{{ solved_remotely_choice }}"

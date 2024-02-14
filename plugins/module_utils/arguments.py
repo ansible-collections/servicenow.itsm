@@ -17,6 +17,7 @@ INCIDENT_MAPPING_SPEC = dict(
         hold_reason=dict(type="dict"),
         impact=dict(type="dict"),
         urgency=dict(type="dict"),
+        close_code=dict(type="dict"),
     ),
 )
 
