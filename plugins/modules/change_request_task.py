@@ -343,7 +343,7 @@ def main():
                 "planning",
                 "implementation",
                 "testing",
-                "testing",
+                "review",
             ],
         ),
         state=dict(
