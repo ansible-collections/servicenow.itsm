@@ -27,7 +27,11 @@
           3: "awaiting_problem"
           4: "awaiting_vendor"
           5: "awaiting_change"
-
+      incident_with_close_code:
+        state:
+          6: "resolved"
+        close_code:
+          1: "Solved Remotely (Permanently)"
 
   block:
     - name: Retrieve all incidents
@@ -162,10 +166,23 @@
           - "'close_code' in result.msg"
           - "'close_notes' in result.msg"
 
+    - name: Update incident choices
+      servicenow.itsm.api:
+        resource: sys_choice
+        action: post
+        data:
+          name: incident
+          element: close_code
+          value: 1
+          label: Solved Remotely (Permanently)
+      register: incident_choices
+
+    - set_fact:
+        solved_remotely_choice: "{{ incident_choices.record.sys_id }}"
 
     - name: Update incident state - check mode
       servicenow.itsm.incident: &update-incident-state
-        incident_mapping: "{{ mapping.incident }}"
+        incident_mapping: "{{ mapping.incident_with_close_code }}"
         caller: admin
         number: "{{ test_result.record.number }}"
         state: resolved
@@ -190,7 +207,7 @@
 
     - name: Get specific incident info by sysparm query
       servicenow.itsm.incident_info:
-        incident_mapping: "{{ mapping.incident }}"
+        incident_mapping: "{{ mapping.incident_with_close_code }}"
         query:
          - caller: = admin
            number: = {{ test_result.record.number }}
@@ -342,3 +359,9 @@
     - ansible.builtin.assert:
         that:
           - result.records[0].short_description != ""
+
+    - name: Delete incident choices
+      servicenow.itsm.api:
+        resource: sys_choice
+        action: delete
+        sys_id: "{{ solved_remotely_choice }}"

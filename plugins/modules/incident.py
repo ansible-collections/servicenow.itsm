@@ -78,10 +78,12 @@ options:
   close_code:
     description:
       - Provide information on how the incident was resolved.
-    choices: [ Solved (Work Around), Solved (Permanently),
-               Solved Remotely (Work Around), Solved Remotely (Permanently),
-               Not Solved (Not Reproducible), Not Solved (Too Costly),
-               Closed/Resolved by Caller ]
+      - Default choices are C(Solved (Work Around)), C(Solved (Permanently)),
+        C(Solved Remotely (Work Around)), C(Solved Remotely (Permanently)),
+        C(Not Solved (Not Reproducible)), C(Not Solved (Too Costly)),
+        C(Closed/Resolved by Caller).
+        One can override them by setting I(incident_mapping.close_code).
+      - Choices for I(close_code) removed in 2.4.0.
     type: str
   close_notes:
     description:
@@ -311,15 +313,6 @@ def main():
         ),
         close_code=dict(
             type="str",
-            choices=[
-                "Solved (Work Around)",
-                "Solved (Permanently)",
-                "Solved Remotely (Work Around)",
-                "Solved Remotely (Permanently)",
-                "Not Solved (Not Reproducible)",
-                "Not Solved (Too Costly)",
-                "Closed/Resolved by Caller",
-            ],
         ),
         close_notes=dict(
             type="str",

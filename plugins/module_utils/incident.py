@@ -26,4 +26,14 @@ PAYLOAD_FIELDS_MAPPING = dict(
         ("4", "awaiting_vendor"),
         ("5", "awaiting_change"),
     ],
+    close_code=[
+        ("1", "Solved Remotely (Permanently)"),
+        ("2", "Solved (Work Around)"),
+        ("3", "Solved (Permanently)"),
+        ("4", "Solved Remotely (Work Around)"),
+        ("5", "Solved Remotely (Permanently)"),
+        ("6", "Not Solved (Not Reproducible)"),
+        ("7", "Not Solved (Too Costly)"),
+        ("8", "Closed/Resolved by Caller"),
+    ],
 )
