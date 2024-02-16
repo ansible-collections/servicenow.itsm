@@ -4,16 +4,6 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
-    - name: Retrieve all change_requests
-      servicenow.itsm.change_request_info:
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result.records != []
-          - result.records | length != 0
-
-
     - name: Create test change_request - check mode
       servicenow.itsm.change_request: &create-change_request
         requested_by: admin
@@ -23,6 +13,7 @@
         priority: low
         risk: low
         impact: low
+        short_description: some short description
         attachments:
           - path: targets/change_request/res/sample_file.txt
       check_mode: true
@@ -324,6 +315,66 @@
         that:
           - result is not changed
 
+    - name: Test bad parameter combinator (number + query)
+      servicenow.itsm.change_request_info:
+        number: "{{ test_result.record.number }}"
+        query:
+         - short_description: LIKE Oracle
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'parameters are mutually exclusive: number|query' in result.msg"
+
+
+    - name: Test invalid operator detection
+      servicenow.itsm.change_request_info:
+        query:
+         - short_description: LIKEE Oracle
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Invalid condition' in result.msg"
+
+
+    - name: Get change_request info by sysparm query - short_description
+      servicenow.itsm.change_request_info:
+        query:
+         - short_description: LIKE some
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - "'some' in result.records[0].short_description"
+
+
+    - name: Test unary operator with argument detection
+      servicenow.itsm.change_request_info:
+        query:
+         - short_description: ISEMPTY SAP
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Operator ISEMPTY does not take any arguments' in result.msg"
+
+
+    - name: Test sysparm query unary operator - short_description
+      servicenow.itsm.change_request_info:
+        query:
+         - short_description: ISNOTEMPTY
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].short_description != ""
 
     - name: Delete change_request - check mode
       servicenow.itsm.change_request: &delete-change_request
@@ -363,63 +414,3 @@
           - result is not changed
 
 
-    - name: Test bad parameter combinator (number + query)
-      servicenow.itsm.change_request_info:
-        number: "{{ test_result.record.number }}"
-        query:
-         - short_description: LIKE Oracle
-      ignore_errors: true
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result is failed
-          - "'parameters are mutually exclusive: number|query' in result.msg"
-
-
-    - name: Test invalid operator detection
-      servicenow.itsm.change_request_info:
-        query:
-         - short_description: LIKEE Oracle
-      ignore_errors: true
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result is failed
-          - "'Invalid condition' in result.msg"
-
-
-    - name: Get change_request info by sysparm query - short_description
-      servicenow.itsm.change_request_info:
-        query:
-         - short_description: LIKE Oracle
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - "'Oracle' in result.records[0].short_description"
-
-
-    - name: Test unary operator with argument detection
-      servicenow.itsm.change_request_info:
-        query:
-         - short_description: ISEMPTY SAP
-      ignore_errors: true
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result is failed
-          - "'Operator ISEMPTY does not take any arguments' in result.msg"
-
-
-    - name: Test sysparm query unary operator - short_description
-      servicenow.itsm.change_request_info:
-        query:
-         - short_description: ISNOTEMPTY
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result.records[0].short_description != ""

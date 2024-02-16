@@ -4,18 +4,8 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
-    - name: Retrieve all entries in the change_task table
-      servicenow.itsm.change_request_task_info:
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result.records != []
-          - result.records | length != 0
-
-
-    - name: Create test change_request for refferencing in change tasks
-      servicenow.itsm.change_request:
+    - name: Create test change_request for referencing in change tasks
+      servicenow.itsm.change_request: 
         requested_by: admin
         state: new
         type: standard
@@ -342,14 +332,39 @@
     - name: Get change_request_task info by sysparm query - short_description
       servicenow.itsm.change_request_task_info:
         query:
-          - short_description: LIKE Oracle
+          - short_description: LIKE Implement
       register: result
 
     - ansible.builtin.assert:
         that:
-          - "'Oracle' in result.records[0].short_description"
+          - "'Implement collision' in result.records[0].short_description"
+
+    - name: Test bad parameter combinator (number + query)
+      servicenow.itsm.change_request_task_info:
+        number: "{{ test_result.record.number }}"
+        query:
+         - short_description: LIKE Oracle
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'parameters are mutually exclusive: number|query' in result.msg"
 
 
+    - name: Test invalid operator detection
+      servicenow.itsm.change_request_task_info:
+        query:
+         - short_description: LIKEE Oracle
+      ignore_errors: true
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Invalid condition' in result.msg"
+    
     - name: Delete change_request_task - check mode
       servicenow.itsm.change_request_task: &delete-change_request_task
         number: "{{ test_result.record.number }}"
@@ -387,28 +402,12 @@
           - result is not changed
 
 
-    - name: Test bad parameter combinator (number + query)
-      servicenow.itsm.change_request_task_info:
-        number: "{{ test_result.record.number }}"
-        query:
-         - short_description: LIKE Oracle
-      ignore_errors: true
+    - name: Delete change_request used for testing 
+      servicenow.itsm.change_request:
+        number: "{{ change_request_result.record.number }}"
+        state: absent
       register: result
 
-    - ansible.builtin.assert:
+    - ansible.builtin.assert: 
         that:
-          - result is failed
-          - "'parameters are mutually exclusive: number|query' in result.msg"
-
-
-    - name: Test invalid operator detection
-      servicenow.itsm.change_request_task_info:
-        query:
-         - short_description: LIKEE Oracle
-      ignore_errors: true
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result is failed
-          - "'Invalid condition' in result.msg"
+          - result is changed
