@@ -23,7 +23,7 @@ short_description: Manage ServiceNow problem tasks
 description:
   - Create, delete or update ServiceNow problem tasks.
   - For more information, refer to the ServiceNow problem management documentation at
-    U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html).
+    U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html).
 
 version_added: 1.3.0
 
@@ -104,7 +104,7 @@ options:
       - Optional remaining parameters.
       - For more information on optional parameters, refer to the ServiceNow
         create problem task documentation at
-        U(https://docs.servicenow.com/bundle/quebec-it-service-management/page/product/problem-management/task/create-problem-task.html).
+        U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/problem-management/task/create-problem-task.html).
     type: dict
 """
 

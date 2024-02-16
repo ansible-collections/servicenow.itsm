@@ -18,7 +18,7 @@ short_description: Manage ServiceNow GET requests
 description:
   - Retrieve records via ServiceNow REST Table API for an arbitrary table.
   - For more information, refer to the ServiceNow REST Table API documentation at
-    U(https://docs.servicenow.com/bundle/sandiego-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html).
+    U(https://docs.servicenow.com/bundle/tokyo-application-development/page/integrate/inbound-rest/concept/c_RESTAPI.html).
 version_added: 2.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
@@ -35,8 +35,8 @@ options:
     description:
       - An encoded query string used to filter the results.
       - List of all possible operators and a guide on how to map them to form a query may be found at
-        U(https://docs.servicenow.com/en-US/bundle/sandiego-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
-        and U(https://developer.servicenow.com/dev.do#!/reference/api/sandiego/rest/c_TableAPI) under 'sysparm_query'.
+        U(https://docs.servicenow.com/bundle/tokyo-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
+        and U(https://developer.servicenow.com/dev.do#!/reference/api/tokyo/rest/c_TableAPI) under 'sysparm_query'.
     type: str
   display_value:
     description:

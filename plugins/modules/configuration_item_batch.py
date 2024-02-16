@@ -22,7 +22,7 @@ short_description: Manage ServiceNow configuration items in batch mode
 description:
   - Create, update ServiceNow configuration items in batch mode.
   - For more information, refer to the ServiceNow configuration management documentation at
-    U(https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
+    U(https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
 version_added: 1.2.0
 extends_documentation_fragment:
   - servicenow.itsm.instance

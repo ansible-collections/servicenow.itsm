@@ -22,7 +22,7 @@ short_description: List ServiceNow change requests
 description:
   - Retrieve information about ServiceNow change requests.
   - For more information, refer to the ServiceNow change management documentation at
-    U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html).
+    U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html).
 version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance

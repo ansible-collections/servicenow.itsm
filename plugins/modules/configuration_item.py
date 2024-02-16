@@ -59,7 +59,7 @@ options:
       - The value of this parameter should point to a ServiceNow CMDB configuration
         item table, for instance C(cmdb_ci_server).
       - For a list of valid CMDB tables, refer to ServiceNow documentation on
-        U(https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-tables-details.html).
+        U(https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-tables-details.html).
       - If this parameter is unset when a new configuration item needs to be created,
         the default value C(cmdb_ci) will be used.
     type: str
@@ -67,7 +67,7 @@ options:
     description:
       - Asset tag of the asset logically related to this configuration item.
       - Read more about the relationship between configuration items and assets at
-        U(https://docs.servicenow.com/bundle/paris-it-asset-management/page/product/asset-management/concept/c_ManagingAssets.html).
+        U(https://docs.servicenow.com/bundle/tokyo-it-asset-management/page/product/asset-management/concept/c_ManagingAssets.html).
     type: str
   install_status:
     description:
@@ -115,7 +115,7 @@ options:
     description:
       - Any of the remaining configuration parameters.
       - For the attributes of the base C(cmdb_ci) table, refer to the ServiceNow documentation on
-        U(https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
+        U(https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html).
       - For the attributes of configuration items specific to I(sys_class_name),
         please consult the relevant ServiceNow documentation.
     type: dict

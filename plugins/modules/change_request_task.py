@@ -22,7 +22,7 @@ short_description: Manage ServiceNow change request tasks
 description:
   - Create, delete or update a ServiceNow change request tasks.
   - For more information, refer to the ServiceNow change management documentation at
-    U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html).
+    U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html).
 version_added: 1.3.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
@@ -128,7 +128,7 @@ options:
       - Optional remaining parameters.
       - For more information on optional parameters, refer to the ServiceNow
         change task documentation at
-        U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/task/create-a-change-task.html).
+        U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/change-management/task/create-a-change-task.html).
     type: dict
 """
 

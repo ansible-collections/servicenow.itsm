@@ -23,7 +23,7 @@ short_description: Manage ServiceNow change requests
 description:
   - Create, delete or update a ServiceNow change request.
   - For more information, refer to the ServiceNow change management documentation at
-    U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html).
+    U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/change-management/concept/c_ITILChangeManagement.html).
 version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
@@ -43,7 +43,7 @@ options:
         I(assignment_group) parameter must be filled in.
       - For more information on state model and transition,
         refere to the ServiceNow documentation at
-        U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ChangeStateModel.html)
+        U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/change-management/concept/c_ChangeStateModel.html)
       - Default choices are C(new), C(assess), C(authorize), C(scheduled), C(implement), C(review), C(closed), C(canceled), C(absent).
         One can override them by setting I(change_request_mapping.state).
     type: str
@@ -56,7 +56,7 @@ options:
     description:
       - Predefined template name for standard change request.
       - For more information on templates refer to ServiceNow documentation at
-        U(https://docs.servicenow.com/bundle/quebec-it-service-management/page/product/change-management/concept/c_StandardChangeCatalogPlugin.html)
+        U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/change-management/concept/c_StandardChangeCatalogPlugin.html)
         or find template names on <your_service_id>.service-now.com/nav_to.do?uri=%2Fstd_change_producer_version_list.do%3F
     type: str
   requested_by:
@@ -137,7 +137,7 @@ options:
       - Optional remaining parameters.
       - For more information on optional parameters, refer to the ServiceNow
         change request documentation at
-        U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/task/t_CreateAChange.html).
+        U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/change-management/task/t_CreateAChange.html).
     type: dict
 """
 
