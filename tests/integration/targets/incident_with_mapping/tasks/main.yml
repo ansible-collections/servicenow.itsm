@@ -34,15 +34,6 @@
           1: "Solved Remotely (Permanently)"
 
   block:
-    - name: Retrieve all incidents
-      servicenow.itsm.incident_info:
-        incident_mapping: "{{ mapping.incident }}"
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result.records != []
-
     - name: Create test incident - check mode
       servicenow.itsm.incident: &create-incident
         incident_mapping: "{{ mapping.incident }}"
@@ -263,37 +254,6 @@
           - result is not changed
 
 
-    - name: Delete incident - check mode
-      servicenow.itsm.incident: &delete-incident
-        incident_mapping: "{{ mapping.incident }}"
-        caller: admin
-        number: "{{ test_result.record.number }}"
-        state: absent
-      check_mode: true
-      register: result
-
-    - ansible.builtin.assert: &delete-incident-result
-        that:
-          - result is changed
-
-
-    - name: Delete incident
-      servicenow.itsm.incident: *delete-incident
-
-    - ansible.builtin.assert: *delete-incident-result
-
-
-    - name: Make sure incident is absent
-      servicenow.itsm.incident_info:
-        incident_mapping: "{{ mapping.incident }}"
-        number: "{{ test_result.record.number }}"
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result.records | length == 0
-
-
     - name: Test bad parameter combinator (number + query)
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
@@ -327,12 +287,12 @@
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
         query:
-         - short_description: LIKE SAP
+         - short_description: LIKE Test
       register: result
 
     - ansible.builtin.assert:
         that:
-          - "'SAP' in result.records[0].short_description"
+          - "'Test' in result.records[0].short_description"
 
 
     - name: Test unary operator with argument detection
@@ -365,3 +325,35 @@
         resource: sys_choice
         action: delete
         sys_id: "{{ solved_remotely_choice }}"
+
+
+    - name: Delete incident - check mode
+      servicenow.itsm.incident: &delete-incident
+        incident_mapping: "{{ mapping.incident }}"
+        caller: admin
+        number: "{{ test_result.record.number }}"
+        state: absent
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &delete-incident-result
+        that:
+          - result is changed
+
+
+    - name: Delete incident
+      servicenow.itsm.incident: *delete-incident
+
+    - ansible.builtin.assert: *delete-incident-result
+
+
+    - name: Make sure incident is absent
+      servicenow.itsm.incident_info:
+        incident_mapping: "{{ mapping.incident }}"
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 0
+
