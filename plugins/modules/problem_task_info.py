@@ -20,7 +20,7 @@ short_description: List ServiceNow problem tasks
 description:
   - Retrieve information about ServiceNow problem tasks.
   - For more information, refer to the ServiceNow problem management documentation at
-    U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html).
+    U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html).
 version_added: 1.3.0
 extends_documentation_fragment:
   - servicenow.itsm.instance

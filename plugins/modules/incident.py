@@ -24,7 +24,7 @@ short_description: Manage ServiceNow incidents
 description:
   - Create, delete or update a ServiceNow incident.
   - For more information, refer to the ServiceNow incident management documentation at
-    U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/concept/c_IncidentManagement.html).
+    U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/incident-management/concept/c_IncidentManagement.html).
 version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
@@ -94,7 +94,7 @@ options:
       - Optional remaining parameters.
       - For more information on optional parameters, refer to the ServiceNow
         create incident documentation at
-        U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/task/create-an-incident.html).
+        U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/incident-management/task/create-an-incident.html).
     type: dict
 """
 

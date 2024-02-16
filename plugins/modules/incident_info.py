@@ -21,7 +21,7 @@ short_description: List ServiceNow incidents
 description:
   - Retrieve information about ServiceNow incidents.
   - For more information, refer to the ServiceNow incident management documentation at
-    U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/incident-management/concept/c_IncidentManagement.html).
+    U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/incident-management/concept/c_IncidentManagement.html).
 version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance

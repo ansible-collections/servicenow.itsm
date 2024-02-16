@@ -25,7 +25,7 @@ short_description: List ServiceNow configuration item
 description:
   - Retrieve information about ServiceNow configuration item.
   - For more information, refer to the ServiceNow configuration item management documentation at
-    U(https://docs.servicenow.com/bundle/quebec-servicenow-platform/page/product/configuration-management/concept/c_ITILConfigurationManagement.html).
+    U(https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/concept/c_ITILConfigurationManagement.html).
 version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
@@ -49,7 +49,7 @@ options:
       - The value of this parameter should point to a ServiceNow CMDB configuration
         item table, for instance C(cmdb_ci_server).
       - For a list of valid CMDB tables, refer to ServiceNow documentation on
-        U(https://docs.servicenow.com/bundle/paris-servicenow-platform/page/product/configuration-management/reference/cmdb-tables-details.html).
+        U(https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-tables-details.html).
       - If this parameter is unset when a configuration item info is queried,
         the default value C(cmdb_ci) will be used.
     type: str

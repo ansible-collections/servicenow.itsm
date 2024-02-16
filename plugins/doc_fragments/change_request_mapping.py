@@ -43,7 +43,7 @@ options:
             that check is not performed there.
           - For more information on state model and transition,
             refer to the ServiceNow documentation at
-            U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/change-management/concept/c_ChangeStateModel.html)
+            U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/change-management/concept/c_ChangeStateModel.html)
           - Special value that can not be overridden is C(absent), which would remove a change request from ServiceNow.
         type: dict
 """

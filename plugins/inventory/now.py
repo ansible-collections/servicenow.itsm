@@ -281,7 +281,7 @@ compose:
 #   }
 #   return cis;
 # }
-# Other examples in https://docs.servicenow.com/bundle/utah-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html
+# Other examples in https://docs.servicenow.com/bundle/tokyo-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html
 plugin: servicenow.itsm.now
 table: cmdb_ci_server
 query:

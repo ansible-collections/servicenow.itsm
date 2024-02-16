@@ -12,7 +12,7 @@ import re
 REL_TABLE = "cmdb_rel_ci"
 # sysparm_fields to be used when querying REL_TABLE. Uses dot-walking
 # notation to extract fields from linked tables in a single REST API call.
-# https://docs.servicenow.com/bundle/rome-application-development/page/integrate/inbound-rest/concept/c_RESTAPI.html#d1168970e439
+# https://docs.servicenow.com/bundle/tokyo-application-development/page/integrate/inbound-rest/concept/c_RESTAPI.html
 REL_FIELDS = set(
     (
         "sys_id",

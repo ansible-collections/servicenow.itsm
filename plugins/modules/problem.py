@@ -25,7 +25,7 @@ short_description: Manage ServiceNow problems
 description:
   - Create, delete or update a ServiceNow problem.
   - For more information, refer to the ServiceNow problem management documentation at
-    U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html).
+    U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/problem-management/concept/c_ProblemManagement.html).
 version_added: 1.0.0
 extends_documentation_fragment:
   - servicenow.itsm.instance
@@ -112,7 +112,7 @@ options:
       - Optional remaining parameters.
       - For more information on optional parameters, refer to the ServiceNow
         documentation on creating problems at
-        U(https://docs.servicenow.com/bundle/paris-it-service-management/page/product/problem-management/task/create-a-problem-v2.html).
+        U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/problem-management/task/create-a-problem-v2.html).
     type: dict
   base_api_path:
     description:
