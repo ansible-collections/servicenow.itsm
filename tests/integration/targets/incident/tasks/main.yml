@@ -310,5 +310,3 @@
     - ansible.builtin.assert:
         that:
           - result.records | length == 0
-
-
