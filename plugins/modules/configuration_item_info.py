@@ -23,7 +23,7 @@ author:
 short_description: List ServiceNow configuration item
 
 description:
-  - Retrieve information about ServiceNow configuration item.
+  - Retrieve information about the ServiceNow configuration items and also attachments related to this CI.
   - For more information, refer to the ServiceNow configuration item management documentation at
     U(https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/concept/c_ITILConfigurationManagement.html).
 version_added: 1.0.0
@@ -53,6 +53,15 @@ options:
       - If this parameter is unset when a configuration item info is queried,
         the default value C(cmdb_ci) will be used.
     type: str
+  return_fields:
+    description:
+      - A list of fields to return.
+      - If defined you need to add "attachments" as a field to return if you wish also get related attachments data.
+      - If C(return_fields) is not defined, all fields and also attachments will be returned.
+    type: list
+    elements: str
+    required: false
+    version_added: 2.4.0
 """
 
 EXAMPLES = r"""
@@ -63,6 +72,14 @@ EXAMPLES = r"""
 - name: Retrieve a specific configuration item by sys_id
   servicenow.itsm.configuration_item_info:
     sys_id: 01a9ec0d3790200044e0bfc8bcbe5dc3
+  register: result
+
+- name: Retrieve a specific configuration item by sys_id with limited return fields
+  servicenow.itsm.configuration_item_info:
+    sys_id: 01a9ec0d3790200044e0bfc8bcbe5dc3
+    return_fields:
+      - name
+      - sys_id
   register: result
 
 - name: Retrieve a specific configuration item by name
@@ -256,12 +273,27 @@ def run(module, table_client, attachment_client):
             module.params, "sys_id", "name", "sysparm_query", "sysparm_display_value"
         )
 
+    # default yes, only disabled if not selected in return_fields
+    query_attachments = True
+
+    if "return_fields" in module.params and module.params["return_fields"] is not None:
+        query["sysparm_fields"] = ",".join(module.params["return_fields"])
+        if "attachments" not in module.params["return_fields"]:
+            query_attachments = False
+
+    if query_attachments:
+        return [
+            dict(
+                mapper.to_ansible(record),
+                attachments=attachment_client.list_records(
+                    dict(table_name=cmdb_table, table_sys_id=record["sys_id"]),
+                ),
+            )
+            for record in table_client.list_records(cmdb_table, query)
+        ]
     return [
         dict(
             mapper.to_ansible(record),
-            attachments=attachment_client.list_records(
-                dict(table_name=cmdb_table, table_sys_id=record["sys_id"]),
-            ),
         )
         for record in table_client.list_records(cmdb_table, query)
     ]
@@ -284,6 +316,10 @@ def main():
             ),
             sys_class_name=dict(
                 type="str",
+            ),
+            return_fields=dict(
+                type="list",
+                elements="str",
             ),
         ),
         mutually_exclusive=[("sys_id", "query", "name", "sysparm_query")],
