@@ -468,3 +468,10 @@
           - result.record.state == "closed"
           - result.record.close_code == "successful"
           - result.record.close_notes == "Task done"
+    
+
+    - name: Delete change_request 
+      servicenow.itsm.change_request:
+        requested_by: admin
+        number: "{{ change_request_task.record.number }}"
+        state: absent

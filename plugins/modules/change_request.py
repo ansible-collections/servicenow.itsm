@@ -361,10 +361,7 @@ def build_payload(module, table_client):
         payload["assignment_group"] = assignment_group["sys_id"]
 
     if module.params["assignment_group_id"]:
-        assignment_group = table.find_assignment_group_by_sys_id(
-            table_client, module.params["assignment_group_id"]
-        )
-        payload["assignment_group"] = assignment_group["sys_id"]
+        payload["assignment_group"] = module.params["assignment_group_id"]
 
     if module.params["template"]:
         standard_change_template = table.find_standard_change_template(
