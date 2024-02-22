@@ -61,24 +61,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The name of the group that the change task is assigned to.</div>
-                        <div>Either one of the <em>assignment_group</em> or <em>assignment_group_id</em> should be used,not both.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>assignment_group_id</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The id of the group that the change task is assigned to.</div>
-                        <div>Either one of the <em>assignment_group</em> or <em>assignment_group_id</em> should be used,not both.</div>
+                        <div>The group that the change task is assigned to.</div>
                 </td>
             </tr>
             <tr>
