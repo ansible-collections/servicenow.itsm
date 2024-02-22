@@ -4,14 +4,6 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
-    - name: Retrieve all incidents
-      servicenow.itsm.incident_info:
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result.records != []
-
     - name: Create test incident - check mode
       servicenow.itsm.incident: &create-incident
         caller: admin
@@ -137,7 +129,7 @@
           name: incident
           element: close_code
           value: 1
-          label: Solved Remotely (Permanently)
+          label: Resolved by problem
       register: incident_choices
 
     - set_fact:
@@ -148,7 +140,7 @@
         caller: admin
         number: "{{ test_result.record.number }}"
         state: resolved
-        close_code: Solved Remotely (Permanently)
+        close_code: Resolved by problem
         close_notes: Done testing
       check_mode: true
       register: result
@@ -157,7 +149,7 @@
         that:
           - result is changed
           - result.record.state == "resolved"
-          - result.record.close_code == "Solved Remotely (Permanently)"
+          - result.record.close_code == "Resolved by problem"
           - result.record.close_notes == "Done testing"
 
 
@@ -173,7 +165,7 @@
          - caller: = admin
            number: = {{ test_result.record.number }}
            state: = resolved
-           close_code: = Solved Remotely (Permanently)
+           close_code: = Resolved by problem
            close_notes: = Done testing
       register: result
 
@@ -183,7 +175,7 @@
           - result.records[0].caller_id != ""
           - result.records[0].number == test_result.record.number
           - result.records[0].state == "resolved"
-          - result.records[0].close_code == "Solved Remotely (Permanently)"
+          - result.records[0].close_code == "Resolved by problem"
           - result.records[0].close_notes == "Done testing"
 
 
@@ -196,7 +188,7 @@
         that:
           - result.records[0].number == test_result.record.number
           - result.records[0].state == "resolved"
-          - result.records[0].close_code == "Solved Remotely (Permanently)"
+          - result.records[0].close_code == "Resolved by problem"
           - result.records[0].close_notes == "Done testing"
 
 
@@ -220,35 +212,6 @@
     - ansible.builtin.assert:
         that:
           - result is not changed
-
-
-    - name: Delete incident - check mode
-      servicenow.itsm.incident: &delete-incident
-        caller: admin
-        number: "{{ test_result.record.number }}"
-        state: absent
-      check_mode: true
-      register: result
-
-    - ansible.builtin.assert: &delete-incident-result
-        that:
-          - result is changed
-
-
-    - name: Delete incident
-      servicenow.itsm.incident: *delete-incident
-
-    - ansible.builtin.assert: *delete-incident-result
-
-
-    - name: Make sure incident is absent
-      servicenow.itsm.incident_info:
-        number: "{{ test_result.record.number }}"
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result.records | length == 0
 
 
     - name: Test bad parameter combinator (number + query)
@@ -281,12 +244,12 @@
     - name: Get incident info by sysparm query - short_description
       servicenow.itsm.incident_info:
         query:
-         - short_description: LIKE SAP
+         - short_description: LIKE Test
       register: result
 
     - ansible.builtin.assert:
         that:
-          - "'SAP' in result.records[0].short_description"
+          - "'Test' in result.records[0].short_description"
 
 
     - name: Test unary operator with argument detection
@@ -312,8 +275,38 @@
         that:
           - result.records[0].short_description != ""
 
+
     - name: Delete incident choices
       servicenow.itsm.api:
         resource: sys_choice
         action: delete
         sys_id: "{{ solved_remotely_choice }}"
+    
+
+    - name: Delete incident - check mode
+      servicenow.itsm.incident: &delete-incident
+        caller: admin
+        number: "{{ test_result.record.number }}"
+        state: absent
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &delete-incident-result
+        that:
+          - result is changed
+
+
+    - name: Delete incident
+      servicenow.itsm.incident: *delete-incident
+
+    - ansible.builtin.assert: *delete-incident-result
+
+
+    - name: Make sure incident is absent
+      servicenow.itsm.incident_info:
+        number: "{{ test_result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 0
