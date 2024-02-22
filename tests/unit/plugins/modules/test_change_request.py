@@ -24,8 +24,7 @@ class TestEnsureAbsent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name",
-                              username="user", password="pass"),
+                instance=dict(host="my.host.name", username="user", password="pass"),
                 state="absent",
                 number="CHG0000001",
                 sys_id=None,
@@ -35,16 +34,14 @@ class TestEnsureAbsent:
             state="3", number="CHG0000001", sys_id="1234"
         )
 
-        result = change_request.ensure_absent(
-            module, table_client, attachment_client)
+        result = change_request.ensure_absent(module, table_client, attachment_client)
 
         table_client.delete_record.assert_called_once()
         assert result == (
             True,
             None,
             dict(
-                before=dict(state="closed",
-                            number="CHG0000001", sys_id="1234"),
+                before=dict(state="closed", number="CHG0000001", sys_id="1234"),
                 after=None,
             ),
         )
@@ -54,8 +51,7 @@ class TestEnsureAbsent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name",
-                              username="user", password="pass"),
+                instance=dict(host="my.host.name", username="user", password="pass"),
                 state="absent",
                 number=None,
                 sys_id="1234",
@@ -63,8 +59,7 @@ class TestEnsureAbsent:
         )
         table_client.get_record.return_value = None
 
-        result = change_request.ensure_absent(
-            module, table_client, attachment_client)
+        result = change_request.ensure_absent(module, table_client, attachment_client)
 
         table_client.delete_record.assert_not_called()
         assert result == (False, None, dict(before=None, after=None))
@@ -72,7 +67,12 @@ class TestEnsureAbsent:
 
 class TestValidateParams:
     VALID_PARAMS = dict(
-        state="closed", close_code="successful", close_notes="Solved", assignment_group=None, assignment_group_id=None)
+        state="closed",
+        close_code="successful",
+        close_notes="Solved",
+        assignment_group=None,
+        assignment_group_id=None,
+    )
 
     @pytest.mark.parametrize("missing_field", ["close_code", "close_notes"])
     def test_validate_params_missing_field(self, missing_field):
@@ -100,8 +100,7 @@ class TestEnsurePresent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name",
-                              username="user", password="pass"),
+                instance=dict(host="my.host.name", username="user", password="pass"),
                 state="new",
                 type="normal",
                 requested_by=None,
@@ -135,8 +134,7 @@ class TestEnsurePresent:
         attachment_client.upload_records.return_value = []
         module.sha256.return_value = ""
 
-        result = change_request.ensure_present(
-            module, table_client, attachment_client)
+        result = change_request.ensure_present(module, table_client, attachment_client)
 
         table_client.create_record.assert_called_once()
         assert result == (
@@ -169,8 +167,7 @@ class TestEnsurePresent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name",
-                              username="user", password="pass"),
+                instance=dict(host="my.host.name", username="user", password="pass"),
                 state="new",
                 type="normal",
                 number="CHG0000001",
@@ -205,8 +202,7 @@ class TestEnsurePresent:
         attachment_client.list_records.return_value = []
         module.sha256.return_value = ""
 
-        result = change_request.ensure_present(
-            module, table_client, attachment_client)
+        result = change_request.ensure_present(module, table_client, attachment_client)
 
         table_client.get_record.assert_called_once()
         assert result == (
@@ -247,8 +243,7 @@ class TestEnsurePresent:
     ):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name",
-                              username="user", password="pass"),
+                instance=dict(host="my.host.name", username="user", password="pass"),
                 state="assess",
                 type="normal",
                 number="CHG0000001",
@@ -290,8 +285,7 @@ class TestEnsurePresent:
         attachment_client.list_records.return_value = []
         module.sha256.return_value = ""
 
-        result = change_request.ensure_present(
-            module, table_client, attachment_client)
+        result = change_request.ensure_present(module, table_client, attachment_client)
 
         table_client.update_record.assert_called_once()
         assert result == (
@@ -329,8 +323,7 @@ class TestBuildPayload:
     def test_build_payload(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name",
-                              username="user", password="pass"),
+                instance=dict(host="my.host.name", username="user", password="pass"),
                 state="new",
                 type="normal",
                 template="Some template",
@@ -377,8 +370,7 @@ class TestBuildPayload:
     def test_build_payload_with_other_option(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name",
-                              username="user", password="pass"),
+                instance=dict(host="my.host.name", username="user", password="pass"),
                 state="new",
                 type=None,
                 template=None,

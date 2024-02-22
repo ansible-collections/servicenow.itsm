@@ -191,8 +191,7 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client):
-    mapper = get_mapper(
-        module, "change_request_task_mapping", PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(module, "change_request_task_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     task = table_client.get_record("change_task", query)
 
@@ -232,8 +231,7 @@ def validate_params(params, change_task=None):
 
 
 def ensure_present(module, table_client):
-    mapper = get_mapper(
-        module, "change_request_task_mapping", PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(module, "change_request_task_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
 
@@ -276,8 +274,7 @@ def is_superset_with_date(superset, candidate):
             return False
 
     return utils.is_superset(
-        superset, dict((k, v) for k, v in candidate.items()
-                       if k not in datetime_fields)
+        superset, dict((k, v) for k, v in candidate.items() if k not in datetime_fields)
     )
 
 

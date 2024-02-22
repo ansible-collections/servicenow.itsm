@@ -237,8 +237,7 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client, attachment_client):
-    mapper = get_mapper(module, "change_request_mapping",
-                        PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(module, "change_request_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     change = table_client.get_record("change_request", query)
 
@@ -276,8 +275,7 @@ def validate_params(params, change_request=None):
 
 
 def ensure_present(module, table_client, attachment_client):
-    mapper = get_mapper(module, "change_request_mapping",
-                        PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(module, "change_request_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
     attachments = attachment.transform_metadata_list(
