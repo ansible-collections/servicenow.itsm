@@ -22,14 +22,16 @@ class TestEnsureAbsent:
     def test_delete_change_request(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name", username="user", password="pass"),
+                instance=dict(host="my.host.name",
+                              username="user", password="pass"),
                 state="absent",
                 number="CTASK0000001",
                 sys_id=None,
                 on_hold=None,
             )
         )
-        table_client.get_record.return_value = dict(state="3", number="CTASK0000001")
+        table_client.get_record.return_value = dict(
+            state="3", number="CTASK0000001")
 
         result = change_request_task.ensure_absent(module, table_client)
 
@@ -43,7 +45,8 @@ class TestEnsureAbsent:
     def test_delete_change_request_not_present(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name", username="user", password="pass"),
+                instance=dict(host="my.host.name",
+                              username="user", password="pass"),
                 state="absent",
                 number=None,
                 sys_id="1234",
@@ -65,12 +68,16 @@ class TestValidateParams:
         close_notes="Solved",
         description="dsc",
         short_description="sd",
+        assignment_group=None,
+        assignment_group_id=None,
         on_hold=None,
     )
     VALID_PARAMS_HOLD = dict(
         state="in_progress",
         close_code="successful",
         close_notes="Solved",
+        assignment_group=None,
+        assignment_group_id=None,
         description="dsc",
         short_description="sd",
         on_hold=True,
@@ -104,12 +111,21 @@ class TestValidateParams:
     def test_validate_params_on_hold(self):
         change_request_task.validate_params(self.VALID_PARAMS_HOLD)
 
+    def test_validate_params_assignment_group(self):
+        params = self.VALID_PARAMS.copy()
+        params["assignment_group"] = "Network"
+        params["assignment_group_id"] = "assignment_group_id"
+
+        with pytest.raises(errors.ServiceNowError):
+            change_request_task.validate_params(params)
+
 
 class TestEnsurePresent:
     def test_ensure_present_create_new(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name", username="user", password="pass"),
+                instance=dict(host="my.host.name",
+                              username="user", password="pass"),
                 configuration_item_id=None,
                 configuration_item=None,
                 change_request_id=None,
@@ -118,6 +134,7 @@ class TestEnsurePresent:
                 state="open",
                 assigned_to=None,
                 assignment_group=None,
+                assignment_group_id=None,
                 short_description="sd",
                 description="description",
                 on_hold=None,
@@ -166,7 +183,8 @@ class TestEnsurePresent:
     def test_ensure_present_nothing_to_do(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name", username="user", password="pass"),
+                instance=dict(host="my.host.name",
+                              username="user", password="pass"),
                 configuration_item_id=None,
                 configuration_item=None,
                 change_request_id=None,
@@ -175,6 +193,7 @@ class TestEnsurePresent:
                 state="open",
                 assigned_to=None,
                 assignment_group=None,
+                assignment_group_id=None,
                 short_description="sd",
                 description="description",
                 on_hold=None,
@@ -229,7 +248,8 @@ class TestEnsurePresent:
     def test_ensure_present_update(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name", username="user", password="pass"),
+                instance=dict(host="my.host.name",
+                              username="user", password="pass"),
                 configuration_item_id=None,
                 configuration_item=None,
                 change_request_id=None,
@@ -238,6 +258,7 @@ class TestEnsurePresent:
                 state="in_progress",
                 assigned_to=None,
                 assignment_group=None,
+                assignment_group_id=None,
                 short_description="sd",
                 description="description",
                 on_hold=None,
@@ -302,7 +323,8 @@ class TestBuildPayload:
     def test_build_payload(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name", username="user", password="pass"),
+                instance=dict(host="my.host.name",
+                              username="user", password="pass"),
                 configuration_item_id=None,
                 configuration_item="config item",
                 change_request_id=None,
@@ -311,6 +333,7 @@ class TestBuildPayload:
                 state="open",
                 assigned_to="some.user",
                 assignment_group="some.group",
+                assignment_group_id=None,
                 short_description="UV",
                 description="Unmapped value",
                 on_hold=None,
@@ -352,7 +375,8 @@ class TestBuildPayload:
     def test_build_payload_with_other_option(self, create_module, table_client):
         module = create_module(
             params=dict(
-                instance=dict(host="my.host.name", username="user", password="pass"),
+                instance=dict(host="my.host.name",
+                              username="user", password="pass"),
                 configuration_item_id="1234",
                 configuration_item=None,
                 change_request_id="4321",
@@ -361,6 +385,7 @@ class TestBuildPayload:
                 state="open",
                 assigned_to="some.user",
                 assignment_group="some.group",
+                assignment_group_id=None,
                 short_description="UV",
                 description="Unmapped value",
                 on_hold=None,
@@ -409,7 +434,8 @@ class TestSupersetWithDateCheck:
         ],
     )
     def test_valid_superset(self, superset, candidate):
-        assert change_request_task.is_superset_with_date(superset, candidate) is True
+        assert change_request_task.is_superset_with_date(
+            superset, candidate) is True
 
     @pytest.mark.parametrize(
         "superset,candidate",
@@ -420,7 +446,8 @@ class TestSupersetWithDateCheck:
         ],
     )
     def test_not_a_superset(self, superset, candidate):
-        assert change_request_task.is_superset_with_date(superset, candidate) is False
+        assert change_request_task.is_superset_with_date(
+            superset, candidate) is False
 
     @pytest.mark.parametrize(
         "record,params",
@@ -460,7 +487,8 @@ class TestSupersetWithDateCheck:
         ],
     )
     def test_same_point_in_time(self, record, params):
-        assert change_request_task.is_superset_with_date(record, params) is True
+        assert change_request_task.is_superset_with_date(
+            record, params) is True
 
     @pytest.mark.parametrize(
         "record,params",
@@ -476,7 +504,8 @@ class TestSupersetWithDateCheck:
         ],
     )
     def test_different_point_in_time(self, record, params):
-        assert change_request_task.is_superset_with_date(record, params) is False
+        assert change_request_task.is_superset_with_date(
+            record, params) is False
 
     @pytest.mark.parametrize(
         "record,params",
@@ -500,7 +529,8 @@ class TestSupersetWithDateCheck:
         ],
     )
     def test_empty_superset_dates(self, record, params):
-        assert change_request_task.is_superset_with_date(record, params) is True
+        assert change_request_task.is_superset_with_date(
+            record, params) is True
 
     @pytest.mark.parametrize(
         "record,params",
@@ -528,4 +558,5 @@ class TestSupersetWithDateCheck:
         ],
     )
     def test_empty_not_superset_dates(self, record, params):
-        assert change_request_task.is_superset_with_date(record, params) is False
+        assert change_request_task.is_superset_with_date(
+            record, params) is False

@@ -411,3 +411,60 @@
     - ansible.builtin.assert: 
         that:
           - result is changed
+
+    # Test closing change request task with assignment_group_id
+    - name: Create test change_request for referencing in change tasks closure test with assignment_group_id
+      servicenow.itsm.change_request:
+        requested_by: admin
+        state: new
+        type: standard
+        template: Clear BGP sessions on a Cisco router - 1
+        priority: low
+        risk: low
+        impact: low
+      register: change_request_result
+    
+
+    - name: Create test change_request_task
+      servicenow.itsm.change_request_task:
+        change_request_number: "{{ change_request_result.record.number }}"
+        type: planning
+        state: open
+        assignment_group: Network
+        short_description: "Implement collision avoidance"
+        description: "Implement collision avoidance based on the newly installed TOF sensor arrays."
+        other:
+          approval: approved
+      register: change_request_task
+
+    - ansible.builtin.debug:
+        var: change_request_task
+    
+
+    - name: Make sure change_request_task exists
+      servicenow.itsm.change_request_task_info:
+        number: "{{ change_request_task.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].change_task_type == "planning"
+          - result.records[0].state == "open"
+          - result.records[0].assignment_group != ""
+    
+
+    - name: Update change_request_task state to closed
+      servicenow.itsm.change_request_task:
+        number: "{{ change_request_task.record.number }}"
+        state: closed
+        assignment_group_id: "{{ change_request_task.record.assignment_group }}"
+        close_code: successful
+        close_notes: Task done
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result is changed
+          - result.record.state == "closed"
+          - result.record.close_code == "successful"
+          - result.record.close_notes == "Task done"

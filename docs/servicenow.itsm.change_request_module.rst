@@ -46,8 +46,26 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The group that the change request is assigned to.</div>
+                        <div>The name of the group that the change request is assigned to.</div>
                         <div>Required if <em>state</em> value is <code>assess</code> or <code>authorize</code> or <code>scheduled</code> or <code>implement</code> or <code>review</code> or <code>closed</code>.</div>
+                        <div>Either one of the <em>assignment_group</em> or <em>assignment_group_id</em> should be used,not both.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>assignment_group_id</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The id of the group that the change request is assigned to.</div>
+                        <div>Required if <em>state</em> value is <code>assess</code> or <code>authorize</code> or <code>scheduled</code> or <code>implement</code> or <code>review</code> or <code>closed</code>.</div>
+                        <div>Either one of the <em>assignment_group</em> or <em>assignment_group_id</em> should be used,not both.</div>
                 </td>
             </tr>
             <tr>

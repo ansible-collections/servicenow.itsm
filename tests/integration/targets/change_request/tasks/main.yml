@@ -412,3 +412,72 @@
     - ansible.builtin.assert:
         that:
           - result is not changed
+
+
+    # Test closing the change_request with assignment_group sys_id
+    - name: Create test change_request to be used in testing assignment_group sys_id
+      servicenow.itsm.change_request:
+        requested_by: admin
+        state: new
+        type: standard
+        template: Clear BGP sessions on a Cisco router - 1
+        priority: low
+        risk: low
+        impact: low
+      register: test_result
+      
+
+    - name: Update test change_request to scheduled
+      servicenow.itsm.change_request:
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        state: scheduled
+        assignment_group: network
+        priority: high
+        risk: high
+        impact: high
+
+
+    - name: Update change_request state to implement
+      servicenow.itsm.change_request:
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        state: implement
+   
+
+    - name: Update change_request state to review
+      servicenow.itsm.change_request:
+        requested_by: admin
+        number: "{{ test_result.record.number }}"
+        state: review
+      register: result
+
+    - ansible.builtin.debug:
+        var: result.record
+
+
+    - name: Close change_request using assignment_group sys_id
+      servicenow.itsm.change_request:
+        requested_by: admin
+        number: "{{ result.record.number }}"
+        state: closed
+        close_code: successful
+        assignment_group_id: "{{ result.record.assignment_group }}"
+        close_notes: "Closed using assignment_group_id"
+  
+
+    - name: Make sure change_request state was updated and is in closed state
+      servicenow.itsm.change_request_info:
+        number: "{{ result.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].state == "closed"
+
+
+    - name: Delete change_request 
+      servicenow.itsm.change_request:
+        requested_by: admin
+        number: "{{ result.records[0].number }}"
+        state: absent

@@ -5,6 +5,18 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ..module_utils.utils import get_mapper
+from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
+from ..module_utils import (
+    arguments,
+    attachment,
+    client,
+    errors,
+    table,
+    utils,
+    validation,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -65,7 +77,13 @@ options:
     type: str
   assignment_group:
     description:
-      - The group that the change request is assigned to.
+      - The name of the group that the change request is assigned to.
+      - Required if I(state) value is C(assess) or C(authorize) or
+        C(scheduled) or C(implement) or C(review) or C(closed).
+    type: str
+  assignment_group_id:
+    description:
+      - The sys_id of the group that the change request is assigned to.
       - Required if I(state) value is C(assess) or C(authorize) or
         C(scheduled) or C(implement) or C(review) or C(closed).
     type: str
@@ -199,25 +217,12 @@ EXAMPLES = """
 """
 
 
-from ansible.module_utils.basic import AnsibleModule
-
-from ..module_utils import (
-    arguments,
-    attachment,
-    client,
-    errors,
-    table,
-    utils,
-    validation,
-)
-from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
-from ..module_utils.utils import get_mapper
-
 DIRECT_PAYLOAD_FIELDS = (
     "state",
     "type",
     "requested_by",
     "assignment_group",
+    "assignment_group_id",
     "category",
     "priority",
     "risk",
@@ -232,7 +237,8 @@ DIRECT_PAYLOAD_FIELDS = (
 
 
 def ensure_absent(module, table_client, attachment_client):
-    mapper = get_mapper(module, "change_request_mapping", PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(module, "change_request_mapping",
+                        PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     change = table_client.get_record("change_request", query)
 
@@ -262,9 +268,16 @@ def validate_params(params, change_request=None):
             "Missing required parameters {0}".format(", ".join(missing))
         )
 
+    # Validate that assignment_group is set either by id or by name but not both
+    if params["assignment_group"] and params["assignment_group_id"]:
+        raise errors.ServiceNowError(
+            "Assignment group must be specified either by name or by sys_id, but not both."
+        )
+
 
 def ensure_present(module, table_client, attachment_client):
-    mapper = get_mapper(module, "change_request_mapping", PAYLOAD_FIELDS_MAPPING)
+    mapper = get_mapper(module, "change_request_mapping",
+                        PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "number")
     payload = build_payload(module, table_client)
     attachments = attachment.transform_metadata_list(
@@ -348,6 +361,12 @@ def build_payload(module, table_client):
         )
         payload["assignment_group"] = assignment_group["sys_id"]
 
+    if module.params["assignment_group_id"]:
+        assignment_group = table.find_assignment_group_by_sys_id(
+            table_client, module.params["assignment_group_id"]
+        )
+        payload["assignment_group"] = assignment_group["sys_id"]
+
     if module.params["template"]:
         standard_change_template = table.find_standard_change_template(
             table_client, module.params["template"]
@@ -386,6 +405,9 @@ def main():
             type="str",
         ),
         assignment_group=dict(
+            type="str",
+        ),
+        assignment_group_id=dict(
             type="str",
         ),
         category=dict(

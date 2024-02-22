@@ -1,3 +1,4 @@
 ---
 bugfixes:
   - change_request_task - remove duplicate option 'testing' from 'type' argument_spec.
+  - change_request_task - allow query assignment_group by sys_id (https://github.com/ansible-collections/servicenow.itsm/issues/295)
