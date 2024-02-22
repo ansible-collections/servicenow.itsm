@@ -5,18 +5,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-from ..module_utils.utils import get_mapper
-from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
-from ..module_utils import (
-    arguments,
-    attachment,
-    client,
-    errors,
-    table,
-    utils,
-    validation,
-)
-from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -216,6 +204,19 @@ EXAMPLES = """
     number: CHG0000001
 """
 
+
+from ..module_utils.utils import get_mapper
+from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
+from ..module_utils import (
+    arguments,
+    attachment,
+    client,
+    errors,
+    table,
+    utils,
+    validation,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 DIRECT_PAYLOAD_FIELDS = (
     "state",
