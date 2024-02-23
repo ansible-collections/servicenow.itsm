@@ -454,7 +454,7 @@ def main():
         ),
         other=dict(
             type="dict",
-        )
+        ),
     )
 
     module = AnsibleModule(
@@ -467,9 +467,7 @@ def main():
             ("state", "assess", ("assignment_group",)),
             ("on_hold", True, ("hold_reason",)),
         ],
-        mutually_exclusive=[
-            ("assignment_group", "assignment_group_id")
-        ],
+        mutually_exclusive=[("assignment_group", "assignment_group_id")],
     )
 
     try:

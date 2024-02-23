@@ -80,14 +80,14 @@ options:
   assignment_group:
     description:
       - The name of the group that the change task is assigned to.
-    type: str
       - Mutually exclusive with C(assignment_group_id).
+    type: str
   assignment_group_id:
     version_added: '2.4.0'
     description:
       - The id of the group that the change task is assigned to.
-    type: str
       - Mutually exclusive with C(assignment_group).
+    type: str
   short_description:
     description:
       - A summary of the task.
@@ -398,7 +398,7 @@ def main():
         ),
         other=dict(
             type="dict",
-        )
+        ),
     )
 
     module = AnsibleModule(
