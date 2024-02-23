@@ -68,12 +68,15 @@ options:
       - The name of the group that the change request is assigned to.
       - Required if I(state) value is C(assess) or C(authorize) or
         C(scheduled) or C(implement) or C(review) or C(closed).
+      - Mutually exclusive with C(assignment_group_id).
     type: str
   assignment_group_id:
+    version_added: '2.4.0'
     description:
       - The sys_id of the group that the change request is assigned to.
       - Required if I(state) value is C(assess) or C(authorize) or
         C(scheduled) or C(implement) or C(review) or C(closed).
+      - Mutually exclusive with C(assignment_group).
     type: str
   category:
     description:
@@ -268,12 +271,6 @@ def validate_params(params, change_request=None):
             "Missing required parameters {0}".format(", ".join(missing))
         )
 
-    # Validate that assignment_group is set either by id or by name but not both
-    if params["assignment_group"] and params["assignment_group_id"]:
-        raise errors.ServiceNowError(
-            "Assignment group must be specified either by name or by sys_id, but not both."
-        )
-
 
 def ensure_present(module, table_client, attachment_client):
     mapper = get_mapper(module, "change_request_mapping", PAYLOAD_FIELDS_MAPPING)
@@ -457,7 +454,7 @@ def main():
         ),
         other=dict(
             type="dict",
-        ),
+        )
     )
 
     module = AnsibleModule(
@@ -469,6 +466,9 @@ def main():
             ("state", "scheduled", ("assignment_group",)),
             ("state", "assess", ("assignment_group",)),
             ("on_hold", True, ("hold_reason",)),
+        ],
+        mutually_exclusive=[
+            ("assignment_group", "assignment_group_id")
         ],
     )
 

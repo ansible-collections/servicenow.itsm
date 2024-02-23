@@ -81,10 +81,13 @@ options:
     description:
       - The name of the group that the change task is assigned to.
     type: str
+      - Mutually exclusive with C(assignment_group_id).
   assignment_group_id:
+    version_added: '2.4.0'
     description:
       - The id of the group that the change task is assigned to.
     type: str
+      - Mutually exclusive with C(assignment_group).
   short_description:
     description:
       - A summary of the task.
@@ -221,12 +224,6 @@ def validate_params(params, change_task=None):
     if missing:
         raise errors.ServiceNowError(
             "Missing required parameters {0}".format(", ".join(missing))
-        )
-
-    # Validate that assignment_group is set either by id or by name but not both
-    if params["assignment_group"] and params["assignment_group_id"]:
-        raise errors.ServiceNowError(
-            "Assignment group must be specified either by name or by sys_id, but not both."
         )
 
 
@@ -401,7 +398,7 @@ def main():
         ),
         other=dict(
             type="dict",
-        ),
+        )
     )
 
     module = AnsibleModule(
@@ -414,6 +411,7 @@ def main():
         mutually_exclusive=[
             ("change_request_id", "change_request_number"),
             ("configuration_item_id", "configuration_item"),
+            ("assignment_group", "assignment_group_id"),
         ],
     )
 

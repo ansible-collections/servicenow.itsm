@@ -85,14 +85,6 @@ class TestValidateParams:
     def test_validate_params(self):
         change_request.validate_params(self.VALID_PARAMS)
 
-    def test_validate_params_assignment_group(self):
-        params = self.VALID_PARAMS.copy()
-        params["assignment_group"] = "Network"
-        params["assignment_group_id"] = "assignment_group_id"
-
-        with pytest.raises(errors.ServiceNowError):
-            change_request.validate_params(params)
-
 
 class TestEnsurePresent:
     def test_ensure_present_create_new(

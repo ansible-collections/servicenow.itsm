@@ -108,14 +108,6 @@ class TestValidateParams:
     def test_validate_params_on_hold(self):
         change_request_task.validate_params(self.VALID_PARAMS_HOLD)
 
-    def test_validate_params_assignment_group(self):
-        params = self.VALID_PARAMS.copy()
-        params["assignment_group"] = "Network"
-        params["assignment_group_id"] = "assignment_group_id"
-
-        with pytest.raises(errors.ServiceNowError):
-            change_request_task.validate_params(params)
-
 
 class TestEnsurePresent:
     def test_ensure_present_create_new(self, create_module, table_client):
