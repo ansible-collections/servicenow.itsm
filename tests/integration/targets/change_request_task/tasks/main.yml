@@ -473,5 +473,5 @@
     - name: Delete change_request 
       servicenow.itsm.change_request:
         requested_by: admin
-        number: "{{ change_request_task.record.number }}"
+        number: "{{ change_request_result.record.number }}"
         state: absent
