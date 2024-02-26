@@ -65,9 +65,18 @@ options:
     type: str
   assignment_group:
     description:
-      - The group that the change request is assigned to.
+      - The name of the group that the change request is assigned to.
       - Required if I(state) value is C(assess) or C(authorize) or
         C(scheduled) or C(implement) or C(review) or C(closed).
+      - Mutually exclusive with C(assignment_group_id).
+    type: str
+  assignment_group_id:
+    version_added: '2.4.0'
+    description:
+      - The sys_id of the group that the change request is assigned to.
+      - Required if I(state) value is C(assess) or C(authorize) or
+        C(scheduled) or C(implement) or C(review) or C(closed).
+      - Mutually exclusive with C(assignment_group).
     type: str
   category:
     description:
@@ -199,8 +208,8 @@ EXAMPLES = """
 """
 
 
-from ansible.module_utils.basic import AnsibleModule
-
+from ..module_utils.utils import get_mapper
+from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
 from ..module_utils import (
     arguments,
     attachment,
@@ -210,14 +219,14 @@ from ..module_utils import (
     utils,
     validation,
 )
-from ..module_utils.change_request import PAYLOAD_FIELDS_MAPPING
-from ..module_utils.utils import get_mapper
+from ansible.module_utils.basic import AnsibleModule
 
 DIRECT_PAYLOAD_FIELDS = (
     "state",
     "type",
     "requested_by",
     "assignment_group",
+    "assignment_group_id",
     "category",
     "priority",
     "risk",
@@ -348,6 +357,9 @@ def build_payload(module, table_client):
         )
         payload["assignment_group"] = assignment_group["sys_id"]
 
+    if module.params["assignment_group_id"]:
+        payload["assignment_group"] = module.params["assignment_group_id"]
+
     if module.params["template"]:
         standard_change_template = table.find_standard_change_template(
             table_client, module.params["template"]
@@ -386,6 +398,9 @@ def main():
             type="str",
         ),
         assignment_group=dict(
+            type="str",
+        ),
+        assignment_group_id=dict(
             type="str",
         ),
         category=dict(
@@ -452,6 +467,7 @@ def main():
             ("state", "assess", ("assignment_group",)),
             ("on_hold", True, ("hold_reason",)),
         ],
+        mutually_exclusive=[("assignment_group", "assignment_group_id")],
     )
 
     try:

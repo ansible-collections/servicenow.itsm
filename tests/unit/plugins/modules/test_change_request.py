@@ -66,7 +66,13 @@ class TestEnsureAbsent:
 
 
 class TestValidateParams:
-    VALID_PARAMS = dict(state="closed", close_code="successful", close_notes="Solved")
+    VALID_PARAMS = dict(
+        state="closed",
+        close_code="successful",
+        close_notes="Solved",
+        assignment_group=None,
+        assignment_group_id=None,
+    )
 
     @pytest.mark.parametrize("missing_field", ["close_code", "close_notes"])
     def test_validate_params_missing_field(self, missing_field):
@@ -91,6 +97,7 @@ class TestEnsurePresent:
                 type="normal",
                 requested_by=None,
                 assignment_group=None,
+                assignment_group_id=None,
                 category=None,
                 priority=None,
                 risk="low",
@@ -158,6 +165,7 @@ class TestEnsurePresent:
                 number="CHG0000001",
                 requested_by=None,
                 assignment_group=None,
+                assignment_group_id=None,
                 category=None,
                 priority=None,
                 risk=None,
@@ -233,6 +241,7 @@ class TestEnsurePresent:
                 number="CHG0000001",
                 requested_by=None,
                 assignment_group=None,
+                assignment_group_id=None,
                 category=None,
                 priority=None,
                 risk=None,
@@ -312,6 +321,7 @@ class TestBuildPayload:
                 template="Some template",
                 requested_by="admin",
                 assignment_group="Network",
+                assignment_group_id=None,
                 category=None,
                 priority=None,
                 risk="low",
@@ -358,6 +368,7 @@ class TestBuildPayload:
                 template=None,
                 requested_by=None,
                 assignment_group=None,
+                assignment_group_id=None,
                 category=None,
                 priority=None,
                 risk="low",

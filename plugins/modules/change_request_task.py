@@ -79,7 +79,14 @@ options:
     type: str
   assignment_group:
     description:
-      - The group that the change task is assigned to.
+      - The name of the group that the change task is assigned to.
+      - Mutually exclusive with C(assignment_group_id).
+    type: str
+  assignment_group_id:
+    version_added: '2.4.0'
+    description:
+      - The id of the group that the change task is assigned to.
+      - Mutually exclusive with C(assignment_group).
     type: str
   short_description:
     description:
@@ -169,11 +176,10 @@ EXAMPLES = """
     number: CTASK0000001
 """
 
-from ansible.module_utils.basic import AnsibleModule
-
-from ..module_utils import arguments, client, errors, table, utils, validation
-from ..module_utils.change_request_task import PAYLOAD_FIELDS_MAPPING
 from ..module_utils.utils import get_mapper
+from ..module_utils.change_request_task import PAYLOAD_FIELDS_MAPPING
+from ..module_utils import arguments, client, errors, table, utils, validation
+from ansible.module_utils.basic import AnsibleModule
 
 DIRECT_PAYLOAD_FIELDS = (
     "state",
@@ -311,6 +317,9 @@ def build_payload(module, table_client):
         )
         payload["assignment_group"] = assignment_group["sys_id"]
 
+    if module.params["assignment_group_id"]:
+        payload["assignment_group"] = module.params["assignment_group"]
+
     return payload
 
 
@@ -353,6 +362,9 @@ def main():
             type="str",
         ),
         assignment_group=dict(
+            type="str",
+        ),
+        assignment_group_id=dict(
             type="str",
         ),
         short_description=dict(
@@ -399,6 +411,7 @@ def main():
         mutually_exclusive=[
             ("change_request_id", "change_request_number"),
             ("configuration_item_id", "configuration_item"),
+            ("assignment_group", "assignment_group_id"),
         ],
     )
 

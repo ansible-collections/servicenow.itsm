@@ -100,9 +100,9 @@ def find_user(table_client, user_id):
     return table_client.get_record("sys_user", dict(user_name=user_id), must_exist=True)
 
 
-def find_assignment_group(table_client, assignment_id):
+def find_assignment_group(table_client, assignment_name):
     return table_client.get_record(
-        "sys_user_group", dict(name=assignment_id), must_exist=True
+        "sys_user_group", dict(name=assignment_name), must_exist=True
     )
 
 
