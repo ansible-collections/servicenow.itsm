@@ -105,6 +105,14 @@ EXAMPLES = r"""
         assigned_to: = abel.tuter
       - category: = hardware
         assigned_to: = bertie.luby
+
+- name: Retrieve configuration items using configuration items mapping
+  servicenow.itms.configuration_item_info:
+    configuration_item_mapping:
+      install_status:
+        1: installed
+      operational_status:
+        1: operational
 """
 
 RETURN = r"""
