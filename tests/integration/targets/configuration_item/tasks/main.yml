@@ -350,3 +350,30 @@
     - ansible.builtin.assert:
         that:
           - result.records[0].short_description != ""
+    
+    # Tests for #208
+    - name: Create a base configuration item
+      servicenow.itsm.configuration_item:
+        name: my-configuration-item
+        category: hardware
+        environment: development
+        install_status: on_order
+        operational_status: non_operational
+        attachments:
+          - path: targets/configuration_item/res/sample_file.txt
+      register: base_ci
+
+    - name: Get info and select only name
+      servicenow.itsm.configuration_item_info:
+        name: "{{ base_ci.record.name }}"
+        return_fields:
+          - name
+          - category
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records | length == 1
+          - ("name" in result.records[0].keys())
+          - ("category" in result.records[0].keys())
+          - ("environment" not in result.records[0].keys())
