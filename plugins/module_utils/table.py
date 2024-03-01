@@ -66,9 +66,10 @@ class TableClient:
 
     def get_record_by_sys_id(self, table, sys_id):
         response = self.client.get(_path(self.client.api_path, table, sys_id))
-        record = response.json["result"]
+        if "result" in response.json:
+            return response.json["result"]
 
-        return record
+        return None
 
     def create_record(self, table, payload, check_mode, query=None):
         if check_mode:
