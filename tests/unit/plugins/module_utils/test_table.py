@@ -159,7 +159,7 @@ class TestTableGetRecordBySysId:
         )
         t = table.TableClient(client)
 
-        record = t.get_record_by_sys_id("my_table", "sys_id", True)
+        record = t.get_record_by_sys_id("my_table", "sys_id", must_exist=True)
 
         assert dict(a=3, b="sys_id") == record
         client.get.assert_called_with("api/now/table/my_table/sys_id")
