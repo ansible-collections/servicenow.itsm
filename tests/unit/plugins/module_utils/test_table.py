@@ -182,7 +182,7 @@ class TestTableGetRecordBySysId:
         t = table.TableClient(client)
 
         with pytest.raises(errors.ServiceNowError, match="No"):
-            t.get_record_by_sys_id("my_table", "sys_id", True)
+            t.get_record_by_sys_id("my_table", "sys_id", must_exist=True)
 
 
 class TestTableCreateRecord:
