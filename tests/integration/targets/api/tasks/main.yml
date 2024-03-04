@@ -12,7 +12,7 @@
         query_params:
           sysparm_input_display_value: true
         data:
-          user_name: "demo_username"
+          user_name: "{{ 'demo_username_' + lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
           user_password: "demo_password"
           first_name: "first_name"
           last_name: Demouser
