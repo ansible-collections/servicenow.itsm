@@ -281,7 +281,9 @@ from ..module_utils.api import (
 
 
 def update_resource(module, table_client):
-    record_old = table_client.get_record_by_sys_id(table_name(module), get_sys_id(module))
+    record_old = table_client.get_record_by_sys_id(
+        table_name(module), get_sys_id(module)
+    )
     if record_old is None:
         return False, None, dict(before=None, after=None)
     record_new = table_client.update_record(
