@@ -275,14 +275,13 @@ from ..module_utils.api import (
     FIELD_SYS_ID,
     FIELD_TEMPLATE,
     field_present,
-    get_query_by_sys_id,
     table_name,
+    get_sys_id,
 )
 
 
 def update_resource(module, table_client):
-    query = get_query_by_sys_id(module)
-    record_old = table_client.get_record(table_name(module), query)
+    record_old = table_client.get_record_by_sys_id(table_name(module), get_sys_id(module))
     if record_old is None:
         return False, None, dict(before=None, after=None)
     record_new = table_client.update_record(
@@ -308,8 +307,7 @@ def create_resource(module, table_client):
 
 
 def delete_resource(module, table_client):
-    query = get_query_by_sys_id(module)
-    record = table_client.get_record(table_name(module), query)
+    record = table_client.get_record_by_sys_id(table_name(module), get_sys_id(module))
     if record is None:
         return False, None, dict(before=None, after=None)
     table_client.delete_record(table_name(module), record, module.check_mode)
