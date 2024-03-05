@@ -305,3 +305,9 @@ releases:
     - client_validate_certs.yaml
     - release_2_3_0.yml
     release_date: '2023-07-25'
+  2.3.1:
+    changes:
+      minor_changes:
+      - Added option to allow changing sysparm_limit for table query
+    fragments:
+    - sysparm_limit.yml
