@@ -153,6 +153,37 @@ class TestTableGetRecordBySysId:
         assert dict(a=3, b="sys_id") == record
         client.get.assert_called_with("api/now/table/my_table/sys_id")
 
+    def test_get_record_by_sys_id_must_exists(self, client):
+        client.get.return_value = Response(
+            200, '{"result": {"a": 3, "b": "sys_id"}}', {"X-Total-Count": "1"}
+        )
+        t = table.TableClient(client)
+
+        record = t.get_record_by_sys_id("my_table", "sys_id", must_exist=True)
+
+        assert dict(a=3, b="sys_id") == record
+        client.get.assert_called_with("api/now/table/my_table/sys_id")
+
+    def test_get_record_by_sys_id_no_record(self, client):
+        client.get.return_value = Response(
+            404, '{"error": {"message": "no record found"}}', {}
+        )
+        t = table.TableClient(client)
+
+        record = t.get_record_by_sys_id("my_table", "sys_id")
+
+        assert not record
+        client.get.assert_called_with("api/now/table/my_table/sys_id")
+
+    def test_get_record_by_sys_id_no_record_must_exists(self, client):
+        client.get.return_value = Response(
+            404, '{"error": {"message": "no record found"}}', {}
+        )
+        t = table.TableClient(client)
+
+        with pytest.raises(errors.ServiceNowError, match="No"):
+            t.get_record_by_sys_id("my_table", "sys_id", must_exist=True)
+
 
 class TestTableCreateRecord:
     def test_normal_mode(self, client):

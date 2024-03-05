@@ -64,9 +64,14 @@ class TableClient:
 
         return records[0] if records else None
 
-    def get_record_by_sys_id(self, table, sys_id):
+    def get_record_by_sys_id(self, table, sys_id, must_exist=False):
         response = self.client.get(_path(self.client.api_path, table, sys_id))
-        record = response.json["result"]
+
+        record = response.json.get("result", None)
+        if must_exist and not record:
+            raise errors.ServiceNowError(
+                "No {0} records match the sys_id {1}.".format(table, sys_id)
+            )
 
         return record
 
