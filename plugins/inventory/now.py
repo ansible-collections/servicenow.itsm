@@ -148,7 +148,7 @@ options:
       - Changing the query batch size
       - If not set, default to 1000
     type: int
-    version_added: 2.3.1
+    version_added: 2.3.0
 
 """
 
@@ -525,9 +525,9 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
 
         sysparm_limit = self.get_option("sysparm_limit")
         if sysparm_limit:
-          table_client = TableClient(client, sysparm_limit)
+            table_client = TableClient(client, sysparm_limit)
         else:
-          table_client = TableClient(client)
+            table_client = TableClient(client)
 
         table = self.get_option("table")
         name_source = self.get_option("inventory_hostname_source")
