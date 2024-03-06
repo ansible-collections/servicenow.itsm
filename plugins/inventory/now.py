@@ -148,7 +148,7 @@ options:
       - Changing the query batch size
       - If not set, default to 1000
     type: int
-    version_added: 2.3.0
+    version_added: 2.4.0
 
 """
 
