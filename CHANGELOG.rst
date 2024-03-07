@@ -5,6 +5,27 @@ servicenow.itsm Release Notes
 .. contents:: Topics
 
 
+v2.4.0
+======
+
+Minor Changes
+-------------
+
+- Updated release script for servicenow collection.
+- api - added custom headers and api path to the given request (https://github.com/ansible-collections/servicenow.itsm/pull/239).
+- use get_record_by_sys_id instead of get_record in methods update, delete (https://github.com/ansible-collections/servicenow.itsm/pull/307).
+
+Bugfixes
+--------
+
+- change_request - allow query assignment_group by sys_id (https://github.com/ansible-collections/servicenow.itsm/issues/295)
+- change_request_task - allow query assignment_group by sys_id (https://github.com/ansible-collections/servicenow.itsm/issues/295)
+- change_request_task - remove duplicate option 'testing' from 'type' argument_spec.
+- configuration_item_info - allow user to specify limited return fields for the specified configuration item (https://github.com/ansible-collections/servicenow.itsm/pull/208).
+- incident - allow incident_mapping for close_code parameter.
+- now - added missing SN_SYSPARM_QUERY environment variable (https://github.com/ansible-collections/servicenow.itsm/issues/293).
+- table_client - Fix 'KeyError' exception when fetching records by sys_id and add `must_have` arguments (https://github.com/ansible-collections/servicenow.itsm/pull/306)
+
 v2.3.0
 ======
 
