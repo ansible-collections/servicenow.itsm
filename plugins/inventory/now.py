@@ -146,8 +146,8 @@ options:
   sysparm_limit:
     description:
       - Control the maximum number of records returned in a single query.
-      - If not set, default to 1000
     type: int
+    default: 1000
     version_added: 2.4.0
 
 """
