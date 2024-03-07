@@ -1,3 +1,0 @@
----
-bugfixes:
-  - configuration_item_info - allow user to specify limited return fields for the specified configuration item (https://github.com/ansible-collections/servicenow.itsm/pull/208).

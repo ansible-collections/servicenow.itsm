@@ -1,3 +1,0 @@
----
-bugfixes:
-  - table_client - Fix 'KeyError' exception when fetching records by sys_id and add `must_have` arguments (https://github.com/ansible-collections/servicenow.itsm/pull/306)

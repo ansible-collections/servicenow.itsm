@@ -1,2 +1,0 @@
-minor_changes:
-  - api - added custom headers and api path to the given request (https://github.com/ansible-collections/servicenow.itsm/pull/239).
