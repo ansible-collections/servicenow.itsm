@@ -43,7 +43,7 @@ class TestUpdateResource:
             )
         )
 
-        table_client.get_record.return_value = None
+        table_client.get_record_by_sys_id.return_value = None
 
         result = api.run(module, table_client)
 
@@ -60,7 +60,7 @@ class TestUpdateResource:
             )
         )
 
-        table_client.get_record.return_value = dict(
+        table_client.get_record_by_sys_id.return_value = dict(
             number="INC0000001",
             short_description="Test incident",
             impact="3",
@@ -230,7 +230,7 @@ class TestDeleteResource:
             )
         )
 
-        table_client.get_record.return_value = None
+        table_client.get_record_by_sys_id.return_value = None
 
         result = api.run(module, table_client)
 
@@ -246,7 +246,7 @@ class TestDeleteResource:
             )
         )
 
-        table_client.get_record.return_value = dict(
+        table_client.get_record_by_sys_id.return_value = dict(
             state="1",
             number="INC0000001",
             short_description="Test incident",

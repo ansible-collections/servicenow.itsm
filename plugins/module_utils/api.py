@@ -68,7 +68,13 @@ def table_name(module):
 
 
 def get_query_by_sys_id(module):
+    """Deprecated in v2.4.0."""
     return dict(sys_id=module.params[FIELD_SYS_ID])
+
+
+def get_sys_id(module):
+    """Return the sys_id from module's parameters"""
+    return module.params[FIELD_SYS_ID]
 
 
 def field_present(module, field):
