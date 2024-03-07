@@ -145,7 +145,7 @@ options:
     version_added: 2.0.0
   sysparm_limit:
     description:
-      - Changing the query batch size
+      - Control the maximum number of records returned in a single query.
       - If not set, default to 1000
     type: int
     version_added: 2.4.0
