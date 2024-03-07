@@ -1,3 +1,0 @@
----
-bugfixes:
-  - change_request_task - remove duplicate option 'testing' from 'type' argument_spec.
