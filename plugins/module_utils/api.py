@@ -32,6 +32,7 @@ FIELD_DATA = "data"
 FIELD_TEMPLATE = "template"
 FIELD_DATA_RENDERED = "data_rendered"
 FIELD_QUERY_PARAMS = "query_params"
+FIELD_ATTRIBUTES_NAME = "attributes"
 
 POSSIBLE_FILTER_PARAMETERS = [
     FIELD_QUERY_NAME,
@@ -79,3 +80,12 @@ def get_sys_id(module):
 
 def field_present(module, field):
     return field in module.params and module.params[field]
+
+
+def get_parent_url(api_path, parent_sys_id):
+    """
+    Returns the parent url from a subresource api path
+    """
+    if api_path.find(parent_sys_id) == -1:
+        return api_path
+    return api_path.split(parent_sys_id)[0]

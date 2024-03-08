@@ -275,6 +275,7 @@ from ..module_utils.api import (
     FIELD_SYS_ID,
     FIELD_TEMPLATE,
     field_present,
+<<<<<<< Updated upstream
     table_name,
     get_sys_id,
 )
@@ -284,6 +285,16 @@ def update_resource(module, table_client):
     record_old = table_client.get_record_by_sys_id(
         table_name(module), get_sys_id(module)
     )
+=======
+    get_sys_id,
+    resource_name,
+    get_parent_url,
+)
+
+
+def update_resource(module, client):
+    record_old = client.get_record_by_sys_id(resource_name(module), get_sys_id(module))
+>>>>>>> Stashed changes
     if record_old is None:
         return False, None, dict(before=None, after=None)
     record_new = table_client.update_record(
@@ -308,11 +319,33 @@ def create_resource(module, table_client):
     return True, new, dict(before=None, after=new)
 
 
+<<<<<<< Updated upstream
 def delete_resource(module, table_client):
     record = table_client.get_record_by_sys_id(table_name(module), get_sys_id(module))
     if record is None:
         return False, None, dict(before=None, after=None)
     table_client.delete_record(table_name(module), record, module.check_mode)
+=======
+def delete_resource(module, client):
+    if field_present(module, "parent_sys_id"):
+        parent_sys_id = module.params["parent_sys_id"]
+        parent_record = client.get_record_by_sys_id(
+            get_parent_url(resource_name(module), parent_sys_id), parent_sys_id)
+        if parent_record is None:
+            return False, None, dict(before=None, after=None)
+
+        client.delete_record_by_sys_id(resource_name(module), get_sys_id(module))
+        # get the parent record again.
+        new_parent_record = client.get_record_by_sys_id(
+            get_parent_url(resource_name(module), parent_sys_id), parent_sys_id)
+        return True, new_parent_record, dict(before=parent_record, after=new_parent_record)
+
+    record = client.get_record_by_sys_id(resource_name(module), get_sys_id(module))
+    if record is None:
+        return False, None, dict(before=None, after=None)
+
+    client.delete_record(resource_name(module), record, module.check_mode)
+>>>>>>> Stashed changes
     return True, None, dict(before=record, after=None)
 
 
@@ -332,7 +365,13 @@ def main():
             "instance",
             "sys_id",  # necessary for deleting and patching a resource, not relevant if creating a resource
         ),
+<<<<<<< Updated upstream
         resource=dict(type="str", required=True),
+=======
+        resource=dict(type="str"),
+        api_path=dict(type="str"),
+        parent_sys_id=dict(type="str"),
+>>>>>>> Stashed changes
         action=dict(
             type="str",
             required=True,
