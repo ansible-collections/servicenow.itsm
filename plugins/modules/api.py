@@ -34,8 +34,16 @@ options:
   resource:
     description:
       - The name of the table in which a record is to be created, updated or deleted from.
+      - Mutually exclusive with C(api_path).
+      - Require one of C(resource) or C(api_path)
     type: str
-    required: true
+  api_path:
+    version_added: "2.5.0"
+    description:
+      - The path of the service which a record is to be created, updated or deleted from.
+      - Mutually exclusive with C(resource).
+      - Require one of C(resource) or C(api_path)
+    type: str
   action:
     description: The action to perform.
     type: str
@@ -160,6 +168,16 @@ EXAMPLES = """
     action: delete
     sys_id: b82adae197201110949235dfe153afec
   register: result
+
+- name: Create a record in cmdb service using api_path
+  servicenow.itsm.api:
+    api_path: api/now/cmdb/instance/cmdb_ci_linux_server
+    action: post
+    data:
+      attributes:
+        name: "linux99"
+        firewall_status: "intranet"
+    source: "ServiceNow"
 """
 
 RETURN = """
@@ -285,7 +303,7 @@ def update_resource(module, client):
     if record_old is None:
         return False, None, dict(before=None, after=None)
     record_new = client.update_record(
-        table=resource_name(module),
+        resource_name(module),
         record=record_old,
         payload=module.params.get(FIELD_DATA, dict()),
         check_mode=module.check_mode,
@@ -298,7 +316,7 @@ def create_resource(module, client):
     # At the moment, creating a resource is not idempotent (meaning: If a record with such data as specified in
     # module.params["data"] already exists, such resource will get created once again).
     new = client.create_record(
-        table=resource_name(module),
+        resource_name(module),
         payload=module.params.get(FIELD_DATA, dict()),
         check_mode=module.check_mode,
         query=module.params.get(FIELD_QUERY_PARAMS, dict()),
@@ -351,7 +369,8 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=arg_spec,
-        mutually_exclusive=[(FIELD_DATA, FIELD_TEMPLATE)],
+        mutually_exclusive=[(FIELD_DATA, FIELD_TEMPLATE), ("resource", "api_path")],
+        required_one_of=[("resource", "api_path")],
         required_if=[
             ("action", "patch", ("sys_id",)),
             ("action", "delete", ("sys_id",)),

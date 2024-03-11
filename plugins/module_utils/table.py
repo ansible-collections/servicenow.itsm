@@ -7,11 +7,8 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from . import errors
-
-
-def _path(api_path, table, *subpaths):
-    return "/".join(api_path + ("table", table) + subpaths)
+import itertools
+from . import snow
 
 
 def _query(original=None):
@@ -20,69 +17,27 @@ def _query(original=None):
     return original
 
 
-class TableClient:
+class TableClient(snow.SNowClient):
     def __init__(self, client, batch_size=1000):
-        # 1000 records is default batch size for ServiceNow REST API, so we also use it
-        # as a default.
-        self.client = client
-        self.batch_size = batch_size
+        super(TableClient, self).__init__(client, batch_size)
 
     def list_records(self, table, query=None):
-        base_query = _query(query)
-        base_query["sysparm_limit"] = self.batch_size
-
-        offset = 0
-        total = 1  # Dummy value that ensures loop executes at least once
-        result = []
-
-        while offset < total:
-            response = self.client.get(
-                _path(self.client.api_path, table),
-                query=dict(base_query, sysparm_offset=offset),
-            )
-
-            result.extend(response.json["result"])
-            total = int(response.headers["x-total-count"])
-            offset += self.batch_size
-
-        return result
+        return self.list(self.path(table), query)
 
     def get_record(self, table, query, must_exist=False):
-        records = self.list_records(table, query)
-
-        if len(records) > 1:
-            raise errors.ServiceNowError(
-                "{0} {1} records match the {2} query.".format(
-                    len(records), table, query
-                )
-            )
-
-        if must_exist and not records:
-            raise errors.ServiceNowError(
-                "No {0} records match the {1} query.".format(table, query)
-            )
-
-        return records[0] if records else None
+        return self.get(self.path(table), query, must_exist)
 
     def get_record_by_sys_id(self, table, sys_id, must_exist=False):
-        response = self.client.get(_path(self.client.api_path, table, sys_id))
-
-        record = response.json.get("result", None)
-        if must_exist and not record:
-            raise errors.ServiceNowError(
-                "No {0} records match the sys_id {1}.".format(table, sys_id)
-            )
-
-        return record
+        return self.get_by_sys_id(self.path(table), sys_id, must_exist)
 
     def create_record(self, table, payload, check_mode, query=None):
         if check_mode:
             # Approximate the result using the payload.
             return payload
 
-        return self.client.post(
-            _path(self.client.api_path, table), payload, query=_query(query)
-        ).json["result"]
+        return self.client.post(self.path(table), payload, query=_query(query)).json[
+            "result"
+        ]
 
     def update_record(self, table, record, payload, check_mode, query=None):
         if check_mode:
@@ -90,14 +45,17 @@ class TableClient:
             return dict(record, **payload)
 
         return self.client.patch(
-            _path(self.client.api_path, table, record["sys_id"]),
+            self.path(table, record["sys_id"]),
             payload,
             query=_query(query),
         ).json["result"]
 
     def delete_record(self, table, record, check_mode):
         if not check_mode:
-            self.client.delete(_path(self.client.api_path, table, record["sys_id"]))
+            self.delete(self.path(table), record["sys_id"])
+
+    def path(self, table, *subpaths):
+        return "/".join(["api/now/table", table] + list(itertools.chain(subpaths)))
 
 
 def find_user(table_client, user_id):
