@@ -25,6 +25,7 @@ description:
 version_added: 1.0.0
 extends_documentation_fragment:
   - ansible.builtin.constructed
+  - inventory_cache
 notes:
   - Query feature and constructed groups were added in version 1.2.0.
 options:
@@ -326,6 +327,7 @@ from ansible.inventory.group import to_safe_group_name as orig_safe
 from ansible.plugins.inventory import (
     BaseInventoryPlugin,
     Constructable,
+    Cacheable,
     to_safe_group_name,
 )
 from ansible.utils.vars import combine_vars
@@ -391,7 +393,7 @@ class ConstructableWithLookup(Constructable):
         )
 
 
-class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
+class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
     NAME = "servicenow.itsm.now"
 
     # Constructable methods use the _sanitize_group_name class method to filter out
@@ -508,6 +510,19 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
         super(InventoryModule, self).parse(inventory, loader, path)
 
         self._read_config_data(path)
+        self.cache_key = self.get_cache_key(path)
+        suffix = self.get_option("query") or self.get_option("sysparm_query") or ""
+        cache_sub_key = "/".join(
+            [
+                self._get_instance()["host"].rstrip("/"),
+                "table",
+                self.get_option("table"),
+                suffix,
+            ]
+        )
+
+        self.use_cache = self.get_option("cache") and cache
+        self.update_cache = self.get_option("cache") and not cache
 
         try:
             client = Client(**self._get_instance())
@@ -531,37 +546,50 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
                 "exclusive."
             )
 
-        # TODO: Insert caching here once we remove deprecated functionality
-        records = fetch_records(
-            table_client,
-            table,
-            query or sysparm_query,
-            is_encoded_query=bool(sysparm_query),
-        )
+        records = []
 
-        referenced_columns = [x for x in columns if "." in x]
-        if referenced_columns:
-            referenced_records = fetch_records(
+        if not self.update_cache:
+            try:
+                records = self._cache[self.cache_key][cache_sub_key]
+            except KeyError:
+                pass
+
+        if not records:
+            if self.cache_key not in self._cache:
+                self._cache[self.cache_key] = {path: ""}
+
+            records = fetch_records(
                 table_client,
                 table,
                 query or sysparm_query,
-                fields=referenced_columns + ["sys_id"],
                 is_encoded_query=bool(sysparm_query),
             )
 
-            referenced_dict = dict((x["sys_id"], x) for x in referenced_records)
-            for record in records:
-                referenced = referenced_dict.get(record["sys_id"], None)
-                if referenced:
-                    referenced.pop("sys_id")
-                    for key, value in referenced.items():
-                        record[key] = value
+            referenced_columns = [x for x in columns if "." in x]
+            if referenced_columns:
+                referenced_records = fetch_records(
+                    table_client,
+                    table,
+                    query or sysparm_query,
+                    fields=referenced_columns + ["sys_id"],
+                    is_encoded_query=bool(sysparm_query),
+                )
 
-        if enhanced:
-            rel_records = fetch_records(
-                table_client, REL_TABLE, REL_QUERY, fields=REL_FIELDS
-            )
-            enhance_records_with_rel_groups(records, rel_records)
+                referenced_dict = dict((x["sys_id"], x) for x in referenced_records)
+                for record in records:
+                    referenced = referenced_dict.get(record["sys_id"], None)
+                    if referenced:
+                        referenced.pop("sys_id")
+                        for key, value in referenced.items():
+                            record[key] = value
+
+            if enhanced:
+                rel_records = fetch_records(
+                    table_client, REL_TABLE, REL_QUERY, fields=REL_FIELDS
+                )
+                enhance_records_with_rel_groups(records, rel_records)
+
+            self._cache[self.cache_key] = {cache_sub_key: records}
 
         self.fill_constructed(
             records,
