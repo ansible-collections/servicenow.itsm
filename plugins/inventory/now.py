@@ -148,7 +148,7 @@ options:
       - Control the maximum number of records returned in a single query.
     type: int
     default: 1000
-    version_added: 2.4.0
+    version_added: 2.5.0
 
 """
 
@@ -525,7 +525,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
 
         sysparm_limit = self.get_option("sysparm_limit")
         if sysparm_limit:
-            table_client = TableClient(client, sysparm_limit)
+            table_client = TableClient(client, batch_size=sysparm_limit)
         else:
             table_client = TableClient(client)
 
