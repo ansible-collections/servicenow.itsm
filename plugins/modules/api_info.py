@@ -37,7 +37,7 @@ options:
     description:
       - The path of the service which a record is to be created, updated or deleted from.
       - Mutually exclusive with C(resource).
-      - Require one of C(resource) or C(api_path)
+      - Require one of C(resource) or C(api_path).
     type: str
   sysparm_query:
     description:
