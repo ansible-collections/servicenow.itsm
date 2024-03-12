@@ -30,7 +30,7 @@ options:
     description:
       - The name of the table in which a record is to be created, updated or deleted from.
       - Mutually exclusive with C(api_path).
-      - Require one of C(resource) or C(api_path)
+      - Require one of C(resource) or C(api_path).
     type: str
   api_path:
     version_added: "2.5.0"
