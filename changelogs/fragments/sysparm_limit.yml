@@ -1,0 +1,2 @@
+minor_changes:
+  - Added option to allow changing sysparm_limit for table query (https://github.com/ansible-collections/servicenow.itsm/pull/309).

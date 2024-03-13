@@ -143,6 +143,13 @@ options:
     env:
       - name: SN_SYSPARM_QUERY
     version_added: 2.0.0
+  sysparm_limit:
+    description:
+      - Control the maximum number of records returned in a single query.
+    type: int
+    default: 1000
+    version_added: 2.5.0
+
 """
 
 EXAMPLES = r"""
@@ -516,7 +523,11 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup):
 
         enhanced = self.get_option("enhanced")
 
-        table_client = TableClient(client)
+        sysparm_limit = self.get_option("sysparm_limit")
+        if sysparm_limit:
+            table_client = TableClient(client, batch_size=sysparm_limit)
+        else:
+            table_client = TableClient(client)
 
         table = self.get_option("table")
         name_source = self.get_option("inventory_hostname_source")
