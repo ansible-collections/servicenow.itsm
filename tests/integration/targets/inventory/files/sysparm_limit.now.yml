@@ -10,4 +10,5 @@ compose:
   ansible_host: ip_address
 
 sysparm_query: nameSTARTSWITHmy-vm-
+sysparm_limit: 5
 ...
