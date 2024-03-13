@@ -105,7 +105,7 @@ class GenericClient(snow.SNowClient):
         """
         Returns the sys_id from the record.
 
-        Different services has differnt record structure, so we need to take into
+        Different services have different record structures, so we need to take into
         account all the different records.
         """
         if FIELD_SYS_ID in record:
