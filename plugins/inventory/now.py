@@ -28,6 +28,7 @@ extends_documentation_fragment:
   - inventory_cache
 notes:
   - Query feature and constructed groups were added in version 1.2.0.
+  - Caching feature added in version 2.5.0.
 options:
   plugin:
     description:
