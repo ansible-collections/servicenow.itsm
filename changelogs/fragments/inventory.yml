@@ -1,3 +1,3 @@
 ---
 minor_changes:
-  - now - add caching(https://github.com/ansible-collections/servicenow.itsm/pull/315).
+  - now - add cache support for the inventory plugin (https://github.com/ansible-collections/servicenow.itsm/pull/315).
