@@ -20,7 +20,7 @@ DEFAULT_HEADERS = dict(Accept="application/json")
 
 
 class Response:
-    def __init__(self, status, data, headers=None):
+    def __init__(self, status, data, headers=None, json_decoder_hook=None):
         self.status = status
         self.data = data
         # [('h1', 'v1'), ('H2', 'V2')] -> {'h1': 'v1', 'h2': 'V2'}
@@ -29,12 +29,13 @@ class Response:
         )
 
         self._json = None
+        self.json_decoder_hook = json_decoder_hook
 
     @property
     def json(self):
         if self._json is None:
             try:
-                self._json = json.loads(self.data)
+                self._json = json.loads(self.data, object_hook=self.json_decoder_hook)
             except ValueError:
                 raise ServiceNowError(
                     "Received invalid JSON response: {0}".format(self.data)
@@ -57,6 +58,7 @@ class Client:
         api_path="api/now",
         timeout=None,
         validate_certs=None,
+        json_decoder_hook=None,
     ):
         if not (host or "").startswith(("https://", "http://")):
             raise ServiceNowError(
@@ -77,6 +79,7 @@ class Client:
         self.access_token = access_token
         self.timeout = timeout
         self.validate_certs = validate_certs
+        self.json_decoder_hook = json_decoder_hook
 
         self._auth_header = None
         self._client = Request()
@@ -158,8 +161,15 @@ class Client:
             raise ServiceNowError(e.reason)
 
         if PY2:
-            return Response(raw_resp.getcode(), raw_resp.read(), raw_resp.info())
-        return Response(raw_resp.status, raw_resp.read(), raw_resp.headers)
+            return Response(
+                raw_resp.getcode(),
+                raw_resp.read(),
+                raw_resp.info(),
+                self.json_decoder_hook,
+            )
+        return Response(
+            raw_resp.status, raw_resp.read(), raw_resp.headers, self.json_decoder_hook
+        )
 
     def request(self, method, path, query=None, data=None, headers=None, bytes=None):
         # Make sure we only have one kind of payload
