@@ -5,7 +5,7 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
-    - name: create user (object with encryped fields)
+    - name: create user (object with encrypted fields)
       servicenow.itsm.api:
         resource: sys_user
         action: post

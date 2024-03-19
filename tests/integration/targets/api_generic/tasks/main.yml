@@ -5,7 +5,7 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
-    - name: Retreive all ci linux server cmdb
+    - name: Retrieve all ci linux server cmdb
       servicenow.itsm.api_info:
         api_path: "api/now/cmdb/instance/cmdb_ci_linux_server"
       register: initial
