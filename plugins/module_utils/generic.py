@@ -18,7 +18,7 @@ class GenericClient(snow.SNowClient):
     def list_records(self, api_path, query=None):
         """
         List records from api_path.
-        The method is retreiving all the records by making multiple GET requests to server.
+        The method is retrieving all the records by making multiple GET requests to server.
 
         api_path    -- full path (ex: "api/now/cmdb/instance/cmdb_ci_linux_server"
         query       -- query in SNow format

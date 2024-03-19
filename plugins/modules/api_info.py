@@ -115,7 +115,7 @@ EXAMPLES = """
     no_count: false
   register: result
 
-- name: Retreive all linux servers
+- name: Retrieve all linux servers
   servicenow.itsm.api_info:
     api_path: api/now/cmdb/instance/cmdb_ci_linux_server
 """

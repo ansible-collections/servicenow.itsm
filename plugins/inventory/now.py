@@ -389,7 +389,7 @@ class ConstructableWithLookup(Constructable):
         else:
             t.available_variables = variables
 
-        """ Only change that we have overriden is that we do not disable lookups"""
+        """ Only change that we have overridden is that we do not disable lookups"""
         return t.template(
             "%s%s%s"
             % (

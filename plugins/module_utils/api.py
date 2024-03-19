@@ -71,7 +71,7 @@ def table_name(module):
 
 def resource_name(module):
     """
-    Return either the api_path or the table name from modules's parameters
+    Return either the api_path or the table name from modules' parameters
     """
     return module.params["resource"] or module.params["api_path"]
 

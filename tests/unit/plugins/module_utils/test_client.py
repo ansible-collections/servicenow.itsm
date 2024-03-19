@@ -50,11 +50,11 @@ class TestResponseInit:
         resp = client.Response(
             200,
             '{"a": ["b", "c"], "d": 1}',
-            headers=[("Content-type", "applcation/json")],
+            headers=[("Content-type", "application/json")],
         )
 
         assert resp.status == 200
-        assert resp.headers == {"content-type": "applcation/json"}
+        assert resp.headers == {"content-type": "application/json"}
         assert resp.data == '{"a": ["b", "c"], "d": 1}'
         assert resp.json == {"a": ["b", "c"], "d": 1}
 
@@ -72,7 +72,7 @@ class TestResponseInit:
         resp = client.Response(
             200,
             '{"a": ["b", "c"], "d": 1}',
-            headers=[("Content-type", "applcation/json")],
+            headers=[("Content-type", "application/json")],
         )
         resp.json
         resp.json
