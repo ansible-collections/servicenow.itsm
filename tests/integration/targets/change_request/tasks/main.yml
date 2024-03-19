@@ -481,3 +481,66 @@
         requested_by: admin
         number: "{{ result.records[0].number }}"
         state: absent
+
+
+    - name: Update category choices
+      servicenow.itsm.api:
+        resource: sys_choice
+        action: post
+        data:
+          name: change_request
+          element: category
+          value: 1
+          label: hardware
+      register: change_request_category
+
+    - set_fact:
+        solved_remotely_choice: "{{ change_request_category.record.sys_id }}"
+
+    - name: Create change_request 
+      servicenow.itsm.change_request:
+        requested_by: admin
+        state: new
+        type: standard
+        template: Clear BGP sessions on a Cisco router - 1
+        priority: low
+        risk: low
+        impact: low
+        short_description: some short description
+        category: Software
+      register: chg_request
+
+    - ansible.builtin.assert:
+        that:
+          - chg_request is changed
+          - chg_request.record.state == "new"
+          - chg_request.record.type == "standard"
+          - chg_request.record.priority == "low"
+          - chg_request.record.risk == "low"
+          - chg_request.record.impact == "low"
+          - chg_request.record.category == "Software"
+    
+    - name: Update change_request with new option
+      servicenow.itsm.change_request:
+        number: "{{ chg_request.record.number }}"
+        category: hardware
+    
+    - name: Get change_request 
+      servicenow.itsm.change_request_info:
+        number: "{{ chg_request.record.number }}"
+      register: result
+
+    - ansible.builtin.assert:
+        that:
+          - result.records[0].category == "hardware"
+    
+    - name: Delete change_request
+      servicenow.itsm.change_request:
+        sys_id: "{{ chg_request.record.sys_id }}"
+        state: absent
+    
+    - name: Delete change_request choices
+      servicenow.itsm.api:
+        resource: sys_choice
+        action: delete
+        sys_id: "{{ solved_remotely_choice }}"

@@ -81,8 +81,10 @@ options:
   category:
     description:
       - The category of the change request.
-    choices: [ hardware, software, service, system_software, aplication_software,
-               network, telecom, documentation, other ]
+      - Default choices are C(hardware), C(software), C(service), C(system_software), C(aplication_software),
+               C(network), C(telecom), C(documentation), C(other).
+      - One can override them by setting I(change_request_mapping.category).
+      - Hard-coded choices for C(category) were removed in 2.5.0.
     type: str
   priority:
     description:
@@ -405,17 +407,6 @@ def main():
         ),
         category=dict(
             type="str",
-            choices=[
-                "hardware",
-                "software",
-                "service",
-                "system_software",
-                "aplication_software",
-                "network",
-                "telecom",
-                "documentation",
-                "other",
-            ],
         ),
         priority=dict(
             type="str",

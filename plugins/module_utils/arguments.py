@@ -30,6 +30,7 @@ CHANGE_REQUEST_MAPPING_SPEC = dict(
         impact=dict(type="dict"),
         urgency=dict(type="dict"),
         state=dict(type="dict"),
+        category=dict(type="dict"),
     ),
 )
 
