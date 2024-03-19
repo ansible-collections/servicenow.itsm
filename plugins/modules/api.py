@@ -34,8 +34,16 @@ options:
   resource:
     description:
       - The name of the table in which a record is to be created, updated or deleted from.
+      - Mutually exclusive with C(api_path).
+      - Require one of C(resource) or C(api_path)
     type: str
-    required: true
+  api_path:
+    version_added: "2.5.0"
+    description:
+      - The path of the service which a record is to be created, updated or deleted from.
+      - Mutually exclusive with C(resource).
+      - Require one of C(resource) or C(api_path).
+    type: str
   action:
     description: The action to perform.
     type: str
@@ -160,6 +168,16 @@ EXAMPLES = """
     action: delete
     sys_id: b82adae197201110949235dfe153afec
   register: result
+
+- name: Create a record in cmdb service using api_path
+  servicenow.itsm.api:
+    api_path: api/now/cmdb/instance/cmdb_ci_linux_server
+    action: post
+    data:
+      attributes:
+        name: "linux99"
+        firewall_status: "intranet"
+    source: "ServiceNow"
 """
 
 RETURN = """
@@ -265,7 +283,7 @@ record:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors, table
+from ..module_utils import arguments, client, errors, table, generic
 from ..module_utils.api import (
     ACTION_DELETE,
     ACTION_PATCH,
@@ -275,19 +293,17 @@ from ..module_utils.api import (
     FIELD_SYS_ID,
     FIELD_TEMPLATE,
     field_present,
-    table_name,
     get_sys_id,
+    resource_name,
 )
 
 
-def update_resource(module, table_client):
-    record_old = table_client.get_record_by_sys_id(
-        table_name(module), get_sys_id(module)
-    )
+def update_resource(module, client):
+    record_old = client.get_record_by_sys_id(resource_name(module), get_sys_id(module))
     if record_old is None:
         return False, None, dict(before=None, after=None)
-    record_new = table_client.update_record(
-        table=table_name(module),
+    record_new = client.update_record(
+        resource_name(module),
         record=record_old,
         payload=module.params.get(FIELD_DATA, dict()),
         check_mode=module.check_mode,
@@ -296,11 +312,11 @@ def update_resource(module, table_client):
     return True, record_new, dict(before=record_old, after=record_new)
 
 
-def create_resource(module, table_client):
+def create_resource(module, client):
     # At the moment, creating a resource is not idempotent (meaning: If a record with such data as specified in
     # module.params["data"] already exists, such resource will get created once again).
-    new = table_client.create_record(
-        table=table_name(module),
+    new = client.create_record(
+        resource_name(module),
         payload=module.params.get(FIELD_DATA, dict()),
         check_mode=module.check_mode,
         query=module.params.get(FIELD_QUERY_PARAMS, dict()),
@@ -308,22 +324,22 @@ def create_resource(module, table_client):
     return True, new, dict(before=None, after=new)
 
 
-def delete_resource(module, table_client):
-    record = table_client.get_record_by_sys_id(table_name(module), get_sys_id(module))
+def delete_resource(module, client):
+    record = client.get_record_by_sys_id(resource_name(module), get_sys_id(module))
     if record is None:
         return False, None, dict(before=None, after=None)
-    table_client.delete_record(table_name(module), record, module.check_mode)
+    client.delete_record(resource_name(module), record, module.check_mode)
     return True, None, dict(before=record, after=None)
 
 
-def run(module, table_client):
+def run(module, client):
     if module.params["action"] == ACTION_PATCH:  # PATCH method
-        return update_resource(module, table_client)
+        return update_resource(module, client)
     elif module.params["action"] == ACTION_POST:  # POST method
         if field_present(module, FIELD_SYS_ID):
             module.warn("For action create (post) sys_id is ignored.")
-        return create_resource(module, table_client)
-    return delete_resource(module, table_client)  # DELETE method
+        return create_resource(module, client)
+    return delete_resource(module, client)  # DELETE method
 
 
 def main():
@@ -332,7 +348,8 @@ def main():
             "instance",
             "sys_id",  # necessary for deleting and patching a resource, not relevant if creating a resource
         ),
-        resource=dict(type="str", required=True),
+        resource=dict(type="str"),
+        api_path=dict(type="str"),
         action=dict(
             type="str",
             required=True,
@@ -352,7 +369,8 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=arg_spec,
-        mutually_exclusive=[(FIELD_DATA, FIELD_TEMPLATE)],
+        mutually_exclusive=[(FIELD_DATA, FIELD_TEMPLATE), ("resource", "api_path")],
+        required_one_of=[("resource", "api_path")],
         required_if=[
             ("action", "patch", ("sys_id",)),
             ("action", "delete", ("sys_id",)),
@@ -361,8 +379,13 @@ def main():
 
     try:
         snow_client = client.Client(**module.params["instance"])
-        table_client = table.TableClient(snow_client)
-        changed, record, diff = run(module, table_client)
+
+        if module.params["api_path"]:
+            _client = generic.GenericClient(snow_client)
+        else:
+            _client = table.TableClient(snow_client)
+
+        changed, record, diff = run(module, _client)
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))

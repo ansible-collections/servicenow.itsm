@@ -28,9 +28,17 @@ seealso:
 options:
   resource:
     description:
-      - The name of the table that we want to obtain records from.
+      - The name of the table in which a record is to be created, updated or deleted from.
+      - Mutually exclusive with C(api_path).
+      - Require one of C(resource) or C(api_path).
     type: str
-    required: true
+  api_path:
+    version_added: "2.5.0"
+    description:
+      - The path of the service which a record is to be created, updated or deleted from.
+      - Mutually exclusive with C(resource).
+      - Require one of C(resource) or C(api_path).
+    type: str
   sysparm_query:
     description:
       - An encoded query string used to filter the results.
@@ -106,6 +114,10 @@ EXAMPLES = """
     query_no_domain: true
     no_count: false
   register: result
+
+- name: Retreive all linux servers
+  servicenow.itsm.api_info:
+    api_path: api/now/cmdb/instance/cmdb_ci_linux_server
 """
 
 RETURN = r"""
@@ -208,34 +220,36 @@ records:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ..module_utils import arguments, client, errors, table, utils
+from ..module_utils import arguments, client, errors, table, utils, generic
 from ..module_utils.api import (
     FIELD_COLUMNS_NAME,
     POSSIBLE_FILTER_PARAMETERS,
-    table_name,
+    resource_name,
     transform_query_to_servicenow_query,
 )
 
 
-def run(module, table_client):
+def run(module, client):
     search_dict = dict(module.params)
     columns = ",".join([field.lower() for field in module.params[FIELD_COLUMNS_NAME]])
     search_dict.update(columns=columns)
     query = utils.filter_dict(search_dict, *POSSIBLE_FILTER_PARAMETERS)
     servicenow_query = transform_query_to_servicenow_query(query)
-    return table_client.list_records(table_name(module), servicenow_query)
+    return client.list_records(resource_name(module), servicenow_query)
 
 
 def main():
     arg_spec = dict(
         arguments.get_spec("instance", "sys_id"),
-        resource=dict(type="str", required=True),
+        resource=dict(type="str"),
+        api_path=dict(type="str"),
         sysparm_query=dict(type="str"),
         display_value=dict(
             type="str",
             choices=["true", "false", "all"],
             default="false",
-        ),  # Return field display values (true), actual values (false), or both (all) (default: false)
+            # Return field display values (true), actual values (false), or both (all) (default: false)
+        ),
         exclude_reference_link=dict(
             type="bool",
             default=False,  # to enforce False when this parameter is omitted from a playbook
@@ -259,12 +273,19 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=arg_spec,
+        mutually_exclusive=[("resource", "api_path")],
+        required_one_of=[("resource", "api_path")],
     )
 
     try:
         snow_client = client.Client(**module.params["instance"])
-        table_client = table.TableClient(snow_client)
-        records = run(module, table_client)
+
+        if module.params["api_path"]:
+            _client = generic.GenericClient(snow_client)
+        else:
+            _client = table.TableClient(snow_client)
+
+        records = run(module, _client)
         module.exit_json(changed=False, record=records)
     except errors.ServiceNowError as e:
         module.fail_json(msg=str(e))

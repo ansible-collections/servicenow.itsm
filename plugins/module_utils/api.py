@@ -32,6 +32,7 @@ FIELD_DATA = "data"
 FIELD_TEMPLATE = "template"
 FIELD_DATA_RENDERED = "data_rendered"
 FIELD_QUERY_PARAMS = "query_params"
+FIELD_ATTRIBUTES_NAME = "attributes"
 
 POSSIBLE_FILTER_PARAMETERS = [
     FIELD_QUERY_NAME,
@@ -63,8 +64,16 @@ def transform_query_to_servicenow_query(query):
 def table_name(module):
     """
     In api.py and api_info.py the table's name is always going to be stored in module's resource
+    Deprecated in v.2.5.0
     """
     return module.params["resource"]
+
+
+def resource_name(module):
+    """
+    Return either the api_path or the table name from modules's parameters
+    """
+    return module.params["resource"] or module.params["api_path"]
 
 
 def get_query_by_sys_id(module):
