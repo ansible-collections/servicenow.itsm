@@ -34,6 +34,5 @@ PAYLOAD_FIELDS_MAPPING = dict(
         ("8", "documentation"),
         ("9", "other"),
     ],
-
     on_hold=[("true", True), ("false", False)],
 )

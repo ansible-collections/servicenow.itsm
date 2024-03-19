@@ -81,10 +81,9 @@ options:
   category:
     description:
       - The category of the change request.
-      - Default choices are: C(hardware), C(software), C(service), C(system_software), C(aplication_software),
+      - Default choices are C(hardware), C(software), C(service), C(system_software), C(aplication_software),
                C(network), C(telecom), C(documentation), C(other).
-      - One can override them by setting C(change_request_mapping.category).
-      - Choices for C(category) removed in 2.5.0.
+      - One can override them by setting I(change_request_mapping.category).
     type: str
   priority:
     description:
