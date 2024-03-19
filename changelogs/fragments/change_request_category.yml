@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - change_request - allow change_request_mapping for category parameter.

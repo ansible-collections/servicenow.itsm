@@ -23,5 +23,17 @@ PAYLOAD_FIELDS_MAPPING = dict(
         ("3", "closed"),
         ("4", "canceled"),
     ],
+    category=[
+        ("1", "hardware"),
+        ("2", "software"),
+        ("3", "service"),
+        ("4", "system_software"),
+        ("5", "aplication_software"),
+        ("6", "network"),
+        ("7", "telecom"),
+        ("8", "documentation"),
+        ("9", "other"),
+    ],
+
     on_hold=[("true", True), ("false", False)],
 )
