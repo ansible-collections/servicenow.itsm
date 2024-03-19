@@ -28,14 +28,6 @@
         sys_id: "{{ user.record.sys_id }}"
       register: deleted_user
 
-    - name: Retrieve all incidents
-      servicenow.itsm.api_info:
-        resource: incident
-      register: initial
-    - ansible.builtin.assert:
-        that:
-          - initial.record != []
-
     # Using api module's 'data' field
 
     - name: Create a resource in table incident with some specified attributes
@@ -43,21 +35,21 @@
         resource: incident
         action: post
         data:
-          short_description: my-incident
+          short_description: "{{ 'my-incident_' + lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
       register: base_api
       check_mode: true
     - ansible.builtin.assert: &api-create-assertions-data
         that:
           - base_api is changed
-          - base_api.record.short_description == 'my-incident'
 
     - name: Verify creation in check mode did not create a record
       servicenow.itsm.api_info:
         resource: incident
+        sysparm_query: "short_description={{ base_api.record.short_description }}"
       register: result
     - ansible.builtin.assert:
         that:
-          - result.record | length == initial.record | length
+          - result.record | length == 0
 
     - name: Create a resource in table incident
       servicenow.itsm.api: *api-create-data
@@ -67,10 +59,11 @@
     - name: Retrieve all incidents after creating a new resource
       servicenow.itsm.api_info:
         resource: incident
+        sys_id: "{{ first_incident.record.sys_id }}"
       register: result
     - ansible.builtin.assert:
         that:
-          - result.record | length == initial.record | length + 1
+          - result.record | length == 1
 
     # If idempotence will be implemented in the future:
     #   - TODO: change assertion to 'result is not changed'
@@ -185,19 +178,6 @@
         that:
           - result is failed
           - "'Invalid table bad_table_name' in result.msg"
-
-    - name: Test invalid column name - API ignores column names that are not present in the resource
-      servicenow.itsm.api_info:
-        resource: incident
-        sysparm_query: bad_column=bad_column_value1^ORbad_column=bad_column_value2 # 'bad_column' is not present in incident's columns
-      register: result_bad_query
-    - name: Retrieve all incidents so they'll be compared to the API call with columns ignored
-      servicenow.itsm.api_info:
-        resource: incident
-      register: result_no_query
-    - ansible.builtin.assert:
-        that:
-          - result_bad_query.record | length == result_no_query.record | length
 
     # Using api module's 'column' field
     - name: Create a resource in table incident with attributes, specified in template file

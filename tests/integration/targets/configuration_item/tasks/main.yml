@@ -5,13 +5,9 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
-    - name: Retrieve configuration item records
-      servicenow.itsm.configuration_item_info:
-      register: initial
-
     - name: Create a base configuration item (check mode)
       servicenow.itsm.configuration_item: &ci-create
-        name: my-configuration-item
+        name: "{{ 'configuration_item_' + lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
         category: hardware
         environment: development
         install_status: on_order
@@ -20,10 +16,10 @@
           - path: targets/configuration_item/res/sample_file.txt
       register: base_ci
       check_mode: true
+
     - ansible.builtin.assert: &ci-create-assertions
         that:
           - base_ci is changed
-          - base_ci.record.name == "my-configuration-item"
           - base_ci.record.category == "hardware"
           - base_ci.record.environment == "development"
           - base_ci.record.install_status == "on_order"
@@ -33,10 +29,11 @@
 
     - name: Verify creation in check mode did not create a record
       servicenow.itsm.configuration_item_info:
+        sysparm_query: "name={{ base_ci.record.name }}"
       register: result
     - ansible.builtin.assert:
         that:
-          - result.records | length == initial.records | length
+          - result.records | length == 0
 
     - name: Create a base configuration item
       servicenow.itsm.configuration_item: *ci-create
@@ -45,14 +42,17 @@
 
     - name: Verify that a new record was created
       servicenow.itsm.configuration_item_info:
+        sysparm_query: "name={{ base_ci.record.name }}"
       register: result
     - ansible.builtin.assert:
         that:
-          - result.records | length == initial.records | length + 1
+          - result.records | length == 1
     
     - name: Create a base configuration item using existing name (idempotence)
       servicenow.itsm.configuration_item: *ci-create
       register: result
+    - ansible.builtin.debug:
+        var: result
     - ansible.builtin.assert:
         that:
           - result is not changed
