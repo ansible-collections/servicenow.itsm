@@ -11,5 +11,4 @@ compose:
   location_name: lookup('ansible.builtin.vars', 'location.name')
   street: lookup('ansible.builtin.vars', 'location.street')
 
-strict: false
-display_value: false
+strict: true
