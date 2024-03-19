@@ -46,4 +46,8 @@ options:
             U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/change-management/concept/c_ChangeStateModel.html)
           - Special value that can not be overridden is C(absent), which would remove a change request from ServiceNow.
         type: dict
+      category:
+        description:
+          - The category of the change request.
+        type: dict
 """
