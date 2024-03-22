@@ -1,9 +1,9 @@
 ---
 name: all_green
 
-# concurrency:
-#   #  group: ${{ github.head_ref }}
-#   cancel-in-progress: true
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
 
 on:  # yamllint disable-line rule:truthy
   pull_request:
@@ -14,11 +14,6 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - main
       - 'stable-*'
-    tags:
-      - '*'
-  push:
-    branches:
-      - 'tests-integration-*'
     tags:
       - '*'
 
