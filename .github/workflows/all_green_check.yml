@@ -24,12 +24,16 @@ jobs:
     uses: ./.github/workflows/sanity.yml  # use the callable sanity job to run tests
   units:
     uses: ./.github/workflows/units.yml  # use the callable units job to run tests
+  integrations:
+    uses: ./.github/workflows/integration.yml
+    secrets: inherit
   all_green:
     if: ${{ always() }}
     needs:
       - linters
       - sanity
       - units
+      - integrations
     runs-on: ubuntu-latest
     steps:
       - run: >-
