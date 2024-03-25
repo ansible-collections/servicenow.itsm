@@ -443,7 +443,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             )
 
         for k in columns:
-            self.inventory.set_variable(host, k.replace('.','_'), record[k])
+            self.inventory.set_variable(host, k.replace('.', '_'), record[k])
 
     def fill_constructed(
         self,
