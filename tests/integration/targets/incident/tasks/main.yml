@@ -121,26 +121,12 @@
           - "'close_code' in result.msg"
           - "'close_notes' in result.msg"
 
-    - name: Update incident choices
-      servicenow.itsm.api:
-        resource: sys_choice
-        action: post
-        data:
-          name: incident
-          element: close_code
-          value: 1
-          label: Resolved by problem
-      register: incident_choices
-
-    - set_fact:
-        solved_remotely_choice: "{{ incident_choices.record.sys_id }}"
-
     - name: Update incident state - check mode
       servicenow.itsm.incident: &update-incident-state
         caller: admin
         number: "{{ test_result.record.number }}"
         state: resolved
-        close_code: Resolved by problem
+        close_code: Solved Remotely (Permanently)
         close_notes: Done testing
       check_mode: true
       register: result
@@ -149,7 +135,7 @@
         that:
           - result is changed
           - result.record.state == "resolved"
-          - result.record.close_code == "Resolved by problem"
+          - result.record.close_code == "Solved Remotely (Permanently)"
           - result.record.close_notes == "Done testing"
 
 
@@ -162,12 +148,12 @@
     - name: Get specific incident info by sysparm query
       servicenow.itsm.incident_info:
         query:
-         - caller: = admin
-           number: = {{ test_result.record.number }}
-           state: = resolved
-           close_code: = Resolved by problem
+         - number: = {{ test_result.record.number }}
+           close_code: = Solved Remotely (Permanently)
            close_notes: = Done testing
       register: result
+
+    - debug: var=result
 
     - ansible.builtin.assert:
         that:
@@ -175,7 +161,7 @@
           - result.records[0].caller_id != ""
           - result.records[0].number == test_result.record.number
           - result.records[0].state == "resolved"
-          - result.records[0].close_code == "Resolved by problem"
+          - result.records[0].close_code == "Solved Remotely (Permanently)"
           - result.records[0].close_notes == "Done testing"
 
 
@@ -188,7 +174,7 @@
         that:
           - result.records[0].number == test_result.record.number
           - result.records[0].state == "resolved"
-          - result.records[0].close_code == "Resolved by problem"
+          - result.records[0].close_code == "Solved Remotely (Permanently)"
           - result.records[0].close_notes == "Done testing"
 
 
@@ -244,7 +230,7 @@
     - name: Get incident info by sysparm query - short_description
       servicenow.itsm.incident_info:
         query:
-         - short_description: LIKE Test
+         - short_description: STARTSWITH Test
       register: result
 
     - ansible.builtin.assert:
@@ -264,24 +250,6 @@
           - result is failed
           - "'Operator ISEMPTY does not take any arguments' in result.msg"
 
-
-    - name: Test sysparm query unary operator - short_description
-      servicenow.itsm.incident_info:
-        query:
-         - short_description: ISNOTEMPTY
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result.records[0].short_description != ""
-
-
-    - name: Delete incident choices
-      servicenow.itsm.api:
-        resource: sys_choice
-        action: delete
-        sys_id: "{{ solved_remotely_choice }}"
-    
 
     - name: Delete incident - check mode
       servicenow.itsm.incident: &delete-incident

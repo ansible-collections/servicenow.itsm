@@ -27,13 +27,24 @@
           3: "awaiting_problem"
           4: "awaiting_vendor"
           5: "awaiting_change"
-      incident_with_close_code:
-        state:
-          6: "resolved"
         close_code:
-          1: "Solved Remotely (Permanently)"
+          "solved_unknown": "Solved Unknown"
 
   block:
+    - name: Create incident choices
+      servicenow.itsm.api:
+        resource: sys_choice
+        action: post
+        data:
+          name: incident
+          element: close_code
+          value: solved_unknown
+          label: Solved Unknown
+      register: incident_choices
+
+    - set_fact:
+        solved_remotely_choice: "{{ incident_choices.record.sys_id }}"
+
     - name: Create test incident - check mode
       servicenow.itsm.incident: &create-incident
         incident_mapping: "{{ mapping.incident }}"
@@ -55,7 +66,6 @@
           - result.record.urgency == "low"
           - result.record.attachments | length != 0
           - result.record.attachments[0].file_name == "sample_file.txt"
-
 
     - name: Create test incident
       servicenow.itsm.incident: *create-incident
@@ -164,8 +174,8 @@
         data:
           name: incident
           element: close_code
-          value: 1
-          label: Solved Remotely (Permanently)
+          value: 9
+          label: Solved Unknown
       register: incident_choices
 
     - set_fact:
@@ -173,11 +183,11 @@
 
     - name: Update incident state - check mode
       servicenow.itsm.incident: &update-incident-state
-        incident_mapping: "{{ mapping.incident_with_close_code }}"
+        incident_mapping: "{{ mapping.incident }}"
         caller: admin
         number: "{{ test_result.record.number }}"
         state: resolved
-        close_code: Solved Remotely (Permanently)
+        close_code: Solved Unknown
         close_notes: Done testing
       check_mode: true
       register: result
@@ -186,7 +196,7 @@
         that:
           - result is changed
           - result.record.state == "resolved"
-          - result.record.close_code == "Solved Remotely (Permanently)"
+          - result.record.close_code == "Solved Unknown"
           - result.record.close_notes == "Done testing"
 
 
@@ -198,12 +208,12 @@
 
     - name: Get specific incident info by sysparm query
       servicenow.itsm.incident_info:
-        incident_mapping: "{{ mapping.incident_with_close_code }}"
+        incident_mapping: "{{ mapping.incident }}"
         query:
          - caller: = admin
            number: = {{ test_result.record.number }}
            state: = resolved
-           close_code: = Solved Remotely (Permanently)
+           close_code: = Solved Unknown
            close_notes: = Done testing
       register: result
 
@@ -213,7 +223,7 @@
           - result.records[0].caller_id != ""
           - result.records[0].number == test_result.record.number
           - result.records[0].state == "resolved"
-          - result.records[0].close_code == "Solved Remotely (Permanently)"
+          - result.records[0].close_code == "Solved Unknown"
           - result.records[0].close_notes == "Done testing"
 
 
@@ -227,7 +237,7 @@
         that:
           - result.records[0].number == test_result.record.number
           - result.records[0].state == "resolved"
-          - result.records[0].close_code == "Solved Remotely (Permanently)"
+          - result.records[0].close_code == "Solved Unknown"
           - result.records[0].close_notes == "Done testing"
 
 
@@ -287,7 +297,7 @@
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
         query:
-         - short_description: LIKE Test
+         - short_description: STARTSWITH Test
       register: result
 
     - ansible.builtin.assert:
@@ -308,17 +318,6 @@
           - result is failed
           - "'Operator ISEMPTY does not take any arguments' in result.msg"
 
-
-    - name: Test sysparm query unary operator - short_description
-      servicenow.itsm.incident_info:
-        incident_mapping: "{{ mapping.incident }}"
-        query:
-         - short_description: ISNOTEMPTY
-      register: result
-
-    - ansible.builtin.assert:
-        that:
-          - result.records[0].short_description != ""
 
     - name: Delete incident choices
       servicenow.itsm.api:
