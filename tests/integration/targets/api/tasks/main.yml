@@ -5,6 +5,10 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
+    - name: Debug
+      ansible.builtin.debug:
+        msg: "{{ sn_host[:2] }}"
+
     - name: create user (object with encrypted fields)
       servicenow.itsm.api:
         resource: sys_user
