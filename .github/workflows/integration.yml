@@ -6,8 +6,4 @@ on: [workflow_call]  # allow this workflow to be called from other workflows
 jobs:
   integration_sources:
     uses: ./.github/workflows/integration_source.yml
-    env:
-      SN_HOST: ${{ secrets.SN_HOST }}
-      SN_USERNAME: ${{ secrets.SN_USERNAME }}
-      SN_PASSWORD: ${{ secrets.SN_PASSWORD }}
     secrets: inherit
