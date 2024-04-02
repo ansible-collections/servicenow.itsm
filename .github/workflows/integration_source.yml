@@ -108,6 +108,8 @@ jobs:
         run: python3 -m pip list
 
       - name: Create integration_config.yml
+        permissions:
+          contents: write
         env:
           SN_HOST: ${{ secrets.SN_HOST }}
           SN_USERNAME: ${{ secrets.SN_USERNAME }}
