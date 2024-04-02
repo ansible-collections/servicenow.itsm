@@ -26,10 +26,7 @@ jobs:
     uses: ./.github/workflows/units.yml  # use the callable units job to run tests
   integrations:
     uses: ./.github/workflows/integration.yml
-    secrets:
-      SN_HOST: ${{ secrets.SN_HOST }}
-      SN_USERNAME: ${{ secrets.SN_USERNAME }}
-      SN_PASSWORD: ${{ secrets.SN_PASSWORD }}
+    secrets: inherit
   all_green:
     if: ${{ always() }}
     needs:
