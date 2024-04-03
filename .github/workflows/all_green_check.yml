@@ -18,6 +18,9 @@ on:  # yamllint disable-line rule:truthy
       - '*'
 
 jobs:
+  safe-to-test:
+    if: ${{ github.event.label.name == 'safe to test' }} || ${{ github.event.action != 'labeled' }}
+    uses: ansible-network/github_actions/.github/workflows/safe-to-test.yml@main
   linters:
     uses: ./.github/workflows/linters.yml  # use the callable linters job to run tests
   sanity:
@@ -27,6 +30,8 @@ jobs:
   integrations:
     uses: ./.github/workflows/integration.yml
     secrets: inherit
+    needs:
+       - safe-to-test
   all_green:
     if: ${{ always() }}
     needs:
