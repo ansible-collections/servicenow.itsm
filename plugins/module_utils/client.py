@@ -220,5 +220,6 @@ class Client:
 
     def delete(self, path, query=None):
         resp = self.request("DELETE", path, query=query)
-        if resp.status != 204:
-            raise UnexpectedAPIResponse(resp.status, resp.data)
+        if resp.status in (200, 204):
+            return resp
+        raise UnexpectedAPIResponse(resp.status, resp.data)

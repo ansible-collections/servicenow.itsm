@@ -1,0 +1,94 @@
+---
+- environment:
+    SN_HOST: "{{ sn_host }}"
+    SN_USERNAME: "{{ sn_username }}"
+    SN_PASSWORD: "{{ sn_password }}"
+
+  block:
+    - name: Create 3 servers
+      servicenow.itsm.api:
+        resource: cmdb_ci_linux_server
+        action: post
+        data:
+          name: "{{ 'linux_' + lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
+      loop: "{{ range(0,3,1)|list }}"
+      register: servers
+
+    - ansible.builtin.assert: 
+        that: 
+          - servers.results | length == 3
+
+    - ansible.builtin.debug: 
+        var: "{{ item }}" 
+      loop: "{{ servers | ansible.community.general.json_query('results[*].record.sys_id') }}"
+
+    - name: Add relation between the first server and the rest
+      servicenow.itsm.configuration_item_relations:
+        parent_sys_id: "{{ servers.results[0].record.sys_id }}"
+        parent_classname: cmdb_ci_linux_server
+        state: present
+        name: Cools::Cooled By
+        target_ids:
+          - "{{ servers.results[1].record.sys_id }}"
+          - "{{ servers.results[2].record.sys_id }}"
+      register: relations
+
+    - ansible.builtin.set_fact:
+        first_relation: "{{ item }}"
+      when: servers.results[1].record.sys_id == item
+      loop: "{{ relations.record | community.general.json_query('outbound_relations[*].target.value') }}"
+    
+    - ansible.builtin.set_fact:
+        second_relation: "{{ item }}"
+      when: servers.results[2].record.sys_id == item
+      loop: "{{ relations.record | community.general.json_query('outbound_relations[*].target.value') }}"
+
+    - ansible.builtin.assert:
+        that:
+          - first_relation is defined
+          - second_relation is defined
+    
+    - name: Retreive relations for the first server
+      servicenow.itsm.configuration_item_relations_info:
+        sys_id: "{{ servers.results[0].record.sys_id }}"
+        classname: cmdb_ci_linux_server
+      register: relations
+    
+    - debug: var=relations
+
+    - ansible.builtin.assert:
+        that:
+          - relations.record.outbound_relations | length == 2
+          - relations.record.inbound_relations | length == 0
+
+    - name: Remove relation
+      servicenow.itsm.configuration_item_relations:
+        parent_sys_id: "{{ servers.results[0].record.sys_id }}"
+        parent_classname: cmdb_ci_linux_server
+        state: absent
+        target_ids:
+          - "{{ servers.results[1].record.sys_id }}"
+          - "{{ servers.results[2].record.sys_id }}"
+      register: deleted_relation
+    
+    - ansible.builtin.assert:
+        that:
+          - deleted_relation.record.outbound_relations | length == 0
+    
+    - name: Retrieve relations for the first server
+      servicenow.itsm.configuration_item_relations_info:
+        sys_id: "{{ servers.results[0].record.sys_id }}"
+        classname: cmdb_ci_linux_server
+      register: relations
+    
+    - ansible.builtin.assert:
+        that:
+          - relations.record.outbound_relations | length == 0
+          - relations.record.inbound_relations | length == 0
+
+    - name: Remove servers
+      servicenow.itsm.api:
+        resource: cmdb_ci_linux_server
+        action: delete
+        sys_id: "{{ item }}"
+      loop: "{{ servers | community.general.json_query('results[*].record.sys_id') }}"
