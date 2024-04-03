@@ -6,9 +6,23 @@ concurrency:
   cancel-in-progress: true
 
 on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - opened
+      - labeled
+      - unlabeled
+      - reopened
+      - synchronize
+    branches:
+      - main
+      - 'stable-*'
+    tags:
+      - '*'
   pull_request_target:
     types:
       - opened
+      - labeled
+      - unlabeled
       - reopened
       - synchronize
     branches:
