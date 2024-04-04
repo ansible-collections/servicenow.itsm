@@ -48,7 +48,7 @@
           - first_relation is defined
           - second_relation is defined
     
-    - name: Retreive relations for the first server
+    - name: Retrieve relations for the first server
       servicenow.itsm.configuration_item_relations_info:
         sys_id: "{{ servers.results[0].record.sys_id }}"
         classname: cmdb_ci_linux_server

@@ -8,16 +8,17 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-OUTBOUND_RELATION_KEY = "outbound_relations"
-INBOUND_RELATION_KEY = "inbound_relations"
-OUTBOUND_RELATION = "outbound"
-INBOUND_RELATION = "inbound"
+OUTBOUND_KEY = "outbound_relations"
+INBOUND_KEY = "inbound_relations"
+OUTBOUND = "outbound"
+INBOUND = "inbound"
 
 
 class CmdbRelation(object):
     """
     CmdbRelation is a representation of the relation from CMDB Instance API.
-    Please refer to: https://developer.servicenow.com/dev.do#!/reference/api/utah/rest/cmdb-instance-api#cmdb-POST-instance-relation
+    #!/reference/api/utah/rest/cmdb-instance-api#cmdb-POST-instance-relation
+    Please refer to: https://developer.servicenow.com/dev.do
     """
 
     def __init__(self, value):
@@ -25,7 +26,7 @@ class CmdbRelation(object):
             raise ValueError("Relation has no sys_id")
         if "type" not in value or not isinstance(value["type"], dict):
             raise ValueError("Relation has no type or type is not a dictionary")
-        if "target" not in value or not isinstance(value["type"], dict):
+        if "target" not in value or not isinstance(value["target"], dict):
             raise ValueError("Relation has no target or target is not a dictionary")
 
         self.sys_id = value["sys_id"]
@@ -112,7 +113,8 @@ class CmdbItemRelations(object):
     def update(self, api_path, generic_client):
         """
         Update updates the configuration item with the tainted relations.
-        Returns True if relations changed or False otherwise.
+        Due to the behaviour of the caller, this method is either called for adding
+        or for removing relations but not for both.
         """
         if len(self.tainted) == 0:
             return
@@ -142,35 +144,44 @@ class CmdbItemRelations(object):
     def to_json(self):
         result = dict(outbound_relations=[], inbound_relations=[])
         for dir, rel in self:
-            if dir == OUTBOUND_RELATION:
-                result["outbound_relations"].append(rel.to_json())
-            if dir == INBOUND_RELATION:
-                result["inbound_relations"].append(rel.to_json())
+            if dir == OUTBOUND:
+                result[OUTBOUND_KEY].append(rel.to_json())
+            if dir == INBOUND:
+                result[INBOUND_KEY].append(rel.to_json())
         return result
 
     def __create_payload(self):
         """
         Create payload for added relations
-        Return: True,payload if there're relation to be added. False, dict() otherwise
+        Return: payload if there're relation to be added. None otherwise
         """
         payload = dict(
             source="ServiceNow",
         )
-        has = False
+
         for dir, action, rel in self.tainted:
             if action == "remove":
                 continue
-            has = True
-            if dir == OUTBOUND_RELATION:
-                if "outbound_relations" not in payload:
-                    payload["outbound_relations"] = []
-                payload["outbound_relations"].append(rel.to_payload())
-            elif dir == INBOUND_RELATION:
-                payload["inbound_relations"].append(rel.to_payload())
-        return payload if has else None
+            if dir == OUTBOUND:
+                # it seems that SNow complains for empty list in payload.
+                # so we add the key only if we have to (inbound or outbound).
+                if OUTBOUND_KEY not in payload:
+                    payload[OUTBOUND_KEY] = []
+                payload.get(OUTBOUND_KEY).append(rel.to_payload())
+            elif dir == INBOUND:
+                if INBOUND_KEY not in payload:
+                    payload[INBOUND_KEY] = []
+                payload.get(INBOUND_KEY).append(rel.to_payload())
+
+        if len(payload.get(INBOUND_KEY, [])) + len(payload.get(OUTBOUND_KEY, [])) > 0:
+            return payload
+
+        return None
 
     def __read(self, configuration_item):
-        for r in configuration_item[OUTBOUND_RELATION_KEY]:
-            self.relations.append((OUTBOUND_RELATION, CmdbRelation(r)))
-        for r in configuration_item[INBOUND_RELATION_KEY]:
-            self.relations.append((INBOUND_RELATION, CmdbRelation(r)))
+        if OUTBOUND_KEY in configuration_item:
+            for r in configuration_item[OUTBOUND_KEY]:
+                self.relations.append((OUTBOUND, CmdbRelation(r)))
+        if INBOUND_KEY in configuration_item:
+            for r in configuration_item[INBOUND_KEY]:
+                self.relations.append((INBOUND, CmdbRelation(r)))
