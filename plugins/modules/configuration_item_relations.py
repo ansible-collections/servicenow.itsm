@@ -177,6 +177,7 @@ def ensure_present(module, generic_client):
             ),
             generic_client,
         )
+
         return (
             True,
             new_relations.to_json(),
@@ -185,7 +186,7 @@ def ensure_present(module, generic_client):
 
     return (
         False,
-        dict(record=relations.to_json()),
+        relations.to_json(),
         dict(
             before=dict(record=relations.to_json()),
             after=dict(record=relations.to_json()),
@@ -238,10 +239,10 @@ def ensure_absent(module, generic_client):
 
     return (
         False,
-        dict(record=relations.to_json()),
+        relations.to_json(),
         dict(
-            before=dict(record=relations.to_json()),
-            after=dict(record=relations.to_json()),
+            before=relations.to_json(),
+            after=relations.to_json(),
         ),
     )
 

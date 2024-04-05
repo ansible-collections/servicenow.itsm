@@ -20,6 +20,9 @@ from ansible_collections.servicenow.itsm.plugins.module_utils.problem import (
     ProblemClient,
 )
 from ansible_collections.servicenow.itsm.plugins.module_utils.table import TableClient
+from ansible_collections.servicenow.itsm.plugins.module_utils.generic import (
+    GenericClient,
+)
 
 
 @pytest.fixture
@@ -32,6 +35,11 @@ def client(mocker):
 @pytest.fixture
 def table_client(mocker):
     return mocker.Mock(spec=TableClient)
+
+
+@pytest.fixture
+def generic_client(mocker):
+    return mocker.Mock(spec=GenericClient)
 
 
 @pytest.fixture
