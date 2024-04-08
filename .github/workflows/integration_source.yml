@@ -121,3 +121,23 @@ jobs:
       - name: Run api integration tests
         run: ansible-test integration api
         working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run api_generic integration tests
+        run: ansible-test integration api_generic
+        working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run attachment integration tests
+        run: ansible-test integration attachment
+        working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run attachment_info integration tests
+        run: ansible-test integration attachment_info
+        working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run attachment_upload integration tests
+        run: ansible-test integration attachment_upload
+        working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run change_request integration tests
+        run: ansible-test integration change_request
+        working-directory: ${{ steps.identify.outputs.collection_path }}
