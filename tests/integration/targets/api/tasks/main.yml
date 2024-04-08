@@ -67,15 +67,6 @@
         that:
           - result.record | length == 1
 
-    # If idempotence will be implemented in the future:
-    #   - TODO: change assertion to 'result is not changed'
-    - name: Create a incident (idempotence - at the moment, the module is NOT idempotent)
-      servicenow.itsm.api: *api-create-data
-      register: result
-    - ansible.builtin.assert:
-        that:
-          - result is changed
-
     - name: Update the incident (check mode)
       servicenow.itsm.api: &api-update-data
         resource: incident
