@@ -124,7 +124,7 @@
 
     - name: Create a base configuration item with attachment (check mode)
       servicenow.itsm.configuration_item: &ci-create
-        name: my-configuration-item
+        name: "{{ 'configuration-item-' + lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
         category: hardware
         environment: development
         install_status: on_order
@@ -132,18 +132,17 @@
         attachments:
           - path: targets/attachment/res/sample_file1.txt
       check_mode: true
-      register: result
+      register: ci_result
 
     - ansible.builtin.assert: &ci-create-assertions
         that:
-          - result is changed
-          - result.record.name == "my-configuration-item"
-          - result.record.category == "hardware"
-          - result.record.environment == "development"
-          - result.record.install_status == "on_order"
-          - result.record.operational_status == "non_operational"
-          - result.record.attachments | length == 1
-          - result.record.attachments[0].file_name == "sample_file1.txt"
+          - ci_result is changed
+          - ci_result.record.category == "hardware"
+          - ci_result.record.environment == "development"
+          - ci_result.record.install_status == "on_order"
+          - ci_result.record.operational_status == "non_operational"
+          - ci_result.record.attachments | length == 1
+          - ci_result.record.attachments[0].file_name == "sample_file1.txt"
 
     - name: Create a base configuration item with attachment
       servicenow.itsm.configuration_item: *ci-create
@@ -154,7 +153,6 @@
         result: "{{ test_result }}"
 
     - ansible.builtin.assert: *ci-create-assertions
-
 
     - name: Update the configuration item with same attachment, same name, add new (check mode)
       servicenow.itsm.configuration_item: &ci-update
@@ -447,7 +445,7 @@
 
     - name: Create a base configuration item with attachment
       servicenow.itsm.configuration_item: *ci-create
-      register: result
+      register: ci_result
     
     - name: Create temporary file
       ansible.builtin.tempfile:
@@ -457,7 +455,7 @@
     - name: Download attachment - check mode
       servicenow.itsm.attachment: &download-attachment
         dest: "{{ temp_file.path }}"
-        sys_id: "{{ result.record.attachments[0].sys_id }}"
+        sys_id: "{{ ci_result.record.attachments[0].sys_id }}"
       check_mode: yes
       register: att_result
 
@@ -488,7 +486,7 @@
 
     - name: Delete configuration item
       servicenow.itsm.configuration_item:
-        name: my-configuration-item
+        name: "{{ ci_result.record.name }}"
         state: absent
       register: result
 

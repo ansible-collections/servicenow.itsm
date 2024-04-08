@@ -141,3 +141,19 @@ jobs:
       - name: Run change_request integration tests
         run: ansible-test integration change_request
         working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run change_request_task integration tests
+        run: ansible-test integration change_request_task
+        working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run change_request_with_mapping integration tests
+        run: ansible-test integration change_request_with_mapping
+        working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run configuration_item integration tests
+        run: ansible-test integration configuration_item
+        working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run configuration_item_batch integration tests
+        run: ansible-test integration configuration_item_batch
+        working-directory: ${{ steps.identify.outputs.collection_path }}

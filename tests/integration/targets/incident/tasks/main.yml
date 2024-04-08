@@ -126,7 +126,7 @@
         caller: admin
         number: "{{ test_result.record.number }}"
         state: resolved
-        close_code: Solved Remotely (Permanently)
+        close_code: Solution provided
         close_notes: Done testing
       check_mode: true
       register: result
@@ -135,7 +135,7 @@
         that:
           - result is changed
           - result.record.state == "resolved"
-          - result.record.close_code == "Solved Remotely (Permanently)"
+          - result.record.close_code == "Solution provided"
           - result.record.close_notes == "Done testing"
 
 
@@ -149,7 +149,7 @@
       servicenow.itsm.incident_info:
         query:
          - number: = {{ test_result.record.number }}
-           close_code: = Solved Remotely (Permanently)
+           close_code: = Solution provided
            close_notes: = Done testing
       register: result
 
@@ -161,7 +161,7 @@
           - result.records[0].caller_id != ""
           - result.records[0].number == test_result.record.number
           - result.records[0].state == "resolved"
-          - result.records[0].close_code == "Solved Remotely (Permanently)"
+          - result.records[0].close_code == "Solution provided"
           - result.records[0].close_notes == "Done testing"
 
 
@@ -174,7 +174,7 @@
         that:
           - result.records[0].number == test_result.record.number
           - result.records[0].state == "resolved"
-          - result.records[0].close_code == "Solved Remotely (Permanently)"
+          - result.records[0].close_code == "Solution provided"
           - result.records[0].close_notes == "Done testing"
 
 
