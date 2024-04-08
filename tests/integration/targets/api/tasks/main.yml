@@ -36,6 +36,7 @@
         action: post
         data:
           short_description: "{{ 'my-incident_' + lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
+          caller_id: employee
       register: base_api
       check_mode: true
     - ansible.builtin.assert: &api-create-assertions-data
@@ -56,6 +57,7 @@
       register: first_incident
     - ansible.builtin.assert: *api-create-assertions-data
 
+
     - name: Retrieve all incidents after creating a new resource
       servicenow.itsm.api_info:
         resource: incident
@@ -64,15 +66,6 @@
     - ansible.builtin.assert:
         that:
           - result.record | length == 1
-
-    # If idempotence will be implemented in the future:
-    #   - TODO: change assertion to 'result is not changed'
-    - name: Create a incident (idempotence - at the moment, the module is NOT idempotent)
-      servicenow.itsm.api: *api-create-data
-      register: result
-    - ansible.builtin.assert:
-        that:
-          - result is changed
 
     - name: Update the incident (check mode)
       servicenow.itsm.api: &api-update-data
@@ -207,7 +200,7 @@
         that:
           - result is changed
           - "result.record.short_description == 'Changed template - short'"
-          - "result.record.description == 'Desciption is changed also - short looooooooong description'"
+          - "result.record.description == 'Description is changed also - short looooooooong description'"
 
     - name: Delete the incident
       servicenow.itsm.api:
