@@ -62,10 +62,17 @@ jobs:
           - "3.10"
           - "3.11"
           - "3.12"
+        servicenow-version:
+          - "utah"
+        include:
+          - servicenow-version: "utah"
+            sn_host_secret: SN_HOST_UTAH
+            sn_username_secret: SN_USERNAME_UTAH
+            sn_password_secret: SN_PASSWORD_UTAH
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
     continue-on-error: ${{ matrix.ansible-version == 'devel' }}
 
-    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
+    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.servicenow-version }}"
     steps:
       - name: Checkout the collection repository
         uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
@@ -109,51 +116,51 @@ jobs:
 
       - name: Create integration_config.yml
         env:
-          SN_HOST: ${{ secrets.SN_HOST }}
-          SN_USERNAME: ${{ secrets.SN_USERNAME }}
-          SN_PASSWORD: ${{ secrets.SN_PASSWORD }}
+          SN_HOST: ${{ secrets[matrix.sn_host_secret] }}
+          SN_USERNAME: ${{ secrets[matrix.sn_username_secret] }}
+          SN_PASSWORD: ${{ secrets[matrix.sn_password_secret] }}
         run: |
           touch ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
-          echo "sn_host: ${{ env.SN_HOST }}" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
-          echo "sn_username: ${{ env.SN_USERNAME }}" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
-          echo "sn_password: ${{ env.SN_PASSWORD }}" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
+          echo "sn_host: '${{ env.SN_HOST }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
+          echo "sn_username: '${{ env.SN_USERNAME }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
+          echo "sn_password: '${{ env.SN_PASSWORD }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
 
       - name: Run api integration tests
         run: ansible-test integration api
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run api_generic integration tests
         run: ansible-test integration api_generic
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run attachment integration tests
         run: ansible-test integration attachment
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run attachment_info integration tests
         run: ansible-test integration attachment_info
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run attachment_upload integration tests
         run: ansible-test integration attachment_upload
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run change_request integration tests
         run: ansible-test integration change_request
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run change_request_task integration tests
         run: ansible-test integration change_request_task
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run change_request_with_mapping integration tests
         run: ansible-test integration change_request_with_mapping
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run configuration_item integration tests
         run: ansible-test integration configuration_item
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run configuration_item_batch integration tests
         run: ansible-test integration configuration_item_batch
         working-directory: ${{ steps.identify.outputs.collection_path }}
