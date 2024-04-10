@@ -18,10 +18,6 @@
         that: 
           - servers.results | length == 3
 
-    - ansible.builtin.debug: 
-        var: "{{ item }}" 
-      loop: "{{ servers | ansible.community.general.json_query('results[*].record.sys_id') }}"
-
     - name: Add relation between the first server and the rest
       servicenow.itsm.configuration_item_relations:
         parent_sys_id: "{{ servers.results[0].record.sys_id }}"
@@ -33,20 +29,9 @@
           - "{{ servers.results[2].record.sys_id }}"
       register: relations
 
-    - ansible.builtin.set_fact:
-        first_relation: "{{ item }}"
-      when: servers.results[1].record.sys_id == item
-      loop: "{{ relations.record | community.general.json_query('outbound_relations[*].target.value') }}"
-    
-    - ansible.builtin.set_fact:
-        second_relation: "{{ item }}"
-      when: servers.results[2].record.sys_id == item
-      loop: "{{ relations.record | community.general.json_query('outbound_relations[*].target.value') }}"
-
     - ansible.builtin.assert:
         that:
-          - first_relation is defined
-          - second_relation is defined
+          - relations.record.outbound_relations | length == 2
     
     - name: Retrieve relations for the first server
       servicenow.itsm.configuration_item_relations_info:
@@ -91,4 +76,7 @@
         resource: cmdb_ci_linux_server
         action: delete
         sys_id: "{{ item }}"
-      loop: "{{ servers | community.general.json_query('results[*].record.sys_id') }}"
+      loop: 
+        - "{{ servers.results[0].record.sys_id }}"
+        - "{{ servers.results[1].record.sys_id }}"
+        - "{{ servers.results[2].record.sys_id }}"
