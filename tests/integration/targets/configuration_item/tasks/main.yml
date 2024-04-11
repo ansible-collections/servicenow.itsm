@@ -309,9 +309,12 @@
           - result.records[0].short_description != ""
     
     # Tests for #208
+    - ansible.builtin.set_fact:
+        prefix: "{{ lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
+
     - name: Create a base configuration item
       servicenow.itsm.configuration_item:
-        name: my-configuration-item
+        name: "{{ prefix }}-my-configuration-item"
         category: hardware
         environment: development
         install_status: on_order
