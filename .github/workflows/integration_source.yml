@@ -179,3 +179,7 @@ jobs:
       - name: Run configuration_item_batch integration tests
         run: ansible-test integration configuration_item_batch
         working-directory: ${{ steps.identify.outputs.collection_path }}
+
+      - name: Run configuration_item_relations integration tests
+        run: ansible-test integration configuration_item_relations
+        working-directory: ${{ steps.identify.outputs.collection_path }}
