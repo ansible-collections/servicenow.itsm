@@ -55,11 +55,11 @@ class CmdbRelation(object):
         )
 
     @classmethod
-    def from_values(cls, type_sys_id, target_sys_id):
+    def from_values(cls, type_sys_id, type_name, target_sys_id, target_name):
         d = dict(
             sys_id=None,
-            type=dict(value=type_sys_id, display_value=""),
-            target=dict(value=target_sys_id, display_value=""),
+            type=dict(value=type_sys_id, display_value=type_name),
+            target=dict(value=target_sys_id, display_value=target_name),
         )
         return cls(d)
 
@@ -110,7 +110,7 @@ class CmdbItemRelations(object):
                 return
         self.tainted.append((direction, "remove", relation))
 
-    def update(self, api_path, generic_client):
+    def update(self, api_path, generic_client, check_mode=False):
         """
         Update updates the configuration item with the tainted relations.
         Due to the behaviour of the caller, this method is either called for adding
@@ -119,8 +119,10 @@ class CmdbItemRelations(object):
         if len(self.tainted) == 0:
             return
 
-        payload = self.__create_payload()
+        payload = self.__create_payload(check_mode)
         if payload:
+            if check_mode:
+                return CmdbItemRelations(payload)
             result = generic_client.create_record(
                 api_path, payload, check_mode=False, query=None
             )
@@ -134,7 +136,8 @@ class CmdbItemRelations(object):
         for dir, action, rel in self.tainted:
             if action == "add":
                 continue
-            generic_client.delete_record_by_sys_id(api_path, rel.sys_id)
+            if not check_mode:
+                generic_client.delete_record_by_sys_id(api_path, rel.sys_id)
             for idx, r in enumerate(clone):
                 if r[1].sys_id == rel.sys_id:
                     clone.relations.pop(idx)
@@ -150,7 +153,7 @@ class CmdbItemRelations(object):
                 result[INBOUND_KEY].append(rel.to_json())
         return result
 
-    def __create_payload(self):
+    def __create_payload(self, check_mode=False):
         """
         Create payload for added relations
         Return: payload if there're relation to be added. None otherwise
@@ -167,11 +170,17 @@ class CmdbItemRelations(object):
                 # so we add the key only if we have to (inbound or outbound).
                 if OUTBOUND_KEY not in payload:
                     payload[OUTBOUND_KEY] = []
-                payload.get(OUTBOUND_KEY).append(rel.to_payload())
+                if check_mode:
+                    payload.get(OUTBOUND_KEY).append(rel.to_json())
+                else:
+                    payload.get(OUTBOUND_KEY).append(rel.to_payload())
             elif dir == INBOUND:
                 if INBOUND_KEY not in payload:
                     payload[INBOUND_KEY] = []
-                payload.get(INBOUND_KEY).append(rel.to_payload())
+                if check_mode:
+                    payload.get(INBOUND_KEY).append(rel.to_json())
+                else:
+                    payload.get(INBOUND_KEY).append(rel.to_payload())
 
         if len(payload.get(INBOUND_KEY, [])) + len(payload.get(OUTBOUND_KEY, [])) > 0:
             return payload

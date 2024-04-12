@@ -18,20 +18,38 @@
         that: 
           - servers.results | length == 3
 
-    - name: Add relation between the first server and the rest
-      servicenow.itsm.configuration_item_relations:
+    - name: Add relation between the first server and the rest -- check mode --
+      servicenow.itsm.configuration_item_relations: &create-relations-data
         parent_sys_id: "{{ servers.results[0].record.sys_id }}"
         parent_classname: cmdb_ci_linux_server
         state: present
         name: Cools::Cooled By
-        target_ids:
-          - "{{ servers.results[1].record.sys_id }}"
-          - "{{ servers.results[2].record.sys_id }}"
+        targets:
+          - name: "{{ servers.results[1].record.name }}"
+            sys_id: "{{ servers.results[1].record.sys_id }}"
+          - name: "{{ servers.results[2].record.name }}"
+            sys_id: "{{ servers.results[2].record.sys_id }}"
       register: relations
+      check_mode: true
 
     - ansible.builtin.assert:
         that:
           - relations.record.outbound_relations | length == 2
+
+    - name: Make sure the relations don't exist
+      servicenow.itsm.configuration_item_relations_info:
+        sys_id: "{{ servers.results[0].record.sys_id }}"
+        classname: cmdb_ci_linux_server
+      register: relations
+
+    - ansible.builtin.assert:
+        that:
+          - relations.record.outbound_relations | length == 0
+
+    - name: Add relation between the first server and the rest
+      servicenow.itsm.configuration_item_relations: *create-relations-data
+      register: relations
+
     
     - name: Retrieve relations for the first server
       servicenow.itsm.configuration_item_relations_info:
@@ -46,19 +64,36 @@
           - relations.record.outbound_relations | length == 2
           - relations.record.inbound_relations | length == 0
 
-    - name: Remove relation
-      servicenow.itsm.configuration_item_relations:
+    - name: Remove relation -- check mode --
+      servicenow.itsm.configuration_item_relations: &delete-relations-data
         parent_sys_id: "{{ servers.results[0].record.sys_id }}"
         parent_classname: cmdb_ci_linux_server
         state: absent
-        target_ids:
-          - "{{ servers.results[1].record.sys_id }}"
-          - "{{ servers.results[2].record.sys_id }}"
+        targets:
+          - name: "{{ servers.results[1].record.name }}"
+            sys_id: "{{ servers.results[1].record.sys_id }}"
+          - name: "{{ servers.results[2].record.name }}"
+            sys_id: "{{ servers.results[2].record.sys_id }}"
       register: deleted_relation
+      check_mode: true
     
     - ansible.builtin.assert:
         that:
           - deleted_relation.record.outbound_relations | length == 0
+
+    - name: Make sure the relations are still present
+      servicenow.itsm.configuration_item_relations_info:
+        sys_id: "{{ servers.results[0].record.sys_id }}"
+        classname: cmdb_ci_linux_server
+      register: relations
+    
+    - ansible.builtin.assert:
+        that:
+          - relations.record.outbound_relations | length == 2
+          - relations.record.inbound_relations | length == 0
+    
+    - name: Remove relation
+      servicenow.itsm.configuration_item_relations: *delete-relations-data
     
     - name: Retrieve relations for the first server
       servicenow.itsm.configuration_item_relations_info:

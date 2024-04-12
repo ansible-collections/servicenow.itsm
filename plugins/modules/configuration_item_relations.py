@@ -58,11 +58,22 @@ options:
       - The class of the configuration item.
     type: str
     required: true
-  target_ids:
+  targets:
     description:
-      - List of id the configuration items associated with the parent.
+      - List of configuration items to be associated with the parent.
     type: list
-    elements: str
+    elements: dict
+    suboptions:
+      name:
+        description:
+          - Name of the configuration item
+        type: str
+        required: true
+      sys_id:
+        description:
+          - Sys_id of the configuration item
+        type: str
+        required: true
     required: true
 """
 
@@ -74,8 +85,9 @@ EXAMPLES = r"""
     state: present
     parent_sys_id: "{{ parent_sys_id }}"
     parent_classname: cmdb_ci_linux_server
-    target_ids:
-      - target1_id
+    targets:
+      - name: target1
+        sys_id: target1_id
 
 - name: Remove relation
   servicenow.itsm.configuration_item_relations:
@@ -83,8 +95,9 @@ EXAMPLES = r"""
     state: absent
     parent_sys_id: "{{ parent_sys_id }}"
     parent_classname: cmdb_ci_linux_server
-    target_ids:
-      - target1_id
+    targets:
+      - name: target1
+        sys_id: target1_id
 
 - name: Update relation by adding one more target
   servicenow.itsm.configuration_item_relations:
@@ -93,9 +106,9 @@ EXAMPLES = r"""
     state: present
     parent_sys_id: "{{ owner_sys_id }}"
     parent_classname: cmdb_ci_linux_server
-    target_ids:
-      - target1_id
-      - new_target_id
+    targets:
+      - name: target1
+        sys_id: target1_id
 """
 
 RETURN = r"""
@@ -116,11 +129,11 @@ record:
           "value": "015633570a0a0bc70029121512d46ede"
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ..module_utils import arguments, client, errors, generic
-from ..module_utils import cmdb_relation as cmdb
-from ..module_utils.configuration_item import PAYLOAD_FIELDS_MAPPING
 from ..module_utils.utils import get_mapper
+from ..module_utils.configuration_item import PAYLOAD_FIELDS_MAPPING
+from ..module_utils import cmdb_relation as cmdb
+from ..module_utils import arguments, client, errors, generic
+from ansible.module_utils.basic import AnsibleModule
 
 CMDB_INSTANCE_BASE_API_PATH = "api/now/cmdb/instance"
 CMDB_RELATION_TYPE_API_PATH = "/api/now/table/cmdb_rel_type"
@@ -156,12 +169,17 @@ def ensure_present(module, generic_client):
     relations = cmdb.CmdbItemRelations(parent_ci)
 
     changed = False
-    for target_id in module.params["target_ids"]:
-        existing_relation = relations.get(module.params["direction"], target_id)
+    for target in module.params["targets"]:
+        existing_relation = relations.get(module.params["direction"], target["sys_id"])
         if not existing_relation:
             relations.add(
                 module.params["direction"],
-                cmdb.CmdbRelation.from_values(relation_type_sys_id, target_id),
+                cmdb.CmdbRelation.from_values(
+                    relation_type_sys_id,
+                    module.params["name"],
+                    target["sys_id"],
+                    target["name"],
+                ),
             )
             changed = True
 
@@ -176,6 +194,7 @@ def ensure_present(module, generic_client):
                 ]
             ),
             generic_client,
+            module.check_mode,
         )
 
         return (
@@ -213,8 +232,8 @@ def ensure_absent(module, generic_client):
     relations = cmdb.CmdbItemRelations(parent_ci)
 
     changed = False
-    for target_id in module.params["target_ids"]:
-        existing_relation = relations.get(module.params["direction"], target_id)
+    for target in module.params["targets"]:
+        existing_relation = relations.get(module.params["direction"], target["sys_id"])
         if existing_relation:
             relations.remove(module.params["direction"], existing_relation)
             changed = True
@@ -230,6 +249,7 @@ def ensure_absent(module, generic_client):
                 ]
             ),
             generic_client,
+            module.check_mode,
         )
         return (
             True,
@@ -286,9 +306,19 @@ def main():
             type="str",
             required=True,
         ),
-        target_ids=dict(
+        targets=dict(
             type="list",
-            elements="str",
+            elements="dict",
+            options=dict(
+                name=dict(
+                    type="str",
+                    required=True,
+                ),
+                sys_id=dict(
+                    type="str",
+                    required=True,
+                ),
+            ),
             required=True,
         ),
     )
