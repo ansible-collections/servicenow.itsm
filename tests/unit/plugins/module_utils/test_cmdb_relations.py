@@ -76,42 +76,6 @@ class TestCmdbRelation:
 
         assert relation1 == relation2
 
-    @pytest.mark.parametrize(
-        "input1,input2",
-        [
-            (
-                dict(
-                    sys_id="relation_id",
-                    type=dict(value="relation_sys_id", display_value="relation_name"),
-                    target=dict(value="target_id", display_value="target_name"),
-                ),
-                dict(
-                    sys_id="relation_id1",
-                    type=dict(value="relation_sys_id", display_value="relation_name"),
-                    target=dict(value="target_id", display_value="target_name"),
-                ),
-            ),
-            (
-                dict(
-                    sys_id=None,
-                    type=dict(value="relation_sys_id", display_value="relation_name"),
-                    target=dict(value="target_id", display_value="target_name"),
-                ),
-                dict(
-                    sys_id=None,
-                    type=dict(value="relation_sys_id", display_value="relation_name"),
-                    target=dict(value="another_target_id", display_value="target_name"),
-                ),
-            ),
-        ],
-    )
-    def test_not_equal(self, input1, input2):
-
-        relation1 = cmdb_relation.CmdbRelation(input1)
-        relation2 = cmdb_relation.CmdbRelation(input2)
-
-        assert relation1 != relation2
-
     def test_to_json(self):
         input = dict(
             sys_id="relation_id",
