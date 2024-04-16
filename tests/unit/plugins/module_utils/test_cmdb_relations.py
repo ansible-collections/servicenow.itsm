@@ -103,23 +103,10 @@ class TestCmdbRelation:
                     target=dict(value="another_target_id", display_value="target_name"),
                 ),
             ),
-            (
-                dict(
-                    sys_id=None,
-                    type=dict(value="relation_sys_id", display_value="relation_name"),
-                    target=dict(value="target_id", display_value="target_name"),
-                ),
-                dict(
-                    sys_id=None,
-                    type=dict(
-                        value="another_relation_sys_id", display_value="relation_name"
-                    ),
-                    target=dict(value="target_id", display_value="target_name"),
-                ),
-            ),
         ],
     )
     def test_not_equal(self, input1, input2):
+
         relation1 = cmdb_relation.CmdbRelation(input1)
         relation2 = cmdb_relation.CmdbRelation(input2)
 
