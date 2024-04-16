@@ -9,3 +9,6 @@ jobs:
     with:
       envname: ""
       labelname: "lint"
+      path: ${{ env.source_directory }}
+      ref: ${{ github.event.pull_request.head.sha }}
+      fetch-depth: "0"
