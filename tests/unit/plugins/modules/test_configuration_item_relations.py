@@ -32,9 +32,7 @@ class TestEnsureAbsent:
                 parent_classname="cmdb_ci_linux_server",
                 name="Cools:Cooled by",
                 direction="outbound",
-                targets=[
-                    dict(sys_id="target_id_1", name="target")
-                ],
+                targets=[dict(sys_id="target_id_1", name="target")],
             )
         )
 
@@ -130,9 +128,7 @@ class TestEnsurePresent:
                 parent_classname="cmdb_ci_linux_server",
                 name="Cools:Cooled by",
                 direction="outbound",
-                targets=[
-                    dict(sys_id="target_id_1", name="target")
-                ],
+                targets=[dict(sys_id="target_id_1", name="target")],
             )
         )
 
