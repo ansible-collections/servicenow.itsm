@@ -3,6 +3,21 @@
     SN_USERNAME: "{{ sn_username }}"
     SN_PASSWORD: "{{ sn_password }}"
 
+  vars:
+    assignment_groups:
+      py3.9-ansible-2.15: network
+      py3.10-ansible-2.15: software
+      py3.11-ansible-2.15: hardware
+      py3.12-ansible-2.15: IT Securities CAB
+      py3.9-ansible-2.16: Help Desk
+      py3.10-ansible-2.16: Openspace
+      py3.11-ansible-2.16: Problem Solving
+      py3.12-ansible-2.16: LDAP Admins
+      py3.9-ansible-2.18: IT Securities
+      py3.10-ansible-2.18: IT Finance CAB
+      py3.11-ansible-2.18: Network CAB Managers
+      py3.12-ansible-2.18: Service Desk
+
   block:
     - name: Create test change_request - check mode
       servicenow.itsm.change_request: &create-change_request
@@ -426,13 +441,18 @@
         impact: low
       register: test_result
       
+    # To avoid clashes between run we need to choose a new assignment_group for each python/ansible combination
+    - set_fact:
+        instance: "py{{ ansible_facts.python.version.major }}.{{ ansible_facts.python.version.minor }}-ansible-{{ ansible_version.major }}.{{ ansible_version.minor }}"
+
+    - debug: var=instance
 
     - name: Update test change_request to scheduled
       servicenow.itsm.change_request:
         requested_by: admin
         number: "{{ test_result.record.number }}"
         state: scheduled
-        assignment_group: network
+        assignment_group: "{{ assignment_groups[instance] | default('network') }}"
         priority: high
         risk: high
         impact: high
