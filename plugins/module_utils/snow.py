@@ -35,7 +35,7 @@ class SNowClient:
             # When using this client for generic api, the header is not present anymore
             # and we need to find a new method to break from the loop
             # It can be removed from Table API but for it's better to keep it for now.
-            if response.headers["x-total-count"]:
+            if "x-total-count" in response.headers:
                 total = int(response.headers["x-total-count"])
             else:
                 if len(response.json["result"]) == 0:
