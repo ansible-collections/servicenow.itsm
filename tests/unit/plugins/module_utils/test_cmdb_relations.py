@@ -120,7 +120,6 @@ class TestCmdbRelation:
         ],
     )
     def test_not_equal(self, input1, input2):
-
         relation1 = cmdb_relation.CmdbRelation(input1)
         relation2 = cmdb_relation.CmdbRelation(input2)
 
