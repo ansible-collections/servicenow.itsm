@@ -5,10 +5,22 @@ on: [workflow_call]  # allow this workflow to be called from other workflows
 
 jobs:
   linters:
-    uses: ansible-network/github_actions/.github/workflows/tox.yml@main
-    with:
-      envname: ""
-      labelname: "lint"
-      path: ${{ env.source_directory }}
-      ref: ${{ github.event.pull_request.head.sha }}
-      fetch-depth: "0"
+    env:
+      PY_COLORS: "1"
+      source_directory: "./source"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout the collection repository
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          path: ${{ env.source_directory }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: "0"
+      - name: Run tests
+        uses: ansible-network/github_actions/.github/actions/tox@main
+        with:
+          path: ${{ env.source_directory }}
+          tox_envlist: ${{ inputs.envname }}
+          tox_labellist: ${{ inputs.labelname }}
