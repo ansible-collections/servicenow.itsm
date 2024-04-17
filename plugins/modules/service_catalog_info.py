@@ -10,7 +10,7 @@ __metaclass__ = type
 
 
 DOCUMENTATION = r"""
-module: configuration_item_relations
+module: service_catalog_info
 
 author:
   - Cosmin Tupangiu (@tupyy)
@@ -51,6 +51,7 @@ options:
          - Query for item content
          - For more information, please refer to
            U(https://developer.servicenow.com/dev.do#!/reference/api/utah/rest/c_ServiceCatalogAPI#servicecat-GET-items)
+        type: str
 """
 
 EXAMPLES = r"""
@@ -104,66 +105,67 @@ records:
   description:
     - List of catalogs.
   returned: success
-  type: List
+  type: list
   sample:
-    "records": [
-    {
-        "categories": [
-            {
-                "description": "Datacenter hardware and services to the support business\n\t\t\tsystems.\n\t\t",
-                "full_description": null,
-                "subcategories": [
-                    {
-                        "sys_id": "d67c446ec0a80165000335aa37eafbc1",
-                        "title": "Services"
-                    }
-                ],
-                "sys_id": "803e95e1c3732100fca206e939ba8f2a",
-                "title": "Infrastructure"
-            },
-            {
-                "description": "Request for IT services to be performed",
-                "full_description": null,
-                "subcategories": [],
-                "sys_id": "d67c446ec0a80165000335aa37eafbc1",
-                "title": "Services"
-            }
-        ],
-        "description": "Products and services for the IT department",
-        "has_categories": true,
-        "has_items": true,
-        "items": [
-            {
-                "catalogs": [
-                    {
-                        "active": true,
-                        "sys_id": "e0d08b13c3330100c8b837659bba8fb4",
-                        "title": "Service Catalog"
-                    },
-                    {
-                        "active": true,
-                        "sys_id": "742ce428d7211100f2d224837e61036d",
-                        "title": "Technical Catalog"
-                    }
-                ],
-                "category": {
-                    "sys_id": "e15706fc0a0a0aa7007fc21e1ab70c2f",
-                    "title": "Can We Help You?"
-                },
-                "description": "<p>Here you can request a new Knowledge Base to be used. A Knowledge Base can be used to store Knowledge in an organization and anyone can request for a new one to be created.</p>",
-                "mandatory_attachment": false,
-                "name": "Request Knowledge Base",
-                "order": 0,
-                "request_method": "",
-                "short_description": "Request for a Knowledge Base",
-                "sys_class_name": "sc_cat_item_producer",
-                "sys_id": "81c887819f203100d8f8700c267fcfb5",
-                "type": "record_producer"
-            },
-        ],
-        "sys_id": "742ce428d7211100f2d224837e61036d",
-        "title": "Technical Catalog"
-    }]
+    [
+      {
+      "categories": [
+          {
+              "description": "Datacenter hardware and services to the support business\n\t\t\tsystems.\n\t\t",
+              "full_description": null,
+              "subcategories": [
+                  {
+                      "sys_id": "d67c446ec0a80165000335aa37eafbc1",
+                      "title": "Services"
+                  }
+              ],
+              "sys_id": "803e95e1c3732100fca206e939ba8f2a",
+              "title": "Infrastructure"
+          },
+          {
+              "description": "Request for IT services to be performed",
+              "full_description": null,
+              "subcategories": [],
+              "sys_id": "d67c446ec0a80165000335aa37eafbc1",
+              "title": "Services"
+          }
+      ],
+      "description": "Products and services for the IT department",
+      "has_categories": true,
+      "has_items": true,
+      "items": [
+          {
+              "catalogs": [
+                  {
+                      "active": true,
+                      "sys_id": "e0d08b13c3330100c8b837659bba8fb4",
+                      "title": "Service Catalog"
+                  },
+                  {
+                      "active": true,
+                      "sys_id": "742ce428d7211100f2d224837e61036d",
+                      "title": "Technical Catalog"
+                  }
+              ],
+              "category": {
+                  "sys_id": "e15706fc0a0a0aa7007fc21e1ab70c2f",
+                  "title": "Can We Help You?"
+              },
+              "description": "<p>Some description</p>",
+              "mandatory_attachment": false,
+              "name": "Request Knowledge Base",
+              "order": 0,
+              "request_method": "",
+              "short_description": "Request for a Knowledge Base",
+              "sys_class_name": "sc_cat_item_producer",
+              "sys_id": "81c887819f203100d8f8700c267fcfb5",
+              "type": "record_producer"
+          },
+      ],
+      "sys_id": "742ce428d7211100f2d224837e61036d",
+      "title": "Technical Catalog"
+      }
+    ]
 """
 
 from ..module_utils import arguments, client, errors, generic
@@ -248,22 +250,20 @@ def main():
         ),
         items=dict(
             type="dict",
-            suboptions=dict(
-                type="dict",
-                options=dict(
-                    content=dict(
-                        type="str",
-                        choices=["brief", "full"],
-                        required=True
-                    ),
-                    query=dict(type="str")
-                )
+            options=dict(
+                content=dict(
+                    type="str",
+                    choices=["brief", "full"],
+                    required=True
+                ),
+                query=dict(type="str")
             )
         ),
     )
 
     module = AnsibleModule(
         argument_spec=module_args,
+        supports_check_mode=True,
     )
 
     try:

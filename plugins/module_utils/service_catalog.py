@@ -17,7 +17,7 @@ class ItemContent(object):
     NONE = 3
 
     @classmethod
-    def from_str(self, s):
+    def from_str(cls, s):
         if s == "full":
             return ItemContent.FULL
         if s == "brief":
@@ -61,8 +61,11 @@ class Catalog(ServiceCatalogObject):
                       "has_categories", "has_items", "categories", "items"]
     MANDATORY_FIELS = ["sys_id"]
 
-    def __init__(self, data=dict()):
-        self.data = data
+    def __init__(self, data=None):
+        if not data:
+            self.data = dict()
+        else:
+            self.data = data
         self._categories = []
         self._items = []
 
@@ -92,7 +95,12 @@ class Category(ServiceCatalogObject):
     DISPLAY_FIELDS = ["sys_id", "description", "title",
                       "full_description", "subcategories"]
 
-    def __init__(self, data=dict()):
+    def __init__(self, data=None):
+        if not data:
+            self.data = dict()
+        else:
+            self.data = data
+        self.data = data
         self.data = data
 
 
@@ -102,7 +110,11 @@ class Item(ServiceCatalogObject):
                       "type", "sys_class_name", "catalogs", "name", "category", "order",
                       "categories", "variables"]
 
-    def __init__(self, data=dict()):
+    def __init__(self, data=None):
+        if not data:
+            self.data = dict()
+        else:
+            self.data = data
         self.data = data
 
 
@@ -158,5 +170,3 @@ class ServiceCatalogClient(object):
         if not id:
             raise ValueError("item sys_id is missing")
         return Item(self.generic_client.get_record_by_sys_id("/".join([SN_BASE_PATH, "items"]), id))
-
-
