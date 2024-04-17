@@ -34,7 +34,7 @@ class ServiceCatalogObject(object):
                 if isinstance(self.data[key], ServiceCatalogObject):
                     ansible_data[key] = self.data[key].to_ansible()
                     continue
-                if type(self.data[key]) is list:
+                if isinstance(self.data[key], list):
                     ansible_data[key] = []
                     for item in self.data[key]:
                         if isinstance(item, ServiceCatalogObject):
