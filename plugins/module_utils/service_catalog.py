@@ -88,7 +88,7 @@ class Catalog(ServiceCatalogObject):
     def to_ansible(self):
         self.data["categories"] = self.categories
         self.data["items"] = self.items
-        return super().to_ansible()
+        return super(Catalog, self).to_ansible()
 
 
 class Category(ServiceCatalogObject):
@@ -106,7 +106,7 @@ class Category(ServiceCatalogObject):
 
 class Item(ServiceCatalogObject):
     DISPLAY_FIELDS = ["sys_id", "short_description", "description",
-                      "availabiltiy", "mandatory_attachment", "request_method",
+                      "availability", "mandatory_attachment", "request_method",
                       "type", "sys_class_name", "catalogs", "name", "category", "order",
                       "categories", "variables"]
 
