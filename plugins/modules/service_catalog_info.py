@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright: (c) 2024, Red Hat
+# Copyright: 2024, Contributors to the Ansible project
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -18,9 +18,9 @@ author:
 short_description: List ServiceNow service catalogs along with categories and items
 
 description:
-  - Retrive information about ServiceCatalogs
+  - Retrieve information about ServiceCatalogs.
   - For more information, refer to ServiceNow service catalog documentation at
-    U(https://developer.servicenow.com/dev.do#!/reference/api/tokyo/rest/c_ServiceCatalogAPI)
+    U(https://developer.servicenow.com/dev.do#!/reference/api/utah/rest/c_ServiceCatalogAPI)
 
 version_added: 2.6.0
 
@@ -31,7 +31,7 @@ extends_documentation_fragment:
 options:
   categories:
     description:
-      - If true the cateogies will be fetched from SN
+      - If set to V(true), the categories will be fetched from ServiceNow.
     type: bool
   items:
     description:
@@ -41,14 +41,14 @@ options:
     suboptions:
       content:
         description:
-         - Content type of the item
-         - Set to full if the whole item will be fetched
+         - Content type of the item.
+         - Set to V(full), if the whole item will be fetched.
         type: str
         choices: [full, brief]
         required: true
       query:
         description:
-         - Query for item content
+         - Query for the item content.
          - For more information, please refer to
            U(https://developer.servicenow.com/dev.do#!/reference/api/utah/rest/c_ServiceCatalogAPI#servicecat-GET-items)
         type: str
@@ -57,20 +57,12 @@ options:
 EXAMPLES = r"""
 - name: Return all catalogs without categories but with items (brief information)
   servicenow.itsm.service_catalog_info:
-    instance:
-      host: "{{ sn_host }}"
-      username: "{{ sn_username }}"
-      password: "{{ sn_password }}"
     categories: false
     items:
       content: brief
 
 - name: Return service catalog without categories but with items (brief information)
   servicenow.itsm.service_catalog_info:
-    instance:
-      host: "{{ sn_host }}"
-      username: "{{ sn_username }}"
-      password: "{{ sn_password }}"
     sys_id: "{{ service_catalog.sys_id }}"
     categories: false
     items:
@@ -78,10 +70,6 @@ EXAMPLES = r"""
 
 - name: Return service catalog with categories and with items (full information)
   servicenow.itsm.service_catalog_info:
-    instance:
-      host: "{{ sn_host }}"
-      username: "{{ sn_username }}"
-      password: "{{ sn_password }}"
     sys_id: "{{ service_catalog.sys_id }}"
     categories: true
     items:
@@ -89,10 +77,6 @@ EXAMPLES = r"""
 
 - name: Return service catalog with categories and with all items containing word "iPhone"
   servicenow.itsm.service_catalog_info:
-    instance:
-      host: "{{ sn_host }}"
-      username: "{{ sn_username }}"
-      password: "{{ sn_password }}"
     sys_id: "{{ service_catalog.sys_id }}"
     categories: true
     items:
