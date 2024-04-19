@@ -3,6 +3,21 @@
     SN_USERNAME: "{{ sn_username }}"
     SN_PASSWORD: "{{ sn_password }}"
 
+  vars:
+    assignment_groups:
+      py3.9-ansible-2.15: network
+      py3.10-ansible-2.15: software
+      py3.11-ansible-2.15: hardware
+      py3.12-ansible-2.15: IT Securities CAB
+      py3.9-ansible-2.16: Help Desk
+      py3.10-ansible-2.16: Openspace
+      py3.11-ansible-2.16: Problem Solving
+      py3.12-ansible-2.16: LDAP Admins
+      py3.9-ansible-2.18: IT Securities
+      py3.10-ansible-2.18: IT Finance CAB
+      py3.11-ansible-2.18: Network CAB Managers
+      py3.12-ansible-2.18: Service Desk
+
   block:
     - name: Create test change_request for referencing in change tasks
       servicenow.itsm.change_request: 
@@ -415,6 +430,10 @@
         that:
           - result is changed
 
+    # To avoid clashes between run we need to choose a new assignment_group for each python/ansible combination
+    - set_fact:
+        instance: "py{{ ansible_facts.python.version.major }}.{{ ansible_facts.python.version.minor }}-ansible-{{ ansible_version.major }}.{{ ansible_version.minor }}"
+
     # Test closing change request task with assignment_group_id
     - name: Create test change_request for referencing in change tasks closure test with assignment_group_id
       servicenow.itsm.change_request:
@@ -436,7 +455,7 @@
         change_request_number: "{{ change_request_result.record.number }}"
         type: planning
         state: open
-        assignment_group: Network
+        assignment_group: "{{ assignment_groups[instance] | default('network') }}"
         short_description: "{{ prefix }} Implement collision avoidance"
         description: "Implement collision avoidance based on the newly installed TOF sensor arrays."
         other:
