@@ -592,7 +592,8 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
                 for record in records:
                     referenced = referenced_dict.get(record["sys_id"], None)
                     if referenced:
-                        if record["sys_id"] not in processed_records: referenced.pop("sys_id")
+                        if record["sys_id"] not in processed_records:
+                            referenced.pop("sys_id")
                         processed_records.append(record["sys_id"])
                         for key, value in referenced.items():
                             record[key] = value
