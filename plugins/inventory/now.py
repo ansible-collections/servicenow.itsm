@@ -588,6 +588,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
                 )
 
                 referenced_dict = dict((x["sys_id"], x) for x in referenced_records)
+                # Keep track of processed 'sys_id' to avoid popping it twice if there were duplicates returned by ServiceNow.
                 processed_records = []
                 for record in records:
                     referenced = referenced_dict.get(record["sys_id"], None)
