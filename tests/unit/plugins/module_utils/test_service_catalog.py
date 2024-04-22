@@ -83,7 +83,7 @@ class TestServiceCatalog:
         assert "has_categories" in ansible
         assert "has_items" in ansible
         assert "categories" in ansible
-        assert "items" in ansible
+        assert "sn_items" in ansible
         assert "intruder" not in ansible
 
     def test_category_display_fields(self):

@@ -153,7 +153,7 @@ class TestModule:
 
         assert len(records) == 1
         assert len(records[0]["categories"]) == 1
-        assert len(records[0]["items"]) == 1
+        assert len(records[0]["sn_items"]) == 1
         assert records[0]["categories"][0] == service_catalog.Category(category).to_ansible()
-        assert records[0]["items"][0] == service_catalog.Category(item).to_ansible()
+        assert records[0]["sn_items"][0] == service_catalog.Category(item).to_ansible()
         assert records[0]["sys_id"] == "1"
