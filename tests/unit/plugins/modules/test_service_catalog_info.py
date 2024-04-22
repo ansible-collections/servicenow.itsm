@@ -11,7 +11,6 @@ import sys
 
 import pytest
 from ansible_collections.servicenow.itsm.plugins.module_utils import (
-    errors,
     service_catalog
 )
 from ansible_collections.servicenow.itsm.plugins.modules import (
@@ -21,61 +20,6 @@ from ansible_collections.servicenow.itsm.plugins.modules import (
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
 )
-
-
-class TestParamsValidation:
-    def test_validation_1(self):
-        params = dict(
-            instance=dict(
-                host="https://my.host.name", username="user", password="pass"
-            ),
-            categories=False,
-            items=dict(
-                content="brief",
-                query=""
-            )
-        )
-
-        with pytest.raises(errors.ServiceNowError):
-            service_catalog_info.validate_params(params)
-
-    def test_validation_2(self):
-        params = dict(
-            instance=dict(
-                host="https://my.host.name", username="user", password="pass"
-            ),
-            categories=False,
-            items=dict(
-                content=dict(),
-            )
-        )
-
-        with pytest.raises(errors.ServiceNowError):
-            service_catalog_info.validate_params(params)
-
-    def test_validation_3(self):
-        params = dict(
-            instance=dict(
-                host="https://my.host.name", username="user", password="pass"
-            ),
-            categories=False,
-            items=dict()
-        )
-
-        with pytest.raises(errors.ServiceNowError):
-            service_catalog_info.validate_params(params)
-
-    def test_validation_4(self):
-        params = dict(
-            instance=dict(
-                host="https://my.host.name", username="user", password="pass"
-            ),
-            sys_id="",
-            categories=False,
-        )
-
-        with pytest.raises(errors.ServiceNowError):
-            service_catalog_info.validate_params(params)
 
 
 class TestModule:
@@ -114,6 +58,7 @@ class TestModule:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 categories=False,
+                items_info="none"
             )
         )
 
@@ -138,6 +83,7 @@ class TestModule:
                 ),
                 sys_id="catalog_sys_id",
                 categories=False,
+                items_info="none"
             )
         )
 
@@ -161,6 +107,7 @@ class TestModule:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 categories=True,
+                items_info="none"
             )
         )
 
@@ -187,9 +134,7 @@ class TestModule:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 categories=True,
-                items=dict(
-                    content="brief"
-                )
+                items_info="brief"
             )
         )
 
