@@ -176,19 +176,19 @@ def get_catalog_info(sc_client, catalog, with_categories=True, with_items=ItemCo
 
 def validate_params(params):
     missing = []
-    if "items" in params and "content" not in params["items"]:
-        missing.append(
-            'Missing required subparameter "content" of "items" paramter')
+    if "items" in params:
+        if "content" not in params["items"]:
+            missing.append(
+                'Missing required subparameter "content" of "items" paramter')
+        elif not params["items"]["content"]:
+            missing.append(
+                'Missing value for required subparameter "content" of "items"')
+        if "query" in params["items"] and not params["items"]["query"]:
+            missing.append('Missing value for "query" subparameter of "items"')
 
-    if not params["items"]["content"]:
+    if "sys_id" in params and not params["sys_id"]:
         missing.append(
-            'Missing value for required subparameter "content" of "items"')
-    elif params["items"]["content"] not in ("brief", "full"):
-        missing.append(
-            'Unknown value {0} for required subparameter "content" of "items"'.format(params["items"]["content"]))
-
-    if "query" in params["items"] and not params["items"]["query"]:
-        missing.extend('Missing value for "query" subparameter of "items"')
+            'Missing value for "sys_id"')
 
     if missing:
         raise errors.ServiceNowError(
@@ -200,12 +200,12 @@ def run(module, sc_client):
     validate_params(module.params)
 
     item_information = ItemContent.NONE
-    if module.params["items"]:
+    if "items" in module.params:
         item_information = ItemContent.from_str(module.params["items"]["content"])
 
     fetch_categories = module.params["categories"]
 
-    if module.params["sys_id"]:
+    if "sys_id" in module.params:
         catalog = get_catalog_info(
             sc_client,
             sc_client.get_catalog(module.params["sys_id"]),
@@ -240,7 +240,7 @@ def main():
                     choices=["brief", "full"],
                     required=True
                 ),
-                query=dict(type="str")
+                query=dict(type="str"),
             )
         ),
     )
