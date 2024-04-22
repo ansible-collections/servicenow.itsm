@@ -58,7 +58,7 @@ class ServiceCatalogObject(object):
 
 class Catalog(ServiceCatalogObject):
     DISPLAY_FIELDS = ["sys_id", "description", "title",
-                      "has_categories", "has_items", "categories", "items"]
+                      "has_categories", "has_items", "categories", "sn_items"]
     MANDATORY_FIELS = ["sys_id"]
 
     def __init__(self, data=None):
@@ -87,7 +87,7 @@ class Catalog(ServiceCatalogObject):
 
     def to_ansible(self):
         self.data["categories"] = self.categories
-        self.data["items"] = self.items
+        self.data["sn_items"] = self.items
         return super(Catalog, self).to_ansible()
 
 
