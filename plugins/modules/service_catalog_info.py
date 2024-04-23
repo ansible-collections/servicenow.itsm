@@ -148,15 +148,19 @@ from ..module_utils.service_catalog import ItemContent, ServiceCatalogClient
 from ansible.module_utils.basic import AnsibleModule
 
 
-def get_catalog_info(sc_client, catalog, with_categories=True, with_items=ItemContent.BRIEF):
+def get_catalog_info(sc_client, catalog, with_categories, items_config):
     if with_categories:
         catalog.categories = sc_client.get_categories(catalog.sys_id)
 
-    if with_items == ItemContent.NONE:
+    if items_config["info"] == ItemContent.NONE:
         return catalog
 
-    items = sc_client.get_items(catalog.sys_id)
-    if with_items == ItemContent.BRIEF:
+    query = None
+    if items_config["query"]:
+        query = dict(sysparm_text=items_config["query"])
+
+    items = sc_client.get_items(catalog.sys_id, query)
+    if items_config["info"] == ItemContent.BRIEF:
         catalog.items = items
         return catalog
 
@@ -166,7 +170,10 @@ def get_catalog_info(sc_client, catalog, with_categories=True, with_items=ItemCo
 
 
 def run(module, sc_client):
-    item_information = ItemContent.from_str(module.params["items_info"])
+    items_config = dict(
+        info=ItemContent.from_str(module.params["items_info"]),
+        query=module.params["items_query"]
+    )
 
     fetch_categories = module.params["categories"]
 
@@ -175,14 +182,14 @@ def run(module, sc_client):
             sc_client,
             sc_client.get_catalog(module.params["sys_id"]),
             fetch_categories,
-            item_information
+            items_config
         )
         return [catalog.to_ansible()]
 
     # fetch all catalogs
     catalogs = []
     for catalog in sc_client.get_catalogs():
-        catalog = get_catalog_info(sc_client, catalog, fetch_categories, item_information)
+        catalog = get_catalog_info(sc_client, catalog, fetch_categories, items_config)
         catalogs.append(catalog.to_ansible())
 
     return catalogs

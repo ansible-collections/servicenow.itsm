@@ -58,7 +58,8 @@ class TestModule:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 categories=False,
-                items_info="none"
+                items_info="none",
+                items_query=None
             )
         )
 
@@ -83,7 +84,8 @@ class TestModule:
                 ),
                 sys_id="catalog_sys_id",
                 categories=False,
-                items_info="none"
+                items_info="none",
+                items_query=None
             )
         )
 
@@ -107,7 +109,8 @@ class TestModule:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 categories=True,
-                items_info="none"
+                items_info="none",
+                items_query=None
             )
         )
 
@@ -134,7 +137,8 @@ class TestModule:
                     host="https://my.host.name", username="user", password="pass"
                 ),
                 categories=True,
-                items_info="brief"
+                items_info="brief",
+                items_query=None
             )
         )
 
