@@ -162,7 +162,7 @@ class TestInstance:
                 SN_CLIENT_SECRET="client_secret",
                 SN_REFRESH_TOKEN="refresh_token",
                 SN_GRANT_TYPE="grant_type",
-                SN_TIMEOUT="timeout",
+                SN_TIMEOUT="100",
             ).get(key)
 
         mocker.patch("os.getenv", new=getenv)
@@ -176,7 +176,7 @@ class TestInstance:
             client_secret="client_secret",
             refresh_token="refresh_token",
             grant_type="grant_type",
-            timeout="timeout",
+            timeout=100,
         )
 
     def test_get_instance(self, inventory_plugin, mocker):
@@ -196,7 +196,87 @@ class TestInstance:
             client_secret="SN_CLIENT_SECRET",
             refresh_token="SN_REFRESH_TOKEN",
             grant_type="SN_GRANT_TYPE",
-            timeout="SN_TIMEOUT",
+            timeout=120,
+        )
+
+    def test_get_timeout_default_value(self, inventory_plugin, mocker):
+        def getenv(key):
+            return dict(
+                SN_HOST="host",
+                SN_USERNAME="username",
+                SN_PASSWORD="password",
+                SN_CLIENT_ID="client_id",
+                SN_CLIENT_SECRET="client_secret",
+                SN_REFRESH_TOKEN="refresh_token",
+                SN_GRANT_TYPE="grant_type",
+                SN_TIMEOUT="wrong_timeout",
+            ).get(key)
+
+        mocker.patch("os.getenv", new=getenv)
+
+        config = inventory_plugin._get_instance_from_env()
+        assert config == dict(
+            host="host",
+            username="username",
+            password="password",
+            client_id="client_id",
+            client_secret="client_secret",
+            refresh_token="refresh_token",
+            grant_type="grant_type",
+            timeout=120,
+        )
+
+    def test_get_timeout_missing_env_value(self, inventory_plugin, mocker):
+        def getenv(key):
+            return dict(
+                SN_HOST="host",
+                SN_USERNAME="username",
+                SN_PASSWORD="password",
+                SN_CLIENT_ID="client_id",
+                SN_CLIENT_SECRET="client_secret",
+                SN_REFRESH_TOKEN="refresh_token",
+                SN_GRANT_TYPE="grant_type",
+            ).get(key)
+
+        mocker.patch("os.getenv", new=getenv)
+
+        config = inventory_plugin._get_instance_from_env()
+        assert config == dict(
+            host="host",
+            username="username",
+            password="password",
+            client_id="client_id",
+            client_secret="client_secret",
+            refresh_token="refresh_token",
+            grant_type="grant_type",
+            timeout=120,
+        )
+
+    def test_get_timeout(self, inventory_plugin, mocker):
+        def getenv(key):
+            return dict(
+                SN_HOST="host",
+                SN_USERNAME="username",
+                SN_PASSWORD="password",
+                SN_CLIENT_ID="client_id",
+                SN_CLIENT_SECRET="client_secret",
+                SN_REFRESH_TOKEN="refresh_token",
+                SN_GRANT_TYPE="grant_type",
+                SN_TIMEOUT="50",
+            ).get(key)
+
+        mocker.patch("os.getenv", new=getenv)
+
+        config = inventory_plugin._get_instance_from_env()
+        assert config == dict(
+            host="host",
+            username="username",
+            password="password",
+            client_id="client_id",
+            client_secret="client_secret",
+            refresh_token="refresh_token",
+            grant_type="grant_type",
+            timeout=50,
         )
 
 
