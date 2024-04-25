@@ -1,0 +1,2 @@
+---
+release_summary: 'Introduce generic API client, test against all current releases of ServiceNow, and introduce support for Event-Driven Ansible Notification Service (aka EDA NS) application'
