@@ -10,6 +10,15 @@ The Ansible Collection for ServiceNow IT Service Management ([ITSM](https://www.
 |       2 | Maintained                  | TBA                  |
 |       1 | Maintained (bug fixes only) | September 2023       |
 
+## ServiceNow Platform Support
+
+| ServiceNow Release | Collection Release          | Expected end of life |
+| -----------------: | --------------------------: | -------------------: |
+| Washington DC      | 2.5.0+                      | TBA                  |
+| Vancouver          | 2.5.0+                      | TBA                  |
+| Utah               | 2.1.0+                      | TBA                  |
+| Tokyo              | 2.1.0+                      | TBA                  |
+
 <!--start requires_ansible-->
 ## Ansible version compatibility
 
