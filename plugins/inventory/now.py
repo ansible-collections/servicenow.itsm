@@ -498,6 +498,12 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
                     return value
             return None
 
+        def get_timeout_from_env(default=120):
+            try:
+                return float(os.getenv("SN_TIMEOUT"))
+            except (ValueError, TypeError):
+                return default
+
         return dict(
             host=os.getenv("SN_HOST"),
             username=os.getenv("SN_USERNAME"),
@@ -506,7 +512,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             client_secret=get_secret_from_env(),
             refresh_token=os.getenv("SN_REFRESH_TOKEN"),
             grant_type=os.getenv("SN_GRANT_TYPE"),
-            timeout=os.getenv("SN_TIMEOUT"),
+            timeout=get_timeout_from_env(),
         )
 
     def _get_instance(self):

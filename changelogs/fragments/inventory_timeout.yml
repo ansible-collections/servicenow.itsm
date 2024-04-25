@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - now - Fix crash when SN_TIMEOUT is set because is it passed as string instead of a number (https://github.com/ansible-collections/servicenow.itsm/pull/348).
