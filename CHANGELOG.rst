@@ -4,6 +4,38 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.5.0
+======
+
+Release Summary
+---------------
+
+Introduce generic API client, test against all current releases of ServiceNow, and introduce support for Event-Driven Ansible Notification Service (aka EDA NS) application
+
+Minor Changes
+-------------
+
+- Added option to allow changing sysparm_limit for table query (https://github.com/ansible-collections/servicenow.itsm/pull/309).
+- Included integration tests and instances targeting the following ServiceNow releases: Washington, Vancouver, Utah, Tokyo
+- api - allow `api` module to make request outside `Table API` namespace(https://github.com/ansible-collections/servicenow.itsm/pull/314).
+- api_info - allow `api_info` module to make request outside `Table API` namespace(https://github.com/ansible-collections/servicenow.itsm/pull/314).
+- change_request - allow change_request_mapping for category parameter (https://github.com/ansible-collections/servicenow.itsm/issues/266).
+- client - allow user to pass a `object_hook` function to rest client for custom decoding of the json response(https://github.com/ansible-collections/servicenow.itsm/pull/316).
+- configuration_item_relations - add module to add and remove relations between configuration items.
+- configuration_item_relations_info - add module retrieve relations of a configuration item.
+- now - add cache support for the inventory plugin (https://github.com/ansible-collections/servicenow.itsm/pull/315).
+- now.py - replace "." in reference field column name to "_" in host variable
+
+Bugfixes
+--------
+
+- now - Fix crash when SN_TIMEOUT is set because is it passed as string instead of a number (https://github.com/ansible-collections/servicenow.itsm/pull/348).
+
+New Modules
+-----------
+
+- servicenow.itsm.configuration_item_relations - Manage ServiceNow relations between configuration items
+- servicenow.itsm.configuration_item_relations_info - Retreive ServiceNow relations of configuration items
 
 v2.4.0
 ======
@@ -36,7 +68,6 @@ This is the minor release of the ``servicenow.itsm`` collection.
 This changelog contains all changes to the modules in this collection that
 have been added after the release of ``servicenow.itsm`` 2.2.0.
 
-
 Minor Changes
 -------------
 
@@ -59,7 +90,6 @@ This is the minor release of the ``servicenow.itsm`` collection.
 This changelog contains all changes to the modules in this collection that
 have been added after the release of ``servicenow.itsm`` 2.1.0.
 
-
 Minor Changes
 -------------
 
@@ -79,7 +109,6 @@ Release Summary
 This is the minor release of the ``servicenow.itsm`` collection.
 This changelog contains all changes to the modules in this collection that
 have been added after the release of ``servicenow.itsm`` 2.0.0.
-
 
 Minor Changes
 -------------
@@ -148,7 +177,6 @@ Release Summary
 
 This is the minor release of the ``servicenow.itsm`` collection.
 
-
 Minor Changes
 -------------
 
@@ -166,7 +194,6 @@ Release Summary
 
 This is the patch release of the ``servicenow.itsm`` collection.
 
-
 v1.3.2
 ======
 
@@ -175,7 +202,6 @@ Release Summary
 
 This is the patch release of the ``servicenow.itsm`` collection.
 
-
 v1.3.1
 ======
 
@@ -183,7 +209,6 @@ Release Summary
 ---------------
 
 This is the patch release of the ``servicenow.itsm`` collection.
-
 
 v1.3.0
 ======
@@ -194,7 +219,6 @@ Release Summary
 This is the minor release of the ``servicenow.itsm`` collection.
 This changelog contains all changes to the modules in this collection that
 have been added after the release of ``servicenow.itsm`` 1.2.0.
-
 
 Minor Changes
 -------------

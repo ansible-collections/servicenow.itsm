@@ -1,3 +1,0 @@
----
-minor_changes:
-  - change_request - allow change_request_mapping for category parameter (https://github.com/ansible-collections/servicenow.itsm/issues/266).

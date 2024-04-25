@@ -1,3 +1,0 @@
----
-minor_changes:
-  - now.py - replace "." in reference field column name to "_" in host variable

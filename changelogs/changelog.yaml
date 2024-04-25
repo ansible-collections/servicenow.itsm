@@ -333,3 +333,47 @@ releases:
     - table_client.yml
     - update_prepare_release.yml
     release_date: '2024-03-07'
+  2.5.0:
+    changes:
+      bugfixes:
+      - now - Fix crash when SN_TIMEOUT is set because is it passed as string instead
+        of a number (https://github.com/ansible-collections/servicenow.itsm/pull/348).
+      minor_changes:
+      - Added option to allow changing sysparm_limit for table query (https://github.com/ansible-collections/servicenow.itsm/pull/309).
+      - 'Included integration tests and instances targeting the following ServiceNow
+        releases: Washington, Vancouver, Utah, Tokyo'
+      - api - allow `api` module to make request outside `Table API` namespace(https://github.com/ansible-collections/servicenow.itsm/pull/314).
+      - api_info - allow `api_info` module to make request outside `Table API` namespace(https://github.com/ansible-collections/servicenow.itsm/pull/314).
+      - change_request - allow change_request_mapping for category parameter (https://github.com/ansible-collections/servicenow.itsm/issues/266).
+      - client - allow user to pass a `object_hook` function to rest client for custom
+        decoding of the json response(https://github.com/ansible-collections/servicenow.itsm/pull/316).
+      - configuration_item_relations - add module to add and remove relations between
+        configuration items.
+      - configuration_item_relations_info - add module retrieve relations of a configuration
+        item.
+      - now - add cache support for the inventory plugin (https://github.com/ansible-collections/servicenow.itsm/pull/315).
+      - now.py - replace "." in reference field column name to "_" in host variable
+      release_summary: Introduce generic API client, test against all current releases
+        of ServiceNow, and introduce support for Event-Driven Ansible Notification
+        Service (aka EDA NS) application
+    fragments:
+    - api.yml
+    - api_info.yml
+    - change_request_category.yml
+    - ci_relations.yml
+    - ci_relations_info.yml
+    - client_object_hook.yml
+    - inventory.yml
+    - inventory_timeout.yml
+    - more_test_instances.yml
+    - no_dot_var.yml
+    - release_summary.yml
+    - sysparm_limit.yml
+    modules:
+    - description: Manage ServiceNow relations between configuration items
+      name: configuration_item_relations
+      namespace: ''
+    - description: Retreive ServiceNow relations of configuration items
+      name: configuration_item_relations_info
+      namespace: ''
+    release_date: '2024-04-25'
