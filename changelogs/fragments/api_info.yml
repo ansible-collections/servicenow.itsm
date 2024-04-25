@@ -1,3 +1,0 @@
----
-minor_changes:
-  - api_info - allow `api_info` module to make request outside `Table API` namespace(https://github.com/ansible-collections/servicenow.itsm/pull/314).

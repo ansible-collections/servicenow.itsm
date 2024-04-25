@@ -1,3 +1,0 @@
----
-minor_changes:
-  - client - allow user to pass a `object_hook` function to rest client for custom decoding of the json response(https://github.com/ansible-collections/servicenow.itsm/pull/316).
