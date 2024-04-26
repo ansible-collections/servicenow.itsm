@@ -24,18 +24,6 @@ on:
               "ansible-version": "stable-2.15",
               "python-version": "3.12"
             },
-            {
-              "ansible-version": "stable-2.16",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.9"
-            }
           ]
         required: false
         type: string
@@ -51,14 +39,11 @@ jobs:
       fail-fast: false
       matrix:
         ansible-version:
-          # ansible 2.9 does install from git
-          # - stable-2.14  # Disabled due to bug in collection loader
           - stable-2.15
           - stable-2.16
           - milestone
           - devel
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
