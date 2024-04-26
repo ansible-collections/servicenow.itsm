@@ -3,8 +3,10 @@ name: itsm
 version: 2.5.0
 readme: README.md
 authors:
-  - XLAB Steampunk <steampunk@xlab.si>
+  - Cosmin Tupangiu <ctupangi@redhat.com>
+  - Martin Jackson <mhjacks@redhat.com>
   - Abhijeet Kasurde <akasurde@redhat.com>
+  - XLAB Steampunk <steampunk@xlab.si>
 description: Ansible Collection for interacting with ServiceNow ITSM
 license_file: LICENSE
 tags:
