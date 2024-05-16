@@ -9,6 +9,8 @@ __metaclass__ = type
 
 from . import errors
 
+SN_BASE_PATH = "api/sn_sc/servicecatalog"
+
 
 def extract_response(func):
     def fn(self, *args):
@@ -172,7 +174,6 @@ class Item(ServiceCatalogObject):
 
 class ServiceCatalogClient(object):
     """Wraps the generic client with Service Catalog specific methods"""
-    BASE_API = "api/sn_sc/servicecatalog"
 
     def __init__(self, generic_client):
         if not generic_client:
@@ -181,7 +182,7 @@ class ServiceCatalogClient(object):
 
     def get_catalogs(self):
         """Returns the list of all catalogs"""
-        records = self.generic_client.list_records("/".join([self.BASE_API, "catalogs"]))
+        records = self.generic_client.list_records("/".join([SN_BASE_PATH, "catalogs"]))
         if records:
             return [Catalog(record) for record in records]
         return []
@@ -190,8 +191,7 @@ class ServiceCatalogClient(object):
         """Returns the catalog identified by id"""
         if not id:
             raise ValueError("catalog sys_id is missing")
-        record = self.generic_client.get_record_by_sys_id(
-            "/".join([self.BASE_API, "catalogs"]), id)
+        record = self.generic_client.get_record_by_sys_id("/".join([SN_BASE_PATH, "catalogs"]), id)
         if record:
             return Catalog(record)
         return None
@@ -201,10 +201,10 @@ class ServiceCatalogClient(object):
         if not id:
             raise ValueError("catalog sys_id is missing")
         records = self.generic_client.list_records(
-            "/".join([self.BASE_API, "catalogs", catalog_id, "categories"]))
+            "/".join([SN_BASE_PATH, "catalogs", catalog_id, "categories"]))
         if records:
             return [Category(record) for record in records]
-        return dict()
+        return []
 
     def get_items(self, catalog_id, query=None, batch_size=1000):
         """Returns the list of all items of the catalog `catalog_id`"""
@@ -215,16 +215,15 @@ class ServiceCatalogClient(object):
             _query.update(query)
         self.generic_client.batch_size = batch_size
         records = self.generic_client.list_records(
-            "/".join([self.BASE_API, "items"]), _query)
+            "/".join([SN_BASE_PATH, "items"]), _query)
         if records:
             return [Item(record) for record in records]
-        return dict()
+        return []
 
     def get_item(self, id):
         if not id:
             raise ValueError("item sys_id is missing")
-
-        return Item(self.generic_client.get_record_by_sys_id("/".join([self.BASE_API, "items"]), id))
+        return Item(self.generic_client.get_record_by_sys_id("/".join([SN_BASE_PATH, "items"]), id))
 
 
 class CartClient:
