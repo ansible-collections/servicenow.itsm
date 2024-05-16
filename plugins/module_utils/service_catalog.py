@@ -45,12 +45,6 @@ class ServiceCatalogObject(object):
                 ansible_data[key] = self.data[key]
         return ansible_data
 
-    def valid(self):
-        for key in self.MANDATORY_FIELS:
-            if key not in self.data or not self.data[key]:
-                return False
-        return True
-
     @property
     def sys_id(self):
         return self.data["sys_id"] if "sys_id" in self.data else ""
@@ -59,7 +53,6 @@ class ServiceCatalogObject(object):
 class Catalog(ServiceCatalogObject):
     DISPLAY_FIELDS = ["sys_id", "description", "title",
                       "has_categories", "has_items", "categories", "sn_items"]
-    MANDATORY_FIELS = ["sys_id"]
 
     def __init__(self, data=None):
         if not data:
@@ -100,8 +93,6 @@ class Category(ServiceCatalogObject):
             self.data = dict()
         else:
             self.data = data
-        self.data = data
-        self.data = data
 
 
 class Item(ServiceCatalogObject):
@@ -115,7 +106,6 @@ class Item(ServiceCatalogObject):
             self.data = dict()
         else:
             self.data = data
-        self.data = data
 
 
 class ServiceCatalogClient(object):
@@ -150,7 +140,7 @@ class ServiceCatalogClient(object):
             "/".join([SN_BASE_PATH, "catalogs", catalog_id, "categories"]))
         if records:
             return [Category(record) for record in records]
-        return dict()
+        return []
 
     def get_items(self, catalog_id, query=None, batch_size=1000):
         """Returns the list of all items of the catalog `catalog_id`"""
@@ -164,7 +154,7 @@ class ServiceCatalogClient(object):
             "/".join([SN_BASE_PATH, "items"]), _query)
         if records:
             return [Item(record) for record in records]
-        return dict()
+        return []
 
     def get_item(self, id):
         if not id:
