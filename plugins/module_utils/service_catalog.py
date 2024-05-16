@@ -7,8 +7,17 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+from . import errors
 
-SN_BASE_PATH = "api/sn_sc/servicecatalog"
+
+def extract_response(func):
+    def fn(self, *args):
+        response = func(self, *args)
+        record = response.json.get("result", None)
+        if not record:
+            raise errors.ServiceNowError("Error retrieving the result")
+        return record
+    return fn
 
 
 class ItemContent(object):
@@ -45,6 +54,12 @@ class ServiceCatalogObject(object):
                 ansible_data[key] = self.data[key]
         return ansible_data
 
+    def valid(self):
+        for key in self.MANDATORY_FIELS:
+            if key not in self.data or not self.data[key]:
+                return False
+        return True
+
     @property
     def sys_id(self):
         return self.data["sys_id"] if "sys_id" in self.data else ""
@@ -60,6 +75,7 @@ class Catalog(ServiceCatalogObject):
         "categories",
         "sn_items",
     ]
+    MANDATORY_FIELS = ["sys_id"]
 
     def __init__(self, data=None):
         if not data:
@@ -105,6 +121,8 @@ class Category(ServiceCatalogObject):
             self.data = dict()
         else:
             self.data = data
+        self.data = data
+        self.data = data
 
 
 class Item(ServiceCatalogObject):
@@ -125,15 +143,36 @@ class Item(ServiceCatalogObject):
         "variables",
     ]
 
+    PAYLOAD_FIELDS = dict(
+        also_request_for=dict(key="sysparm_also_request_for", default=None),
+        quantity=dict(key="sysparm_quantity", default="1"),
+        requested_for=dict(key="sysparm_requested_for", default=None),
+        variables=dict(key="variables", default=None)
+    )
+
     def __init__(self, data=None):
         if not data:
             self.data = dict()
         else:
             self.data = data
+        self.data = data
+
+    def to_payload(self):
+        payload = dict()
+
+        for name, val in self.PAYLOAD_FIELDS.items():
+            value = self.data.get(name, val["default"])
+            if value:
+                if name == "also_request_for":
+                    payload[val["key"]] = ",".join(value)
+                else:
+                    payload[val["key"]] = value
+        return payload
 
 
 class ServiceCatalogClient(object):
     """Wraps the generic client with Service Catalog specific methods"""
+    BASE_API = "api/sn_sc/servicecatalog"
 
     def __init__(self, generic_client):
         if not generic_client:
@@ -142,7 +181,7 @@ class ServiceCatalogClient(object):
 
     def get_catalogs(self):
         """Returns the list of all catalogs"""
-        records = self.generic_client.list_records("/".join([SN_BASE_PATH, "catalogs"]))
+        records = self.generic_client.list_records("/".join([self.BASE_API, "catalogs"]))
         if records:
             return [Catalog(record) for record in records]
         return []
@@ -152,8 +191,7 @@ class ServiceCatalogClient(object):
         if not id:
             raise ValueError("catalog sys_id is missing")
         record = self.generic_client.get_record_by_sys_id(
-            "/".join([SN_BASE_PATH, "catalogs"]), id
-        )
+            "/".join([self.BASE_API, "catalogs"]), id)
         if record:
             return Catalog(record)
         return None
@@ -163,11 +201,10 @@ class ServiceCatalogClient(object):
         if not id:
             raise ValueError("catalog sys_id is missing")
         records = self.generic_client.list_records(
-            "/".join([SN_BASE_PATH, "catalogs", catalog_id, "categories"])
-        )
+            "/".join([self.BASE_API, "catalogs", catalog_id, "categories"]))
         if records:
             return [Category(record) for record in records]
-        return []
+        return dict()
 
     def get_items(self, catalog_id, query=None, batch_size=1000):
         """Returns the list of all items of the catalog `catalog_id`"""
@@ -178,17 +215,50 @@ class ServiceCatalogClient(object):
             _query.update(query)
         self.generic_client.batch_size = batch_size
         records = self.generic_client.list_records(
-            "/".join([SN_BASE_PATH, "items"]), _query
-        )
+            "/".join([self.BASE_API, "items"]), _query)
         if records:
             return [Item(record) for record in records]
-        return []
+        return dict()
 
     def get_item(self, id):
         if not id:
             raise ValueError("item sys_id is missing")
-        return Item(
-            self.generic_client.get_record_by_sys_id(
-                "/".join([SN_BASE_PATH, "items"]), id
-            )
-        )
+
+        return Item(self.generic_client.get_record_by_sys_id("/".join([self.BASE_API, "items"]), id))
+
+
+class CartClient:
+    BASE_API = dict(
+        add_to_cart="api/sn_sc/servicecatalog/items/{sys_id}/add_to_cart",
+        checkout="/api/sn_sc/servicecatalog/cart/checkout",
+        submit_order="/api/sn_sc/servicecatalog/cart/checkout",
+        order_now="/api/sn_sc/servicecatalog/items/{sys_id}/order_now",
+        cart="/api/sn_sc/servicecatalog/cart"
+    )
+
+    def __init__(self, rest_client):
+        if not rest_client:
+            raise ValueError("rest client cannot be none")
+        self.rest_client = rest_client
+
+    @extract_response
+    def get_cart(self):
+        return self.rest_client.get(self.BASE_API["cart"], None)
+
+    @extract_response
+    def checkout_cart(self):
+        return self.rest_client.post(self.BASE_API["checkout"], None)
+
+    @extract_response
+    def submit_order(self):
+        return self.rest_client.post(self.BASE_API["submit_order"], None)
+
+    @extract_response
+    def add_to_cart(self, item):
+        api = self.BASE_API["add_to_cart"].format(sys_id=item.sys_id)
+        return self.rest_client.post(api, item.to_payload())
+
+    @extract_response
+    def order_now(self, item):
+        api = self.BASE_API["order_now"].format(sys_id=item.sys_id)
+        return self.rest_client.post(api, item.to_payload())

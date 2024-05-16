@@ -172,3 +172,7 @@ jobs:
       - name: Run service_catalog_info integration tests
         run: ansible-test integration service_catalog_info
         working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run service_catalog integration tests
+        run: ansible-test integration service_catalog
+        working-directory: ${{ steps.identify.outputs.collection_path }}
