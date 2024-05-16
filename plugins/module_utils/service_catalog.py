@@ -19,6 +19,7 @@ def extract_response(func):
         if not record:
             raise errors.ServiceNowError("Error retrieving the result")
         return record
+
     return fn
 
 
@@ -149,7 +150,7 @@ class Item(ServiceCatalogObject):
         also_request_for=dict(key="sysparm_also_request_for", default=None),
         quantity=dict(key="sysparm_quantity", default="1"),
         requested_for=dict(key="sysparm_requested_for", default=None),
-        variables=dict(key="variables", default=None)
+        variables=dict(key="variables", default=None),
     )
 
     def __init__(self, data=None):
@@ -191,7 +192,9 @@ class ServiceCatalogClient(object):
         """Returns the catalog identified by id"""
         if not id:
             raise ValueError("catalog sys_id is missing")
-        record = self.generic_client.get_record_by_sys_id("/".join([SN_BASE_PATH, "catalogs"]), id)
+        record = self.generic_client.get_record_by_sys_id(
+            "/".join([SN_BASE_PATH, "catalogs"]), id
+        )
         if record:
             return Catalog(record)
         return None
@@ -201,7 +204,8 @@ class ServiceCatalogClient(object):
         if not id:
             raise ValueError("catalog sys_id is missing")
         records = self.generic_client.list_records(
-            "/".join([SN_BASE_PATH, "catalogs", catalog_id, "categories"]))
+            "/".join([SN_BASE_PATH, "catalogs", catalog_id, "categories"])
+        )
         if records:
             return [Category(record) for record in records]
         return []
@@ -215,7 +219,8 @@ class ServiceCatalogClient(object):
             _query.update(query)
         self.generic_client.batch_size = batch_size
         records = self.generic_client.list_records(
-            "/".join([SN_BASE_PATH, "items"]), _query)
+            "/".join([SN_BASE_PATH, "items"]), _query
+        )
         if records:
             return [Item(record) for record in records]
         return []
@@ -223,7 +228,11 @@ class ServiceCatalogClient(object):
     def get_item(self, id):
         if not id:
             raise ValueError("item sys_id is missing")
-        return Item(self.generic_client.get_record_by_sys_id("/".join([SN_BASE_PATH, "items"]), id))
+        return Item(
+            self.generic_client.get_record_by_sys_id(
+                "/".join([SN_BASE_PATH, "items"]), id
+            )
+        )
 
 
 class CartClient:
@@ -232,7 +241,7 @@ class CartClient:
         checkout="/api/sn_sc/servicecatalog/cart/checkout",
         submit_order="/api/sn_sc/servicecatalog/cart/checkout",
         order_now="/api/sn_sc/servicecatalog/items/{sys_id}/order_now",
-        cart="/api/sn_sc/servicecatalog/cart"
+        cart="/api/sn_sc/servicecatalog/cart",
     )
 
     def __init__(self, rest_client):

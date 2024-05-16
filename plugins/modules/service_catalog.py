@@ -140,13 +140,11 @@ def run(module, sc_client):
 
 def main():
     module_args = dict(
-        arguments.get_spec(
-            "instance"
-        ),
+        arguments.get_spec("instance"),
         action=dict(
             type="str",
             choices=["checkout", "submit_order", "order_now"],
-            default="checkout"
+            default="checkout",
         ),
         items=dict(
             type="list",
@@ -154,14 +152,11 @@ def main():
             options=dict(
                 sys_id=dict(type="str", required=True),
                 requested_for=dict(type="str"),
-                also_request_for=dict(
-                    type="list",
-                    elements="str"
-                ),
+                also_request_for=dict(type="list", elements="str"),
                 quantity=dict(type="int", default=1),
-                variables=dict(type="dict")
-            )
-        )
+                variables=dict(type="dict"),
+            ),
+        ),
     )
 
     module = AnsibleModule(
