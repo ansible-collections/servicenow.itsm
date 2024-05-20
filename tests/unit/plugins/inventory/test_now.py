@@ -50,21 +50,21 @@ class TestFetchRecords:
         now.fetch_records(table_client, "table_name", None)
 
         table_client.list_records.assert_called_once_with(
-            "table_name", dict(sysparm_display_value=True)
+            "table_name", dict(sysparm_display_value='all')
         )
 
     def test_query(self, table_client):
         now.fetch_records(table_client, "table_name", [dict(my="!= value")])
 
         table_client.list_records.assert_called_once_with(
-            "table_name", dict(sysparm_display_value=True, sysparm_query="my!=value")
+            "table_name", dict(sysparm_display_value='all', sysparm_query="my!=value")
         )
 
     def test_no_query_with_fields(self, table_client):
         now.fetch_records(table_client, "table_name", None, fields=["a", "b", "c"])
 
         table_client.list_records.assert_called_once_with(
-            "table_name", dict(sysparm_display_value=True, sysparm_fields="a,b,c")
+            "table_name", dict(sysparm_display_value='all', sysparm_fields="a,b,c")
         )
 
 
