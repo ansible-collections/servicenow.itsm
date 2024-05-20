@@ -432,8 +432,8 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
 
         inventory_hostname = record[name_source]
         if isinstance(inventory_hostname, dict):
-            if 'display_value' in inventory_hostname:
-                inventory_hostname = inventory_hostname['display_value']
+            if "display_value" in inventory_hostname:
+                inventory_hostname = inventory_hostname["display_value"]
             else:
                 msg = "Inventory hostname source column '{0}' is a dict but does not contain 'display_value'."
                 raise AnsibleParserError(msg.format(name_source))
@@ -459,14 +459,16 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         for k in columns:
             value = record.get(k)
             if isinstance(value, dict):
-                main_value = value.get('display_value') or value.get('value') or value
+                main_value = value.get("display_value") or value.get("value") or value
                 self.inventory.set_variable(host, k.replace(".", "_"), main_value)
 
                 if show_values:
-                    for sub_key in ['display_value', 'value']:
+                    for sub_key in ["display_value", "value"]:
                         sub_value = value.get(sub_key)
                         if sub_value and sub_value != main_value:
-                            self.inventory.set_variable(host, f"{k}_{sub_key}", sub_value)
+                            self.inventory.set_variable(
+                                host, f"{k}_{sub_key}", sub_value
+                            )
             else:
                 self.inventory.set_variable(host, k.replace(".", "_"), value)
 
