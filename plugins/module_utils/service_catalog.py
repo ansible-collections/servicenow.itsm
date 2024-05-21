@@ -124,8 +124,6 @@ class Category(ServiceCatalogObject):
             self.data = dict()
         else:
             self.data = data
-        self.data = data
-        self.data = data
 
 
 class Item(ServiceCatalogObject):
@@ -158,7 +156,6 @@ class Item(ServiceCatalogObject):
             self.data = dict()
         else:
             self.data = data
-        self.data = data
 
     def to_payload(self):
         payload = dict()
