@@ -520,18 +520,43 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         instance_env = self._get_instance_from_env()
         return self._merge_instance_config(instance_config, instance_env)
 
+    def _construct_cache_suffix(self):
+        """
+        Return the cache suffix constructued from either query or sysparm_query.
+        As the query can be a list of dict elements, key and values are encoded in base64.
+        The result is base64 encoded.
+        """
+
+        def __encode(s):
+            from base64 import b64encode
+
+            return b64encode(s.encode()).decode()
+
+        suffix = ""
+        if self.get_option("query"):
+            for query in self.get_option("query"):
+                for k, v in query.items():
+                    if suffix:
+                        suffix = "{0}_{1}_{2}".format(suffix, k, v)
+                    else:
+                        suffix = "{0}_{1}".format(k, v)
+        elif self.get_option("sysparm_query"):
+            suffix = self.get_option("sysparm_query")
+        else:
+            return ""
+        return __encode(suffix)
+
     def parse(self, inventory, loader, path, cache=True):
         super(InventoryModule, self).parse(inventory, loader, path)
 
         self._read_config_data(path)
         self.cache_key = self.get_cache_key(path)
-        suffix = self.get_option("query") or self.get_option("sysparm_query") or ""
         cache_sub_key = "/".join(
             [
                 self._get_instance()["host"].rstrip("/"),
                 "table",
                 self.get_option("table"),
-                suffix,
+                self._construct_cache_suffix(),
             ]
         )
 
