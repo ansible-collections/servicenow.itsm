@@ -165,8 +165,8 @@ def main():
     )
 
     try:
-        snow_client = client.Client(**module.params["instance"])
-        cart_client = CartClient(snow_client)
+        rest_client = client.Client(**module.params["instance"])
+        cart_client = CartClient(rest_client)
         changed, record, diff = run(module, cart_client)
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
