@@ -852,3 +852,59 @@ class TestInventoryModuleFillConstructed:
         )
 
         assert a2.vars == dict(inventory_file=None, inventory_dir=None)
+
+
+class TestConstructCacheSuffix:
+    def test_from_query(self, inventory_plugin, mocker):
+        from base64 import b64encode
+
+        real_suffix = b64encode("opt1_a_opt2_b".encode()).decode()
+
+        def get_option(*args):
+            return [dict(opt1="a"), dict(opt2="b")]
+
+        mocker.patch.object(inventory_plugin, "get_option", new=get_option)
+
+        suffix = inventory_plugin._construct_cache_suffix()
+
+        assert suffix == real_suffix
+
+    def test_from_query_2(self, inventory_plugin, mocker):
+        from base64 import b64encode
+
+        real_suffix = b64encode("opt1_a".encode()).decode()
+
+        def get_option(*args):
+            return [dict(opt1="a")]
+
+        mocker.patch.object(inventory_plugin, "get_option", new=get_option)
+
+        suffix = inventory_plugin._construct_cache_suffix()
+
+        assert suffix == real_suffix
+
+    def test_from_sysparm_query(self, inventory_plugin, mocker):
+        from base64 import b64encode
+
+        real_suffix = b64encode("a".encode()).decode()
+
+        def get_option(*args):
+            if args[0] == "sysparm_query":
+                return "a"
+            return []
+
+        mocker.patch.object(inventory_plugin, "get_option", new=get_option)
+
+        suffix = inventory_plugin._construct_cache_suffix()
+
+        assert suffix == real_suffix
+
+    def test_from_sysparm_query_2(self, inventory_plugin, mocker):
+        def get_option(*args):
+            return None
+
+        mocker.patch.object(inventory_plugin, "get_option", new=get_option)
+
+        suffix = inventory_plugin._construct_cache_suffix()
+
+        assert suffix == ""
