@@ -12,11 +12,6 @@ on:
         required: false
         type: string
         default: ""
-      checkout_path:
-        description: Path to pass to checkout action
-        required: false
-        type: string
-        default: ""
       checkout_ref:
         description: Repository reference to pass to checkout action
         required: false
@@ -40,7 +35,6 @@ jobs:
         if: ${{ inputs.checkout_ref }}
         uses: actions/checkout@v3
         with:
-          path: ${{ inputs.checkout_path }}
           ref: ${{ inputs.checkout_ref }}
           fetch-depth: ${{ inputs.checkout_fetch_depth }}
 
