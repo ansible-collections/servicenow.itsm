@@ -179,44 +179,50 @@ class TestAttachmentTransformMetadataList:
 
 class TestAttachmentAreChanged:
     def test_unchanged(self):
-        assert attachment.are_changed(
-            [
-                {"hash": "hash", "file_name": "attachment_name.txt"},
-                {"hash": "hash", "file_name": "another_file_name.txt"},
-            ],
-            {
-                "attachment_name.txt": {
-                    "path": "some/path/file_name.txt",
-                    "type": "text/markdown",
-                    "hash": "hash",
+        assert (
+            attachment.are_changed(
+                [
+                    {"hash": "hash", "file_name": "attachment_name.txt"},
+                    {"hash": "hash", "file_name": "another_file_name.txt"},
+                ],
+                {
+                    "attachment_name.txt": {
+                        "path": "some/path/file_name.txt",
+                        "type": "text/markdown",
+                        "hash": "hash",
+                    },
+                    "another_file_name.txt": {
+                        "path": "some/path/another_file_name.txt",
+                        "type": "text/plain",
+                        "hash": "hash",
+                    },
                 },
-                "another_file_name.txt": {
-                    "path": "some/path/another_file_name.txt",
-                    "type": "text/plain",
-                    "hash": "hash",
-                },
-            },
-        ) == [False, False]
+            )
+            == [False, False]
+        )
 
     def test_changed(self):
-        assert attachment.are_changed(
-            [
-                {"hash": "oldhash", "file_name": "attachment_name.txt"},
-                {"hash": "oldhash", "file_name": "another_file_name.txt"},
-            ],
-            {
-                "attachment_name.txt": {
-                    "path": "some/path/file_name.txt",
-                    "type": "text/markdown",
-                    "hash": "hash",
+        assert (
+            attachment.are_changed(
+                [
+                    {"hash": "oldhash", "file_name": "attachment_name.txt"},
+                    {"hash": "oldhash", "file_name": "another_file_name.txt"},
+                ],
+                {
+                    "attachment_name.txt": {
+                        "path": "some/path/file_name.txt",
+                        "type": "text/markdown",
+                        "hash": "hash",
+                    },
+                    "another_file_name.txt": {
+                        "path": "some/path/another_file_name.txt",
+                        "type": "text/plain",
+                        "hash": "hash",
+                    },
                 },
-                "another_file_name.txt": {
-                    "path": "some/path/another_file_name.txt",
-                    "type": "text/plain",
-                    "hash": "hash",
-                },
-            },
-        ) == [True, True]
+            )
+            == [True, True]
+        )
 
 
 class TestAttachmentListRecords:
