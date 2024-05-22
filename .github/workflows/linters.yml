@@ -6,11 +6,9 @@ on: [workflow_call]  # allow this workflow to be called from other workflows
 jobs:
   linters:
     uses: ./.github/workflows/tox.yml
-    env:
-      source_directory: "./source"
     with:
       envname: ""
       labelname: "lint"
-      checkout_path: ${{ env.source_directory }}
+      checkout_path: "./source"
       checkout_ref: ${{ github.event.pull_request.head.sha }}
       checkout_fetch_depth: "0"
