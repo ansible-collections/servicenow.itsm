@@ -25,7 +25,7 @@ on:
       checkout_fetch_depth:
         description: Fetch depth to pass to checkout action
         required: false
-        type: integer
+        type: string
         default: "0"
 jobs:
   tox:
