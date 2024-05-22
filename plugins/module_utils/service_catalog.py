@@ -51,8 +51,15 @@ class ServiceCatalogObject(object):
 
 
 class Catalog(ServiceCatalogObject):
-    DISPLAY_FIELDS = ["sys_id", "description", "title",
-                      "has_categories", "has_items", "categories", "sn_items"]
+    DISPLAY_FIELDS = [
+        "sys_id",
+        "description",
+        "title",
+        "has_categories",
+        "has_items",
+        "categories",
+        "sn_items",
+    ]
 
     def __init__(self, data=None):
         if not data:
@@ -85,8 +92,13 @@ class Catalog(ServiceCatalogObject):
 
 
 class Category(ServiceCatalogObject):
-    DISPLAY_FIELDS = ["sys_id", "description", "title",
-                      "full_description", "subcategories"]
+    DISPLAY_FIELDS = [
+        "sys_id",
+        "description",
+        "title",
+        "full_description",
+        "subcategories",
+    ]
 
     def __init__(self, data=None):
         if not data:
@@ -96,10 +108,22 @@ class Category(ServiceCatalogObject):
 
 
 class Item(ServiceCatalogObject):
-    DISPLAY_FIELDS = ["sys_id", "short_description", "description",
-                      "availability", "mandatory_attachment", "request_method",
-                      "type", "sys_class_name", "catalogs", "name", "category", "order",
-                      "categories", "variables"]
+    DISPLAY_FIELDS = [
+        "sys_id",
+        "short_description",
+        "description",
+        "availability",
+        "mandatory_attachment",
+        "request_method",
+        "type",
+        "sys_class_name",
+        "catalogs",
+        "name",
+        "category",
+        "order",
+        "categories",
+        "variables",
+    ]
 
     def __init__(self, data=None):
         if not data:
@@ -127,7 +151,9 @@ class ServiceCatalogClient(object):
         """Returns the catalog identified by id"""
         if not id:
             raise ValueError("catalog sys_id is missing")
-        record = self.generic_client.get_record_by_sys_id("/".join([SN_BASE_PATH, "catalogs"]), id)
+        record = self.generic_client.get_record_by_sys_id(
+            "/".join([SN_BASE_PATH, "catalogs"]), id
+        )
         if record:
             return Catalog(record)
         return None
@@ -137,7 +163,8 @@ class ServiceCatalogClient(object):
         if not id:
             raise ValueError("catalog sys_id is missing")
         records = self.generic_client.list_records(
-            "/".join([SN_BASE_PATH, "catalogs", catalog_id, "categories"]))
+            "/".join([SN_BASE_PATH, "catalogs", catalog_id, "categories"])
+        )
         if records:
             return [Category(record) for record in records]
         return []
@@ -151,7 +178,8 @@ class ServiceCatalogClient(object):
             _query.update(query)
         self.generic_client.batch_size = batch_size
         records = self.generic_client.list_records(
-            "/".join([SN_BASE_PATH, "items"]), _query)
+            "/".join([SN_BASE_PATH, "items"]), _query
+        )
         if records:
             return [Item(record) for record in records]
         return []
@@ -159,4 +187,8 @@ class ServiceCatalogClient(object):
     def get_item(self, id):
         if not id:
             raise ValueError("item sys_id is missing")
-        return Item(self.generic_client.get_record_by_sys_id("/".join([SN_BASE_PATH, "items"]), id))
+        return Item(
+            self.generic_client.get_record_by_sys_id(
+                "/".join([SN_BASE_PATH, "items"]), id
+            )
+        )

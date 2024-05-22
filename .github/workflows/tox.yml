@@ -16,7 +16,7 @@ on:
         description: Path to pass to checkout action
         required: false
         type: string
-        default: ${{ env.source_directory }}
+        default: ""
       checkout_ref:
         description: Repository reference to pass to checkout action
         required: false

@@ -172,7 +172,7 @@ def get_catalog_info(sc_client, catalog, with_categories, items_config):
 def run(module, sc_client):
     items_config = dict(
         info=ItemContent.from_str(module.params["items_info"]),
-        query=module.params["items_query"]
+        query=module.params["items_query"],
     )
 
     fetch_categories = module.params["categories"]
@@ -182,7 +182,7 @@ def run(module, sc_client):
             sc_client,
             sc_client.get_catalog(module.params["sys_id"]),
             fetch_categories,
-            items_config
+            items_config,
         )
         return [catalog.to_ansible()]
 
@@ -210,7 +210,7 @@ def main():
             choices=["brief", "full", "none"],
             default="none",
         ),
-        items_query=dict(type="str")
+        items_query=dict(type="str"),
     )
 
     module = AnsibleModule(
