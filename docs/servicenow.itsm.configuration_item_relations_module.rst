@@ -1,8 +1,8 @@
 
 .. Created with antsibull-docs 2.11.0
 
-servicenow.itsm.api module -- Manage ServiceNow POST, PATCH and DELETE requests
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+servicenow.itsm.configuration_item_relations module -- Manage ServiceNow relations between configuration items
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.5.0).
 
@@ -11,9 +11,9 @@ To check whether it is installed, run ``ansible-galaxy collection list``.
 
 To install it, use: :code:`ansible-galaxy collection install servicenow.itsm`.
 
-To use it in a playbook, specify: ``servicenow.itsm.api``.
+To use it in a playbook, specify: ``servicenow.itsm.configuration_item_relations``.
 
-New in servicenow.itsm 2.0.0
+New in servicenow.itsm 2.5.0
 
 .. contents::
    :local:
@@ -23,10 +23,8 @@ New in servicenow.itsm 2.0.0
 Synopsis
 --------
 
-- Create, delete or update a ServiceNow record from the given resource.
-- For more information, refer to the ServiceNow REST Table API documentation at \ https://docs.servicenow.com/bundle/tokyo-application-development/page/integrate/inbound-rest/concept/c_RESTAPI.html\ .
+- Add and remove ServiceNow relations between configuration items.
 
-This module has a corresponding action plugin.
 
 
 
@@ -49,58 +47,21 @@ Parameters
   <tbody>
   <tr>
     <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-action"></div>
-      <p style="display: inline;"><strong>action</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-action" title="Permalink to this option"></a>
+      <div class="ansibleOptionAnchor" id="parameter-direction"></div>
+      <p style="display: inline;"><strong>direction</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-direction" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
-        / <span style="color: red;">required</span>
       </p>
     </td>
     <td valign="top">
-      <p>The action to perform.</p>
+      <p>Direction of the relation.</p>
       <p style="margin-top: 8px;"><b">Choices:</b></p>
       <ul>
-        <li><p><code>&#34;post&#34;</code></p></li>
-        <li><p><code>&#34;patch&#34;</code></p></li>
-        <li><p><code>&#34;delete&#34;</code></p></li>
+        <li><p><code>&#34;inbound&#34;</code></p></li>
+        <li><p><code style="color: blue;"><b>&#34;outbound&#34;</b></code> <span style="color: blue;">← (default)</span></p></li>
       </ul>
 
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-api_path"></div>
-      <p style="display: inline;"><strong>api_path</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-api_path" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.5.0</i></p>
-    </td>
-    <td valign="top">
-      <p>The path of the service which a record is to be created, updated or deleted from.</p>
-      <p>Mutually exclusive with <code class='docutils literal notranslate'>resource</code>.</p>
-      <p>Require one of <code class='docutils literal notranslate'>resource</code> or <code class='docutils literal notranslate'>api_path</code>.</p>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-data"></div>
-      <p style="display: inline;"><strong>data</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-data" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">dictionary</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>The data that we want to update or create the resource with.</p>
-      <p>Mutually exclusive with <em>template</em>.</p>
-      <p>Only relevant if <em>action==patch</em> or <em>action==post</em>.</p>
-      <p>A Dict consists of resource&#x27;s column names as keys (such as description, number, priority, and so on) and the patching values as values (the value we want to change the column to).</p>
-      <p>When updating a resource&#x27;s record, if no datum is specified for a specific column, the value of that column will remain intact.</p>
-      <p>When creating a resource&#x27;s record, if no datum is specified for a specific column, the default value of the column will be used.</p>
-      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">{}</code></p>
     </td>
   </tr>
   <tr>
@@ -323,64 +284,132 @@ Parameters
 
   <tr>
     <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-query_params"></div>
-      <p style="display: inline;"><strong>query_params</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-query_params" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">dictionary</span>
-      </p>
-      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.1.0</i></p>
-    </td>
-    <td valign="top">
-      <p>Query parameters that may be used on POST or PATCH request.</p>
-      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">{}</code></p>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-resource"></div>
-      <p style="display: inline;"><strong>resource</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-resource" title="Permalink to this option"></a>
+      <div class="ansibleOptionAnchor" id="parameter-name"></div>
+      <p style="display: inline;"><strong>name</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-name" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
       </p>
     </td>
     <td valign="top">
-      <p>The name of the table in which a record is to be created, updated or deleted from.</p>
-      <p>Mutually exclusive with <code class='docutils literal notranslate'>api_path</code>.</p>
-      <p>Require one of <code class='docutils literal notranslate'>resource</code> or <code class='docutils literal notranslate'>api_path</code></p>
+      <p>The name of the relation.</p>
+      <p>Mutually exclusive with <code class='docutils literal notranslate'>sys_id</code>.</p>
     </td>
   </tr>
   <tr>
     <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-sys_id"></div>
+      <div class="ansibleOptionAnchor" id="parameter-parent_classname"></div>
+      <p style="display: inline;"><strong>parent_classname</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-parent_classname" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+        / <span style="color: red;">required</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The class of the configuration item.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-parent_sys_id"></div>
+      <p style="display: inline;"><strong>parent_sys_id</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-parent_sys_id" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+        / <span style="color: red;">required</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The sys_id of the configuration item who own the relation.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-state"></div>
+      <p style="display: inline;"><strong>state</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-state" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>State of the relation.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code style="color: blue;"><b>&#34;present&#34;</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>&#34;absent&#34;</code></p></li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-sysparm_display_value"></div>
+      <p style="display: inline;"><strong>sysparm_display_value</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-sysparm_display_value" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.0.0</i></p>
+    </td>
+    <td valign="top">
+      <p>Return field display values <code class='docutils literal notranslate'>true</code>, actual values <code class='docutils literal notranslate'>false</code>, or both <code class='docutils literal notranslate'>all</code>.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code>&#34;true&#34;</code></p></li>
+        <li><p><code style="color: blue;"><b>&#34;false&#34;</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>&#34;all&#34;</code></p></li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-targets"></div>
+      <p style="display: inline;"><strong>targets</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-targets" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">list</span>
+        / <span style="color: purple;">elements=dictionary</span>
+        / <span style="color: red;">required</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>List of configuration items to be associated with the parent.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-targets/name"></div>
+      <p style="display: inline;"><strong>name</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-targets/name" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+        / <span style="color: red;">required</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>Name of the configuration item</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-targets/sys_id"></div>
       <p style="display: inline;"><strong>sys_id</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-sys_id" title="Permalink to this option"></a>
+      <a class="ansibleOptionLink" href="#parameter-targets/sys_id" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
+        / <span style="color: red;">required</span>
       </p>
     </td>
     <td valign="top">
-      <p>Required if <em>action==patch</em> or <em>action==delete</em>.</p>
+      <p>Sys_id of the configuration item</p>
     </td>
   </tr>
-  <tr>
-    <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-template"></div>
-      <p style="display: inline;"><strong>template</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-template" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>Provide a valid YAML template definition file for creating or updating a record.</p>
-      <p>Provides built-in template processing capabilities as an alternative to its data parameter.</p>
-      <p>Mutually exclusive with <em>data</em>.</p>
-      <p>If template starts with <code class='docutils literal notranslate'>"/"</code>, it is assumed you have specified absolute path to the file. Otherwise, it is assumed you have specified relative path to the file.</p>
-      <p>Template file needs to be present on the Ansible Controller&#x27;s system. Otherwise, an error is raised.</p>
-    </td>
-  </tr>
+
   </tbody>
   </table>
 
@@ -391,9 +420,12 @@ Parameters
 See Also
 --------
 
-* \ `servicenow.itsm.api\_info <api_info_module.rst>`__\ 
+* \ `servicenow.itsm.configuration\_item <configuration_item_module.rst>`__\ 
 
-  Manage ServiceNow GET requests.
+  Manage ServiceNow configuration items.
+* \ `servicenow.itsm.configuration\_item\_info <configuration_item_info_module.rst>`__\ 
+
+  List ServiceNow configuration item.
 
 Examples
 --------
@@ -401,100 +433,37 @@ Examples
 .. code-block:: yaml
 
     
-    - name: Create a record in table incident with specified short_description (which is read from data)
-      servicenow.itsm.api:
-        resource: incident
-        action: post
-        data:
-          short_description: my-incident
-      register: result
+    - name: Create relation between two ci
+      servicenow.itsm.configuration_item_relations:
+        name: Depends_On
+        direction: outbound
+        state: present
+        parent_sys_id: "{{ parent_sys_id }}"
+        parent_classname: cmdb_ci_linux_server
+        targets:
+          - name: target1
+            sys_id: target1_id
 
-    - name: Create a record in table incident with column values set in template, located in Ansible controller file system
-      servicenow.itsm.api:
-        resource: incident
-        action: post
-        template: '/testing/deployment.j2'
-      register: result
+    - name: Remove relation
+      servicenow.itsm.configuration_item_relations:
+        direction: outbound
+        state: absent
+        parent_sys_id: "{{ parent_sys_id }}"
+        parent_classname: cmdb_ci_linux_server
+        targets:
+          - name: target1
+            sys_id: target1_id
 
-    - name: Update a record with given sys_id in table incident with template, located in Ansible controller file system
-      servicenow.itsm.api:
-        resource: incident
-        action: patch
-        sys_id: 46b66a40a9fe198101f243dfbc79033d
-        template: '/testing/deployment.j2'
-      register: result
-
-    - name: Update column short_description (specified in data) in table incident of a record with given sys_id
-      servicenow.itsm.api:
-        resource: incident
-        action: patch
-        sys_id: 46b66a40a9fe198101f243dfbc79033d
-        data:
-          short_description: my-incident-updated
-      register: result
-
-    - name: Delete the resource the table incident with given sys_id
-      servicenow.itsm.api:
-        resource: incident
-        action: delete
-        sys_id: 46b66a40a9fe198101f243dfbc79033d
-      register: result
-
-    - name: Create a record in the table sc_req_item and set short_description's value to demo-description2
-      servicenow.itsm.api:
-        resource: sc_req_item
-        action: post
-        data:
-          short_description: demo-description2
-      register: result
-
-    - name: Create a record in the table sc_req_item and set short_description's value to demo-description2
-      servicenow.itsm.api:
-        resource: sc_req_item
-        action: post
-        data:
-          short_description: demo-description2
-      register: result
-
-    - name: create user (object with encrypted fields)
-      servicenow.itsm.api:
-        resource: sys_user
-        action: post
-        query_params:
-          sysparm_input_display_value: true
-        data:
-          user_name: "demo_username"
-          user_password: "demo_password"
-          first_name: "first_name"
-          last_name: Demouser
-          department: IT
-          email: "demo_username@example.com"
-          title: Demo user
-      register: user
-
-    - name: Create a record in sc_req_item with column values set in template, located in Ansible controller file system
-      servicenow.itsm.api:
-        resource: sc_req_item
-        action: post
-        template: '/testing/deployment.j2'
-      register: result
-
-    - name: Delete a record by sys_id from table sc_req_item
-      servicenow.itsm.api:
-        resource: sc_req_item
-        action: delete
-        sys_id: b82adae197201110949235dfe153afec
-      register: result
-
-    - name: Create a record in cmdb service using api_path
-      servicenow.itsm.api:
-        api_path: api/now/cmdb/instance/cmdb_ci_linux_server
-        action: post
-        data:
-          attributes:
-            name: "linux99"
-            firewall_status: "intranet"
-        source: "ServiceNow"
+    - name: Update relation by adding one more target
+      servicenow.itsm.configuration_item_relations:
+        name: Depends_On
+        direction: outbound
+        state: present
+        parent_sys_id: "{{ owner_sys_id }}"
+        parent_classname: cmdb_ci_linux_server
+        targets:
+          - name: target1
+            sys_id: target1_id
 
 
 
@@ -524,9 +493,9 @@ The following are the fields unique to this module:
       </p>
     </td>
     <td valign="top">
-      <p>The created, updated or deleted record.</p>
+      <p>The relations of the configuration item.</p>
       <p style="margin-top: 8px;"><b>Returned:</b> success</p>
-      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>{&#34;active&#34;: &#34;true&#34;, &#34;activity_due&#34;: &#34;&#34;, &#34;additional_assignee_list&#34;: &#34;&#34;, &#34;approval&#34;: &#34;not requested&#34;, &#34;approval_history&#34;: &#34;&#34;, &#34;approval_set&#34;: &#34;&#34;, &#34;assigned_to&#34;: &#34;&#34;, &#34;assignment_group&#34;: &#34;&#34;, &#34;business_duration&#34;: &#34;&#34;, &#34;business_impact&#34;: &#34;&#34;, &#34;business_service&#34;: &#34;&#34;, &#34;business_stc&#34;: &#34;&#34;, &#34;calendar_duration&#34;: &#34;&#34;, &#34;calendar_stc&#34;: &#34;&#34;, &#34;caller_id&#34;: &#34;&#34;, &#34;category&#34;: &#34;inquiry&#34;, &#34;cause&#34;: &#34;&#34;, &#34;caused_by&#34;: &#34;&#34;, &#34;child_incidents&#34;: &#34;0&#34;, &#34;close_code&#34;: &#34;&#34;, &#34;close_notes&#34;: &#34;&#34;, &#34;closed_at&#34;: &#34;&#34;, &#34;closed_by&#34;: &#34;&#34;, &#34;cmdb_ci&#34;: &#34;&#34;, &#34;comments&#34;: &#34;&#34;, &#34;comments_and_work_notes&#34;: &#34;&#34;, &#34;company&#34;: &#34;&#34;, &#34;contact_type&#34;: &#34;&#34;, &#34;contract&#34;: &#34;&#34;, &#34;correlation_display&#34;: &#34;&#34;, &#34;correlation_id&#34;: &#34;&#34;, &#34;delivery_plan&#34;: &#34;&#34;, &#34;delivery_task&#34;: &#34;&#34;, &#34;description&#34;: &#34;&#34;, &#34;due_date&#34;: &#34;&#34;, &#34;escalation&#34;: &#34;0&#34;, &#34;expected_start&#34;: &#34;&#34;, &#34;follow_up&#34;: &#34;&#34;, &#34;group_list&#34;: &#34;&#34;, &#34;hold_reason&#34;: &#34;&#34;, &#34;impact&#34;: &#34;3&#34;, &#34;incident_state&#34;: &#34;1&#34;, &#34;knowledge&#34;: &#34;false&#34;, &#34;location&#34;: &#34;&#34;, &#34;made_sla&#34;: &#34;true&#34;, &#34;notify&#34;: &#34;1&#34;, &#34;number&#34;: &#34;INC0010204&#34;, &#34;opened_at&#34;: &#34;2022-07-06 08:53:05&#34;, &#34;opened_by&#34;: &#34;6816f79cc0a8016401c5a33be04be441&#34;, &#34;order&#34;: &#34;&#34;, &#34;origin_id&#34;: &#34;&#34;, &#34;origin_table&#34;: &#34;&#34;, &#34;parent&#34;: &#34;&#34;, &#34;parent_incident&#34;: &#34;&#34;, &#34;priority&#34;: &#34;5&#34;, &#34;problem_id&#34;: &#34;&#34;, &#34;reassignment_count&#34;: &#34;0&#34;, &#34;reopen_count&#34;: &#34;0&#34;, &#34;reopened_by&#34;: &#34;&#34;, &#34;reopened_time&#34;: &#34;&#34;, &#34;resolved_at&#34;: &#34;&#34;, &#34;resolved_by&#34;: &#34;&#34;, &#34;rfc&#34;: &#34;&#34;, &#34;route_reason&#34;: &#34;&#34;, &#34;service_offering&#34;: &#34;&#34;, &#34;severity&#34;: &#34;3&#34;, &#34;short_description&#34;: &#34;my-incident&#34;, &#34;sla_due&#34;: &#34;&#34;, &#34;state&#34;: &#34;1&#34;, &#34;subcategory&#34;: &#34;&#34;, &#34;sys_class_name&#34;: &#34;incident&#34;, &#34;sys_created_by&#34;: &#34;admin&#34;, &#34;sys_created_on&#34;: &#34;2022-07-06 08:53:05&#34;, &#34;sys_domain&#34;: &#34;global&#34;, &#34;sys_domain_path&#34;: &#34;/&#34;, &#34;sys_id&#34;: &#34;35b5fb4197245110949235dfe153af06&#34;, &#34;sys_mod_count&#34;: &#34;0&#34;, &#34;sys_tags&#34;: &#34;&#34;, &#34;sys_updated_by&#34;: &#34;admin&#34;, &#34;sys_updated_on&#34;: &#34;2022-07-06 08:53:05&#34;, &#34;task_effective_number&#34;: &#34;INC0010204&#34;, &#34;time_worked&#34;: &#34;&#34;, &#34;universal_request&#34;: &#34;&#34;, &#34;upon_approval&#34;: &#34;proceed&#34;, &#34;upon_reject&#34;: &#34;cancel&#34;, &#34;urgency&#34;: &#34;3&#34;, &#34;user_input&#34;: &#34;&#34;, &#34;watch_list&#34;: &#34;&#34;, &#34;work_end&#34;: &#34;&#34;, &#34;work_notes&#34;: &#34;&#34;, &#34;work_notes_list&#34;: &#34;&#34;, &#34;work_start&#34;: &#34;&#34;}</code></p>
+      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>{&#34;inbound_relations&#34;: &#34;&#34;, &#34;outbound_relations&#34;: [{&#34;sys_id&#34;: &#34;06d7f70697514210d8a379100153af3d&#34;, &#34;target&#34;: {&#34;display_value&#34;: &#34;PS LinuxApp01&#34;, &#34;value&#34;: &#34;3a290cc60a0a0bb400000bdb386af1cf&#34;}, &#34;type&#34;: {&#34;display_value&#34;: &#34;Cools::Cooled By&#34;, &#34;value&#34;: &#34;015633570a0a0bc70029121512d46ede&#34;}}]}</code></p>
     </td>
   </tr>
   </tbody>
@@ -538,8 +507,7 @@ The following are the fields unique to this module:
 Authors
 ~~~~~~~
 
-- Tjaž Eržen (@tjazsch)
-- Jure Medvešek (@juremedvesek)
+- Cosmin Tupangiu (@tupyy)
 
 
 

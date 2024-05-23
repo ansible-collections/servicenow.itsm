@@ -1,3 +1,0 @@
-minor_changes:
-  - ServiceNow returns duplicated records causing error at line referenced.pop("sys_id")
-  - Added check for records(sys_id) that are already processed with reference records

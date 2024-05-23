@@ -1,8 +1,8 @@
 
 .. Created with antsibull-docs 2.11.0
 
-servicenow.itsm.attachment_upload module -- Upload attachment to the selected table
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+servicenow.itsm.configuration_item_relations_info module -- Retreive ServiceNow relations of configuration items
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.5.0).
 
@@ -11,9 +11,9 @@ To check whether it is installed, run ``ansible-galaxy collection list``.
 
 To install it, use: :code:`ansible-galaxy collection install servicenow.itsm`.
 
-To use it in a playbook, specify: ``servicenow.itsm.attachment_upload``.
+To use it in a playbook, specify: ``servicenow.itsm.configuration_item_relations_info``.
 
-New in servicenow.itsm 2.2.0
+New in servicenow.itsm 2.5.0
 
 .. contents::
    :local:
@@ -23,8 +23,7 @@ New in servicenow.itsm 2.2.0
 Synopsis
 --------
 
-- Upload the attachment to the selected table using table name and table sys\_id.
-- Name of the attachment serves as a unique identifier. If an attachment with a certain name already exists, but the content is different, the attachment to be uploaded will overwrite the existing attachment. If an attachment with a certain name already exists and the content is the same, the attachment will not be uploaded.
+- Retreive configuration items relations
 
 
 
@@ -48,66 +47,18 @@ Parameters
   <tbody>
   <tr>
     <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-attachments"></div>
-      <p style="display: inline;"><strong>attachments</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-attachments" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">list</span>
-        / <span style="color: purple;">elements=dictionary</span>
-      </p>
-      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 1.2.0</i></p>
-    </td>
-    <td valign="top">
-      <p>ServiceNow attachments.</p>
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-attachments/name"></div>
-      <p style="display: inline;"><strong>name</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-attachments/name" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>Name of the file to be uploaded.</p>
-      <p>Serves as unique identifier.</p>
-      <p>If not specified, the module will use <em>path</em>&#x27;s base name.</p>
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-attachments/path"></div>
-      <p style="display: inline;"><strong>path</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-attachments/path" title="Permalink to this option"></a>
+      <div class="ansibleOptionAnchor" id="parameter-classname"></div>
+      <p style="display: inline;"><strong>classname</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-classname" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
         / <span style="color: red;">required</span>
       </p>
     </td>
     <td valign="top">
-      <p>Path to the file to be uploaded.</p>
+      <p>The class of the configuration item.</p>
     </td>
   </tr>
-  <tr>
-    <td></td>
-    <td valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-attachments/type"></div>
-      <p style="display: inline;"><strong>type</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-attachments/type" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>MIME type of the file to be attached.</p>
-      <p>If not specified, the module will try to guess the file&#x27;s type from its extension.</p>
-    </td>
-  </tr>
-
   <tr>
     <td colspan="2" valign="top">
       <div class="ansibleOptionAnchor" id="parameter-instance"></div>
@@ -328,30 +279,36 @@ Parameters
 
   <tr>
     <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-table_name"></div>
-      <p style="display: inline;"><strong>table_name</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-table_name" title="Permalink to this option"></a>
+      <div class="ansibleOptionAnchor" id="parameter-sys_id"></div>
+      <p style="display: inline;"><strong>sys_id</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-sys_id" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
-        / <span style="color: red;">required</span>
       </p>
     </td>
     <td valign="top">
-      <p>Table type to attach the file to.</p>
+      <p>Unique identifier of the record to retrieve.</p>
     </td>
   </tr>
   <tr>
     <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-table_sys_id"></div>
-      <p style="display: inline;"><strong>table_sys_id</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-table_sys_id" title="Permalink to this option"></a>
+      <div class="ansibleOptionAnchor" id="parameter-sysparm_display_value"></div>
+      <p style="display: inline;"><strong>sysparm_display_value</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-sysparm_display_value" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
-        / <span style="color: red;">required</span>
       </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.0.0</i></p>
     </td>
     <td valign="top">
-      <p>Record to attach the file to.</p>
+      <p>Return field display values <code class='docutils literal notranslate'>true</code>, actual values <code class='docutils literal notranslate'>false</code>, or both <code class='docutils literal notranslate'>all</code>.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code>&#34;true&#34;</code></p></li>
+        <li><p><code style="color: blue;"><b>&#34;false&#34;</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>&#34;all&#34;</code></p></li>
+      </ul>
+
     </td>
   </tr>
   </tbody>
@@ -360,17 +317,13 @@ Parameters
 
 
 
-Notes
------
-
-- Supports check\_mode.
 
 See Also
 --------
 
-* \ `servicenow.itsm.attachement\_info <attachement_info_module.rst>`__\ 
+* \ `servicenow.itsm.configuration\_item\_relations <configuration_item_relations_module.rst>`__\ 
 
-  The official documentation on the **servicenow.itsm.attachement_info** module.
+  Manage ServiceNow relations between configuration items.
 
 Examples
 --------
@@ -378,19 +331,10 @@ Examples
 .. code-block:: yaml
 
     
-    - name: Upload attachment to table
-      servicenow.itsm.attachment_upload:
-        instance:
-          host: https://instance_id.service-now.com
-          username: user
-          password: pass
-        table_name: incident
-        table_sys_id: 003a3ef24ff1120031577d2ca310c74b
-        attachments:
-          - path: path/to/attachment1.txt
-            name: attachment1
-          - path: path/to/attachment2.txt
-            name: attachment2
+    - name: Retreive relations of a configuration item
+      servicenow.itsm.configuration_item_relations_info:
+        sys_id: "{{ configuration_item_sys_id }}"
+        classname: cmdb_ci_linux_server
 
 
 
@@ -412,18 +356,17 @@ The following are the fields unique to this module:
   <tbody>
   <tr>
     <td valign="top">
-      <div class="ansibleOptionAnchor" id="return-records"></div>
-      <p style="display: inline;"><strong>records</strong></p>
-      <a class="ansibleOptionLink" href="#return-records" title="Permalink to this return value"></a>
+      <div class="ansibleOptionAnchor" id="return-record"></div>
+      <p style="display: inline;"><strong>record</strong></p>
+      <a class="ansibleOptionLink" href="#return-record" title="Permalink to this return value"></a>
       <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">list</span>
-        / <span style="color: purple;">elements=dictionary</span>
+        <span style="color: purple;">dictionary</span>
       </p>
     </td>
     <td valign="top">
-      <p>List of attachments that were uploaded, overwritten or unchanged</p>
+      <p>The relations of the configuration item.</p>
       <p style="margin-top: 8px;"><b>Returned:</b> success</p>
-      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>{&#34;average_image_color&#34;: &#34;&#34;, &#34;chunk_size_bytes&#34;: &#34;700000&#34;, &#34;compressed&#34;: &#34;true&#34;, &#34;content_type&#34;: &#34;text/plain&#34;, &#34;download_link&#34;: &#34;https://dev139037.service-now.com/api/now/attachment/f2d5cb9647222110afc6fa37536d4361/file&#34;, &#34;file_name&#34;: &#34;sample_file2.txt&#34;, &#34;hash&#34;: &#34;f52a678046a6f06e5fca54b4c535b210f29cbaf1134f2b75197cf47078621902&#34;, &#34;image_height&#34;: &#34;&#34;, &#34;image_width&#34;: &#34;&#34;, &#34;size_bytes&#34;: &#34;210&#34;, &#34;size_compressed&#34;: &#34;207&#34;, &#34;state&#34;: &#34;pending&#34;, &#34;sys_created_by&#34;: &#34;admin&#34;, &#34;sys_created_on&#34;: &#34;2023-05-04 08:53:07&#34;, &#34;sys_id&#34;: &#34;f2d5cb9647222110afc6fa37536d4361&#34;, &#34;sys_mod_count&#34;: &#34;0&#34;, &#34;sys_tags&#34;: &#34;&#34;, &#34;sys_updated_by&#34;: &#34;admin&#34;, &#34;sys_updated_on&#34;: &#34;2023-05-04 08:53:07&#34;, &#34;table_name&#34;: &#34;incident&#34;, &#34;table_sys_id&#34;: &#34;7cd58f1647222110afc6fa37536d43ed&#34;}</code></p>
+      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>{&#34;inbound_relations&#34;: &#34;&#34;, &#34;outbound_relations&#34;: [{&#34;sys_id&#34;: &#34;06d7f70697514210d8a379100153af3d&#34;, &#34;target&#34;: {&#34;display_value&#34;: &#34;PS LinuxApp01&#34;, &#34;value&#34;: &#34;3a290cc60a0a0bb400000bdb386af1cf&#34;}, &#34;type&#34;: {&#34;display_value&#34;: &#34;Cools::Cooled By&#34;, &#34;value&#34;: &#34;015633570a0a0bc70029121512d46ede&#34;}}]}</code></p>
     </td>
   </tr>
   </tbody>
@@ -435,7 +378,7 @@ The following are the fields unique to this module:
 Authors
 ~~~~~~~
 
-- Polona Mihalič (@PolonaM)
+- Cosmin Tupangiu (@tupyy)
 
 
 

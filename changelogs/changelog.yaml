@@ -377,3 +377,30 @@ releases:
       name: configuration_item_relations_info
       namespace: ''
     release_date: '2024-04-25'
+  2.6.0:
+    changes:
+      bugfixes:
+      - now - Fix crash of inventory when query is present (https://github.com/ansible-collections/servicenow.itsm/issues/361).
+      minor_changes:
+      - Added check for records(sys_id) that are already processed with reference
+        records
+      - Raise Ansible runtime version to 2.15.0 in accordance with Ansible Lifecycle
+        policy. This implies dropping Python 3.9 from the test matrix as well.
+      - ServiceNow returns duplicated records causing error at line referenced.pop("sys_id")
+      - Update authors in galaxy.yml
+      release_summary: Introduce service_catalog modules; fix inventory crash bug
+        and improve performance by handling duplicate records better
+    fragments:
+    - galaxy_update.yml
+    - handle_duplicate_records.yml
+    - inventory_bug.yml
+    - release_summary.yml
+    - workflow_update.yml
+    modules:
+    - description: Manage ServiceNow service catalog cart
+      name: service_catalog
+      namespace: ''
+    - description: List ServiceNow service catalogs along with categories and items
+      name: service_catalog_info
+      namespace: ''
+    release_date: '2024-05-23'
