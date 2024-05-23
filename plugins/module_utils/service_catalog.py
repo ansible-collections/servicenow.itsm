@@ -57,12 +57,6 @@ class ServiceCatalogObject(object):
                 ansible_data[key] = self.data[key]
         return ansible_data
 
-    def valid(self):
-        for key in self.MANDATORY_FIELS:
-            if key not in self.data or not self.data[key]:
-                return False
-        return True
-
     @property
     def sys_id(self):
         return self.data["sys_id"] if "sys_id" in self.data else ""
@@ -78,7 +72,6 @@ class Catalog(ServiceCatalogObject):
         "categories",
         "sn_items",
     ]
-    MANDATORY_FIELS = ["sys_id"]
 
     def __init__(self, data=None):
         if not data:
