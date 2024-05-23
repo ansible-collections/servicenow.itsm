@@ -1,10 +1,10 @@
 
-.. Created with antsibull-docs 2.7.0
+.. Created with antsibull-docs 2.11.0
 
 servicenow.itsm.now inventory -- Inventory source for ServiceNow table records.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.4.0).
+This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.5.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -48,6 +48,178 @@ Parameters
   </tr>
   </thead>
   <tbody>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-cache"></div>
+      <p style="display: inline;"><strong>cache</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-cache" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">boolean</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Toggle to enable/disable the caching of the inventory&#x27;s source data, requires a cache plugin setup to work.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code style="color: blue;"><b>false</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>true</code></p></li>
+      </ul>
+
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>INI entry</p>
+        <pre>[inventory]
+  cache = false</pre>
+
+      </li>
+      <li>
+        <p>Environment variable: <code>ANSIBLE_INVENTORY_CACHE</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-cache_connection"></div>
+      <p style="display: inline;"><strong>cache_connection</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-cache_connection" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Cache connection data or path, read cache plugin documentation for specifics.</p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>INI entries</p>
+        <pre>[defaults]
+  fact_caching_connection = VALUE</pre>
+
+        <pre>[inventory]
+  cache_connection = VALUE</pre>
+
+      </li>
+      <li>
+        <p>Environment variable: <code>ANSIBLE_CACHE_PLUGIN_CONNECTION</code></p>
+
+      </li>
+      <li>
+        <p>Environment variable: <code>ANSIBLE_INVENTORY_CACHE_CONNECTION</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-cache_plugin"></div>
+      <p style="display: inline;"><strong>cache_plugin</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-cache_plugin" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Cache plugin to use for the inventory&#x27;s source data.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;memory&#34;</code></p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>INI entries</p>
+        <pre>[defaults]
+  fact_caching = memory</pre>
+
+        <pre>[inventory]
+  cache_plugin = memory</pre>
+
+      </li>
+      <li>
+        <p>Environment variable: <code>ANSIBLE_CACHE_PLUGIN</code></p>
+
+      </li>
+      <li>
+        <p>Environment variable: <code>ANSIBLE_INVENTORY_CACHE_PLUGIN</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-cache_prefix"></div>
+      <p style="display: inline;"><strong>cache_prefix</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-cache_prefix" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Prefix to use for cache plugin files/tables</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;ansible_inventory_&#34;</code></p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>INI entries</p>
+        <pre>[defaults]
+  fact_caching_prefix = ansible_inventory_</pre>
+
+        <pre>[inventory]
+  cache_prefix = ansible_inventory_</pre>
+
+      </li>
+      <li>
+        <p>Environment variable: <code>ANSIBLE_CACHE_PLUGIN_PREFIX</code></p>
+
+      </li>
+      <li>
+        <p>Environment variable: <code>ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-cache_timeout"></div>
+      <p style="display: inline;"><strong>cache_timeout</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-cache_timeout" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">integer</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>Cache duration in seconds</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">3600</code></p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>INI entries</p>
+        <pre>[defaults]
+  fact_caching_timeout = 3600</pre>
+
+        <pre>[inventory]
+  cache_timeout = 3600</pre>
+
+      </li>
+      <li>
+        <p>Environment variable: <code>ANSIBLE_CACHE_PLUGIN_TIMEOUT</code></p>
+
+      </li>
+      <li>
+        <p>Environment variable: <code>ANSIBLE_INVENTORY_CACHE_TIMEOUT</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
   <tr>
     <td colspan="2" valign="top">
       <div class="ansibleOptionAnchor" id="parameter-columns"></div>
@@ -544,6 +716,22 @@ Parameters
   </tr>
   <tr>
     <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-sysparm_limit"></div>
+      <p style="display: inline;"><strong>sysparm_limit</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-sysparm_limit" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">integer</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.5.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Control the maximum number of records returned in a single query.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">1000</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
       <div class="ansibleOptionAnchor" id="parameter-sysparm_query"></div>
       <p style="display: inline;"><strong>sysparm_query</strong></p>
       <a class="ansibleOptionLink" href="#parameter-sysparm_query" title="Permalink to this option"></a>
@@ -626,6 +814,7 @@ Notes
 -----
 
 - Query feature and constructed groups were added in version 1.2.0.
+- Caching feature added in version 2.5.0.
 
 
 Examples

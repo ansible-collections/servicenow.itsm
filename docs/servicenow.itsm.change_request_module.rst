@@ -1,10 +1,10 @@
 
-.. Created with antsibull-docs 2.7.0
+.. Created with antsibull-docs 2.11.0
 
 servicenow.itsm.change_request module -- Manage ServiceNow change requests
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.4.0).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.5.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -150,19 +150,9 @@ Parameters
     </td>
     <td valign="top">
       <p>The category of the change request.</p>
-      <p style="margin-top: 8px;"><b">Choices:</b></p>
-      <ul>
-        <li><p><code>&#34;hardware&#34;</code></p></li>
-        <li><p><code>&#34;software&#34;</code></p></li>
-        <li><p><code>&#34;service&#34;</code></p></li>
-        <li><p><code>&#34;system_software&#34;</code></p></li>
-        <li><p><code>&#34;aplication_software&#34;</code></p></li>
-        <li><p><code>&#34;network&#34;</code></p></li>
-        <li><p><code>&#34;telecom&#34;</code></p></li>
-        <li><p><code>&#34;documentation&#34;</code></p></li>
-        <li><p><code>&#34;other&#34;</code></p></li>
-      </ul>
-
+      <p>Default choices are <code class='docutils literal notranslate'>hardware</code>, <code class='docutils literal notranslate'>software</code>, <code class='docutils literal notranslate'>service</code>, <code class='docutils literal notranslate'>system_software</code>, <code class='docutils literal notranslate'>aplication_software</code>, <code class='docutils literal notranslate'>network</code>, <code class='docutils literal notranslate'>telecom</code>, <code class='docutils literal notranslate'>documentation</code>, <code class='docutils literal notranslate'>other</code>.</p>
+      <p>One can override them by setting <em>change_request_mapping.category</em>.</p>
+      <p>Hard-coded choices for <code class='docutils literal notranslate'>category</code> were removed in 2.5.0.</p>
     </td>
   </tr>
   <tr>
@@ -177,6 +167,20 @@ Parameters
     </td>
     <td valign="top">
       <p>User mapping for <em>Change request</em> object, where user can override Choice Lists values for objects.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-change_request_mapping/category"></div>
+      <p style="display: inline;"><strong>category</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-change_request_mapping/category" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">dictionary</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The category of the change request.</p>
     </td>
   </tr>
   <tr>

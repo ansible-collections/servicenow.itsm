@@ -4,6 +4,33 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.6.0
+======
+
+Release Summary
+---------------
+
+Introduce service_catalog modules; fix inventory crash bug and improve performance by handling duplicate records better
+
+Minor Changes
+-------------
+
+- Added check for records(sys_id) that are already processed with reference records
+- Raise Ansible runtime version to 2.15.0 in accordance with Ansible Lifecycle policy. This implies dropping Python 3.9 from the test matrix as well.
+- ServiceNow returns duplicated records causing error at line referenced.pop("sys_id")
+- Update authors in galaxy.yml
+
+Bugfixes
+--------
+
+- now - Fix crash of inventory when query is present (https://github.com/ansible-collections/servicenow.itsm/issues/361).
+
+New Modules
+-----------
+
+- servicenow.itsm.service_catalog - Manage ServiceNow service catalog cart
+- servicenow.itsm.service_catalog_info - List ServiceNow service catalogs along with categories and items
+
 v2.5.0
 ======
 

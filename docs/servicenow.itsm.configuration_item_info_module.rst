@@ -1,10 +1,10 @@
 
-.. Created with antsibull-docs 2.7.0
+.. Created with antsibull-docs 2.11.0
 
 servicenow.itsm.configuration_item_info module -- List ServiceNow configuration item
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.4.0).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.5.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -480,13 +480,13 @@ Examples
         name: my-configuration-item
       register: result
 
-    - name: Retrieve all hardare configuration items by using field query
+    - name: Retrieve all hardware configuration items by using field query
       servicenow.itsm.configuration_item_info:
         query:
           - category: = Hardware
       register: result
 
-    - name: Retrieve all hardare configuration items by using field sysparm_query
+    - name: Retrieve all hardware configuration items by using field sysparm_query
       servicenow.itsm.configuration_item_info:
         sysparm_query: category=Hardware
       register: result

@@ -1,10 +1,10 @@
 
-.. Created with antsibull-docs 2.7.0
+.. Created with antsibull-docs 2.11.0
 
 servicenow.itsm.change_request_task_info module -- List ServiceNow change request tasks
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.4.0).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.5.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
