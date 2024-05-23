@@ -1,0 +1,2 @@
+---
+release_summary: 'Introduce service_catalog modules; fix inventory crash bug and improve performance by handling duplicate records better'
