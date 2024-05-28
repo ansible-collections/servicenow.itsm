@@ -52,12 +52,16 @@ Name | Description
 [servicenow.itsm.configuration_item](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.configuration_item_module.rst)|Manage ServiceNow configuration items
 [servicenow.itsm.configuration_item_batch](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.configuration_item_batch_module.rst)|Manage ServiceNow configuration items in batch mode
 [servicenow.itsm.configuration_item_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.configuration_item_info_module.rst)|List ServiceNow configuration item
+[servicenow.itsm.configuration_item_relations_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.configuration_item_relations_info_module.rst)/List ServiceNow configuration items's relations
+[servicenow.itsm.configuration_item_relations](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.configuration_item_relations_module.rst)/Manage ServiceNow configuration items's relations
 [servicenow.itsm.incident](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.incident_module.rst)|Manage ServiceNow incidents
 [servicenow.itsm.incident_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.incident_info_module.rst)|List ServiceNow incidents
 [servicenow.itsm.problem](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.problem_module.rst)|Manage ServiceNow problems
 [servicenow.itsm.problem_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.problem_info_module.rst)|List ServiceNow problems
 [servicenow.itsm.problem_task](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.problem_task_module.rst)|Manage ServiceNow problem tasks
 [servicenow.itsm.problem_task_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.problem_task_info_module.rst)|List ServiceNow problem tasks
+[servicenow.itsm.service_catalog_info_module](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.service_catalog_info_module.rst)/List ServiceNow service catalogs
+[servicenow.itsm.service_catalog_module](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.service_catalog_module.rst)/Manage ServiceNow service catalogs
 
 <!--end collection content-->
 
