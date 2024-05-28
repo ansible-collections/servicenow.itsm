@@ -26,7 +26,7 @@ extends_documentation_fragment:
   - servicenow.itsm.instance
   - servicenow.itsm.attachments
 seealso:
-  - module: servicenow.itsm.attachement_info
+  - module: servicenow.itsm.attachment_info
 options:
   table_name:
     description:
