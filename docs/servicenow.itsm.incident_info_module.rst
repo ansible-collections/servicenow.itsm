@@ -4,7 +4,7 @@
 servicenow.itsm.incident_info module -- List ServiceNow incidents
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.5.0).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
