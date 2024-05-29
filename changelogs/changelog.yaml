@@ -404,3 +404,13 @@ releases:
       name: service_catalog_info
       namespace: ''
     release_date: '2024-05-23'
+  2.6.1:
+    changes:
+      bugfixes:
+      - docs - Documentation generated for 2.6.0 was incorrect due to maintainer error.
+        This updates the documentation to be correct and consistent.
+      release_summary: Fix incorrect documentation shipped with 2.6.0
+    fragments:
+    - fix_documentation.yml
+    - release_summary.yml
+    release_date: '2024-05-29'
