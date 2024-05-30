@@ -4,6 +4,19 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.6.1
+======
+
+Release Summary
+---------------
+
+Fix incorrect documentation shipped with 2.6.0
+
+Bugfixes
+--------
+
+- docs - Documentation generated for 2.6.0 was incorrect due to maintainer error. This updates the documentation to be correct and consistent.
+
 v2.6.0
 ======
 
