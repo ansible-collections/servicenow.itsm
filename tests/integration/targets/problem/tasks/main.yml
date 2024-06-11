@@ -415,42 +415,55 @@
           - result is failed
           - "'Operator ISEMPTY does not take any arguments' in result.msg"
 
-
-    - name: Test sysparm query unary operator - short_description
+  always:
+    - name: Verify if first problem has been deleted 
       servicenow.itsm.problem_info:
-        query:
-         - short_description: ISNOTEMPTY
+        sys_id: "{{ first_problem.record.sys_id }}"
+      register: result
+    
+    - name: Delete initial problem
+      servicenow.itsm.problem:
+        problem_mapping: "{{ mapping.problem }}"
+        sys_id: "{{ first_problem.record.sys_id }}"
+        state: absent
+      when: result.records | length == 1
+    
+    - name: Verify if bogus problem has been deleted 
+      servicenow.itsm.problem_info:
+        sys_id: "{{ bogus_problem.record.sys_id }}"
       register: result
 
-    - ansible.builtin.assert:
-        that:
-          - result.records[0].short_description != ""
-
-  always:
     - name: Delete bogus problem
       servicenow.itsm.problem:
         sys_id: "{{ bogus_problem.record.sys_id }}"
         state: absent
-      ignore_errors: true
+    
+    - name: Verify if fixed problem has been deleted 
+      servicenow.itsm.problem_info:
+        sys_id: "{{ fixed_problem.record.sys_id }}"
+      register: result
     
     - name: Delete fixed_problem
       servicenow.itsm.problem:
         sys_id: "{{ fixed_problem.record.sys_id }}"
         state: absent
-      ignore_errors: true
+    
+    - name: Verify if risk_accepted problem has been deleted 
+      servicenow.itsm.problem_info:
+        sys_id: "{{ risk_accepted_problem.record.sys_id }}"
+      register: result
     
     - name: Delete risk_accepted_problem
       servicenow.itsm.problem:
         sys_id: "{{ risk_accepted_problem.record.sys_id }}"
         state: absent
-      ignore_errors: true
+    
+    - name: Verify if duplicated_problem problem has been deleted 
+      servicenow.itsm.problem_info:
+        sys_id: "{{ duplicated_problem.record.sys_id }}"
+      register: result
     
     - name: Delete duplicated_problem
       servicenow.itsm.problem:
         sys_id: "{{ duplicated_problem.record.sys_id }}"
         state: absent
-      ignore_errors: true
-
-
-
-
