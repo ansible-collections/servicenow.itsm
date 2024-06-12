@@ -66,6 +66,10 @@ jobs:
               "python-version": "3.9"
             },
             {
+              "ansible-version": "stable-2.17",
+              "python-version": "3.9"
+            },
+            {
               "ansible-version": "milestone",
               "python-version": "3.7"
             },
