@@ -24,6 +24,10 @@ on:
               "ansible-version": "stable-2.15",
               "python-version": "3.12"
             },
+            {
+              "ansible-version": "stable-2.17",
+              "python-version": "3.9"
+            },
           ]
         required: false
         type: string
