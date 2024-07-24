@@ -129,12 +129,12 @@ jobs:
           echo "sn_username: '${{ env.SN_USERNAME }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_password: '${{ env.SN_PASSWORD }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
 
-      - name: Run api integration tests
-        run: ansible-test integration api
+      - name: Run itsm_api integration tests
+        run: ansible-test integration itsm_api
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Run api_generic integration tests
-        run: ansible-test integration api_generic
+      - name: Run itsm_api_generic integration tests
+        run: ansible-test integration itsm_api_generic
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Run attachment integration tests
@@ -153,12 +153,12 @@ jobs:
         run: ansible-test integration change_request
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Run change_request_task integration tests
-        run: ansible-test integration change_request_task
+      - name: Run itsm_change_request_task integration tests
+        run: ansible-test integration itsm_change_request_task
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Run change_request_with_mapping integration tests
-        run: ansible-test integration change_request_with_mapping
+      - name: Run itsm_change_request_with_mapping integration tests
+        run: ansible-test integration itsm_change_request_with_mapping
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Run configuration_item integration tests
@@ -169,12 +169,12 @@ jobs:
         run: ansible-test integration configuration_item_batch
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Run configuration_item_relations integration tests
-        run: ansible-test integration configuration_item_relations
+      - name: Run itsm_configuration_item_relations integration tests
+        run: ansible-test integration itsm_configuration_item_relations
         working-directory: ${{ steps.identify.outputs.collection_path }}
       
-      - name: Run service_catalog_info integration tests
-        run: ansible-test integration service_catalog_info
+      - name: Run itsm_service_catalog_info integration tests
+        run: ansible-test integration itsm_service_catalog_info
         working-directory: ${{ steps.identify.outputs.collection_path }}
       
       - name: Run service_catalog integration tests
