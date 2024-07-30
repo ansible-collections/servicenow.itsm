@@ -17,7 +17,7 @@ The Ansible Collection for ServiceNow IT Service Management ([ITSM](https://www.
 | Washington DC      | 2.5.0+                      | TBA                  |
 | Vancouver          | 2.5.0+                      | TBA                  |
 | Utah               | 2.1.0+                      | TBA                  |
-| Tokyo              | 2.1.0+                      | TBA                  |
+| Tokyo              | 2.1.0-2.6.1                 | Q2 2024              |
 
 <!--start requires_ansible-->
 ## Ansible version compatibility

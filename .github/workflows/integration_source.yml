@@ -28,6 +28,14 @@ on:
               "ansible-version": "stable-2.17",
               "python-version": "3.9"
             },
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.10"
+            },
           ]
         required: false
         type: string
@@ -52,15 +60,10 @@ jobs:
           - "3.11"
           - "3.12"
         servicenow-version:
-          - "tokyo"
           - "utah"
           - "vancouver"
           - "washington"
         include:
-          - servicenow-version: "tokyo"
-            sn_host_secret: SN_HOST_TOKYO
-            sn_username_secret: SN_USERNAME_TOKYO
-            sn_password_secret: SN_PASSWORD_TOKYO
           - servicenow-version: "utah"
             sn_host_secret: SN_HOST_UTAH
             sn_username_secret: SN_USERNAME_UTAH
