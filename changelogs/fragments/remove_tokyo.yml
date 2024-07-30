@@ -1,0 +1,3 @@
+---
+deprecated_features:
+  - tests - Drop testing of Tokyo, as it is no longer supported by ServiceNow

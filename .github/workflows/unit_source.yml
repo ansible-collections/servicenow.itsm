@@ -37,8 +37,16 @@ on:
               "python-version": "3.9"
             },
             {
+              "ansible-version": "milestone",
+              "python-version": "3.10"
+            },
+            {
               "ansible-version": "devel",
               "python-version": "3.9"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.10"
             }
           ]
         required: false
