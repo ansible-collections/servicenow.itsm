@@ -14,7 +14,7 @@
         short_description: my-problem
         state: new
         attachments:
-          - path: targets/problem/res/sample_file.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/problem/res/sample_file.txt"
       register: first_problem
       check_mode: true
     - ansible.builtin.assert: &problem-create-assertions

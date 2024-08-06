@@ -131,6 +131,7 @@ jobs:
           echo "sn_host: '${{ env.SN_HOST }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_username: '${{ env.SN_USERNAME }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_password: '${{ env.SN_PASSWORD }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
+          echo "collection_base_dir: '${{ steps.identify.outputs.collection_path }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
 
       - name: Run itsm_api integration tests
         run: ansible-test integration itsm_api
