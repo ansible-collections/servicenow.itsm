@@ -146,20 +146,20 @@ jobs:
         run: ansible-test integration itsm_api_generic
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Run attachment integration tests
-        run: ansible-test integration attachment
+      - name: Run itsm_attachment integration tests
+        run: ansible-test integration itsm_attachment
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Run attachment_info integration tests
-        run: ansible-test integration attachment_info
+      - name: Run itsm_attachment_info integration tests
+        run: ansible-test integration itsm_attachment_info
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Run attachment_upload integration tests
-        run: ansible-test integration attachment_upload
+      - name: Run itsm_attachment_upload integration tests
+        run: ansible-test integration itsm_attachment_upload
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Run change_request integration tests
-        run: ansible-test integration change_request
+      - name: Run itsm_change_request integration tests
+        run: ansible-test integration itsm_change_request
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Run itsm_change_request_task integration tests
@@ -170,12 +170,12 @@ jobs:
         run: ansible-test integration itsm_change_request_with_mapping
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Run configuration_item integration tests
-        run: ansible-test integration configuration_item
+      - name: Run itsm_configuration_item integration tests
+        run: ansible-test integration itsm_configuration_item
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Run configuration_item_batch integration tests
-        run: ansible-test integration configuration_item_batch
+      - name: Run itsm_configuration_item_batch integration tests
+        run: ansible-test integration itsm_configuration_item_batch
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Run itsm_configuration_item_relations integration tests
@@ -186,6 +186,6 @@ jobs:
         run: ansible-test integration itsm_service_catalog_info
         working-directory: ${{ steps.identify.outputs.collection_path }}
       
-      - name: Run service_catalog integration tests
-        run: ansible-test integration service_catalog
+      - name: Run itsm_service_catalog integration tests
+        run: ansible-test integration itsm_service_catalog
         working-directory: ${{ steps.identify.outputs.collection_path }}
