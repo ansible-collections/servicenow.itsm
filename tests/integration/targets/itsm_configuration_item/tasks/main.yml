@@ -13,7 +13,7 @@
         install_status: on_order
         operational_status: non_operational
         attachments:
-          - path: targets/configuration_item/res/sample_file.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_configuration_item/res/sample_file.txt"
       register: base_ci
       check_mode: true
 
@@ -320,7 +320,7 @@
         install_status: on_order
         operational_status: non_operational
         attachments:
-          - path: targets/configuration_item/res/sample_file.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_configuration_item/res/sample_file.txt"
       register: base_ci
 
     - name: Get info and select only name

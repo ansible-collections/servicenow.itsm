@@ -18,7 +18,7 @@
         risk: low
         impact: low
         attachments:
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
       check_mode: true
       register: result
 
@@ -49,9 +49,9 @@
       servicenow.itsm.change_request: &cr-update
         number: "{{ test_result.record.number }}"
         attachments:
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
             name: sample_file1.txt
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
             name: sample_file2.txt
       check_mode: true
       register: result
@@ -78,7 +78,7 @@
       servicenow.itsm.change_request:
         number: "{{ test_result.record.number }}"
         attachments:
-          - path: targets/attachment/res/sample_file2.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file2.txt"
             name: sample_file1.txt
       register: result
 
@@ -130,7 +130,7 @@
         install_status: on_order
         operational_status: non_operational
         attachments:
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
       check_mode: true
       register: ci_result
 
@@ -158,9 +158,9 @@
       servicenow.itsm.configuration_item: &ci-update
         sys_id: "{{ test_result.record.sys_id }}"
         attachments:
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
             name: sample_file1.txt
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
             name: sample_file2.txt
       check_mode: true
       register: result
@@ -187,7 +187,7 @@
       servicenow.itsm.configuration_item:
         sys_id: "{{ test_result.record.sys_id }}"
         attachments:
-          - path: targets/attachment/res/sample_file2.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file2.txt"
             name: sample_file1.txt
       register: result
 
@@ -240,7 +240,7 @@
         impact: low
         urgency: low
         attachments:
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
       check_mode: true
       register: result
 
@@ -268,9 +268,9 @@
       servicenow.itsm.incident: &incident-update
         number: "{{ test_result.record.number }}"
         attachments:
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
             name: sample_file1.txt
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
             name: sample_file2.txt
       check_mode: true
       register: result
@@ -297,7 +297,7 @@
       servicenow.itsm.incident:
         number: "{{ test_result.record.number }}"
         attachments:
-          - path: targets/attachment/res/sample_file2.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file2.txt"
             name: sample_file1.txt
       register: result
 
@@ -346,7 +346,7 @@
         short_description: my-problem
         state: new
         attachments:
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
       register: first_problem
       check_mode: true
 
@@ -370,9 +370,9 @@
       servicenow.itsm.problem: &problem-update
         sys_id: "{{ first_problem.record.sys_id }}"
         attachments:
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
             name: sample_file1.txt
-          - path: targets/attachment/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file1.txt"
             name: sample_file2.txt
       check_mode: true
       register: result
@@ -399,7 +399,7 @@
       servicenow.itsm.problem:
         sys_id: "{{ first_problem.record.sys_id }}"
         attachments:
-          - path: targets/attachment/res/sample_file2.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment/res/sample_file2.txt"
             name: sample_file1.txt
       register: result
 

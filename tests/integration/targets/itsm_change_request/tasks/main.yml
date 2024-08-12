@@ -30,7 +30,7 @@
         impact: low
         short_description: some short description
         attachments:
-          - path: targets/change_request/res/sample_file.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_change_request/res/sample_file.txt"
       check_mode: true
       register: result
 

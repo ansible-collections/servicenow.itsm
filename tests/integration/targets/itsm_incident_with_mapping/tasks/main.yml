@@ -54,7 +54,7 @@
         impact: low
         urgency: low
         attachments:
-          - path: targets/incident_with_mapping/res/sample_file.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_incident_with_mapping/res/sample_file.txt"
       check_mode: true
       register: result
 

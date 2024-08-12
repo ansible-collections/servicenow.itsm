@@ -12,7 +12,7 @@
         impact: low
         urgency: low
         attachments:
-          - path: targets/incident/res/sample_file.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_incident/res/sample_file.txt"
       check_mode: true
       register: result
 

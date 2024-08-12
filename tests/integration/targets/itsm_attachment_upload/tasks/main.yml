@@ -16,7 +16,7 @@
         impact: low
         urgency: low
         attachments:
-          - path: targets/attachment_upload/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment_upload/res/sample_file1.txt"
       register: test_incident
 
     - ansible.builtin.assert:
@@ -33,7 +33,7 @@
         table_name: incident
         table_sys_id: "{{ test_incident.record.sys_id }}"
         attachments:
-          - path: targets/attachment_upload/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment_upload/res/sample_file1.txt"
             name: sample_file1.txt
       register: result
 
@@ -52,7 +52,7 @@
         table_name: incident
         table_sys_id: "{{ test_incident.record.sys_id }}"
         attachments:
-          - path: targets/attachment_upload/res/sample_file2.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment_upload/res/sample_file2.txt"
             name: sample_file2.txt
       check_mode: true
       register: result
@@ -92,7 +92,7 @@
         table_name: incident
         table_sys_id: "{{ test_incident.record.sys_id }}"
         attachments:
-          - path: targets/attachment_upload/res/sample_file2.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment_upload/res/sample_file2.txt"
             name: sample_file1.txt
       register: result
 
@@ -111,9 +111,9 @@
         table_name: incident
         table_sys_id: "{{ test_incident.record.sys_id }}"
         attachments:
-          - path: targets/attachment_upload/res/sample_file2.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment_upload/res/sample_file2.txt"
             name: sample_file1.txt
-          - path: targets/attachment_upload/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment_upload/res/sample_file1.txt"
             name: sample_file
       register: result
 
@@ -132,11 +132,11 @@
         table_name: incident
         table_sys_id: "{{ test_incident.record.sys_id }}"
         attachments:
-          - path: targets/attachment_upload/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment_upload/res/sample_file1.txt"
             name: sample_file1.txt # to be updated
-          - path: targets/attachment_upload/res/sample_file2.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment_upload/res/sample_file2.txt"
             name: sample_file2.txt # no update
-          - path: targets/attachment_upload/res/sample_file2.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment_upload/res/sample_file2.txt"
             name: sample_file3.txt # new
       register: result
 

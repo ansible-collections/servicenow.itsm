@@ -16,7 +16,7 @@
         impact: low
         urgency: low
         attachments:
-          - path: targets/attachment_info/res/sample_file1.txt
+          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_attachment_info/res/sample_file1.txt"
       register: test_incident
 
     - ansible.builtin.assert:
