@@ -229,7 +229,7 @@ class CartClient:
     BASE_API = dict(
         add_to_cart="/api/sn_sc/servicecatalog/items/{sys_id}/add_to_cart",
         checkout="/api/sn_sc/servicecatalog/cart/checkout",
-        submit_order="/api/sn_sc/servicecatalog/cart/checkout",
+        submit_order="/api/sn_sc/servicecatalog/cart/submit_order",
         order_now="/api/sn_sc/servicecatalog/items/{sys_id}/order_now",
         cart="/api/sn_sc/servicecatalog/cart",
     )
