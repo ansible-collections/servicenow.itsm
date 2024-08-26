@@ -42,7 +42,7 @@ class TestCartClient:
 
     def test_submit_order(self, mocker):
         def submit_order(*args):
-            assert args[0] == "/api/sn_sc/servicecatalog/cart/checkout"
+            assert args[0] == "/api/sn_sc/servicecatalog/cart/submit_order"
             return client.Response(200, json.dumps(dict(result=dict(key="value"))))
 
         client_mock = client.Client("https://my-host", "username", "password")
