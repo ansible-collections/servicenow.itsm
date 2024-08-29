@@ -1,0 +1,2 @@
+---
+release_summary: "Fix issue with service_catalog endpoint and remove SNOW Tokyo from test matrix"
