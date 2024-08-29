@@ -1,10 +1,10 @@
 
-.. Created with antsibull-docs 2.11.0
+.. Created with antsibull-docs 2.12.0
 
 servicenow.itsm.configuration_item_batch module -- Manage ServiceNow configuration items in batch mode
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.0).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.2).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -24,7 +24,7 @@ Synopsis
 --------
 
 - Create, update ServiceNow configuration items in batch mode.
-- For more information, refer to the ServiceNow configuration management documentation at \ https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html\ .
+- For more information, refer to the ServiceNow configuration management documentation at \ `https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html <https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-table-property-descriptions.html>`__.
 
 This module has a corresponding action plugin.
 

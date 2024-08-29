@@ -1,3 +1,0 @@
----
-deprecated_features:
-  - tests - Drop sanity test override matrix, as the inherited job now has the correct excludes
