@@ -1,10 +1,10 @@
 
-.. Created with antsibull-docs 2.11.0
+.. Created with antsibull-docs 2.12.0
 
 servicenow.itsm.attachment_upload module -- Upload attachment to the selected table
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.0).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.2).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -368,9 +368,9 @@ Notes
 See Also
 --------
 
-* \ `servicenow.itsm.attachement\_info <attachement_info_module.rst>`__\ 
+* \ `servicenow.itsm.attachment\_info <attachment_info_module.rst>`__\ 
 
-  The official documentation on the **servicenow.itsm.attachement_info** module.
+  a module that users can use to download attachment using sys\_id.
 
 Examples
 --------
