@@ -4,6 +4,14 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.6.3
+======
+
+Release Summary
+---------------
+
+Fix docs issue with 2.6.2 release
+
 v2.6.2
 ======
 

@@ -430,3 +430,9 @@ releases:
     - remove_sanity_test_matrix.yml
     - remove_tokyo.yml
     release_date: '2024-08-29'
+  2.6.3:
+    changes:
+      release_summary: Fix docs issue with 2.6.2 release
+    fragments:
+    - release_summary.yml
+    release_date: '2024-08-29'
