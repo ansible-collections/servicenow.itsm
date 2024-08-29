@@ -1,10 +1,10 @@
 
-.. Created with antsibull-docs 2.11.0
+.. Created with antsibull-docs 2.12.0
 
 servicenow.itsm.configuration_item_info module -- List ServiceNow configuration item
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.0).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.2).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -24,7 +24,7 @@ Synopsis
 --------
 
 - Retrieve information about the ServiceNow configuration items and also attachments related to this CI.
-- For more information, refer to the ServiceNow configuration item management documentation at \ https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/concept/c_ITILConfigurationManagement.html\ .
+- For more information, refer to the ServiceNow configuration item management documentation at \ `https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/concept/c\_ITILConfigurationManagement.html <https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/concept/c_ITILConfigurationManagement.html>`__.
 
 
 

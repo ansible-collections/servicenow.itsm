@@ -1,3 +1,0 @@
----
-bugfixes:
-  - Correct submit_order endpoint for issue #394/PR #395 (https://github.com/ansible-collections/servicenow.itsm/pull/395)

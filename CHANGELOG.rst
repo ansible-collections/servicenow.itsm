@@ -4,6 +4,25 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.6.2
+======
+
+Release Summary
+---------------
+
+Fix issue with service_catalog endpoint and remove SNOW Tokyo from test matrix
+
+Deprecated Features
+-------------------
+
+- tests - Drop sanity test override matrix, as the inherited job now has the correct excludes
+- tests - Drop testing of Tokyo, as it is no longer supported by ServiceNow
+
+Bugfixes
+--------
+
+- Correct submit_order endpoint for issue
+
 v2.6.1
 ======
 

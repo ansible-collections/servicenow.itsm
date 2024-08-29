@@ -414,3 +414,19 @@ releases:
     - fix_documentation.yml
     - release_summary.yml
     release_date: '2024-05-29'
+  2.6.2:
+    changes:
+      bugfixes:
+      - Correct submit_order endpoint for issue
+      deprecated_features:
+      - tests - Drop sanity test override matrix, as the inherited job now has the
+        correct excludes
+      - tests - Drop testing of Tokyo, as it is no longer supported by ServiceNow
+      release_summary: Fix issue with service_catalog endpoint and remove SNOW Tokyo
+        from test matrix
+    fragments:
+    - fix_service_catalog_enndpoint.yml
+    - release_summary.yml
+    - remove_sanity_test_matrix.yml
+    - remove_tokyo.yml
+    release_date: '2024-08-29'
