@@ -68,6 +68,7 @@ jobs:
           - "utah"
           - "vancouver"
           - "washington"
+          - "xanadu"
         include:
           - servicenow-version: "utah"
             sn_host_secret: SN_HOST_UTAH
@@ -81,6 +82,10 @@ jobs:
             sn_host_secret: SN_HOST_WASHINGTON
             sn_username_secret: SN_USERNAME_WASHINGTON
             sn_password_secret: SN_PASSWORD_WASHINGTON
+          - servicenow-version: "xanadu"
+            sn_host_secret: SN_HOST_XANADU
+            sn_username_secret: SN_USERNAME_XANADU
+            sn_password_secret: SN_PASSWORD_XANADU
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
     continue-on-error: ${{ matrix.ansible-version == 'devel' }}
 
