@@ -351,6 +351,7 @@ class TestInventoryModuleFillConstructed:
         keyed_groups = []
         strict = False
         enhanced = False
+        aggregation = False
 
         inventory_plugin.fill_constructed(
             records,
@@ -361,6 +362,7 @@ class TestInventoryModuleFillConstructed:
             keyed_groups,
             strict,
             enhanced,
+            aggregation,
         )
 
         assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
@@ -385,6 +387,7 @@ class TestInventoryModuleFillConstructed:
         keyed_groups = []
         strict = False
         enhanced = False
+        aggregation = False
 
         inventory_plugin.fill_constructed(
             records,
@@ -395,6 +398,7 @@ class TestInventoryModuleFillConstructed:
             keyed_groups,
             strict,
             enhanced,
+            aggregation,
         )
 
         assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
@@ -425,6 +429,7 @@ class TestInventoryModuleFillConstructed:
         keyed_groups = []
         strict = False
         enhanced = False
+        aggregation = False
 
         inventory_plugin.fill_constructed(
             records,
@@ -435,6 +440,7 @@ class TestInventoryModuleFillConstructed:
             keyed_groups,
             strict,
             enhanced,
+            aggregation,
         )
 
         assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
@@ -493,6 +499,7 @@ class TestInventoryModuleFillConstructed:
         keyed_groups = []
         strict = False
         enhanced = False
+        aggregation = False
 
         inventory_plugin.fill_constructed(
             records,
@@ -503,6 +510,7 @@ class TestInventoryModuleFillConstructed:
             keyed_groups,
             strict,
             enhanced,
+            aggregation,
         )
 
         assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
@@ -547,6 +555,7 @@ class TestInventoryModuleFillConstructed:
         keyed_groups = []
         strict = True
         enhanced = False
+        aggregation = False
 
         with pytest.raises(AnsibleError, match="non_existing"):
             inventory_plugin.fill_constructed(
@@ -558,6 +567,7 @@ class TestInventoryModuleFillConstructed:
                 keyed_groups,
                 strict,
                 enhanced,
+                aggregation,
             )
 
     def test_construction_composite_vars_ansible_host(self, inventory_plugin):
@@ -579,6 +589,7 @@ class TestInventoryModuleFillConstructed:
         keyed_groups = []
         strict = False
         enhanced = False
+        aggregation = False
 
         inventory_plugin.fill_constructed(
             records,
@@ -589,6 +600,7 @@ class TestInventoryModuleFillConstructed:
             keyed_groups,
             strict,
             enhanced,
+            aggregation,
         )
 
         assert set(inventory_plugin.inventory.groups) == set(("all", "ungrouped"))
@@ -631,6 +643,7 @@ class TestInventoryModuleFillConstructed:
         keyed_groups = []
         strict = False
         enhanced = False
+        aggregation = False
 
         inventory_plugin.fill_constructed(
             records,
@@ -641,6 +654,7 @@ class TestInventoryModuleFillConstructed:
             keyed_groups,
             strict,
             enhanced,
+            aggregation,
         )
 
         assert set(inventory_plugin.inventory.groups) == set(
@@ -678,6 +692,7 @@ class TestInventoryModuleFillConstructed:
         keyed_groups = []
         strict = True
         enhanced = False
+        aggregation = False
 
         with pytest.raises(AnsibleError, match="cost_usd"):
             inventory_plugin.fill_constructed(
@@ -689,6 +704,7 @@ class TestInventoryModuleFillConstructed:
                 keyed_groups,
                 strict,
                 enhanced,
+                aggregation,
             )
 
     def test_construction_keyed_groups(self, inventory_plugin):
@@ -710,6 +726,7 @@ class TestInventoryModuleFillConstructed:
         ]
         strict = False
         enhanced = False
+        aggregation = False
 
         inventory_plugin.fill_constructed(
             records,
@@ -720,6 +737,7 @@ class TestInventoryModuleFillConstructed:
             keyed_groups,
             strict,
             enhanced,
+            aggregation,
         )
 
         assert set(inventory_plugin.inventory.groups) == set(
@@ -760,6 +778,7 @@ class TestInventoryModuleFillConstructed:
         ]
         strict = False
         enhanced = False
+        aggregation = False
 
         inventory_plugin.fill_constructed(
             records,
@@ -770,6 +789,7 @@ class TestInventoryModuleFillConstructed:
             keyed_groups,
             strict,
             enhanced,
+            aggregation,
         )
 
         assert set(inventory_plugin.inventory.groups) == set(
@@ -815,6 +835,7 @@ class TestInventoryModuleFillConstructed:
         keyed_groups = []
         strict = False
         enhanced = True
+        aggregation = False
 
         inventory_plugin.fill_constructed(
             records,
@@ -825,6 +846,7 @@ class TestInventoryModuleFillConstructed:
             keyed_groups,
             strict,
             enhanced,
+            aggregation,
         )
 
         assert set(inventory_plugin.inventory.groups) == set(
@@ -852,6 +874,47 @@ class TestInventoryModuleFillConstructed:
         )
 
         assert a2.vars == dict(inventory_file=None, inventory_dir=None)
+
+    def test_aggragation(self, inventory_plugin):
+        records = [
+            {"sys_id": "1", "app": "tomcat1", "app.env": "dev", "fqdn": "a1"},
+            {"sys_id": "2", "app": "tomcat2", "app.env": "prod", "fqdn": "a1"},
+            {"sys_id": "3", "app": "tomcat3", "app.env": "staging", "fqdn": "a1"},
+            {"sys_i": "4", "app": "tomcat4", "app.env": "dev", "fqdn": "a2"},
+        ]
+
+        columns = [
+            "app",
+            "app.env",
+            "fqdn",
+        ]
+        name_source = "fqdn"
+        compose = {}
+        groups = {}
+        keyed_groups = []
+        strict = False
+        enhanced = False
+        aggregation = True
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+            aggregation,
+        )
+
+        a1 = inventory_plugin.inventory.get_host("a1")
+        assert isinstance(a1.vars["app"], list)
+        for val in a1.vars["app"]:
+            assert "env" in val.keys()
+            assert "app" in val.keys()
+            assert val["env"] in ["prod", "dev", "staging"]
+            assert val["app"] in ["tomcat1", "tomcat2", "tomcat3"]
 
 
 class TestConstructCacheSuffix:
