@@ -14,6 +14,7 @@ The Ansible Collection for ServiceNow IT Service Management ([ITSM](https://www.
 
 | ServiceNow Release | Collection Release          | Expected end of life |
 | -----------------: | --------------------------: | -------------------: |
+| Xanadu             | 2.7.0+                      | TBA                  |
 | Washington DC      | 2.5.0+                      | TBA                  |
 | Vancouver          | 2.5.0+                      | TBA                  |
 | Utah               | 2.1.0+                      | TBA                  |
