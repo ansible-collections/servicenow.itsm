@@ -4,6 +4,20 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.7.0
+======
+
+Release Summary
+---------------
+
+Add optional aggregation feature to inventory; add ServiceNow Xanadu to integration test matrix
+
+Minor Changes
+-------------
+
+- inventory - allow inventory to aggregate multiple hostvars for the same host. (https://github.com/ansible-collections/servicenow.itsm/pull/408)
+- tests - Add ServiceNow Xanadu release to test matrix
+
 v2.6.3
 ======
 

@@ -1,10 +1,9 @@
-
-.. Created with antsibull-docs 2.12.0
+.. Created with antsibull-docs 2.14.0
 
 servicenow.itsm.now inventory -- Inventory source for ServiceNow table records.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.2).
+This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.7.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -48,6 +47,27 @@ Parameters
   </tr>
   </thead>
   <tbody>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-aggregation"></div>
+      <p style="display: inline;"><strong>aggregation</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-aggregation" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">boolean</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.7.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Enable multiple variable values aggregations.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code style="color: blue;"><b>false</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>true</code></p></li>
+      </ul>
+
+    </td>
+  </tr>
   <tr>
     <td colspan="2" valign="top">
       <div class="ansibleOptionAnchor" id="parameter-cache"></div>
@@ -822,7 +842,6 @@ Examples
 
 .. code-block:: yaml
 
-    
     # A trivial example that creates a host from every record of the
     # ServiceNow cmdb_ci_server table. The ip_address column is used for
     # for ansible host, and server name for inventory hostname.
@@ -999,7 +1018,6 @@ Examples
 
 
 
-
 Authors
 ~~~~~~~
 
@@ -1017,4 +1035,3 @@ Collection links
 
 * `Issue Tracker <https://github.com/ansible-collections/servicenow.itsm/issues>`__
 * `Repository (Sources) <https://github.com/ansible-collections/servicenow.itsm>`__
-

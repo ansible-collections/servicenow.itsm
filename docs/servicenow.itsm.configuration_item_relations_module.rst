@@ -1,10 +1,9 @@
-
-.. Created with antsibull-docs 2.12.0
+.. Created with antsibull-docs 2.14.0
 
 servicenow.itsm.configuration_item_relations module -- Manage ServiceNow relations between configuration items
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.2).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.7.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -420,10 +419,10 @@ Parameters
 See Also
 --------
 
-* \ `servicenow.itsm.configuration\_item <configuration_item_module.rst>`__\ 
+* `servicenow.itsm.configuration\_item <configuration_item_module.rst>`__
 
   Manage ServiceNow configuration items.
-* \ `servicenow.itsm.configuration\_item\_info <configuration_item_info_module.rst>`__\ 
+* `servicenow.itsm.configuration\_item\_info <configuration_item_info_module.rst>`__
 
   List ServiceNow configuration item.
 
@@ -432,7 +431,6 @@ Examples
 
 .. code-block:: yaml
 
-    
     - name: Create relation between two ci
       servicenow.itsm.configuration_item_relations:
         name: Depends_On
@@ -464,7 +462,6 @@ Examples
         targets:
           - name: target1
             sys_id: target1_id
-
 
 
 
@@ -516,4 +513,3 @@ Collection links
 
 * `Issue Tracker <https://github.com/ansible-collections/servicenow.itsm/issues>`__
 * `Repository (Sources) <https://github.com/ansible-collections/servicenow.itsm>`__
-

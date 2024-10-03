@@ -1,10 +1,9 @@
-
-.. Created with antsibull-docs 2.12.0
+.. Created with antsibull-docs 2.14.0
 
 servicenow.itsm.service_catalog_info module -- List ServiceNow service catalogs along with categories and items
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.2).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.7.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -344,7 +343,6 @@ Examples
 
 .. code-block:: yaml
 
-    
     - name: Return all catalogs without categories but with items (brief information)
       servicenow.itsm.service_catalog_info:
         categories: false
@@ -368,7 +366,6 @@ Examples
         categories: true
         items_info: full
         items_query: iPhone
-
 
 
 
@@ -421,4 +418,3 @@ Collection links
 
 * `Issue Tracker <https://github.com/ansible-collections/servicenow.itsm/issues>`__
 * `Repository (Sources) <https://github.com/ansible-collections/servicenow.itsm>`__
-
