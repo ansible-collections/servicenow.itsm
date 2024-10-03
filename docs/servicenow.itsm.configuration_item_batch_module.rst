@@ -1,10 +1,9 @@
-
-.. Created with antsibull-docs 2.12.0
+.. Created with antsibull-docs 2.14.0
 
 servicenow.itsm.configuration_item_batch module -- Manage ServiceNow configuration items in batch mode
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.2).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.7.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -336,10 +335,10 @@ Parameters
 See Also
 --------
 
-* \ `servicenow.itsm.configuration\_item <configuration_item_module.rst>`__\ 
+* `servicenow.itsm.configuration\_item <configuration_item_module.rst>`__
 
   Manage ServiceNow configuration items.
-* \ `servicenow.itsm.configuration\_item\_info <configuration_item_info_module.rst>`__\ 
+* `servicenow.itsm.configuration\_item\_info <configuration_item_info_module.rst>`__
 
   List ServiceNow configuration item.
 
@@ -348,7 +347,6 @@ Examples
 
 .. code-block:: yaml
 
-    
     - name: Update CMDB with some data
       servicenow.itsm.configuration_item_batch:
         sys_class_name: cmdb_ci_ec2_instance
@@ -377,7 +375,6 @@ Examples
         map:
           name: tags.Name
           ip_address: private_ip_address
-
 
 
 
@@ -434,4 +431,3 @@ Collection links
 
 * `Issue Tracker <https://github.com/ansible-collections/servicenow.itsm/issues>`__
 * `Repository (Sources) <https://github.com/ansible-collections/servicenow.itsm>`__
-

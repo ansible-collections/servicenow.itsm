@@ -1,10 +1,9 @@
-
-.. Created with antsibull-docs 2.12.0
+.. Created with antsibull-docs 2.14.0
 
 servicenow.itsm.api module -- Manage ServiceNow POST, PATCH and DELETE requests
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.2).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.7.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -391,7 +390,7 @@ Parameters
 See Also
 --------
 
-* \ `servicenow.itsm.api\_info <api_info_module.rst>`__\ 
+* `servicenow.itsm.api\_info <api_info_module.rst>`__
 
   Manage ServiceNow GET requests.
 
@@ -400,7 +399,6 @@ Examples
 
 .. code-block:: yaml
 
-    
     - name: Create a record in table incident with specified short_description (which is read from data)
       servicenow.itsm.api:
         resource: incident
@@ -499,7 +497,6 @@ Examples
 
 
 
-
 Return Values
 -------------
 The following are the fields unique to this module:
@@ -548,4 +545,3 @@ Collection links
 
 * `Issue Tracker <https://github.com/ansible-collections/servicenow.itsm/issues>`__
 * `Repository (Sources) <https://github.com/ansible-collections/servicenow.itsm>`__
-

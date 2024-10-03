@@ -1,10 +1,9 @@
-
-.. Created with antsibull-docs 2.12.0
+.. Created with antsibull-docs 2.14.0
 
 servicenow.itsm.problem_info module -- List ServiceNow problems
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.2).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.7.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -355,13 +354,13 @@ Parameters
 See Also
 --------
 
-* \ `servicenow.itsm.problem <problem_module.rst>`__\ 
+* `servicenow.itsm.problem <problem_module.rst>`__
 
   Manage ServiceNow problems.
-* \ `servicenow.itsm.problem\_task <problem_task_module.rst>`__\ 
+* `servicenow.itsm.problem\_task <problem_task_module.rst>`__
 
   Manage ServiceNow problem tasks.
-* \ `servicenow.itsm.problem\_task\_info <problem_task_info_module.rst>`__\ 
+* `servicenow.itsm.problem\_task\_info <problem_task_info_module.rst>`__
 
   List ServiceNow problem tasks.
 
@@ -370,7 +369,6 @@ Examples
 
 .. code-block:: yaml
 
-    
     - name: Retrieve all problems
       servicenow.itsm.problem_info:
       register: result
@@ -403,7 +401,6 @@ Examples
             assigned_to: = abel.tuter
           - state: = new
             assigned_to: = bertie.luby
-
 
 
 
@@ -459,4 +456,3 @@ Collection links
 
 * `Issue Tracker <https://github.com/ansible-collections/servicenow.itsm/issues>`__
 * `Repository (Sources) <https://github.com/ansible-collections/servicenow.itsm>`__
-

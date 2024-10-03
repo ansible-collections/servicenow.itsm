@@ -1,10 +1,9 @@
-
-.. Created with antsibull-docs 2.12.0
+.. Created with antsibull-docs 2.14.0
 
 servicenow.itsm.configuration_item_relations_info module -- Retreive ServiceNow relations of configuration items
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.6.2).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.7.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -321,7 +320,7 @@ Parameters
 See Also
 --------
 
-* \ `servicenow.itsm.configuration\_item\_relations <configuration_item_relations_module.rst>`__\ 
+* `servicenow.itsm.configuration\_item\_relations <configuration_item_relations_module.rst>`__
 
   Manage ServiceNow relations between configuration items.
 
@@ -330,12 +329,10 @@ Examples
 
 .. code-block:: yaml
 
-    
     - name: Retreive relations of a configuration item
       servicenow.itsm.configuration_item_relations_info:
         sys_id: "{{ configuration_item_sys_id }}"
         classname: cmdb_ci_linux_server
-
 
 
 
@@ -387,4 +384,3 @@ Collection links
 
 * `Issue Tracker <https://github.com/ansible-collections/servicenow.itsm/issues>`__
 * `Repository (Sources) <https://github.com/ansible-collections/servicenow.itsm>`__
-
