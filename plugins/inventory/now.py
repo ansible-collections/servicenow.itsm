@@ -157,6 +157,11 @@ options:
     type: int
     default: 1000
     version_added: 2.5.0
+  show_values:
+    description:
+      - Whether to include the valu' field for dictionary-type columns in returned.
+    type: bool
+    default: false
 
 """
 
@@ -441,7 +446,7 @@ def construct_sysparm_query(query, is_encoded_query):
 def fetch_records(table_client, table, query, fields=None, is_encoded_query=False):
     snow_query = dict(
         # Make references and choice fields human-readable
-        sysparm_display_value=True,
+        sysparm_display_value="all",
     )
     if query:
         snow_query["sysparm_query"] = construct_sysparm_query(query, is_encoded_query)
@@ -503,6 +508,13 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             raise AnsibleParserError(msg.format(name_source))
 
         inventory_hostname = record[name_source]
+        if isinstance(inventory_hostname, dict):
+            if "display_value" in inventory_hostname:
+                inventory_hostname = inventory_hostname["display_value"]
+            else:
+                msg = "Inventory hostname source column '{0}' is a dict but does not contain 'display_value'."
+                raise AnsibleParserError(msg.format(name_source))
+
         if inventory_hostname:
             host = self.inventory.add_host(inventory_hostname)
             return host
@@ -519,8 +531,23 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
                 "Invalid column names: {0}.".format(", ".join(missing))
             )
 
+        show_values = self.get_option("show_values")
+
         for k in columns:
-            self.inventory.set_variable(host, k.replace(".", "_"), record[k])
+            value = record.get(k)
+            if isinstance(value, dict):
+                main_value = value.get("display_value") or value.get("value") or value
+                self.inventory.set_variable(host, k.replace(".", "_"), main_value)
+
+                if show_values:
+                    for sub_key in ["display_value", "value"]:
+                        sub_value = value.get(sub_key)
+                        if sub_value and sub_value != main_value:
+                            self.inventory.set_variable(
+                                host, f"{k}_{sub_key}", sub_value
+                            )
+            else:
+                self.inventory.set_variable(host, k.replace(".", "_"), value)
 
     def set_host_vars_aggregated(self, host, record, columns, aggregator):
         for k in columns:
