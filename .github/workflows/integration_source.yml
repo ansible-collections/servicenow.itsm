@@ -194,3 +194,15 @@ jobs:
       - name: Run itsm_service_catalog integration tests
         run: ansible-test integration itsm_service_catalog
         working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run problem integration tests
+        run: ansible-test integration problem
+        working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run problem_task integration tests
+        run: ansible-test integration problem_task
+        working-directory: ${{ steps.identify.outputs.collection_path }}
+      
+      - name: Run problem_with_mapping integration tests
+        run: ansible-test integration problem_with_mapping
+        working-directory: ${{ steps.identify.outputs.collection_path }}
