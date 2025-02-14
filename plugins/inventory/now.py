@@ -698,6 +698,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
                 table_client,
                 table,
                 query or sysparm_query,
+                fields=columns,
                 is_encoded_query=bool(sysparm_query),
             )
 
