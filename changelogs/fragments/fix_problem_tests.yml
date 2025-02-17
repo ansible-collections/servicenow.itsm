@@ -1,0 +1,3 @@
+---
+bug_fixes:
+  - tests - Fix some consistently failing problem tests by using regex to test the error message, and also changing how we ensure a check-mode problem was not created
