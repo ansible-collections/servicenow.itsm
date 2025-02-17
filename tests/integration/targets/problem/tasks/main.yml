@@ -103,7 +103,7 @@
     - ansible.builtin.assert:
         that:
           - result is failed
-          - "'No sys_user records match' in result.msg"
+          - result.msg is regex('No (api/now/table/)?sys_user records match')
 
     - name: Assign the problem for assessment
       servicenow.itsm.problem:
@@ -140,7 +140,7 @@
     - ansible.builtin.assert:
         that:
           - result is failed
-          - "'No problem records match' in result.msg"
+          - result.msg is regex('No (api/now/table/)?problem records match')
 
     - name: Start fixing the problem
       servicenow.itsm.problem:
