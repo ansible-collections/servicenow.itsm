@@ -108,6 +108,23 @@ options:
     description: The ServiceNow table to use as the inventory source.
     type: str
     default: cmdb_ci_server
+  query_limit_columns:
+    description:
+      - Whether to explicitly limit the inventory to not include all columns from the listed I(table).
+        When this option is used, all I(colunns) listed will be included in the query, as well as any
+        columns listed in I(query_additional_columns).
+    type: boolean
+    default: false
+    version_added: 2.8.0
+  query_additional_columns:
+    description:
+      - List of I(table) columns to be queried in addition to columns listed in I(columns) which are
+        queried implicitly. The main purpose is to allow users that have large tables to limit the
+        size of the query and the resulting JSON parse in the client, which can take a long time.
+    type: list
+    elements: str
+    default: []
+    version_added: 2.8.0
   columns:
     description:
       - List of I(table) columns to be included as hostvars.
@@ -301,6 +318,128 @@ compose:
 # |  |  |--{location.country = Italy}
 # |  |  |--{name = OWA-SD-01}
 # |  |  |--{street = Via Nomentana 56, Rome}
+
+# Limit query to only return columns that we expressly include.
+# By default we retrieve all columns from a table, which can be
+# very ineffectient with tables with many rows and lots of columns.
+
+plugin: servicenow.itsm.now
+query_limit_columns: true
+query:
+  - os: = Linux Red Hat
+  - os: = AIX
+columns:
+  - name
+  - asset_tag
+  - manufacturer
+  - model_id
+
+# `ansible-inventory -i inventory.now.yaml --graph --vars` output:
+# @all:
+# |--@ungrouped:
+# |  |--Service-now Production Sacramento
+# |  |  |--{asset_tag = P1000173}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{name = Service-now Production Sacramento}
+# |  |--Service-now Production San Diego
+# |  |  |--{asset_tag = P1000114}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{name = Service-now Production San Diego}
+# |  |--DatabaseServer2
+# |  |  |--{asset_tag = P1000030}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge C6100 Rack Server}
+# |  |  |--{name = DatabaseServer2}
+# |  |--PS LinuxApp01
+# |  |  |--{asset_tag = P1000091}
+# |  |  |--{manufacturer = Iris}
+# |  |  |--{model_id = Iris 5875}
+# |  |  |--{name = PS LinuxApp01}
+# |  |--PS LinuxApp02
+# |  |  |--{asset_tag = P1000207}
+# |  |  |--{manufacturer = Iris}
+# |  |  |--{model_id = Iris 5875}
+# |  |  |--{name = PS LinuxApp02}
+# |  |--SAP AppSRV01
+# |  |  |--{asset_tag = P1000010}
+# |  |  |--{manufacturer = IBM}
+# |  |  |--{model_id = IBM Power 710 Express}
+# |  |  |--{name = SAP AppSRV01}
+# |  |--SAP AppSRV02
+# |  |  |--{asset_tag = P1000205}
+# |  |  |--{manufacturer = IBM}
+# |  |  |--{model_id = IBM Power 710 Express}
+# |  |  |--{name = SAP AppSRV02}
+# |  |--lnux100
+# |  |  |--{asset_tag = P1000165}
+# |  |  |--{manufacturer = Iris}
+# |  |  |--{model_id = Iris 5875}
+# |  |  |--{name = lnux100}
+# |  |--lnux101
+# |  |  |--{asset_tag = P1000054}
+# |  |  |--{manufacturer = Iris}
+# |  |  |--{model_id = Iris 5875}
+# |  |  |--{name = lnux101}
+# |  |--dbaix900nyc
+# |  |  |--{asset_tag = P1000055}
+# |  |  |--{manufacturer = IBM}
+# |  |  |--{model_id = IBM BladeCenter Blade HS22}
+# |  |  |--{name = dbaix900nyc}
+# |  |--dbaix901nyc
+# |  |  |--{asset_tag = P1000182}
+# |  |  |--{manufacturer = IBM}
+# |  |  |--{model_id = IBM BladeCenter Blade HS22}
+# |  |  |--{name = dbaix901nyc}
+# |  |--dbaix902nyc
+# |  |  |--{asset_tag = P1000070}
+# |  |  |--{manufacturer = IBM}
+# |  |  |--{model_id = IBM BladeCenter Blade HS22}
+# |  |  |--{name = dbaix902nyc}
+# |  |--ApplicationServerPeopleSoft
+# |  |  |--{asset_tag = P1000204}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{name = ApplicationServerPeopleSoft}
+# |  |--DatabaseServer1
+# |  |  |--{asset_tag = P1000199}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{name = DatabaseServer1}
+
+# Note that when limiting columns, any variables that are needed in compose, but
+# not included in columns, must be explicitly included using query_additional_columns:
+
+plugin: servicenow.itsm.now
+query_limit_columns: true
+
+query:
+  - os: = OS/400
+
+query_limit_columns: true
+
+columns:
+  - name
+  - asset_tag
+  - manufacturer
+  - model_id
+
+query_additional_columns:
+  - sys_class_name
+
+compose:
+  extended_class: sys_class_name ~ "/" ~ model_id
+
+# `ansible-inventory -i inventory.now.yaml --graph --vars` output:
+# @all:
+# |--@ungrouped:
+# |  |--AS400
+# |  |  |--{asset_tag = P1000034}
+# |  |  |--{extended_class = Server/Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{name = AS400}
 
 # Use a javascript function defined in ServiceNow under "Script Includes",
 # which returns a list of the sys_ids that match a certain criteria
@@ -672,6 +811,18 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         table = self.get_option("table")
         name_source = self.get_option("inventory_hostname_source")
         columns = self.get_option("columns")
+        query_limit_columns = self.get_option("query_limit_columns")
+        query_additional_columns = self.get_option("query_additional_columns")
+
+        # Introduced for 2.8.0
+        # We only want to limit the table query when explicitly asked - existing documentation
+        # has examples that depend on this, and certainly deployed code does this and to do otherwise
+        # would break existing inventories. query_columns == None implies retrieving every column from
+        # the desired table, which can take a very long time to parse for large tables with many columns.
+        if query_limit_columns:
+            query_columns = list(set(query_additional_columns + columns))
+        else:
+            query_columns = None
 
         query = self.get_option("query")
         sysparm_query = self.get_option("sysparm_query")
@@ -698,6 +849,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
                 table_client,
                 table,
                 query or sysparm_query,
+                fields=query_columns,
                 is_encoded_query=bool(sysparm_query),
             )
 
