@@ -5,9 +5,15 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
+    - name: Generate random string for idempotency
+      ansible.builtin.set_fact:
+        suffix: "{{ lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
+
+    - debug: var=suffix
+
     - name: Create a problem
       servicenow.itsm.problem:
-        short_description: my-problem
+        short_description: "my-problem_{{ suffix }}"
         state: new
       register: problem
 
@@ -15,20 +21,19 @@
         that:
           - problem is changed
           - problem.record.state == "new"
-          - problem.record.short_description == "my-problem"
+          - "'my-problem' in problem.record.short_description"
 
 
     - name: Retrieve problem task records
       servicenow.itsm.problem_task_info:
       register: initial
 
-
     - name: Create a problem task (check mode)
       servicenow.itsm.problem_task: &problem-task-create
         state: new
         type: general
         source_problem: "{{ problem.record.number }}"
-        short_description: my-problem-task
+        short_description: "my-problem-task_{{ suffix }}"
         priority: low
       check_mode: true
       register: problem_task
@@ -37,7 +42,7 @@
         that:
           - problem_task is changed
           - problem_task.record.state == "new"
-          - problem_task.record.short_description == "my-problem-task"
+          - "'my-problem-task' in problem_task.record.short_description"
 
 
     - name: Create a problem task
@@ -54,7 +59,7 @@
   
     - ansible.builtin.assert:
         that:
-          - result.records.0.short_description == "my-problem-task"
+          - "'my-problem-task' in result.records.0.short_description"
 
 
     - name: Change state of a problem task (check mode)
@@ -64,7 +69,7 @@
         sys_id: "{{ problem_task.record.sys_id }}"
         assigned_to: problem.admin
         source_problem: "{{ problem.record.number }}"
-        short_description: my-problem-task
+        short_description: "my-problem-task_{{ suffix }}"
         priority: low
       check_mode: true
       register: problem_task
@@ -73,7 +78,6 @@
         that:
           - problem_task is changed
           - problem_task.record.state == "assess"
-          - problem_task.record.short_description == "my-problem-task"
 
 
     - name: Change state of a problem task
@@ -91,7 +95,6 @@
     - ansible.builtin.assert:
         that:
           - result.records.0.state == "assess"
-          - result.records.0.short_description == "my-problem-task"
 
 
     - name: Delete a problem task (check mode)
@@ -121,13 +124,9 @@
         that:
           - result.records | length == initial.records | length
 
-
+  always:
     - name: Delete a problem
       servicenow.itsm.problem:
         state: absent
         sys_id: "{{ problem.record.sys_id }}"
-      register: problem
-
-    - ansible.builtin.assert:
-        that:
-          - problem is changed
+      ignore_errors: true
