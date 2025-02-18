@@ -118,11 +118,12 @@
 
     - name: Verify that a record was deleted
       servicenow.itsm.problem_task_info:
+        sys_id: "{{ problem_task.record.sys_id }}"
       register: result
   
     - ansible.builtin.assert:
         that:
-          - result.records | length == initial.records | length
+          - result.records | length == 0
 
   always:
     - name: Delete a problem
