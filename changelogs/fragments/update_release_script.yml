@@ -1,0 +1,3 @@
+---
+trivial:
+  - Update release script to validate correct version of docs is built, and allow for testrun

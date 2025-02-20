@@ -1,4 +1,6 @@
 - hosts: localhost
+  vars:
+    testrun: false
   tasks:
     - name: Generate next release version
       block:
@@ -19,6 +21,7 @@
 
     - name: Create release branch
       ansible.builtin.command: git checkout -b "prepare_{{ version }}_release"
+      when: not testrun
 
     - block:
       - name: Update galaxy.yml
@@ -38,21 +41,29 @@
           paths: "{{ playbook_dir }}/../changelogs/fragments"
           excludes: ".gitkeep,"
         register: files_to_delete
+        when: not testrun
 
       - name: Clean up the changelog fragments
         ansible.builtin.file:
           path: "{{ item.path }}"
           state: absent
         with_items: "{{ files_to_delete.files }}"
+        when: not testrun
+
+      - name: Check correct version in docs
+        ansible.builtin.shell: "grep -r 'version {{ version }}' {{ playbook_dir }}/../docs"
+        register: version_check
 
       - name: Add everything
         ansible.builtin.command: git add --all
+        when: not testrun
 
       # git diff-index --quiet HEAD
       #   0 -> repository is clean, nothing to commit
       #   1 -> the opposite
       - name: Commit everything
         ansible.builtin.shell: 'git diff-index --quiet HEAD || git commit -m "prepare {{ version }} release"'
+        when: not testrun
 
       rescue:
         - debug:
