@@ -1,0 +1,2 @@
+---
+release_summary: "Introduce feature to limit how many columns are retrieved by inventory queries, which can substantially improve inventory performance. Also includes changes to improve the integration test framework and enhance the release script."

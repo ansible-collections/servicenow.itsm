@@ -4,4 +4,4 @@ minor_changes:
    returned in the query. Users who wish to use this feature in conjunction with
    compose will need to add columns referenced by compose to the query
    additional_columns option. The default case preserves backwards compatibility
-   by not limiting the columns returned.
+   by not limiting the columns returned. (https://github.com/ansible-collections/servicenow.itsm/pull/422)
