@@ -1,9 +1,9 @@
-.. Created with antsibull-docs 2.14.0
+.. Created with antsibull-docs 2.16.3
 
 servicenow.itsm.now inventory -- Inventory source for ServiceNow table records.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.7.0).
+This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.8.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -715,6 +715,44 @@ Parameters
   </tr>
   <tr>
     <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-query_additional_columns"></div>
+      <p style="display: inline;"><strong>query_additional_columns</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-query_additional_columns" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">list</span>
+        / <span style="color: purple;">elements=string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.8.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>List of <em>table</em> columns to be queried in addition to columns listed in <em>columns</em> which are queried implicitly. The main purpose is to allow users that have large tables to limit the size of the query and the resulting JSON parse in the client, which can take a long time.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">[]</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-query_limit_columns"></div>
+      <p style="display: inline;"><strong>query_limit_columns</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-query_limit_columns" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">boolean</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.8.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Whether to explicitly limit the inventory to not include all columns from the listed <em>table</em>. When this option is used, all <em>colunns</em> listed will be included in the query, as well as any columns listed in <em>query_additional_columns</em>.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code style="color: blue;"><b>false</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>true</code></p></li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
       <div class="ansibleOptionAnchor" id="parameter-strict"></div>
       <p style="display: inline;"><strong>strict</strong></p>
       <a class="ansibleOptionLink" href="#parameter-strict" title="Permalink to this option"></a>
@@ -982,6 +1020,128 @@ Examples
     # |  |  |--{location.country = Italy}
     # |  |  |--{name = OWA-SD-01}
     # |  |  |--{street = Via Nomentana 56, Rome}
+
+    # Limit query to only return columns that we expressly include.
+    # By default we retrieve all columns from a table, which can be
+    # very ineffectient with tables with many rows and lots of columns.
+
+    plugin: servicenow.itsm.now
+    query_limit_columns: true
+    query:
+      - os: = Linux Red Hat
+      - os: = AIX
+    columns:
+      - name
+      - asset_tag
+      - manufacturer
+      - model_id
+
+    # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
+    # @all:
+    # |--@ungrouped:
+    # |  |--Service-now Production Sacramento
+    # |  |  |--{asset_tag = P1000173}
+    # |  |  |--{manufacturer = Dell Inc.}
+    # |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+    # |  |  |--{name = Service-now Production Sacramento}
+    # |  |--Service-now Production San Diego
+    # |  |  |--{asset_tag = P1000114}
+    # |  |  |--{manufacturer = Dell Inc.}
+    # |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+    # |  |  |--{name = Service-now Production San Diego}
+    # |  |--DatabaseServer2
+    # |  |  |--{asset_tag = P1000030}
+    # |  |  |--{manufacturer = Dell Inc.}
+    # |  |  |--{model_id = Dell Inc. PowerEdge C6100 Rack Server}
+    # |  |  |--{name = DatabaseServer2}
+    # |  |--PS LinuxApp01
+    # |  |  |--{asset_tag = P1000091}
+    # |  |  |--{manufacturer = Iris}
+    # |  |  |--{model_id = Iris 5875}
+    # |  |  |--{name = PS LinuxApp01}
+    # |  |--PS LinuxApp02
+    # |  |  |--{asset_tag = P1000207}
+    # |  |  |--{manufacturer = Iris}
+    # |  |  |--{model_id = Iris 5875}
+    # |  |  |--{name = PS LinuxApp02}
+    # |  |--SAP AppSRV01
+    # |  |  |--{asset_tag = P1000010}
+    # |  |  |--{manufacturer = IBM}
+    # |  |  |--{model_id = IBM Power 710 Express}
+    # |  |  |--{name = SAP AppSRV01}
+    # |  |--SAP AppSRV02
+    # |  |  |--{asset_tag = P1000205}
+    # |  |  |--{manufacturer = IBM}
+    # |  |  |--{model_id = IBM Power 710 Express}
+    # |  |  |--{name = SAP AppSRV02}
+    # |  |--lnux100
+    # |  |  |--{asset_tag = P1000165}
+    # |  |  |--{manufacturer = Iris}
+    # |  |  |--{model_id = Iris 5875}
+    # |  |  |--{name = lnux100}
+    # |  |--lnux101
+    # |  |  |--{asset_tag = P1000054}
+    # |  |  |--{manufacturer = Iris}
+    # |  |  |--{model_id = Iris 5875}
+    # |  |  |--{name = lnux101}
+    # |  |--dbaix900nyc
+    # |  |  |--{asset_tag = P1000055}
+    # |  |  |--{manufacturer = IBM}
+    # |  |  |--{model_id = IBM BladeCenter Blade HS22}
+    # |  |  |--{name = dbaix900nyc}
+    # |  |--dbaix901nyc
+    # |  |  |--{asset_tag = P1000182}
+    # |  |  |--{manufacturer = IBM}
+    # |  |  |--{model_id = IBM BladeCenter Blade HS22}
+    # |  |  |--{name = dbaix901nyc}
+    # |  |--dbaix902nyc
+    # |  |  |--{asset_tag = P1000070}
+    # |  |  |--{manufacturer = IBM}
+    # |  |  |--{model_id = IBM BladeCenter Blade HS22}
+    # |  |  |--{name = dbaix902nyc}
+    # |  |--ApplicationServerPeopleSoft
+    # |  |  |--{asset_tag = P1000204}
+    # |  |  |--{manufacturer = Dell Inc.}
+    # |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+    # |  |  |--{name = ApplicationServerPeopleSoft}
+    # |  |--DatabaseServer1
+    # |  |  |--{asset_tag = P1000199}
+    # |  |  |--{manufacturer = Dell Inc.}
+    # |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+    # |  |  |--{name = DatabaseServer1}
+
+    # Note that when limiting columns, any variables that are needed in compose, but
+    # not included in columns, must be explicitly included using query_additional_columns:
+
+    plugin: servicenow.itsm.now
+    query_limit_columns: true
+
+    query:
+      - os: = OS/400
+
+    query_limit_columns: true
+
+    columns:
+      - name
+      - asset_tag
+      - manufacturer
+      - model_id
+
+    query_additional_columns:
+      - sys_class_name
+
+    compose:
+      extended_class: sys_class_name ~ "/" ~ model_id
+
+    # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
+    # @all:
+    # |--@ungrouped:
+    # |  |--AS400
+    # |  |  |--{asset_tag = P1000034}
+    # |  |  |--{extended_class = Server/Dell Inc. PowerEdge M710HD Blade Server}
+    # |  |  |--{manufacturer = Dell Inc.}
+    # |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+    # |  |  |--{name = AS400}
 
     # Use a javascript function defined in ServiceNow under "Script Includes",
     # which returns a list of the sys_ids that match a certain criteria

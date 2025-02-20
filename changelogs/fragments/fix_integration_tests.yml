@@ -1,3 +1,0 @@
----
-bugfixes:
-  - tests - Fix problem and problem_task integration tests to be deterministic when being run in multithreaded environmnts (https://github.com/ansible-collections/servicenow.itsm/pull/421)
