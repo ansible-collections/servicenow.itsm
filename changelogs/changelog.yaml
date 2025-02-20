@@ -449,3 +449,24 @@ releases:
     - inventory_aggregation.yml
     - release_summary.yml
     release_date: '2024-10-03'
+  2.8.0:
+    changes:
+      bugfixes:
+      - tests - Fix problem and problem_task integration tests to be deterministic
+        when being run in multithreaded environmnts (https://github.com/ansible-collections/servicenow.itsm/pull/421)
+      minor_changes:
+      - inventory - The inventory plugin now supports limiting the number of columns
+        returned in the query. Users who wish to use this feature in conjunction with
+        compose will need to add columns referenced by compose to the query additional_columns
+        option. The default case preserves backwards compatibility by not limiting
+        the columns returned. (https://github.com/ansible-collections/servicenow.itsm/pull/422)
+      release_summary: Introduce feature to limit how many columns are retrieved by
+        inventory queries, which can substantially improve inventory performance.
+        Also includes changes to improve the integration test framework and enhance
+        the release script.
+    fragments:
+    - fix_integration_tests.yml
+    - query_limiting.yml
+    - release_summary.yml
+    - update_release_script.yml
+    release_date: '2025-02-20'

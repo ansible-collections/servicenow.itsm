@@ -4,6 +4,24 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.8.0
+======
+
+Release Summary
+---------------
+
+Introduce feature to limit how many columns are retrieved by inventory queries, which can substantially improve inventory performance. Also includes changes to improve the integration test framework and enhance the release script.
+
+Minor Changes
+-------------
+
+- inventory - The inventory plugin now supports limiting the number of columns returned in the query. Users who wish to use this feature in conjunction with compose will need to add columns referenced by compose to the query additional_columns option. The default case preserves backwards compatibility by not limiting the columns returned. (https://github.com/ansible-collections/servicenow.itsm/pull/422)
+
+Bugfixes
+--------
+
+- tests - Fix problem and problem_task integration tests to be deterministic when being run in multithreaded environmnts (https://github.com/ansible-collections/servicenow.itsm/pull/421)
+
 v2.7.0
 ======
 

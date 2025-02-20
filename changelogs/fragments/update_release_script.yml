@@ -1,3 +1,0 @@
----
-trivial:
-  - Update release script to validate correct version of docs is built, and allow for testrun (https://github.com/ansible-collections/servicenow.itsm/pull/423)
