@@ -112,7 +112,7 @@ class GenericClient(snow.SNowClient):
             sys_id = record.get(FIELD_SYS_ID)
             if isinstance(sys_id, dict):
                 # records from Change Request API has FIELD_SYS_ID as dict
-                return FIELD_SYS_ID.get("value")
+                return sys_id.get("value")
             return record.get(FIELD_SYS_ID)
 
         # cmdb record
