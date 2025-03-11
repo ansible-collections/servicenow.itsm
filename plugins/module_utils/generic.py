@@ -111,7 +111,7 @@ class GenericClient(snow.SNowClient):
         if FIELD_SYS_ID in record:
             sys_id = record.get(FIELD_SYS_ID)
             if isinstance(sys_id, dict):
-                # records from Change Request API has FIELD_SYS_ID as dict
+                # records from Change Request API has sys_id as dict
                 return sys_id.get("value")
             return record.get(FIELD_SYS_ID)
 
