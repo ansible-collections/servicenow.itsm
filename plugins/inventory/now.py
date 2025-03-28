@@ -670,7 +670,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             )
 
         for k in columns:
-            self.inventory.set_variable(host, k.replace(".", "_"), record[k])
+            self.inventory.set_variable(host, k, record[k])
 
     def set_host_vars_aggregated(self, host, record, columns, aggregator):
         for k in columns:
@@ -695,6 +695,9 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         for record in records:
             host = self.add_host(record, name_source)
             if host:
+                columns = [c.replace(".", "_") for c in columns]
+                record = {k.replace(".", "_"): v for k, v in record.items()}
+
                 if aggregation:
                     self.set_host_vars_aggregated(host, record, columns, aggregator)
                 else:
