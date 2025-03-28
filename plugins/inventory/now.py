@@ -701,8 +701,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
                     self.set_hostvars(host, record, columns)
 
                 for k, v in tuple(record.items()):
-                    if "." in k:
-                        record[k.replace(".", "_")] = v
+                    record[k.replace(".", "_")] = v
 
                 self._set_composite_vars(compose, record, host, strict)
                 self._add_host_to_composed_groups(groups, record, host, strict)
