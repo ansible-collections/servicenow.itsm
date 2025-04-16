@@ -1,0 +1,5 @@
+bugfixes:
+  - Removing support in ansible-version 2.14
+  - Adding support in ansible-version 2.18, python version 3.11
+  - Adding support in ansible-version 2.18, python version 3.12
+  - Adding support in ansible-version 2.18, python version 3.13
