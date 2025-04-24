@@ -111,7 +111,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install ansible-core (${{ matrix.ansible-version }})
-        run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
+        run: python${{ matrix.python-version }} -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
       - name: Pre install collections dependencies first so the collection install does not
         run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p ${{ env.collection_base_dir }}
@@ -136,7 +136,7 @@ jobs:
         run: ansible --version
 
       - name: Print the python dependencies
-        run: python3 -m pip list
+        run: python${{ matrix.python-version }} -m pip list
 
       - name: Create integration_config.yml
         env:
