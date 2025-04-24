@@ -8,9 +8,10 @@ on:
         default: ""
       matrix_exclude:
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
-        # 2.14 supports Python 3.9-3.11
         # 2.15 supports Python 3.9-3.11
         # 2.16 supports Python 3.10-3.12
+        # 2.17 supports Python 3.10-3.12
+        # 2.18 supports Python 3.11-3.13
         # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_17.html
         # milestone is 2.17 until after 2.17 branches from devel
         # devel is 2.17 until 2024-04-01
@@ -21,52 +22,28 @@ on:
               "python-version": "3.12"
             },
             {
+              "ansible-version": "stable-2.15",
+              "python-version": "3.13"
+            },
+            {
               "ansible-version": "stable-2.16",
-              "python-version": "3.9"
+              "python-version": "3.13"
             },
             {
               "ansible-version": "stable-2.17",
-              "python-version": "3.9"
+              "python-version": "3.13"
             },
             {
-              "ansible-version": "stable-2.17",
+              "ansible-version": "stable-2.18",
               "python-version": "3.10"
             },
             {
-              "ansible-version": "stable-2.18",
-              "python-version": "3.11"
-            },
-             {
-              "ansible-version": "stable-2.18",
-              "python-version": "3.12"
-            },
-            {
-              "ansible-version": "stable-2.18",
-              "python-version": "3.13"
-            },
-            {
               "ansible-version": "milestone",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.12"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.13"
+              "python-version": "3.10"
             },
             {
               "ansible-version": "devel",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.12"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.13"
+              "python-version": "3.10"
             },
           ]
         required: false
@@ -86,12 +63,14 @@ jobs:
           - stable-2.15
           - stable-2.16
           - stable-2.17
+          - stable-2.18
           - milestone
           - devel
         python-version:
           - "3.10"
           - "3.11"
           - "3.12"
+          - "3.13"
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
     continue-on-error: ${{ matrix.ansible-version == 'devel' }}
 
@@ -110,7 +89,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install ansible-core (${{ matrix.ansible-version }})
-        run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
+        run: python${{ matrix.python-version }} -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
       - name: Pre install collections dependencies first so the collection install does not
         run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p ${{ env.collection_base_dir }}
@@ -135,7 +114,7 @@ jobs:
         run: ansible --version
 
       - name: Print the python dependencies
-        run: python3 -m pip list
+        run: python${{ matrix.python-version }} -m pip list
 
       - name: Run unit tests
         run: PYTHONPATH=$PYTHONPATH:${{ env.collection_base_dir }} python -m pytest tests/unit --showlocals
