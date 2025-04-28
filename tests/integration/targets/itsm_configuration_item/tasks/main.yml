@@ -8,6 +8,7 @@
     - name: Create a base configuration item (check mode)
       servicenow.itsm.configuration_item: &ci-create
         name: "{{ 'configuration_item_' + lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
+        sys_class_name: cmdb_ci_computer
         category: hardware
         environment: development
         install_status: on_order
