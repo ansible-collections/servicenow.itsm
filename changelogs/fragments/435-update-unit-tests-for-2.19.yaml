@@ -1,0 +1,2 @@
+bugfixes:
+  - Update the unit tests to be compatible with ansible-core 2.19
