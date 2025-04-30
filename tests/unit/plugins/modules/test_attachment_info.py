@@ -15,7 +15,9 @@ from ansible.module_utils.json_utils import json
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
 from ansible_collections.servicenow.itsm.plugins.modules import attachment_info
-from ansible_collections.servicenow.itsm.tests.unit.plugins.common.utils import set_module_args
+from ansible_collections.servicenow.itsm.tests.unit.plugins.common.utils import (
+    set_module_args,
+)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"

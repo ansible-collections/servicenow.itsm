@@ -11,7 +11,9 @@ import sys
 
 import pytest
 from ansible_collections.servicenow.itsm.plugins.modules import change_request_task_info
-from ansible_collections.servicenow.itsm.tests.unit.plugins.common.utils import set_module_args
+from ansible_collections.servicenow.itsm.tests.unit.plugins.common.utils import (
+    set_module_args,
+)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
