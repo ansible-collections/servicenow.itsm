@@ -538,15 +538,27 @@ class TestInventoryModuleFillConstructed:
         assert set(a1_groups) == set()
 
         if HAS_DATATAGGING:
-            del a1.vars['silently_failed']
+            del a1.vars["silently_failed"]
 
         assert a1.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            cost_res="82 EUR" if not HAS_DATATAGGING else '{{' + compose['cost_res'] +'}}',
-            amortized_cost="41" if not HAS_DATATAGGING else '{{' + compose['amortized_cost'] +'}}',
-            sys_updated_on_date="2021-09-17" if not HAS_DATATAGGING else '{{' + compose['sys_updated_on_date'] +'}}',
-            sys_updated_on_time="02:13:25" if not HAS_DATATAGGING else '{{' + compose['sys_updated_on_time'] +'}}',
+            cost_res=(
+                "82 EUR" if not HAS_DATATAGGING else "{{" + compose["cost_res"] + "}}"
+            ),
+            amortized_cost=(
+                "41" if not HAS_DATATAGGING else "{{" + compose["amortized_cost"] + "}}"
+            ),
+            sys_updated_on_date=(
+                "2021-09-17"
+                if not HAS_DATATAGGING
+                else "{{" + compose["sys_updated_on_date"] + "}}"
+            ),
+            sys_updated_on_time=(
+                "02:13:25"
+                if not HAS_DATATAGGING
+                else "{{" + compose["sys_updated_on_time"] + "}}"
+            ),
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
@@ -554,15 +566,27 @@ class TestInventoryModuleFillConstructed:
         assert set(a2_groups) == set()
 
         if HAS_DATATAGGING:
-            del a2.vars['silently_failed']
+            del a2.vars["silently_failed"]
 
         assert a2.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            cost_res="94 USD" if not HAS_DATATAGGING else '{{' + compose['cost_res'] +'}}',
-            amortized_cost="47" if not HAS_DATATAGGING else '{{' + compose['amortized_cost'] +'}}',
-            sys_updated_on_date="2021-08-30" if not HAS_DATATAGGING else '{{' + compose['sys_updated_on_date'] +'}}',
-            sys_updated_on_time="01:47:03" if not HAS_DATATAGGING else '{{' + compose['sys_updated_on_time'] +'}}',
+            cost_res=(
+                "94 USD" if not HAS_DATATAGGING else "{{" + compose["cost_res"] + "}}"
+            ),
+            amortized_cost=(
+                "47" if not HAS_DATATAGGING else "{{" + compose["amortized_cost"] + "}}"
+            ),
+            sys_updated_on_date=(
+                "2021-08-30"
+                if not HAS_DATATAGGING
+                else "{{" + compose["sys_updated_on_date"] + "}}"
+            ),
+            sys_updated_on_time=(
+                "01:47:03"
+                if not HAS_DATATAGGING
+                else "{{" + compose["sys_updated_on_time"] + "}}"
+            ),
         )
 
     def test_construction_composite_vars_strict(self, inventory_plugin):
