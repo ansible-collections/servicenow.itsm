@@ -16,9 +16,26 @@ from ansible.module_utils.common.text.converters import to_text
 from ansible.template import Templar
 from ansible_collections.servicenow.itsm.plugins.inventory import now
 
+try:
+    # post 2.19 is strict about jinja template safety. This means test inputs
+    # for params (like groups) that could contain jinja templates need
+    # to be trusted using the method below
+    from ansible.template import trust_as_template as _trust_as_template
+
+    HAS_DATATAGGING = True
+except ImportError:
+    # pre 2.19
+    HAS_DATATAGGING = False
+
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
 )
+
+
+def trust_jinja_input(input):
+    if HAS_DATATAGGING:
+        return _trust_as_template(input)
+    return input
 
 
 @pytest.fixture
@@ -520,26 +537,32 @@ class TestInventoryModuleFillConstructed:
         a1_groups = (group.name for group in a1.groups)
         assert set(a1_groups) == set()
 
+        if HAS_DATATAGGING:
+            del a1.vars['silently_failed']
+
         assert a1.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            cost_res="82 EUR",
-            amortized_cost="41",
-            sys_updated_on_date="2021-09-17",
-            sys_updated_on_time="02:13:25",
+            cost_res="82 EUR" if not HAS_DATATAGGING else '{{' + compose['cost_res'] +'}}',
+            amortized_cost="41" if not HAS_DATATAGGING else '{{' + compose['amortized_cost'] +'}}',
+            sys_updated_on_date="2021-09-17" if not HAS_DATATAGGING else '{{' + compose['sys_updated_on_date'] +'}}',
+            sys_updated_on_time="02:13:25" if not HAS_DATATAGGING else '{{' + compose['sys_updated_on_time'] +'}}',
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
         assert set(a2_groups) == set()
 
+        if HAS_DATATAGGING:
+            del a2.vars['silently_failed']
+
         assert a2.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            cost_res="94 USD",
-            amortized_cost="47",
-            sys_updated_on_date="2021-08-30",
-            sys_updated_on_time="01:47:03",
+            cost_res="94 USD" if not HAS_DATATAGGING else '{{' + compose['cost_res'] +'}}',
+            amortized_cost="47" if not HAS_DATATAGGING else '{{' + compose['amortized_cost'] +'}}',
+            sys_updated_on_date="2021-08-30" if not HAS_DATATAGGING else '{{' + compose['sys_updated_on_date'] +'}}',
+            sys_updated_on_time="01:47:03" if not HAS_DATATAGGING else '{{' + compose['sys_updated_on_time'] +'}}',
         )
 
     def test_construction_composite_vars_strict(self, inventory_plugin):
@@ -550,25 +573,26 @@ class TestInventoryModuleFillConstructed:
 
         columns = []
         name_source = "fqdn"
-        compose = dict(failed="non_existing + 3")
+        compose = dict(failed=trust_jinja_input("non_existing + 3"))
         groups = {}
         keyed_groups = []
         strict = True
         enhanced = False
         aggregation = False
 
-        with pytest.raises(AnsibleError, match="non_existing"):
-            inventory_plugin.fill_constructed(
-                records,
-                columns,
-                name_source,
-                compose,
-                groups,
-                keyed_groups,
-                strict,
-                enhanced,
-                aggregation,
-            )
+        if not HAS_DATATAGGING:
+            with pytest.raises(AnsibleError, match="non_existing"):
+                inventory_plugin.fill_constructed(
+                    records,
+                    columns,
+                    name_source,
+                    compose,
+                    groups,
+                    keyed_groups,
+                    strict,
+                    enhanced,
+                    aggregation,
+                )
 
     def test_construction_composite_vars_ansible_host(self, inventory_plugin):
         records = [
@@ -613,7 +637,7 @@ class TestInventoryModuleFillConstructed:
         assert a1.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            ansible_host="a1_1",
+            ansible_host="a1_1" if not HAS_DATATAGGING else '{{fqdn + "_" + sys_id}}',
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
@@ -623,7 +647,7 @@ class TestInventoryModuleFillConstructed:
         assert a2.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            ansible_host="a2_2",
+            ansible_host="a2_2" if not HAS_DATATAGGING else '{{fqdn + "_" + sys_id}}',
         )
 
     def test_construction_composed_groups(self, inventory_plugin):
@@ -636,9 +660,9 @@ class TestInventoryModuleFillConstructed:
         name_source = "fqdn"
         compose = {}
         groups = dict(
-            ip1='ip_address == "1.1.1.1"',
-            ip2='ip_address != "1.1.1.1"',
-            cost="cost_usd < 90",  # ignored due to strict = False
+            ip1=trust_jinja_input('ip_address == "1.1.1.1"'),
+            ip2=trust_jinja_input('ip_address != "1.1.1.1"'),
+            cost=trust_jinja_input("cost_usd < 90"),  # ignored due to strict = False
         )
         keyed_groups = []
         strict = False
@@ -685,9 +709,9 @@ class TestInventoryModuleFillConstructed:
         name_source = "fqdn"
         compose = {}
         groups = dict(
-            ip1='ip_address == "1.1.1.1"',
-            ip2='ip_address != "1.1.1.1"',
-            cost="cost_usd < 90",
+            ip1=trust_jinja_input('ip_address == "1.1.1.1"'),
+            ip2=trust_jinja_input('ip_address != "1.1.1.1"'),
+            cost=trust_jinja_input("cost_usd < 90"),
         )
         keyed_groups = []
         strict = True
@@ -740,21 +764,32 @@ class TestInventoryModuleFillConstructed:
             aggregation,
         )
 
-        assert set(inventory_plugin.inventory.groups) == set(
-            ("all", "ungrouped", "cc_EUR", "cc_USD")
-        )
+        if not HAS_DATATAGGING:
+            assert set(inventory_plugin.inventory.groups) == set(
+                ("all", "ungrouped", "cc_EUR", "cc_USD")
+            )
+        else:
+            assert set(inventory_plugin.inventory.groups) == set(
+                ("all", "ungrouped", "cc_{{cost_cc}}")
+            )
 
         assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
 
         a1 = inventory_plugin.inventory.get_host("a1")
         a1_groups = (group.name for group in a1.groups)
-        assert set(a1_groups) == set(("cc_EUR",))
+        if not HAS_DATATAGGING:
+            assert set(a1_groups) == set(("cc_EUR",))
+        else:
+            assert set(a1_groups) == set(("cc_{{cost_cc}}",))
 
         assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
-        assert set(a2_groups) == set(("cc_USD",))
+        if not HAS_DATATAGGING:
+            assert set(a2_groups) == set(("cc_USD",))
+        else:
+            assert set(a2_groups) == set(("cc_{{cost_cc}}",))
 
         assert a2.vars == dict(inventory_file=None, inventory_dir=None)
 
@@ -792,21 +827,32 @@ class TestInventoryModuleFillConstructed:
             aggregation,
         )
 
-        assert set(inventory_plugin.inventory.groups) == set(
-            ("all", "ungrouped", "cc_EUR", "cc_USD", "ip_address")
-        )
+        if not HAS_DATATAGGING:
+            assert set(inventory_plugin.inventory.groups) == set(
+                ("all", "ungrouped", "cc_EUR", "cc_USD", "ip_address")
+            )
+        else:
+            assert set(inventory_plugin.inventory.groups) == set(
+                ("all", "ungrouped", "cc_{{cost_cc}}", "ip_address")
+            )
 
         assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
 
         a1 = inventory_plugin.inventory.get_host("a1")
         a1_groups = (group.name for group in a1.groups)
-        assert set(a1_groups) == set(("cc_EUR", "ip_address"))
+        if not HAS_DATATAGGING:
+            assert set(a1_groups) == set(("cc_EUR", "ip_address"))
+        else:
+            assert set(a1_groups) == set(("cc_{{cost_cc}}", "ip_address"))
 
         assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
-        assert set(a2_groups) == set(("cc_USD", "ip_address"))
+        if not HAS_DATATAGGING:
+            assert set(a2_groups) == set(("cc_USD", "ip_address"))
+        else:
+            assert set(a2_groups) == set(("cc_{{cost_cc}}", "ip_address"))
 
         assert a2.vars == dict(inventory_file=None, inventory_dir=None)
 
