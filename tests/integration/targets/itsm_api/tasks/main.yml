@@ -57,7 +57,6 @@
       register: first_incident
     - ansible.builtin.assert: *api-create-assertions-data
 
-
     - name: Retrieve all incidents after creating a new resource
       servicenow.itsm.api_info:
         resource: incident
@@ -177,7 +176,7 @@
       servicenow.itsm.api:
         resource: incident
         action: post
-        template: "test_template_post.j2"
+        template: "{{ role_path }}/templates/test_template_post.j2"
       vars: &template-vars
         short_desc: "short"
         long_desc: "looooooooong description"
@@ -193,7 +192,7 @@
         resource: incident
         action: patch
         sys_id: "{{ result.record.sys_id }}"
-        template: "test_template_patch.j2"
+        template: "{{ role_path }}/templates/test_template_patch.j2"
       vars: *template-vars
       register: result
     - ansible.builtin.assert:
