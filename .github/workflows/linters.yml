@@ -8,5 +8,12 @@ jobs:
     name: Run custom linters
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout the collection repository
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          path: ${{ env.source_directory }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: "0"
+
       - name: Run linters
         run: CI=true make linters
