@@ -11,6 +11,9 @@ import sys
 
 import pytest
 from ansible_collections.servicenow.itsm.plugins.modules import problem_info
+from ansible_collections.servicenow.itsm.tests.unit.plugins.common.utils import (
+    set_module_args,
+)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -45,7 +48,8 @@ class TestMain:
                 host="https://my.host.name", username="user", password="pass"
             ),
         )
-        success, result = run_main(problem_info, params)
+        with set_module_args(args=params):
+            success, result = run_main(problem_info, params)
 
         assert success is True
 
@@ -57,12 +61,14 @@ class TestMain:
             sys_id="id",
             number="n",
         )
-        success, result = run_main(problem_info, params)
+        with set_module_args(args=params):
+            success, result = run_main(problem_info, params)
 
         assert success is True
 
     def test_fail(self, run_main):
-        success, result = run_main(problem_info)
+        with set_module_args(args={}):
+            success, result = run_main(problem_info)
 
         assert success is False
         assert "instance" in result["msg"]

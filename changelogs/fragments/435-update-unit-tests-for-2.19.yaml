@@ -1,0 +1,5 @@
+bugfixes:
+  - Update the unit tests to be compatible with ansible-core 2.19
+minor_changes:
+  - plugins/action/api - Mark the template field as a trusted template source. This was the default behaviour of ansible-core until 2.19
+  - plugins/modules/change_request_task - Throw an error if state=='pending' and on_hold=True, like the documentation says

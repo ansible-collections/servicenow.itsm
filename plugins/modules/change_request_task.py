@@ -214,6 +214,11 @@ def validate_params(params, change_task=None):
             )
         )
 
+    if params["state"] == "pending" and params["on_hold"]:
+        raise errors.ServiceNowError(
+            "Cannot put a task in state pending while on_hold is True"
+        )
+
     # Description must be set
     missing.extend(
         validation.missing_from_params_and_remote(

@@ -7,26 +7,26 @@
     mapping:
       incident:
         impact:
-          1: "high"
-          2: "medium"
-          3: "low"
+          "1": "high"
+          "2": "medium"
+          "3": "low"
         urgency:
-          1: "high"
-          2: "medium"
-          3: "low"
+          "1": "high"
+          "2": "medium"
+          "3": "low"
         state:
-          1: "new"
-          2: "in_progress"
-          3: "on_hold"
-          6: "resolved"
-          7: "closed"
-          8: "canceled"
+          "1": "new"
+          "2": "in_progress"
+          "3": "on_hold"
+          "6": "resolved"
+          "7": "closed"
+          "8": "canceled"
         hold_reason:
           "": ""
-          1: "awaiting_caller"
-          3: "awaiting_problem"
-          4: "awaiting_vendor"
-          5: "awaiting_change"
+          "1": "awaiting_caller"
+          "3": "awaiting_problem"
+          "4": "awaiting_vendor"
+          "5": "awaiting_change"
         close_code:
           "solved_unknown": "Solved Unknown"
 
@@ -77,7 +77,6 @@
 
     - ansible.builtin.assert: *create-incident-result
 
-
     - name: Make sure incident exists
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
@@ -91,7 +90,6 @@
           - result.records[0].impact == "low"
           - result.records[0].urgency == "low"
 
-
     - name: Update incident with same urgency and impact - unchanged
       servicenow.itsm.incident:
         incident_mapping: "{{ mapping.incident }}"
@@ -104,7 +102,6 @@
     - ansible.builtin.assert:
         that:
           - result is not changed
-
 
     - name: Update incident - check mode
       servicenow.itsm.incident: &update-incident
@@ -124,12 +121,10 @@
           - result.record.impact == "high"
           - result.record.urgency == "high"
 
-
     - name: Update incident
       servicenow.itsm.incident: *update-incident
 
     - ansible.builtin.assert: *update-incident-result
-
 
     - name: Make sure incident was updated
       servicenow.itsm.incident_info:
@@ -144,7 +139,6 @@
           - result.records[0].impact == "high"
           - result.records[0].urgency == "high"
 
-
     - name: Update incident with same params - unchanged
       servicenow.itsm.incident: *update-incident
       register: result
@@ -152,7 +146,6 @@
     - ansible.builtin.assert:
         that:
           - result is not changed
-
 
     - name: Fail closing incident without required data
       servicenow.itsm.incident:
@@ -199,22 +192,20 @@
           - result.record.close_code == "Solved Unknown"
           - result.record.close_notes == "Done testing"
 
-
     - name: Update incident
       servicenow.itsm.incident: *update-incident-state
 
     - ansible.builtin.assert: *update-incident-state-result
 
-
     - name: Get specific incident info by sysparm query
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
         query:
-         - caller: = admin
-           number: = {{ test_result.record.number }}
-           state: = resolved
-           close_code: = Solved Unknown
-           close_notes: = Done testing
+          - caller: = admin
+            number: = {{ test_result.record.number }}
+            state: = resolved
+            close_code: = Solved Unknown
+            close_notes: = Done testing
       register: result
 
     - ansible.builtin.assert:
@@ -225,7 +216,6 @@
           - result.records[0].state == "resolved"
           - result.records[0].close_code == "Solved Unknown"
           - result.records[0].close_notes == "Done testing"
-
 
     - name: Make sure incident state was updated
       servicenow.itsm.incident_info:
@@ -240,20 +230,18 @@
           - result.records[0].close_code == "Solved Unknown"
           - result.records[0].close_notes == "Done testing"
 
-
     - name: Get incident info by sysparm query - close_notes and state
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
         query:
-         - close_notes: LIKE Done testing
-           state: = resolved
+          - close_notes: LIKE Done testing
+            state: = resolved
       register: result
 
     - ansible.builtin.assert:
         that:
           - result.records[0].close_notes == "Done testing"
           - result.records[0].state == "resolved"
-
 
     - name: Update incident with same state - unchanged
       servicenow.itsm.incident: *update-incident-state
@@ -263,13 +251,12 @@
         that:
           - result is not changed
 
-
     - name: Test bad parameter combinator (number + query)
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
         number: "{{ test_result.record.number }}"
         query:
-         - short_description: LIKE SAP
+          - short_description: LIKE SAP
       ignore_errors: true
       register: result
 
@@ -278,12 +265,11 @@
           - result is failed
           - "'parameters are mutually exclusive: number|query' in result.msg"
 
-
     - name: Test invalid operator detection
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
         query:
-         - short_description: LIKEE SAP
+          - short_description: LIKEE SAP
       ignore_errors: true
       register: result
 
@@ -292,24 +278,22 @@
           - result is failed
           - "'Invalid condition' in result.msg"
 
-
     - name: Get incident info by sysparm query - short_description
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
         query:
-         - short_description: STARTSWITH Test
+          - short_description: STARTSWITH Test
       register: result
 
     - ansible.builtin.assert:
         that:
           - "'Test' in result.records[0].short_description"
 
-
     - name: Test unary operator with argument detection
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
         query:
-         - short_description: ISEMPTY SAP
+          - short_description: ISEMPTY SAP
       ignore_errors: true
       register: result
 
@@ -318,13 +302,11 @@
           - result is failed
           - "'Operator ISEMPTY does not take any arguments' in result.msg"
 
-
     - name: Delete incident choices
       servicenow.itsm.api:
         resource: sys_choice
         action: delete
         sys_id: "{{ solved_remotely_choice }}"
-
 
     - name: Delete incident - check mode
       servicenow.itsm.incident: &delete-incident
@@ -339,12 +321,10 @@
         that:
           - result is changed
 
-
     - name: Delete incident
       servicenow.itsm.incident: *delete-incident
 
     - ansible.builtin.assert: *delete-incident-result
-
 
     - name: Make sure incident is absent
       servicenow.itsm.incident_info:

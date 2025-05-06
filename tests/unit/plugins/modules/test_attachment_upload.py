@@ -11,6 +11,9 @@ import sys
 
 import pytest
 from ansible_collections.servicenow.itsm.plugins.modules import attachment_upload
+from ansible_collections.servicenow.itsm.tests.unit.plugins.common.utils import (
+    set_module_args,
+)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -108,12 +111,14 @@ class TestMain:
                 },
             ],
         )
-        success, result = run_main(attachment_upload, params)
+        with set_module_args(args=params):
+            success, result = run_main(attachment_upload, params)
 
         assert success is True
 
     def test_required(self, run_main):
-        success, result = run_main(attachment_upload)
+        with set_module_args(args={}):
+            success, result = run_main(attachment_upload)
 
         assert success is False
         assert "missing required arguments: table_name, table_sys_id" in result["msg"]

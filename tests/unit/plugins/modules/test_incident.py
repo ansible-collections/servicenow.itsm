@@ -12,6 +12,9 @@ import sys
 import pytest
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
 from ansible_collections.servicenow.itsm.plugins.modules import incident
+from ansible_collections.servicenow.itsm.tests.unit.plugins.common.utils import (
+    set_module_args,
+)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -347,7 +350,8 @@ class TestEnsurePresentWithMapping:
             number="n",
             incident_mapping=self.INCIDENT_MAPPING,
         )
-        success, result = run_main(incident, params)
+        with set_module_args(args=params):
+            success, result = run_main(incident, params)
 
         assert success is True
 
@@ -360,7 +364,8 @@ class TestEnsurePresentWithMapping:
             number="n",
             incident_mapping={"unknown key": None},
         )
-        success, result = run_main(incident, params)
+        with set_module_args(args=params):
+            success, result = run_main(incident, params)
 
         assert success is False
 
