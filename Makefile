@@ -33,7 +33,7 @@ help:
 
 .PHONY: format
 format:  ## Format python code with black
-	black -t py27 plugins tests/unit
+	black plugins tests/unit
 
 .PHONY: clean
 clean:  ## Remove all auto-generated files
@@ -49,11 +49,15 @@ $(integration_test_targets):
 
 # Things also used in CI/CD
 
+.PHONY: linters
+linters:  ## Run extra linter tests
+	@pip install -r linters.requirements.txt; err=0; echo -e "\nStart tests.\n"; \
+	flake8 --select C90 --max-complexity 10 plugins || err=1; \
+	black --check --diff --color plugins tests/unit || err=1; \
+	if [ $$err == 1 ]; then echo -e "\nAt least one linter failed\n" >&2; exit 1; fi
+
 .PHONY: sanity
-sanity:  ## Run sanity tests
-	pip install -r sanity.requirements
-	black -t py27 --check --diff --color plugins tests/unit
-	flake8
+sanity: linters ## Run sanity tests
 	ansible-test sanity --docker
 
 .PHONY: units
