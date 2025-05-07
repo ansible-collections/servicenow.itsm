@@ -1,0 +1,4 @@
+trivial:
+  - remove references to python 2.7 from collection. https://github.com/ansible-collections/servicenow.itsm/pull/437 includes removing it from docs.
+  - remove decrepit tox ini
+  - update black used by linter to recent major version
