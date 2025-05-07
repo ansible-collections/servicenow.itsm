@@ -413,53 +413,32 @@
           - "'Operator ISEMPTY does not take any arguments' in result.msg"
 
   always:
-    - name: Verify if first problem has been deleted
-      servicenow.itsm.problem_info:
-        sys_id: "{{ first_problem.record.sys_id }}"
-      register: result
-
     - name: Delete initial problem
       servicenow.itsm.problem:
         sys_id: "{{ first_problem.record.sys_id }}"
         state: absent
-      when: result.records | length == 1
-
-    - name: Verify if bogus problem has been deleted
-      servicenow.itsm.problem_info:
-        sys_id: "{{ bogus_problem.record.sys_id }}"
-      register: result
+      when: first_problem.record.sys_id is defined
 
     - name: Delete bogus problem
       servicenow.itsm.problem:
         sys_id: "{{ bogus_problem.record.sys_id }}"
         state: absent
-
-    - name: Verify if fixed problem has been deleted
-      servicenow.itsm.problem_info:
-        sys_id: "{{ fixed_problem.record.sys_id }}"
-      register: result
+      when: bogus_problem.record.sys_id is defined
 
     - name: Delete fixed_problem
       servicenow.itsm.problem:
         sys_id: "{{ fixed_problem.record.sys_id }}"
         state: absent
-
-    - name: Verify if risk_accepted problem has been deleted
-      servicenow.itsm.problem_info:
-        sys_id: "{{ risk_accepted_problem.record.sys_id }}"
-      register: result
+      when: fixed_problem.record.sys_id is defined
 
     - name: Delete risk_accepted_problem
       servicenow.itsm.problem:
         sys_id: "{{ risk_accepted_problem.record.sys_id }}"
         state: absent
-
-    - name: Verify if duplicated_problem problem has been deleted
-      servicenow.itsm.problem_info:
-        sys_id: "{{ duplicated_problem.record.sys_id }}"
-      register: result
+      when: risk_accepted_problem.record.sys_id is defined
 
     - name: Delete duplicated_problem
       servicenow.itsm.problem:
         sys_id: "{{ duplicated_problem.record.sys_id }}"
         state: absent
+      when: duplicated_problem.record.sys_id is defined
