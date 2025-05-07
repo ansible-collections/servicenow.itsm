@@ -12,9 +12,8 @@ on:
         # 2.16 supports Python 3.10-3.12
         # 2.17 supports Python 3.10-3.12
         # 2.18 supports Python 3.11-3.13
-        # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_17.html
-        # milestone is 2.17 until after 2.17 branches from devel
-        # devel is 2.17 until 2024-04-01
+        # 2.19 supports Python 3.11-3.13
+        # This structure assumes milestone and devel are 2.19 to-be
         default: >-
           [
             {
@@ -27,7 +26,15 @@ on:
             },
             {
               "ansible-version": "stable-2.16",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "stable-2.16",
               "python-version": "3.13"
+            },
+            {
+              "ansible-version": "stable-2.17",
+              "python-version": "3.9"
             },
             {
               "ansible-version": "stable-2.17",
@@ -35,11 +42,23 @@ on:
             },
             {
               "ansible-version": "stable-2.18",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "stable-2.18",
               "python-version": "3.10"
             },
             {
               "ansible-version": "milestone",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "milestone",
               "python-version": "3.10"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.9"
             },
             {
               "ansible-version": "devel",
@@ -67,6 +86,7 @@ jobs:
           - milestone
           - devel
         python-version:
+          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"

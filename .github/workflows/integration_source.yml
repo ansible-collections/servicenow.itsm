@@ -35,11 +35,23 @@ on:
             },
             {
               "ansible-version": "stable-2.18",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "stable-2.18",
               "python-version": "3.10"
             },
             {
               "ansible-version": "milestone",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "milestone",
               "python-version": "3.10"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.9"
             },
             {
               "ansible-version": "devel",
@@ -67,24 +79,16 @@ jobs:
           - milestone
           - devel
         python-version:
+          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
         servicenow-version:
-          - "utah"
-          - "vancouver"
           - "washington"
           - "xanadu"
+          - "yokohama"
         include:
-          - servicenow-version: "utah"
-            sn_host_secret: SN_HOST_UTAH
-            sn_username_secret: SN_USERNAME_UTAH
-            sn_password_secret: SN_PASSWORD_UTAH
-          - servicenow-version: "vancouver"
-            sn_host_secret: SN_HOST_VANCOUVER
-            sn_username_secret: SN_USERNAME_VANCOUVER
-            sn_password_secret: SN_PASSWORD_VANCOUVER
           - servicenow-version: "washington"
             sn_host_secret: SN_HOST_WASHINGTON
             sn_username_secret: SN_USERNAME_WASHINGTON
@@ -93,8 +97,12 @@ jobs:
             sn_host_secret: SN_HOST_XANADU
             sn_username_secret: SN_USERNAME_XANADU
             sn_password_secret: SN_PASSWORD_XANADU
+          - servicenow-version: "yokohama"
+            sn_host_secret: SN_HOST_YOKOHAMA
+            sn_username_secret: SN_USERNAME_YOKOHAMA
+            sn_password_secret: SN_PASSWORD_YOKOHAMA
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
-    continue-on-error: ${{ matrix.ansible-version == 'devel' }}
+    continue-on-error: ${{ matrix.ansible-version == 'devel' || matrix.ansible-version == 'milestone' }}
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.servicenow-version }}"
     steps:

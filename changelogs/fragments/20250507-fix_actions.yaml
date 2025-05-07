@@ -1,0 +1,5 @@
+trivial:
+  - Remove Utah and Vancouver from CI/CD (EOL from ServiceNow side)
+  - Add Yokohama to CI/CD matrix
+  - Fix potential syntax error on scheduled job
+  - Make matrixes consistent between unit and integration tests; ensure 3.9 for 2.15
