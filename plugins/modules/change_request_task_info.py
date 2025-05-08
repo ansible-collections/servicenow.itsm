@@ -160,56 +160,57 @@ from ..module_utils.change_request_task import PAYLOAD_FIELDS_MAPPING
 from ..module_utils.utils import get_mapper
 
 
+
+
+class ReMapper():
+    def __init__(self, table_client):
+        self.table_client = table_client
+        self.query_args = dict()
+
+    def type(self, val):
+        self.query_args["change_task_type"] = (val[0], val[1])
+
+    def hold_reason(self, val):
+        self.query_args["on_hold_reason"] = (val[0], val[1])
+
+    def configuration_item_id(self, val):
+        self.query_args["cmdb_ci"] = (val[0], val[1])
+
+    def configuration_item(self, val):
+        configuration_item = table.find_configuration_item(self.table_client, val[1])
+        self.query_args["cmdb_ci"] = (val[0], configuration_item["sys_id"])
+
+    def change_request_id(self, val):
+        self.query_args["change_request"] = (val[0], val[1])
+
+    def change_request_number(self, val):
+        change_request = table.find_change_request(self.table_client, val[1])
+        self.query_args["change_request"] = (val[0], change_request["sys_id"])
+
+    def assigned_to(self, val):
+        user = table.find_user(self.table_client, val[1])
+        self.query_args["assigned_to"] = (val[0], user["sys_id"])
+
+    def assignment_group(self, val):
+        assignment_group = table.find_assignment_group(self.table_client, val[1])
+        self.query_args["assignment_group"] = (val[0], assignment_group["sys_id"])
+
+    def default(self, key, val):
+        self.query_args[key] = val
+
+
 def remap_params(query, table_client):
     query_load = []
-
     for item in query:
-        q = dict()
+        remapper = ReMapper(table_client)
         for k, v in item.items():
             try:
-                locals()["_remap_%s" % k](q, v, table_client)
-            except KeyError:
-                q[k] = v
-
-        query_load.append(q)
+                getattr(remapper, k)(v)
+            except AttributeError:
+                remapper.default(k, v)
+        query_load.append(remapper.query_args)
 
     return query_load
-
-
-def _remap_type(q, val, table_client):
-    q["change_task_type"] = (val[0], val[1])
-
-
-def _remap_hold_reason(q, val, table_client):
-    q["on_hold_reason"] = (val[0], val[1])
-
-
-def _remap_configuration_item_id(q, val, table_client):
-    q["cmdb_ci"] = (val[0], val[1])
-
-
-def _remap_configuration_item(q, val, table_client):
-    configuration_item = table.find_configuration_item(table_client, val[1])
-    q["cmdb_ci"] = (val[0], configuration_item["sys_id"])
-
-
-def _remap_change_request_id(q, val, table_client):
-    q["change_request"] = (val[0], val[1])
-
-
-def _remap_change_request_number(q, val, table_client):
-    change_request = table.find_change_request(table_client, val[1])
-    q["change_request"] = (val[0], change_request["sys_id"])
-
-
-def _remap_assigned_to(q, val, table_client):
-    user = table.find_user(table_client, val[1])
-    q["assigned_to"] = (val[0], user["sys_id"])
-
-
-def _remap_assignment_group(q, val, table_client):
-    assignment_group = table.find_assignment_group(table_client, val[1])
-    q["assignment_group"] = (val[0], assignment_group["sys_id"])
 
 
 def sysparms_query(module, table_client, mapper):
