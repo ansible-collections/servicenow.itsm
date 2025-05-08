@@ -1,0 +1,3 @@
+---
+trivial:
+  - Split nightly workflow out from all_green
