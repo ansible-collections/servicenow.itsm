@@ -54,7 +54,7 @@ linters:  ## Run extra linter tests
 	@pip install -r linters.requirements.txt; err=0; echo -e "\nStart tests.\n"; \
 	flake8 --select C90 --max-complexity 10 plugins || err=1; \
 	black --check --diff --color plugins tests/unit || err=1; \
-	if [ $$err == 1 ]; then echo -e "\nAt least one linter failed\n" >&2; exit 1; fi
+	if [ "$$err" = 1 ]; then echo -e "\nAt least one linter failed\n" >&2; exit 1; fi
 
 .PHONY: sanity
 sanity: linters ## Run sanity tests
