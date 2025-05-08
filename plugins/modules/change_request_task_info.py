@@ -166,40 +166,50 @@ def remap_params(query, table_client):
     for item in query:
         q = dict()
         for k, v in item.items():
-            if k == "type":
-                q["change_task_type"] = (v[0], v[1])
-
-            elif k == "hold_reason":
-                q["on_hold_reason"] = (v[0], v[1])
-
-            elif k == "configuration_item_id":
-                q["cmdb_ci"] = (v[0], v[1])
-
-            elif k == "configuration_item":
-                configuration_item = table.find_configuration_item(table_client, v[1])
-                q["cmdb_ci"] = (v[0], configuration_item["sys_id"])
-
-            elif k == "change_request_id":
-                q["change_request"] = (v[0], v[1])
-
-            elif k == "change_request_number":
-                change_request = table.find_change_request(table_client, v[1])
-                q["change_request"] = (v[0], change_request["sys_id"])
-
-            elif k == "assigned_to":
-                user = table.find_user(table_client, v[1])
-                q["assigned_to"] = (v[0], user["sys_id"])
-
-            elif k == "assignment_group":
-                assignment_group = table.find_assignment_group(table_client, v[1])
-                q["assignment_group"] = (v[0], assignment_group["sys_id"])
-
-            else:
+            try:
+                locals()["_remap_%s" % k](q, v, table_client)
+            except KeyError:
                 q[k] = v
 
         query_load.append(q)
 
     return query_load
+
+
+def _remap_type(q, val, table_client):
+    q["change_task_type"] = (val[0], val[1])
+
+
+def _remap_hold_reason(q, val, table_client):
+    q["on_hold_reason"] = (val[0], val[1])
+
+
+def _remap_configuration_item_id(q, val, table_client):
+    q["cmdb_ci"] = (val[0], val[1])
+
+
+def _remap_configuration_item(q, val, table_client):
+    configuration_item = table.find_configuration_item(table_client, val[1])
+    q["cmdb_ci"] = (val[0], configuration_item["sys_id"])
+
+
+def _remap_change_request_id(q, val, table_client):
+    q["change_request"] = (val[0], val[1])
+
+
+def _remap_change_request_number(q, val, table_client):
+    change_request = table.find_change_request(table_client, val[1])
+    q["change_request"] = (val[0], change_request["sys_id"])
+
+
+def _remap_assigned_to(q, val, table_client):
+    user = table.find_user(table_client, val[1])
+    q["assigned_to"] = (val[0], user["sys_id"])
+
+
+def _remap_assignment_group(q, val, table_client):
+    assignment_group = table.find_assignment_group(table_client, val[1])
+    q["assignment_group"] = (val[0], assignment_group["sys_id"])
 
 
 def sysparms_query(module, table_client, mapper):
