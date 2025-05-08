@@ -780,108 +780,23 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
     def parse(self, inventory, loader, path, cache=True):
         super(InventoryModule, self).parse(inventory, loader, path)
 
-        self._read_config_data(path)
-        self.cache_key = self.get_cache_key(path)
-        cache_sub_key = "/".join(
-            [
-                self._get_instance()["host"].rstrip("/"),
-                "table",
-                self.get_option("table"),
-                self._construct_cache_suffix(),
-            ]
-        )
-
-        self.use_cache = self.get_option("cache") and cache
-        self.update_cache = self.get_option("cache") and not cache
-
-        try:
-            client = Client(**self._get_instance())
-        except ServiceNowError as e:
-            raise AnsibleParserError(e)
+        self.__ingest_inventory_config(path, cache)
 
         enhanced = self.get_option("enhanced")
         aggregation = self.get_option("aggregation")
-
-        sysparm_limit = self.get_option("sysparm_limit")
-        if sysparm_limit:
-            table_client = TableClient(client, batch_size=sysparm_limit)
-        else:
-            table_client = TableClient(client)
-
-        table = self.get_option("table")
         name_source = self.get_option("inventory_hostname_source")
         columns = self.get_option("columns")
-        query_limit_columns = self.get_option("query_limit_columns")
-        query_additional_columns = self.get_option("query_additional_columns")
-
-        # Introduced for 2.8.0
-        # We only want to limit the table query when explicitly asked - existing documentation
-        # has examples that depend on this, and certainly deployed code does this and to do otherwise
-        # would break existing inventories. query_columns == None implies retrieving every column from
-        # the desired table, which can take a very long time to parse for large tables with many columns.
-        if query_limit_columns:
-            query_columns = list(set(query_additional_columns + columns))
-        else:
-            query_columns = None
-
-        query = self.get_option("query")
-        sysparm_query = self.get_option("sysparm_query")
-
-        if query and sysparm_query:
-            raise AnsibleParserError(
-                "Invalid configuration: 'query' and 'sysparm_query' are mutually "
-                "exclusive."
-            )
 
         records = []
 
         if not self.update_cache:
             try:
-                records = self._cache[self.cache_key][cache_sub_key]
+                records = self._cache[self.cache_key][self._cache_sub_key]
             except KeyError:
                 pass
 
         if not records:
-            if self.cache_key not in self._cache:
-                self._cache[self.cache_key] = {path: ""}
-
-            records = fetch_records(
-                table_client,
-                table,
-                query or sysparm_query,
-                fields=query_columns,
-                is_encoded_query=bool(sysparm_query),
-            )
-
-            referenced_columns = [x for x in columns if "." in x]
-            if referenced_columns:
-                referenced_records = fetch_records(
-                    table_client,
-                    table,
-                    query or sysparm_query,
-                    fields=referenced_columns + ["sys_id"],
-                    is_encoded_query=bool(sysparm_query),
-                )
-
-                referenced_dict = dict((x["sys_id"], x) for x in referenced_records)
-                # Keep track of processed 'sys_id' to avoid popping it twice if there were duplicates returned by ServiceNow.
-                processed_records = []
-                for record in records:
-                    referenced = referenced_dict.get(record["sys_id"], None)
-                    if referenced:
-                        if record["sys_id"] not in processed_records:
-                            referenced.pop("sys_id")
-                        processed_records.append(record["sys_id"])
-                        for key, value in referenced.items():
-                            record[key] = value
-
-            if enhanced:
-                rel_records = fetch_records(
-                    table_client, REL_TABLE, REL_QUERY, fields=REL_FIELDS
-                )
-                enhance_records_with_rel_groups(records, rel_records)
-
-            self._cache[self.cache_key] = {cache_sub_key: records}
+            self.__populate_records_from_remote(enhanced, path, columns)
 
         self.fill_constructed(
             records,
@@ -894,3 +809,113 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             enhanced,
             aggregation,
         )
+
+    def __ingest_inventory_config(self, path, cache):
+        self._read_config_data(path)
+        self.cache_key = self.get_cache_key(path)
+        self._cache_sub_key = "/".join(
+            [
+                self._get_instance()["host"].rstrip("/"),
+                "table",
+                self.get_option("table"),
+                self._construct_cache_suffix(),
+            ]
+        )
+
+        self.use_cache = self.get_option("cache") and cache
+        self.update_cache = self.get_option("cache") and not cache
+
+    def __populate_records_from_remote(self, enhanced, path, columns):
+
+        query = self.get_option("query")
+        sysparm_query = self.get_option("sysparm_query")
+
+        if query and sysparm_query:
+            raise AnsibleParserError(
+                "Invalid configuration: 'query' and 'sysparm_query' are mutually "
+                "exclusive."
+            )
+
+        if self.cache_key not in self._cache:
+            self._cache[self.cache_key] = {path: ""}
+
+        table = self.get_option("table")
+        table_client = self.__create_table_client()
+        records = fetch_records(
+            table_client,
+            table,
+            query or sysparm_query,
+            fields=self.__get_query_columns(columns),
+            is_encoded_query=bool(sysparm_query),
+        )
+
+        referenced_columns = [x for x in columns if "." in x]
+        if referenced_columns:
+            self.__fetch_referenced_columns(
+                self,
+                table_client,
+                table,
+                query,
+                sysparm_query,
+                referenced_columns,
+                records,
+            )
+
+        if enhanced:
+            rel_records = fetch_records(
+                table_client, REL_TABLE, REL_QUERY, fields=REL_FIELDS
+            )
+            enhance_records_with_rel_groups(records, rel_records)
+
+        self._cache[self.cache_key] = {self._cache_sub_key: records}
+
+    def __create_table_client(self):
+        try:
+            client = Client(**self._get_instance())
+        except ServiceNowError as e:
+            raise AnsibleParserError(e)
+
+        sysparm_limit = self.get_option("sysparm_limit")
+        if sysparm_limit:
+            table_client = TableClient(client, batch_size=sysparm_limit)
+        else:
+            table_client = TableClient(client)
+
+        return table_client
+
+    def __get_query_columns(self, columns):
+        query_limit_columns = self.get_option("query_limit_columns")
+        query_additional_columns = self.get_option("query_additional_columns")
+
+        # Introduced for 2.8.0
+        # We only want to limit the table query when explicitly asked - existing documentation
+        # has examples that depend on this, and certainly deployed code does this and to do otherwise
+        # would break existing inventories. query_columns == None implies retrieving every column from
+        # the desired table, which can take a very long time to parse for large tables with many columns.
+        if query_limit_columns:
+            return list(set(query_additional_columns + columns))
+        else:
+            return None
+
+    def __fetch_referenced_columns(
+        self, table_client, table, query, sysparm_query, referenced_columns, records
+    ):
+        referenced_records = fetch_records(
+            table_client,
+            table,
+            query or sysparm_query,
+            fields=referenced_columns + ["sys_id"],
+            is_encoded_query=bool(sysparm_query),
+        )
+
+        referenced_dict = dict((x["sys_id"], x) for x in referenced_records)
+        # Keep track of processed 'sys_id' to avoid popping it twice if there were duplicates returned by ServiceNow.
+        processed_records = []
+        for record in records:
+            referenced = referenced_dict.get(record["sys_id"], None)
+            if referenced:
+                if record["sys_id"] not in processed_records:
+                    referenced.pop("sys_id")
+                processed_records.append(record["sys_id"])
+                for key, value in referenced.items():
+                    record[key] = value

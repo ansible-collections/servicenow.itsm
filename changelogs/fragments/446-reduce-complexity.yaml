@@ -1,0 +1,3 @@
+trivial:
+  - plugins/inventory/now - reduce parse function complexity by breaking into different functions
+  - plugins/modules/change_request_task_info - reduce remap_params function complexity by breaking into different functions
