@@ -160,9 +160,7 @@ from ..module_utils.change_request_task import PAYLOAD_FIELDS_MAPPING
 from ..module_utils.utils import get_mapper
 
 
-
-
-class ReMapper():
+class ReMapper:
     def __init__(self, table_client):
         self.table_client = table_client
         self.query_args = dict()
