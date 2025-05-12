@@ -261,38 +261,74 @@
           - result.record.resolution_code == "canceled"
           - result.record.close_notes == "closing"
 
-    - name: Create a resolved problem that was fixed
+    - name: Create a new problem (initial state)
       servicenow.itsm.problem:
-        state: resolved
-        problem_mapping: "{{ mapping.problem }}"
+        state: "new"
         short_description: "fixed-problem_{{ suffix }}"
-        assigned_to: problem.manager
-        resolution_code: fix_applied
-        cause_notes: cause
-        fix_notes: fix
+        assigned_to: "problem.manager"
       register: fixed_problem
 
-    - ansible.builtin.assert:
-        that:
-          - fixed_problem is changed
-          - fixed_problem.record.resolution_code == "fix_applied"
-          - fixed_problem.record.cause_notes == "cause"
-          - fixed_problem.record.fix_notes == "fix"
-
-    - name: Create a resolved problem with accepted risk
+    - name: Transition problem to "Root Cause Analysis"
       servicenow.itsm.problem:
-        problem_mapping: "{{ mapping.problem }}"
-        state: resolved
+        sys_id: "{{ fixed_problem.record.sys_id }}"
+        state: "root_cause_analysis"
+        cause_notes: "cause"
+      register: rca_problem
+
+    - name: Transition problem to "Fix in Progress"
+      servicenow.itsm.problem:
+        sys_id: "{{ fixed_problem.record.sys_id }}"
+        state: "fix_in_progress"
+        fix_notes: "fix"
+      register: fix_problem
+
+    - name: Transition problem to "Resolved"
+      servicenow.itsm.problem:
+        sys_id: "{{ fixed_problem.record.sys_id }}"
+        state: "resolved"
+        resolution_code: "fix_applied"
+        cause_notes: "cause"
+        fix_notes: "fix"
+      register: resolved_problem
+
+    - name: Assert that the problem was resolved correctly
+      ansible.builtin.assert:
+        that:
+          - resolved_problem is changed
+          - resolved_problem.record.state == "resolved"
+          - resolved_problem.record.resolution_code == "fix_applied"
+          - resolved_problem.record.cause_notes == "cause"
+          - resolved_problem.record.fix_notes == "fix"
+
+    - name: Create an initial problem (new or assess)
+      servicenow.itsm.problem:
+        state: assess
         short_description: "accepted-problem_{{ suffix }}"
         assigned_to: problem.manager
+      register: new_problem
+
+    - name: Move problem to "Root Cause Analysis" before resolving
+      servicenow.itsm.problem:
+        sys_id: "{{ new_problem.record.sys_id }}"
+        state: root_cause_analysis
+        cause_notes: "cause"
+      register: rca_problem
+
+    - name: Resolve the problem with accepted risk
+      servicenow.itsm.problem:
+        sys_id: "{{ new_problem.record.sys_id }}"
+        state: resolved
         resolution_code: risk_accepted
-        cause_notes: cause
-        close_notes: close
+        cause_notes: "cause"
+        close_notes: "close"
+        fix_notes: "not fixed"
       register: risk_accepted_problem
 
-    - ansible.builtin.assert:
+    - name: Assert the risk-accepted problem was resolved correctly
+      ansible.builtin.assert:
         that:
           - risk_accepted_problem is changed
+          - risk_accepted_problem.record.state == "resolved"
           - risk_accepted_problem.record.resolution_code == "risk_accepted"
           - risk_accepted_problem.record.cause_notes == "cause"
           - risk_accepted_problem.record.close_notes == "close"
@@ -330,24 +366,30 @@
         that:
           - result.records.0.state == "resolved"
 
-    - name: Create a problem for resolution as a duplicate
+    - name: Create a problem in assess state
       servicenow.itsm.problem:
-        problem_mapping: "{{ mapping.problem }}"
-        state: root_cause
+        state: assess
         assigned_to: problem.manager
         short_description: "a-duplicate_{{ suffix }}"
       register: duplicated_problem
 
+    - name: Advance problem to root cause analysis
+      servicenow.itsm.problem:
+        sys_id: "{{ duplicated_problem.record.sys_id }}"
+        state: root_cause_analysis
+        assigned_to: problem.manager
+      register: updated_problem
+
     - name: Resolve a problem as a duplicate of another problem
       servicenow.itsm.problem:
-        problem_mapping: "{{ mapping.problem }}"
-        sys_id: "{{ duplicated_problem.record.sys_id }}"
+        sys_id: "{{ updated_problem.record.sys_id }}"
         state: closed
         resolution_code: duplicate
         duplicate_of: "{{ assigned_problem.record.number }}"
       register: result
 
-    - ansible.builtin.assert:
+    - name: Assert problem was closed as a duplicate
+      ansible.builtin.assert:
         that:
           - result is changed
           - result.record.state == "closed"
