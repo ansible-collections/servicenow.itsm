@@ -1,0 +1,5 @@
+known_issues:
+  - In YOKOHAMA, when state is RESOLVED/CLOSED and resolution_params is risk_accepted it fails on not having "fix_notes".
+  - This happens only in YOKOHAMA.
+  - This looks like an api change.
+  - Issue is open in collection https://github.com/ansible-collections/servicenow.itsm/issues/448
