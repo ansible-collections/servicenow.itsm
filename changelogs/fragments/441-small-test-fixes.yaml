@@ -1,3 +1,0 @@
-trivial:
-  - imporove the cleanup steps after the problem tests
-  - fix shell syntax error in makefile linters command

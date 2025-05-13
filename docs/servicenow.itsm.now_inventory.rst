@@ -3,7 +3,7 @@
 servicenow.itsm.now inventory -- Inventory source for ServiceNow table records.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.8.0).
+This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.9.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -181,7 +181,7 @@ Parameters
 
     </td>
     <td valign="top">
-      <p>Prefix to use for cache plugin files/tables</p>
+      <p>Prefix to use for cache plugin files/tables.</p>
       <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;ansible_inventory_&#34;</code></p>
       <p style="margin-top: 8px;"><b>Configuration:</b></p>
       <ul>
@@ -216,7 +216,7 @@ Parameters
 
     </td>
     <td valign="top">
-      <p>Cache duration in seconds</p>
+      <p>Cache duration in seconds.</p>
       <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">3600</code></p>
       <p style="margin-top: 8px;"><b>Configuration:</b></p>
       <ul>
@@ -575,7 +575,7 @@ Parameters
 
     </td>
     <td valign="top">
-      <p>The key from input dictionary used to generate groups</p>
+      <p>The key from input dictionary used to generate groups.</p>
     </td>
   </tr>
   <tr>
@@ -590,7 +590,7 @@ Parameters
 
     </td>
     <td valign="top">
-      <p>parent group for keyed group</p>
+      <p>parent group for keyed group.</p>
     </td>
   </tr>
   <tr>
@@ -605,7 +605,7 @@ Parameters
 
     </td>
     <td valign="top">
-      <p>A keyed group name will start with this prefix</p>
+      <p>A keyed group name will start with this prefix.</p>
       <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;&#34;</code></p>
     </td>
   </tr>
@@ -621,7 +621,7 @@ Parameters
 
     </td>
     <td valign="top">
-      <p>separator used to build the keyed group name</p>
+      <p>separator used to build the keyed group name.</p>
       <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;_&#34;</code></p>
     </td>
   </tr>
@@ -638,7 +638,7 @@ Parameters
 
     </td>
     <td valign="top">
-      <p>Set this option to <code class="ansible-value literal notranslate">False</code> to omit the <code class="ansible-option literal notranslate"><strong><a class="reference internal" href="#parameter-keyed_groups/separator"><span class="std std-ref"><span class="pre">keyed_groups[].separator</span></span></a></strong></code> after the host variable when the value is an empty string.</p>
+      <p>Set this option to <code class="ansible-value literal notranslate">false</code> to omit the <code class="ansible-option literal notranslate"><strong><a class="reference internal" href="#parameter-keyed_groups/separator"><span class="std std-ref"><span class="pre">keyed_groups[].separator</span></span></a></strong></code> after the host variable when the value is an empty string.</p>
       <p>This option is mutually exclusive with <code class="ansible-option literal notranslate"><strong><a class="reference internal" href="#parameter-keyed_groups/default_value"><span class="std std-ref"><span class="pre">keyed_groups[].default_value</span></span></a></strong></code>.</p>
       <p style="margin-top: 8px;"><b">Choices:</b></p>
       <ul>
@@ -661,10 +661,10 @@ Parameters
 
     </td>
     <td valign="top">
-      <p>Use in conjunction with keyed_groups.</p>
+      <p>Use in conjunction with <code class="ansible-option literal notranslate"><strong><a class="reference internal" href="#parameter-keyed_groups"><span class="std std-ref"><span class="pre">keyed_groups</span></span></a></strong></code>.</p>
       <p>By default, a keyed group that does not have a prefix or a separator provided will have a name that starts with an underscore.</p>
-      <p>This is because the default prefix is "" and the default separator is "_".</p>
-      <p>Set this option to False to omit the leading underscore (or other separator) if no prefix is given.</p>
+      <p>This is because the default prefix is <code class="ansible-value literal notranslate">""</code> and the default separator is <code class="ansible-value literal notranslate">"_"</code>.</p>
+      <p>Set this option to <code class="ansible-value literal notranslate">false</code> to omit the leading underscore (or other separator) if no prefix is given.</p>
       <p>If the group name is derived from a mapping the separator is still used to concatenate the items.</p>
       <p>To not use a separator in the group name at all, set the separator for the keyed group to an empty string instead.</p>
       <p style="margin-top: 8px;"><b">Choices:</b></p>
