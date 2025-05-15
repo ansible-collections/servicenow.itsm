@@ -509,3 +509,5 @@ releases:
     - 291_release_summary.yml
     - 451-inventory-bugfix.yml
     release_date: '2025-05-15'
+  2.9.2:
+    release_date: '2025-05-15'
