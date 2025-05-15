@@ -4,6 +4,9 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.9.2
+======
+
 v2.9.1
 ======
 

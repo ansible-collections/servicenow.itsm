@@ -1,6 +1,6 @@
 namespace: servicenow
 name: itsm
-version: 2.9.1
+version: 2.9.2
 readme: README.md
 authors:
   - Cosmin Tupangiu <ctupangi@redhat.com>
