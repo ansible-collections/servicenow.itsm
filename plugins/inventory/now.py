@@ -852,7 +852,6 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         referenced_columns = [x for x in columns if "." in x]
         if referenced_columns:
             self.__fetch_referenced_columns(
-                self,
                 table_client,
                 table,
                 query,
