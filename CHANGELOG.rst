@@ -4,6 +4,19 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.9.1
+======
+
+Release Summary
+---------------
+
+Bugfix release for #451
+
+Bugfixes
+--------
+
+- inventory plugin - fix a syntax issue that causes the plugin to fail (https://github.com/ansible-collections/servicenow.itsm/issues/451)
+
 v2.9.0
 ======
 
