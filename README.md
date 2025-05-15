@@ -164,7 +164,7 @@ Known exceptions or compatibility issues will be tracked via the GitHub Issues p
 ## Contributing
 
 We welcome contributions! Open an issue or a pull request on the GitHub repository:  
-<https://github.com/ansible-collections/servicenow.itsm>
+- https://github.com/ansible-collections/servicenow.itsm
 
 Guidelines:
 - https://docs.ansible.com/ansible/devel/community/contributing_maintained_collections.html#contributing-maintained-collections
