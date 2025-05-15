@@ -500,3 +500,12 @@ releases:
     - 441-small-test-fixes.yaml
     - 446-reduce-complexity.yaml
     release_date: '2025-05-13'
+  2.9.1:
+    changes:
+      bugfixes:
+      - inventory plugin - fix a syntax issue that causes the plugin to fail (https://github.com/ansible-collections/servicenow.itsm/issues/451)
+      release_summary: 'Bugfix release for #451'
+    fragments:
+    - 291_release_summary.yml
+    - 451-inventory-bugfix.yml
+    release_date: '2025-05-15'
