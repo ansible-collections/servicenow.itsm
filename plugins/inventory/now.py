@@ -797,6 +797,10 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
 
         if not records:
             self.__populate_records_from_remote(enhanced, path, columns)
+            try:
+                records = self._cache[self.cache_key][self._cache_sub_key]
+            except KeyError:
+                pass
 
         self.fill_constructed(
             records,
