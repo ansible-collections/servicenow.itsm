@@ -1,3 +1,0 @@
----
-bugfixes:
-  - Correct regression due to data-tagging changes for ansible-core 2.19 (Fixes #457)

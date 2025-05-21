@@ -511,3 +511,18 @@ releases:
     release_date: '2025-05-15'
   2.9.2:
     release_date: '2025-05-15'
+  2.9.3:
+    changes:
+      bugfixes:
+      - Correct regression due to data-tagging changes for ansible-core 2.19 (Fixes
+      known_issues:
+      - Version 2.9.3 has a known issue with the inventory plugin for (as-yet unreleased)
+        ansible-core 2.19. (#460)
+      release_summary: Fix regression in inventory plugin, and refactor inventory
+        tests to be run as GitHub Actions
+    fragments:
+    - 457-obtain-records.yml
+    - 458-refactor-inventory-tests.yml
+    - 460-inventory-on-219.yml
+    - release_summary.yml
+    release_date: '2025-05-21'
