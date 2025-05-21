@@ -7,7 +7,7 @@ This collection is ideal for IT administrators, DevOps engineers, and automation
 ## Requirements
 
 - **Ansible-Core**: >= 2.15.0
-- **Python**: >= 3.9+
+- **Python**: With ansible-core, as listed for control nodes [here](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
 - No additional Python libraries or external Ansible collections are required.
 - A ServiceNow instance and user credentials are required for module authentication.
 
@@ -147,13 +147,8 @@ Using environment:
 
 This collection is tested with:
 - Ansible-Core >= 2.15.0
-- Python >= 3.9+
-- Supported ServiceNow versions (Tokyo to Xanadu)
-
-| Release | Status     | EOL            |
-|--------:|------------|----------------|
-| 2       | Maintained | TBA            |
-| 1       | EOL        | September 2023 |
+- Python, as specified for control nodes [here](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
+- Supported ServiceNow versions according to the table below
 
 Known exceptions or compatibility issues will be tracked via the GitHub Issues page.
 
@@ -169,7 +164,7 @@ Known exceptions or compatibility issues will be tracked via the GitHub Issues p
 ## Contributing
 
 We welcome contributions! Open an issue or a pull request on the GitHub repository:  
-https://github.com/ansible-collections/servicenow.itsm
+- https://github.com/ansible-collections/servicenow.itsm
 
 Guidelines:
 - https://docs.ansible.com/ansible/devel/community/contributing_maintained_collections.html#contributing-maintained-collections

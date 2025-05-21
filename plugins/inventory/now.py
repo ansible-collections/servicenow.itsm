@@ -797,6 +797,10 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
 
         if not records:
             self.__populate_records_from_remote(enhanced, path, columns)
+            try:
+                records = self._cache[self.cache_key][self._cache_sub_key]
+            except KeyError:
+                pass
 
         self.fill_constructed(
             records,
@@ -852,7 +856,6 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         referenced_columns = [x for x in columns if "." in x]
         if referenced_columns:
             self.__fetch_referenced_columns(
-                self,
                 table_client,
                 table,
                 query,

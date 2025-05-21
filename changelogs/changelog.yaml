@@ -470,3 +470,44 @@ releases:
     - release_summary.yml
     - update_release_script.yml
     release_date: '2025-02-20'
+  2.9.0:
+    changes:
+      bugfixes:
+      - Adding support in ansible-version 2.18, python version 3.11
+      - Adding support in ansible-version 2.18, python version 3.12
+      - Adding support in ansible-version 2.18, python version 3.13
+      - Removing support in ansible-version 2.14
+      - Update the unit tests to be compatible with ansible-core 2.19
+      known_issues:
+      - In YOKOHAMA, when state is RESOLVED/CLOSED and resolution_params is risk_accepted
+        it fails on not having "fix_notes".
+      - Issue is open in collection https://github.com/ansible-collections/servicenow.itsm/issues/448
+      - This happens only in YOKOHAMA.
+      - This looks like an api change.
+      minor_changes:
+      - plugins/action/api - Mark the template field as a trusted template source.
+        This was the default behaviour of ansible-core until 2.19
+      - plugins/modules/change_request_task - Throw an error if state=='pending' and
+        on_hold=True, like the documentation says
+    fragments:
+    - 20250416-integration_source.yaml
+    - 20250507-fix_actions.yaml
+    - 20250508-fix_nightly.yaml
+    - 20250512-fix-notes-known-issue.yaml
+    - 434-add-nightly-workflow.yaml
+    - 435-update-unit-tests-for-2.19.yaml
+    - 439-remove-python-27-support.yaml
+    - 441-small-test-fixes.yaml
+    - 446-reduce-complexity.yaml
+    release_date: '2025-05-13'
+  2.9.1:
+    changes:
+      bugfixes:
+      - inventory plugin - fix a syntax issue that causes the plugin to fail (https://github.com/ansible-collections/servicenow.itsm/issues/451)
+      release_summary: 'Bugfix release for #451'
+    fragments:
+    - 291_release_summary.yml
+    - 451-inventory-bugfix.yml
+    release_date: '2025-05-15'
+  2.9.2:
+    release_date: '2025-05-15'

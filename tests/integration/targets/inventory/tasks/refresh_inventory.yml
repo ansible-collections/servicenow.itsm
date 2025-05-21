@@ -1,0 +1,42 @@
+---
+- name: Template Inventory Config {{ inventory_file_name }}
+  ansible.builtin.template:
+    src: "{{ inventory_file_name }}"
+    dest: /tmp/{{ inventory_file_name }}
+    remote_src: true
+
+- name: Run Inventory Plugin with config {{ inventory_file_name}}
+  ansible.builtin.command: ansible-inventory -i "/tmp/{{ inventory_file_name }}" --list
+  register: _inventory_out
+
+- name: Remove Templated Inventory Config {{ inventory_file_name }}
+  ansible.builtin.file:
+    state: absent
+    path: /tmp/{{ inventory_file_name }}
+
+- name: Parse Inventory Results as JSON
+  ansible.builtin.set_fact:
+    inventory_results: "{{ _inventory_out.stdout | from_json }}"
+
+- name: Debug Inventory Output Because It Failed
+  when: not inventory_results._meta.hostvars
+  block:
+    - name: Try to Print Inventory Stderr
+      ansible.builtin.debug:
+        var: _inventory_out.stderr
+    - name: Try to Print the Parsed Stdout
+      ansible.builtin.debug:
+        var: (_inventory_out.stdout | from_json)
+  rescue:
+    - name: Print the Raw Output Since Parsing Failed
+      ansible.builtin.debug:
+        var: _inventory_out
+  always:
+    - name: Fail
+      ansible.builtin.fail:
+        msg: Inventory plugin failed to collect hosts, see error output above.
+      when: not (expect_failure | default(False))
+
+- name: Print Inventory Results
+  ansible.builtin.debug:
+    var: inventory_results

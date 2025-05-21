@@ -4,6 +4,48 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.9.2
+======
+
+v2.9.1
+======
+
+Release Summary
+---------------
+
+Bugfix release for #451
+
+Bugfixes
+--------
+
+- inventory plugin - fix a syntax issue that causes the plugin to fail (https://github.com/ansible-collections/servicenow.itsm/issues/451)
+
+v2.9.0
+======
+
+Minor Changes
+-------------
+
+- plugins/action/api - Mark the template field as a trusted template source. This was the default behaviour of ansible-core until 2.19
+- plugins/modules/change_request_task - Throw an error if state=='pending' and on_hold=True, like the documentation says
+
+Bugfixes
+--------
+
+- Adding support in ansible-version 2.18, python version 3.11
+- Adding support in ansible-version 2.18, python version 3.12
+- Adding support in ansible-version 2.18, python version 3.13
+- Removing support in ansible-version 2.14
+- Update the unit tests to be compatible with ansible-core 2.19
+
+Known Issues
+------------
+
+- In YOKOHAMA, when state is RESOLVED/CLOSED and resolution_params is risk_accepted it fails on not having "fix_notes".
+- Issue is open in collection https://github.com/ansible-collections/servicenow.itsm/issues/448
+- This happens only in YOKOHAMA.
+- This looks like an api change.
+
 v2.8.0
 ======
 
