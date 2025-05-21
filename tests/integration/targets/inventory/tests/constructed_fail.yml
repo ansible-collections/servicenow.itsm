@@ -1,0 +1,6 @@
+---
+- name: Make sure we have 0 hosts as expected
+  ansible.builtin.assert:
+    that:
+      - groups.all | length == 0 # Also includes all and ungrouped
+      - groups.ungrouped | length == 0
