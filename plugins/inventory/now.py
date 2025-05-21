@@ -499,6 +499,7 @@ from ..module_utils.table import TableClient
 
 try:
     from ansible.template import trust_as_template as _trust_as_template
+
     HAS_DATATAGGING = True
 except ImportError:
     HAS_DATATAGGING = False
@@ -612,16 +613,17 @@ class ConstructableWithLookup(Constructable):
             t.available_variables = variables
 
         template_string = "%s%s%s" % (
-                t.environment.variable_start_string,
-                template,
-                t.environment.variable_end_string,
-            )
+            t.environment.variable_start_string,
+            template,
+            t.environment.variable_end_string,
+        )
 
         if HAS_DATATAGGING:
             template_string = _trust_as_template(template_string)
 
         """ Only change that we have overridden is that we do not disable lookups"""
-        return t.template(template_string,
+        return t.template(
+            template_string,
             disable_lookups=False,
         )
 
@@ -795,7 +797,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         aggregation = self.get_option("aggregation")
         name_source = self.get_option("inventory_hostname_source")
         columns = self.get_option("columns")
-        if not hasattr(self, '_cache'):
+        if not hasattr(self, "_cache"):
             self._cache = dict()
 
         records = []
