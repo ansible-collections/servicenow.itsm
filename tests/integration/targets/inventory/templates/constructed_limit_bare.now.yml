@@ -2,11 +2,15 @@
 plugin: servicenow.itsm.now
 table: cmdb_ci_ec2_instance
 
+query_limit_columns: true
+
 columns:
   - state
   - environment
   - fqdn
   - ip_address
+  - name
+  - guest_os_fullname
 
 compose:
   ansible_host: fqdn
@@ -23,3 +27,5 @@ groups:
 
   os_OS1: |
     guest_os_fullname == "OS1"
+
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}

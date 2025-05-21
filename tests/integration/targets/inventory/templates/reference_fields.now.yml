@@ -12,3 +12,4 @@ compose:
   street: lookup('ansible.builtin.vars', 'location.street')
 
 strict: true
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}
