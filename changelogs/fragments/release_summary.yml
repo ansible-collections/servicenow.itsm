@@ -1,0 +1,2 @@
+---
+release_summary: "Fix regression in inventory plugin, and refactor inventory tests to be run as GitHub Actions"
