@@ -166,6 +166,10 @@ jobs:
           echo "sn_password: '${{ env.SN_PASSWORD }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "collection_base_dir: '${{ steps.identify.outputs.collection_path }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
 
+      - name: Run inventory integration tests
+        run: ansible-test integration inventory
+        working-directory: ${{ steps.identify.outputs.collection_path }}
+
       - name: Run itsm_api integration tests
         run: ansible-test integration itsm_api
         working-directory: ${{ steps.identify.outputs.collection_path }}
@@ -209,23 +213,23 @@ jobs:
       - name: Run itsm_configuration_item_relations integration tests
         run: ansible-test integration itsm_configuration_item_relations
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run itsm_service_catalog_info integration tests
         run: ansible-test integration itsm_service_catalog_info
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run itsm_service_catalog integration tests
         run: ansible-test integration itsm_service_catalog
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run problem integration tests
         run: ansible-test integration problem
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run problem_task integration tests
         run: ansible-test integration problem_task
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run problem_with_mapping integration tests
         run: ansible-test integration problem_with_mapping
         working-directory: ${{ steps.identify.outputs.collection_path }}
