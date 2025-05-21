@@ -1,0 +1,15 @@
+---
+- name: Include Integration Config Vars
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/../../integration_config.yml"
+
+- name: Check for auth vars
+  ansible.builtin.assert:
+    that:
+      - sn_host is defined and (sn_host | length > 0)
+      - sn_username is defined and (sn_username | length > 0)
+      - sn_password is defined and (sn_password | length > 0)
+
+- name: Generate unique test ID
+  ansible.builtin.set_fact:
+    unique_test_id: "test-{{ lookup('password', '/dev/null chars=ascii_letters,digit length=6') | lower }}"

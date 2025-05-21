@@ -9,6 +9,8 @@ groups:
   active_OS0_servers: >-
     guest_os_fullname == "OS0"
     and state not in ("Off")
-    
+
 compose:
   ansible_host: ip_address
+
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}

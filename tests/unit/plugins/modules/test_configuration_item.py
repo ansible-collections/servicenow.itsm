@@ -12,6 +12,9 @@ import sys
 import pytest
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
 from ansible_collections.servicenow.itsm.plugins.modules import configuration_item
+from ansible_collections.servicenow.itsm.tests.unit.plugins.common.utils import (
+    set_module_args,
+)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -766,7 +769,8 @@ class TestMain:
             ),
             sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
         )
-        success, result = run_main(configuration_item, params)
+        with set_module_args(args=params):
+            success, result = run_main(configuration_item, params)
 
         assert success is True
 
@@ -777,7 +781,8 @@ class TestMain:
             ),
             name="my_name",
         )
-        success, result = run_main(configuration_item, params)
+        with set_module_args(args=params):
+            success, result = run_main(configuration_item, params)
 
         assert success is True
 
@@ -803,12 +808,14 @@ class TestMain:
             other=None,
             attachments=None,
         )
-        success, result = run_main(configuration_item, params)
+        with set_module_args(args=params):
+            success, result = run_main(configuration_item, params)
 
         assert success is True
 
     def test_fail(self, run_main):
-        success, result = run_main(configuration_item)
+        with set_module_args(args={}):
+            success, result = run_main(configuration_item)
 
         assert success is False
         assert "one of the following is required: sys_id, name" in result["msg"]

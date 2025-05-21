@@ -13,5 +13,4 @@ columns:
 compose:
   ansible_host: ip_address
 
-sysparm_query: nameSTARTSWITHmy-vm-
-...
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}

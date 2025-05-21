@@ -23,6 +23,13 @@ from ansible.module_utils.six import iteritems
 from ansible.plugins.action import ActionBase
 from yaml import Loader
 
+try:
+    from ansible.template import trust_as_template as _trust_as_template
+
+    HAS_DATATAGGING = True
+except ImportError:
+    HAS_DATATAGGING = False
+
 from ..module_utils.api import FIELD_DATA, FIELD_TEMPLATE
 
 
@@ -170,6 +177,8 @@ class ActionModule(ActionBase):
                         )
             self._templar.available_variables = copy.deepcopy(task_vars)
             # rendered_template's a string which is going to be dumped into dict
+            if HAS_DATATAGGING:
+                template_data = _trust_as_template(template_data)
             rendered_template = self._templar.do_template(
                 template_data,
                 preserve_trailing_newlines=True,

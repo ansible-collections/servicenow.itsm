@@ -1,0 +1,12 @@
+---
+- name: Reload inventory
+  ansible.builtin.include_tasks: refresh_inventory.yml
+  vars:
+    inventory_file_name: constructed_fail.now.yml
+    expect_failure: True
+
+- name: Make sure we have 0 hosts as expected
+  ansible.builtin.assert:
+    that:
+      - inventory_results._meta.hostvars.keys() | length == 0 # Also includes all and ungrouped
+      - inventory_results.ungrouped is not defined

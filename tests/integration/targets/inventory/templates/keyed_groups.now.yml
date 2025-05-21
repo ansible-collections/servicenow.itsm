@@ -17,3 +17,4 @@ keyed_groups:
 
 query:
   - guest_os_fullname: = OS1
+    name: STARTSWITH {{ unique_test_id }}

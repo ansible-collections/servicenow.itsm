@@ -1,0 +1,74 @@
+---
+- name: Test reference_fields
+  vars:
+    inventory_file_name: reference_fields.now.yml
+    resource_prefix: "{{ unique_test_id }}-inven-ref-fields"
+  block:
+    - name: Create test location
+      servicenow.itsm.api:
+        resource: cmn_location
+        action: post
+        query_params:
+          sysparm_input_display_value: true
+        data:
+          city: "{{ resource_prefix }}-city"
+          street: "{{ resource_prefix }}-street"
+          name: "{{ resource_prefix }}-location"
+          country: "{{ resource_prefix }}-country"
+      register: test_location
+
+    - name: Print created country
+      ansible.builtin.debug:
+        var: test_location.record.sys_id
+
+    - name: Create imaginary VMs
+      servicenow.itsm.configuration_item:
+        name: "{{ resource_prefix }}-{{ item }}"
+        sys_class_name: cmdb_ci_ec2_instance
+        ip_address: 10.1.0.{{ item }}
+        environment: "{{ (item % 2 == 0) | ansible.builtin.ternary('development', 'production') }}"
+        other:
+          fqdn: f{{ item }}.example.com
+          guest_os_fullname: "{{ (item < 106) | ansible.builtin.ternary('OS0', 'OS1') }}"
+          vm_inst_id: i{{ item }}
+          location: "{{ test_location.record.sys_id }}"
+      loop: "{{ range(101, 103) | list }}"
+      register: vms
+
+    - name: Reload inventory
+      ansible.builtin.include_tasks: refresh_inventory.yml
+
+    - name: Check 101
+      ansible.builtin.assert:
+        that:
+          - host_vars.ansible_host == "f101.example.com"
+          - host_vars.street.__ansible_unsafe == resource_prefix + "-street"
+          - host_vars.location_name.__ansible_unsafe == resource_prefix + "-location"
+          - host_vars.location == resource_prefix + "-location"
+      vars:
+        host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-101'] }}"
+
+    - name: Check 102
+      ansible.builtin.assert:
+        that:
+          - host_vars.ansible_host == "f102.example.com"
+          - host_vars.street.__ansible_unsafe == resource_prefix + "-street"
+          - host_vars.location_name.__ansible_unsafe == resource_prefix + "-location"
+          - host_vars.location == resource_prefix + "-location"
+      vars:
+        host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-102'] }}"
+
+  always:
+    - name: Delete location
+      servicenow.itsm.api:
+        resource: cmn_location
+        action: delete
+        sys_id: "{{ test_location.record.sys_id }}"
+
+    - name: Delete VMs
+      servicenow.itsm.configuration_item:
+        state: absent
+        sys_id: "{{ item.record.sys_id }}"
+      loop: "{{ vms.results }}"
+      loop_control:
+        label: "{{ item.record.name }}"
