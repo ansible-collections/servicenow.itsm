@@ -13,4 +13,4 @@ columns:
   - name
   - fqdn
 
-sysparm_query: nameSTARTSWITHmy-vm-
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}

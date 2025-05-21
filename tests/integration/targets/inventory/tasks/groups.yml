@@ -1,0 +1,42 @@
+---
+- name: Test groups
+  vars:
+    inventory_file_name: groups.now.yml
+    resource_prefix: "{{ unique_test_id }}-inven-groups"
+  block:
+    - name: Create imaginary VMs
+      servicenow.itsm.configuration_item:
+        name: "{{ resource_prefix }}-{{ item }}"
+        sys_class_name: cmdb_ci_vm_instance
+        ip_address: 10.1.0.{{ item }}
+        other:
+          state: "{{ (item % 4 == 0) | ansible.builtin.ternary('on', 'off') }}"
+          guest_os_fullname: "{{ (item < 105) | ansible.builtin.ternary('OS0', 'OS1') }}"
+      loop: "{{ range(100, 110) }}"
+      register: vms
+
+    - name: Reload inventory
+      ansible.builtin.include_tasks: refresh_inventory.yml
+
+    - name: Check group output
+      ansible.builtin.assert:
+        that:
+          - inventory_results.all.children | length == 2
+          - "'active_OS0_servers' in inventory_results"
+          - inventory_results.active_OS0_servers.hosts | length == 2
+          - host_vars_00.state == "On"
+          - host_vars_00.ansible_host == "10.1.0.100"
+          - host_vars_04.state == "On"
+          - host_vars_04.ansible_host == "10.1.0.104"
+      vars:
+        host_vars_00: "{{ inventory_results._meta.hostvars[resource_prefix + '-100'] }}"
+        host_vars_04: "{{ inventory_results._meta.hostvars[resource_prefix + '-104'] }}"
+
+  always:
+    - name: Delete VMs
+      servicenow.itsm.configuration_item:
+        state: absent
+        sys_id: "{{ item.record.sys_id }}"
+      loop: "{{ vms.results }}"
+      loop_control:
+        label: "{{ item.record.name }}"
