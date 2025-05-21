@@ -1,3 +1,0 @@
----
-known_issues:
- - Version 2.9.3 has a known issue with the inventory plugin for (as-yet unreleased) ansible-core 2.19. (#460)

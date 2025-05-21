@@ -4,6 +4,24 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.9.3
+======
+
+Release Summary
+---------------
+
+Fix regression in inventory plugin, and refactor inventory tests to be run as GitHub Actions
+
+Bugfixes
+--------
+
+- Correct regression due to data-tagging changes for ansible-core 2.19 (Fixes
+
+Known Issues
+------------
+
+- Version 2.9.3 has a known issue with the inventory plugin for (as-yet unreleased) ansible-core 2.19. (#460)
+
 v2.9.2
 ======
 
