@@ -20,8 +20,10 @@ description:
   - Builds inventory from ServiceNow table records.
   - Requires a configuration file ending in C(now.yml) or C(now.yaml).
   - The plugin sets host variables denoted by I(columns).
-  - For variables with dots (for example 'location.country') use lookup('ansible.builtin.vars', 'variable.name') notation.
-    See the example section for more details. This feature is added in version 2.1.0.
+  - For variables with dots (for example 'location.country'), use either
+    V(lookup\('ansible.builtin.vars', 'variable.name'\)) (version 2.1.0) or the simplified
+    form by replacing the dot with an underscore such as C(variable_name) (version 2.9.4).
+    See the example section for more details.
 version_added: 1.0.0
 extends_documentation_fragment:
   - ansible.builtin.constructed
@@ -304,9 +306,11 @@ columns:
   - ip_address
   - location
   - location.country
+  - location.time_zone
 compose:
   street: location
   country: lookup('ansible.builtin.vars', 'location.country')
+  timezone: location_time_zone
 
 # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
 # @all:
@@ -316,8 +320,10 @@ compose:
 # |  |  |--{ip_address = }
 # |  |  |--{location = Via Nomentana 56, Rome}
 # |  |  |--{location.country = Italy}
+# |  |  |--{location.time_zone = Europe/Rome}
 # |  |  |--{name = OWA-SD-01}
 # |  |  |--{street = Via Nomentana 56, Rome}
+# |  |  |--{timezone = Europe/Rome}
 
 # Limit query to only return columns that we expressly include.
 # By default we retrieve all columns from a table, which can be
