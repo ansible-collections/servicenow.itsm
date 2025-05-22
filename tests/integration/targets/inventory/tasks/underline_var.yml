@@ -1,0 +1,66 @@
+---
+- name: Test underline var in compose
+  vars:
+    inventory_file_name: underline_var.now.yml
+    resource_prefix: "{{ unique_test_id }}-inven-underline-var"
+  block:
+    - name: Create test location
+      servicenow.itsm.api:
+        resource: cmn_location
+        action: post
+        query_params:
+          sysparm_input_display_value: true
+        data:
+          city: "{{ resource_prefix }}-city"
+          street: "{{ resource_prefix }}-street"
+          name: "{{ resource_prefix }}-location"
+          country: "{{ resource_prefix }}-country"
+      register: test_location
+
+    - name: Create imaginary VMs
+      servicenow.itsm.configuration_item:
+        name: "{{ resource_prefix }}-{{ item }}"
+        sys_class_name: cmdb_ci_server
+        ip_address: 10.1.0.{{ item }}
+        other:
+          location: "{{ test_location.record.sys_id }}"
+      loop: "{{ range(100, 102) }}"
+      register: vms
+
+    - name: Reload inventory
+      ansible.builtin.include_tasks: refresh_inventory.yml
+
+    - name: Check 100
+      ansible.builtin.assert:
+        that:
+          - host_vars.name == resource_prefix + '-100'
+          - host_vars.location_name_from_underline == resource_prefix + "-location"
+          - host_vars.location_name_from_dot.__ansible_unsafe == resource_prefix + "-location"
+          - host_vars.location_name == "test"
+      vars:
+        host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-100'] }}"
+
+    - name: Check 101
+      ansible.builtin.assert:
+        that:
+          - host_vars.name == resource_prefix + '-101'
+          - host_vars.location_name_from_underline == resource_prefix + "-location"
+          - host_vars.location_name_from_dot.__ansible_unsafe == resource_prefix + "-location"
+          - host_vars.location_name == "test"
+      vars:
+        host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-101'] }}"
+
+  always:
+    - name: Delete location
+      servicenow.itsm.api:
+        resource: cmn_location
+        action: delete
+        sys_id: "{{ test_location.record.sys_id }}"
+
+    - name: Delete VMs
+      servicenow.itsm.configuration_item:
+        state: absent
+        sys_id: "{{ item.record.sys_id }}"
+      loop: "{{ vms.results }}"
+      loop_control:
+        label: "{{ item.record.name }}"
