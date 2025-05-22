@@ -39,3 +39,6 @@
 
     - name: Include trivial tests
       ansible.builtin.include_tasks: trivial.yml
+
+    - name: Include underline var tests
+      ansible.builtin.include_tasks: underline_var.yml
