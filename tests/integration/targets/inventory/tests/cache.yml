@@ -1,8 +1,5 @@
 ---
 - name: Test cache
-  vars:
-    inventory_file_name: cache.now.yml
-    resource_prefix: "{{ unique_test_id }}-inven-cache"
   block:
     - name: Create imaginary VMs
       servicenow.itsm.configuration_item:
@@ -18,20 +15,20 @@
       register: vms
 
     - name: Reload inventory
-      ansible.builtin.include_tasks: refresh_inventory.yml
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
 
     - name: Make sure we have all expected hosts
       ansible.builtin.assert:
         that:
-          - inventory_results._meta.hostvars.keys() | length == 8
+          - groups.all | length == 8
 
     - name: Reload inventory
-      ansible.builtin.include_tasks: refresh_inventory.yml
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
 
     - name: Make sure we have all expected hosts
       ansible.builtin.assert:
         that:
-          - inventory_results._meta.hostvars.keys() | length == 8
+          - groups.all | length == 8
 
   always:
     - name: Delete VMs

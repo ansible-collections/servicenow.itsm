@@ -1,0 +1,9 @@
+---
+- name: Teardown Test Session
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    - name: Destroy Test Session Directory
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/test_session"
+        state: absent

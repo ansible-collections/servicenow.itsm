@@ -1,0 +1,5 @@
+---
+- name: Make sure we have some groups
+  ansible.builtin.assert:
+    that:
+      - groups | length == 2

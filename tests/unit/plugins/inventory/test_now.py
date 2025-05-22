@@ -507,7 +507,7 @@ class TestInventoryModuleFillConstructed:
         name_source = "fqdn"
         compose = dict(
             cost_res='"%s %s" % (cost, cost_cc)',
-            amortized_cost="cost | int // 2",
+            amortized_cost="(cost | int // 2) | string",
             sys_updated_on_date="sys_updated_on | slice(2) | first | join",
             sys_updated_on_time="sys_updated_on | slice(2) | list | last | join | trim",
             silently_failed="non_existing + 3",
@@ -537,56 +537,26 @@ class TestInventoryModuleFillConstructed:
         a1_groups = (group.name for group in a1.groups)
         assert set(a1_groups) == set()
 
-        if HAS_DATATAGGING:
-            del a1.vars["silently_failed"]
-
         assert a1.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            cost_res=(
-                "82 EUR" if not HAS_DATATAGGING else "{{" + compose["cost_res"] + "}}"
-            ),
-            amortized_cost=(
-                "41" if not HAS_DATATAGGING else "{{" + compose["amortized_cost"] + "}}"
-            ),
-            sys_updated_on_date=(
-                "2021-09-17"
-                if not HAS_DATATAGGING
-                else "{{" + compose["sys_updated_on_date"] + "}}"
-            ),
-            sys_updated_on_time=(
-                "02:13:25"
-                if not HAS_DATATAGGING
-                else "{{" + compose["sys_updated_on_time"] + "}}"
-            ),
+            cost_res=("82 EUR"),
+            amortized_cost=("41"),
+            sys_updated_on_date=("2021-09-17"),
+            sys_updated_on_time=("02:13:25"),
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
         assert set(a2_groups) == set()
 
-        if HAS_DATATAGGING:
-            del a2.vars["silently_failed"]
-
         assert a2.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            cost_res=(
-                "94 USD" if not HAS_DATATAGGING else "{{" + compose["cost_res"] + "}}"
-            ),
-            amortized_cost=(
-                "47" if not HAS_DATATAGGING else "{{" + compose["amortized_cost"] + "}}"
-            ),
-            sys_updated_on_date=(
-                "2021-08-30"
-                if not HAS_DATATAGGING
-                else "{{" + compose["sys_updated_on_date"] + "}}"
-            ),
-            sys_updated_on_time=(
-                "01:47:03"
-                if not HAS_DATATAGGING
-                else "{{" + compose["sys_updated_on_time"] + "}}"
-            ),
+            cost_res=("94 USD"),
+            amortized_cost=("47"),
+            sys_updated_on_date=("2021-08-30"),
+            sys_updated_on_time=("01:47:03"),
         )
 
     def test_construction_composite_vars_strict(self, inventory_plugin):
@@ -604,19 +574,18 @@ class TestInventoryModuleFillConstructed:
         enhanced = False
         aggregation = False
 
-        if not HAS_DATATAGGING:
-            with pytest.raises(AnsibleError, match="non_existing"):
-                inventory_plugin.fill_constructed(
-                    records,
-                    columns,
-                    name_source,
-                    compose,
-                    groups,
-                    keyed_groups,
-                    strict,
-                    enhanced,
-                    aggregation,
-                )
+        with pytest.raises(AnsibleError, match="non_existing"):
+            inventory_plugin.fill_constructed(
+                records,
+                columns,
+                name_source,
+                compose,
+                groups,
+                keyed_groups,
+                strict,
+                enhanced,
+                aggregation,
+            )
 
     def test_construction_composite_vars_ansible_host(self, inventory_plugin):
         records = [
@@ -659,9 +628,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a1_groups) == set()
 
         assert a1.vars == dict(
-            inventory_file=None,
-            inventory_dir=None,
-            ansible_host="a1_1" if not HAS_DATATAGGING else '{{fqdn + "_" + sys_id}}',
+            inventory_file=None, inventory_dir=None, ansible_host="a1_1"
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
@@ -669,9 +636,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a2_groups) == set()
 
         assert a2.vars == dict(
-            inventory_file=None,
-            inventory_dir=None,
-            ansible_host="a2_2" if not HAS_DATATAGGING else '{{fqdn + "_" + sys_id}}',
+            inventory_file=None, inventory_dir=None, ansible_host="a2_2"
         )
 
     def test_construction_composed_groups(self, inventory_plugin):
@@ -788,32 +753,22 @@ class TestInventoryModuleFillConstructed:
             aggregation,
         )
 
-        if not HAS_DATATAGGING:
-            assert set(inventory_plugin.inventory.groups) == set(
-                ("all", "ungrouped", "cc_EUR", "cc_USD")
-            )
-        else:
-            assert set(inventory_plugin.inventory.groups) == set(
-                ("all", "ungrouped", "cc_{{cost_cc}}")
-            )
+        assert set(inventory_plugin.inventory.groups) == set(
+            ("all", "ungrouped", "cc_EUR", "cc_USD")
+        )
 
         assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
 
         a1 = inventory_plugin.inventory.get_host("a1")
         a1_groups = (group.name for group in a1.groups)
-        if not HAS_DATATAGGING:
-            assert set(a1_groups) == set(("cc_EUR",))
-        else:
-            assert set(a1_groups) == set(("cc_{{cost_cc}}",))
+
+        assert set(a1_groups) == set(("cc_EUR",))
 
         assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
-        if not HAS_DATATAGGING:
-            assert set(a2_groups) == set(("cc_USD",))
-        else:
-            assert set(a2_groups) == set(("cc_{{cost_cc}}",))
+        assert set(a2_groups) == set(("cc_USD",))
 
         assert a2.vars == dict(inventory_file=None, inventory_dir=None)
 
@@ -851,32 +806,21 @@ class TestInventoryModuleFillConstructed:
             aggregation,
         )
 
-        if not HAS_DATATAGGING:
-            assert set(inventory_plugin.inventory.groups) == set(
-                ("all", "ungrouped", "cc_EUR", "cc_USD", "ip_address")
-            )
-        else:
-            assert set(inventory_plugin.inventory.groups) == set(
-                ("all", "ungrouped", "cc_{{cost_cc}}", "ip_address")
-            )
+        assert set(inventory_plugin.inventory.groups) == set(
+            ("all", "ungrouped", "cc_EUR", "cc_USD", "ip_address")
+        )
 
         assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
 
         a1 = inventory_plugin.inventory.get_host("a1")
         a1_groups = (group.name for group in a1.groups)
-        if not HAS_DATATAGGING:
-            assert set(a1_groups) == set(("cc_EUR", "ip_address"))
-        else:
-            assert set(a1_groups) == set(("cc_{{cost_cc}}", "ip_address"))
+        assert set(a1_groups) == set(("cc_EUR", "ip_address"))
 
         assert a1.vars == dict(inventory_file=None, inventory_dir=None)
 
         a2 = inventory_plugin.inventory.get_host("a2")
         a2_groups = (group.name for group in a2.groups)
-        if not HAS_DATATAGGING:
-            assert set(a2_groups) == set(("cc_USD", "ip_address"))
-        else:
-            assert set(a2_groups) == set(("cc_{{cost_cc}}", "ip_address"))
+        assert set(a2_groups) == set(("cc_USD", "ip_address"))
 
         assert a2.vars == dict(inventory_file=None, inventory_dir=None)
 

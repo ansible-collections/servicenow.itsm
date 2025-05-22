@@ -19,3 +19,6 @@ issues: https://github.com/ansible-collections/servicenow.itsm/issues
 build_ignore:
   - .gitignore
   - changelogs/.plugin-cache.yaml
+  - tests/integration/targets/*/test_session
+  - tests/integration/targets/*/roles
+  - tests/integration/integration_config.yml

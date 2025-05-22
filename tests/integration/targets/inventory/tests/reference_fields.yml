@@ -1,8 +1,5 @@
 ---
 - name: Test reference_fields
-  vars:
-    inventory_file_name: reference_fields.now.yml
-    resource_prefix: "{{ unique_test_id }}-inven-ref-fields"
   block:
     - name: Create test location
       servicenow.itsm.api:
@@ -36,27 +33,27 @@
       register: vms
 
     - name: Reload inventory
-      ansible.builtin.include_tasks: refresh_inventory.yml
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
 
     - name: Check 101
       ansible.builtin.assert:
         that:
           - host_vars.ansible_host == "f101.example.com"
-          - host_vars.street.__ansible_unsafe == resource_prefix + "-street"
-          - host_vars.location_name.__ansible_unsafe == resource_prefix + "-location"
+          - host_vars.street == resource_prefix + "-street"
+          - host_vars.location_name == resource_prefix + "-location"
           - host_vars.location == resource_prefix + "-location"
       vars:
-        host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-101'] }}"
+        host_vars: "{{ hostvars[resource_prefix + '-101'] }}"
 
     - name: Check 102
       ansible.builtin.assert:
         that:
           - host_vars.ansible_host == "f102.example.com"
-          - host_vars.street.__ansible_unsafe == resource_prefix + "-street"
-          - host_vars.location_name.__ansible_unsafe == resource_prefix + "-location"
+          - host_vars.street == resource_prefix + "-street"
+          - host_vars.location_name == resource_prefix + "-location"
           - host_vars.location == resource_prefix + "-location"
       vars:
-        host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-102'] }}"
+        host_vars: "{{ hostvars[resource_prefix + '-102'] }}"
 
   always:
     - name: Delete location

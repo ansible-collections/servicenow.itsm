@@ -1,8 +1,5 @@
 ---
 - name: Test keyed_groups
-  vars:
-    inventory_file_name: keyed_groups.now.yml
-    resource_prefix: "{{ unique_test_id }}-inven-keyed-groups"
   block:
     - name: Create imaginary VMs
       servicenow.itsm.configuration_item:
@@ -12,23 +9,23 @@
         environment: "{{ (item % 2 == 0) | ansible.builtin.ternary('development', 'production') }}"
         other:
           guest_os_fullname: "{{ (item < 105) | ansible.builtin.ternary('OS0', 'OS1') }}"
-      loop: "{{ range(100, 110) }}"
+      loop: "{{ range(100, 110) | list }}"
       register: vms
 
     - name: Reload inventory
-      ansible.builtin.include_tasks: refresh_inventory.yml
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
 
     - name: Check group output
       ansible.builtin.assert:
         that:
-          - inventory_results.all.children | length == 4
-          - "'Production' in inventory_results"
-          - "inventory_results['Production'].hosts | length == 3"
-          - "'Development' in inventory_results"
-          - "inventory_results['Development'].hosts | length == 2"
-          - "'OS1' in inventory_results"
-          - "inventory_results['OS1'].hosts | length == 5"
-          - "'OS0' not in inventory_results"
+          - groups | length == 5
+          - "'Production' in groups"
+          - "groups['Production'] | length == 3"
+          - "'Development' in groups"
+          - "groups['Development'] | length == 2"
+          - "'OS1' in groups"
+          - "groups['OS1'] | length == 5"
+          - "'OS0' not in groups"
 
   always:
     - name: Delete VMs

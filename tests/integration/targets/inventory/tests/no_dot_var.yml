@@ -1,8 +1,5 @@
 ---
-- name: Test sysparm_limit
-  vars:
-    inventory_file_name: sysparm_limit.now.yml
-    resource_prefix: "{{ unique_test_id }}-inven-sysparm-limit"
+- name: Test no_dot_var
   block:
     - name: Create imaginary VMs
       servicenow.itsm.configuration_item:
@@ -12,21 +9,23 @@
         other:
           state: "{{ (item % 4 == 0) | ansible.builtin.ternary('on', 'off') }}"
           guest_os_fullname: "{{ (item < 105) | ansible.builtin.ternary('OS0', 'OS1') }}"
-      loop: "{{ range(100, 110) }}"
+      loop: "{{ range(100, 110) | list }}"
       register: vms
 
     - name: Reload inventory
-      ansible.builtin.include_tasks: refresh_inventory.yml
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
 
-    - name: Check inventory output
+    - name: Verify the replaced variable names exist
       ansible.builtin.assert:
         that:
-          - inventory_results._meta.hostvars.keys() | length == 10
-          - host_vars_00.ansible_host == "10.1.0.100"
-          - host_vars_04.ansible_host == "10.1.0.104"
+          - groups.all | length == 10
+          - host_vars_00.location_name is defined
+          - host_vars_00.support_group_name is defined
+          - host_vars_04.location_name is defined
+          - host_vars_04.support_group_name is defined
       vars:
-        host_vars_00: "{{ inventory_results._meta.hostvars[resource_prefix + '-100'] }}"
-        host_vars_04: "{{ inventory_results._meta.hostvars[resource_prefix + '-104'] }}"
+        host_vars_00: "{{ hostvars[resource_prefix + '-100'] }}"
+        host_vars_04: "{{ hostvars[resource_prefix + '-104'] }}"
 
   always:
     - name: Delete VMs
