@@ -309,8 +309,11 @@ columns:
   - location.time_zone
 compose:
   street: location
-  country: lookup('ansible.builtin.vars', 'location.country')
+  country: location_country
   timezone: location_time_zone
+  # alternatively you could use lookups
+  # country: lookup('ansible.builtin.vars', 'location.country')
+  # timezone: lookup('ansible.builtin.vars', 'location.time_zone')
 
 # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
 # @all:
