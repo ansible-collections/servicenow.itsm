@@ -1,8 +1,5 @@
 ---
-- name: Test constructed_limit_bare
-  vars:
-    inventory_file_name: constructed_limit_bare.now.yml
-    resource_prefix: "{{ unique_test_id }}-inven-const-limit-bare"
+- name: Test constructed
   block:
     - name: Create imaginary VMs
       servicenow.itsm.configuration_item:
@@ -18,17 +15,17 @@
       register: vms
 
     - name: Reload inventory
-      ansible.builtin.include_tasks: refresh_inventory.yml
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
 
     - name: Make sure we have all expected groups
       ansible.builtin.assert:
         that:
-          - inventory_results._meta.hostvars.keys() | length == 8
-          - "'ungrouped' not in inventory_results"
-          - inventory_results.development.hosts | difference([resource_prefix] | product(["-102", "-104", "-106", "-108"]) | map('join') | list) == []
-          - inventory_results.production.hosts  | difference([resource_prefix] | product(["-101", "-103", "-105", "-107"]) | map('join') | list) == []
-          - inventory_results.os_OS1.hosts | difference([resource_prefix] | product(["-106", "-107", "-108"]) | map('join') | list) == []
-          - "'OS0' not in inventory_results"
+          - groups.all | length == 8
+          - groups.ungrouped | length == 0
+          - groups.development | difference([resource_prefix] | product(["-102", "-104", "-106", "-108"]) | map('join') | list) == []
+          - groups.production  | difference([resource_prefix] | product(["-101", "-103", "-105", "-107"]) | map('join') | list) == []
+          - groups.os_OS1 | difference([resource_prefix] | product(["-106", "-107", "-108"]) | map('join') | list) == []
+          - "'OS0' not in groups"
 
     - name: Check 106
       ansible.builtin.assert:
@@ -39,7 +36,7 @@
           - test_host_vars.ip_address == "10.1.0.106"
           - test_host_vars.env == "Development"
       vars:
-        test_host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-106'] }}"
+        test_host_vars: "{{ hostvars[resource_prefix + '-106'] }}"
 
     - name: Check 107
       ansible.builtin.assert:
@@ -50,7 +47,7 @@
           - test_host_vars.ip_address == "10.1.0.107"
           - test_host_vars.env == "Production"
       vars:
-        test_host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-107'] }}"
+        test_host_vars: "{{ hostvars[resource_prefix + '-107'] }}"
 
     - name: Check 108
       ansible.builtin.assert:
@@ -61,7 +58,7 @@
           - test_host_vars.ip_address == "10.1.0.108"
           - test_host_vars.env == "Development"
       vars:
-        test_host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-108'] }}"
+        test_host_vars: "{{ hostvars[resource_prefix + '-108'] }}"
 
   always:
     - name: Delete VMs

@@ -1,0 +1,28 @@
+---
+- name: Setup Test Session
+  gather_facts: false
+  hosts: localhost
+  roles:
+    - prepare_test_vars
+
+  tasks:
+    - name: Create Test Session Directory
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/test_session/inventories"
+        state: directory
+
+    - name: Template session vars
+      ansible.builtin.copy:
+        dest: "{{ playbook_dir }}/test_session/vars.yml"
+        content: |
+          sn_host: '{{ sn_host }}'
+          sn_username: '{{ sn_username }}'
+          sn_password: '{{ sn_password }}'
+          unique_test_id: '{{ unique_test_id }}'
+
+    - name: Template session inventories
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "{{ playbook_dir }}/test_session/inventories/{{ item | basename }}"
+      with_fileglob:
+        - "{{ playbook_dir }}/templates/*.now.yml"
