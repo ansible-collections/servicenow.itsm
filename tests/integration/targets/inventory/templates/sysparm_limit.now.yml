@@ -3,11 +3,13 @@ plugin: servicenow.itsm.now
 table: cmdb_ci_server
 strict: false
 
-instance:
-  timeout: 1200
-
 compose:
   ansible_host: ip_address
 
 sysparm_query: nameSTARTSWITH{{ unique_test_id }}
 sysparm_limit: 5
+instance:
+  timeout: 1200
+  host: "{{ sn_host }}"
+  username: "{{ sn_username }}"
+  password: "{{ sn_password }}"
