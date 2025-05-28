@@ -21,7 +21,7 @@ description:
   - Requires a configuration file ending in C(now.yml) or C(now.yaml).
   - The plugin sets host variables denoted by I(columns).
   - For variables with dots (for example 'location.country'), use either
-    V(lookup\('ansible.builtin.vars', 'variable.name'\)) (version 2.1.0) or the simplified
+    V(lookup\\('ansible.builtin.vars', 'variable.name'\\)) (version 2.1.0) or the simplified
     form by replacing the dot with an underscore such as C(variable_name) (version 2.9.4).
     See the example section for more details.
 version_added: 1.0.0
