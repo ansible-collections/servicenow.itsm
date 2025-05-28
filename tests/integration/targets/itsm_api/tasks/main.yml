@@ -12,7 +12,7 @@
         query_params:
           sysparm_input_display_value: true
         data:
-          user_name: "{{ 'demo_username_' + lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
+          user_name: "{{ 'demo_username_' + unique_test_id }}"
           user_password: "demo_password"
           first_name: "first_name"
           last_name: Demouser
@@ -35,7 +35,7 @@
         resource: incident
         action: post
         data:
-          short_description: "{{ 'my-incident_' + lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
+          short_description: "{{ 'my-incident_' + unique_test_id }}"
           caller_id: employee
       register: base_api
       check_mode: true
@@ -56,7 +56,6 @@
       servicenow.itsm.api: *api-create-data
       register: first_incident
     - ansible.builtin.assert: *api-create-assertions-data
-
 
     - name: Retrieve all incidents after creating a new resource
       servicenow.itsm.api_info:
@@ -177,7 +176,7 @@
       servicenow.itsm.api:
         resource: incident
         action: post
-        template: "test_template_post.j2"
+        template: "{{ role_path }}/templates/test_template_post.j2"
       vars: &template-vars
         short_desc: "short"
         long_desc: "looooooooong description"
@@ -193,7 +192,7 @@
         resource: incident
         action: patch
         sys_id: "{{ result.record.sys_id }}"
-        template: "test_template_patch.j2"
+        template: "{{ role_path }}/templates/test_template_patch.j2"
       vars: *template-vars
       register: result
     - ansible.builtin.assert:

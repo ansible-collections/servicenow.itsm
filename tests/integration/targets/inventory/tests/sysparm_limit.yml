@@ -1,0 +1,35 @@
+---
+- name: Test sysparm_limit
+  block:
+    - name: Create imaginary VMs
+      servicenow.itsm.configuration_item:
+        name: "{{ resource_prefix }}-{{ item }}"
+        sys_class_name: cmdb_ci_server
+        ip_address: 10.1.0.{{ item }}
+        other:
+          state: "{{ (item % 4 == 0) | ansible.builtin.ternary('on', 'off') }}"
+          guest_os_fullname: "{{ (item < 105) | ansible.builtin.ternary('OS0', 'OS1') }}"
+      loop: "{{ range(100, 110) | list }}"
+      register: vms
+
+    - name: Reload inventory
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
+
+    - name: Check inventory output
+      ansible.builtin.assert:
+        that:
+          - groups.all | length == 10
+          - host_vars_00.ansible_host == "10.1.0.100"
+          - host_vars_04.ansible_host == "10.1.0.104"
+      vars:
+        host_vars_00: "{{ hostvars[resource_prefix + '-100'] }}"
+        host_vars_04: "{{ hostvars[resource_prefix + '-104'] }}"
+
+  always:
+    - name: Delete VMs
+      servicenow.itsm.configuration_item:
+        state: absent
+        sys_id: "{{ item.record.sys_id }}"
+      loop: "{{ vms.results }}"
+      loop_control:
+        label: "{{ item.record.name }}"

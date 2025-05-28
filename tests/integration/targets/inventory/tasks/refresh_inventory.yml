@@ -1,0 +1,12 @@
+---
+- name: Reload inventory
+  ansible.builtin.meta: refresh_inventory
+
+- name: Print Group Results
+  ansible.builtin.debug:
+    var: groups
+
+- name: Print one hosts vars as an example
+  ansible.builtin.debug:
+    var: hostvars.values() | first
+  when: hostvars.values() | length > 0

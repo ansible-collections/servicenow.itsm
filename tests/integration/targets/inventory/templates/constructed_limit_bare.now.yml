@@ -1,0 +1,35 @@
+---
+plugin: servicenow.itsm.now
+table: cmdb_ci_ec2_instance
+
+query_limit_columns: true
+
+columns:
+  - state
+  - environment
+  - fqdn
+  - ip_address
+  - name
+  - guest_os_fullname
+
+compose:
+  ansible_host: fqdn
+  name: name
+  ip_address: ip_address
+  env: environment
+
+groups:
+  production: |
+    environment == "Production"
+
+  development: |
+    environment == "Development"
+
+  os_OS1: |
+    guest_os_fullname == "OS1"
+
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}
+instance:
+  host: "{{ sn_host }}"
+  username: "{{ sn_username }}"
+  password: "{{ sn_password }}"

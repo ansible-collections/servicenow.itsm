@@ -7,8 +7,8 @@
     mapping:
       change_request:
         category:
-          1: "category 1"
-          2: "category 2"
+          "1": "category 1"
+          "2": "category 2"
 
   block:
     - name: Create first category
@@ -21,10 +21,10 @@
           value: 1
           label: category 1
       register: first_category
-    
+
     - set_fact:
         first_category: "{{ first_category.record.sys_id }}"
-    
+
     - name: Create second category
       servicenow.itsm.api:
         resource: sys_choice
@@ -35,11 +35,11 @@
           value: 2
           label: category 2
       register: second_category
-    
+
     - set_fact:
         second_category: "{{ second_category.record.sys_id }}"
 
-    - name: Create change_request 
+    - name: Create change_request
       servicenow.itsm.change_request:
         change_request_mapping: "{{ mapping.change_request }}"
         requested_by: admin
@@ -62,14 +62,14 @@
           - chg_request.record.risk == "low"
           - chg_request.record.impact == "low"
           - chg_request.record.category == "category 1"
-    
+
     - name: Update change_request with new category
       servicenow.itsm.change_request:
         change_request_mapping: "{{ mapping.change_request }}"
         number: "{{ chg_request.record.number }}"
         category: category 2
-    
-    - name: Get change_request 
+
+    - name: Get change_request
       servicenow.itsm.change_request_info:
         change_request_mapping: "{{ mapping.change_request }}"
         number: "{{ chg_request.record.number }}"
@@ -78,12 +78,12 @@
     - ansible.builtin.assert:
         that:
           - result.records[0].category == "category 2"
-    
+
     - name: Delete change_request
       servicenow.itsm.change_request:
         sys_id: "{{ chg_request.record.sys_id }}"
         state: absent
-    
+
     - name: Delete change_request choices
       servicenow.itsm.api:
         resource: sys_choice

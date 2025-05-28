@@ -1,0 +1,18 @@
+---
+plugin: servicenow.itsm.now
+table: cmdb_ci_server
+strict: false
+
+columns:
+  - location.name
+  - support_group.name
+
+compose:
+  ansible_host: ip_address
+
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}
+instance:
+  timeout: 1200
+  host: "{{ sn_host }}"
+  username: "{{ sn_username }}"
+  password: "{{ sn_password }}"

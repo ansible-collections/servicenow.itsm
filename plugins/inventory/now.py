@@ -20,8 +20,12 @@ description:
   - Builds inventory from ServiceNow table records.
   - Requires a configuration file ending in C(now.yml) or C(now.yaml).
   - The plugin sets host variables denoted by I(columns).
-  - For variables with dots (for example 'location.country') use lookup('ansible.builtin.vars', 'variable.name') notation.
-    See the example section for more details. This feature is added in version 2.1.0.
+  - Starting with version 2.1.0, you can access variables with dots in the name (for
+    example 'location.country') using a lookup
+    V(lookup\\('ansible.builtin.vars', 'location.country')\\).
+  - Starting with version 2.10.0, you can also access variables with dots in the name by
+    replacing the dots with underscores V\\(location_country\\).  See the example section
+    for more details.
 version_added: 1.0.0
 extends_documentation_fragment:
   - ansible.builtin.constructed
@@ -108,6 +112,23 @@ options:
     description: The ServiceNow table to use as the inventory source.
     type: str
     default: cmdb_ci_server
+  query_limit_columns:
+    description:
+      - Whether to explicitly limit the inventory to not include all columns from the listed I(table).
+        When this option is used, all I(colunns) listed will be included in the query, as well as any
+        columns listed in I(query_additional_columns).
+    type: boolean
+    default: false
+    version_added: 2.8.0
+  query_additional_columns:
+    description:
+      - List of I(table) columns to be queried in addition to columns listed in I(columns) which are
+        queried implicitly. The main purpose is to allow users that have large tables to limit the
+        size of the query and the resulting JSON parse in the client, which can take a long time.
+    type: list
+    elements: str
+    default: []
+    version_added: 2.8.0
   columns:
     description:
       - List of I(table) columns to be included as hostvars.
@@ -287,9 +308,14 @@ columns:
   - ip_address
   - location
   - location.country
+  - location.time_zone
 compose:
   street: location
-  country: lookup('ansible.builtin.vars', 'location.country')
+  country: location_country
+  timezone: location_time_zone
+  # alternatively you could use lookups
+  # country: lookup('ansible.builtin.vars', 'location.country')
+  # timezone: lookup('ansible.builtin.vars', 'location.time_zone')
 
 # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
 # @all:
@@ -299,8 +325,132 @@ compose:
 # |  |  |--{ip_address = }
 # |  |  |--{location = Via Nomentana 56, Rome}
 # |  |  |--{location.country = Italy}
+# |  |  |--{location.time_zone = Europe/Rome}
 # |  |  |--{name = OWA-SD-01}
 # |  |  |--{street = Via Nomentana 56, Rome}
+# |  |  |--{timezone = Europe/Rome}
+
+# Limit query to only return columns that we expressly include.
+# By default we retrieve all columns from a table, which can be
+# very ineffectient with tables with many rows and lots of columns.
+
+plugin: servicenow.itsm.now
+query_limit_columns: true
+query:
+  - os: = Linux Red Hat
+  - os: = AIX
+columns:
+  - name
+  - asset_tag
+  - manufacturer
+  - model_id
+
+# `ansible-inventory -i inventory.now.yaml --graph --vars` output:
+# @all:
+# |--@ungrouped:
+# |  |--Service-now Production Sacramento
+# |  |  |--{asset_tag = P1000173}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{name = Service-now Production Sacramento}
+# |  |--Service-now Production San Diego
+# |  |  |--{asset_tag = P1000114}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{name = Service-now Production San Diego}
+# |  |--DatabaseServer2
+# |  |  |--{asset_tag = P1000030}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge C6100 Rack Server}
+# |  |  |--{name = DatabaseServer2}
+# |  |--PS LinuxApp01
+# |  |  |--{asset_tag = P1000091}
+# |  |  |--{manufacturer = Iris}
+# |  |  |--{model_id = Iris 5875}
+# |  |  |--{name = PS LinuxApp01}
+# |  |--PS LinuxApp02
+# |  |  |--{asset_tag = P1000207}
+# |  |  |--{manufacturer = Iris}
+# |  |  |--{model_id = Iris 5875}
+# |  |  |--{name = PS LinuxApp02}
+# |  |--SAP AppSRV01
+# |  |  |--{asset_tag = P1000010}
+# |  |  |--{manufacturer = IBM}
+# |  |  |--{model_id = IBM Power 710 Express}
+# |  |  |--{name = SAP AppSRV01}
+# |  |--SAP AppSRV02
+# |  |  |--{asset_tag = P1000205}
+# |  |  |--{manufacturer = IBM}
+# |  |  |--{model_id = IBM Power 710 Express}
+# |  |  |--{name = SAP AppSRV02}
+# |  |--lnux100
+# |  |  |--{asset_tag = P1000165}
+# |  |  |--{manufacturer = Iris}
+# |  |  |--{model_id = Iris 5875}
+# |  |  |--{name = lnux100}
+# |  |--lnux101
+# |  |  |--{asset_tag = P1000054}
+# |  |  |--{manufacturer = Iris}
+# |  |  |--{model_id = Iris 5875}
+# |  |  |--{name = lnux101}
+# |  |--dbaix900nyc
+# |  |  |--{asset_tag = P1000055}
+# |  |  |--{manufacturer = IBM}
+# |  |  |--{model_id = IBM BladeCenter Blade HS22}
+# |  |  |--{name = dbaix900nyc}
+# |  |--dbaix901nyc
+# |  |  |--{asset_tag = P1000182}
+# |  |  |--{manufacturer = IBM}
+# |  |  |--{model_id = IBM BladeCenter Blade HS22}
+# |  |  |--{name = dbaix901nyc}
+# |  |--dbaix902nyc
+# |  |  |--{asset_tag = P1000070}
+# |  |  |--{manufacturer = IBM}
+# |  |  |--{model_id = IBM BladeCenter Blade HS22}
+# |  |  |--{name = dbaix902nyc}
+# |  |--ApplicationServerPeopleSoft
+# |  |  |--{asset_tag = P1000204}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{name = ApplicationServerPeopleSoft}
+# |  |--DatabaseServer1
+# |  |  |--{asset_tag = P1000199}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{name = DatabaseServer1}
+
+# Note that when limiting columns, any variables that are needed in compose, but
+# not included in columns, must be explicitly included using query_additional_columns:
+
+plugin: servicenow.itsm.now
+query_limit_columns: true
+
+query:
+  - os: = OS/400
+
+query_limit_columns: true
+
+columns:
+  - name
+  - asset_tag
+  - manufacturer
+  - model_id
+
+query_additional_columns:
+  - sys_class_name
+
+compose:
+  extended_class: sys_class_name ~ "/" ~ model_id
+
+# `ansible-inventory -i inventory.now.yaml --graph --vars` output:
+# @all:
+# |--@ungrouped:
+# |  |--AS400
+# |  |  |--{asset_tag = P1000034}
+# |  |  |--{extended_class = Server/Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{manufacturer = Dell Inc.}
+# |  |  |--{model_id = Dell Inc. PowerEdge M710HD Blade Server}
+# |  |  |--{name = AS400}
 
 # Use a javascript function defined in ServiceNow under "Script Includes",
 # which returns a list of the sys_ids that match a certain criteria
@@ -357,6 +507,13 @@ from ..module_utils.relations import (
     enhance_records_with_rel_groups,
 )
 from ..module_utils.table import TableClient
+
+try:
+    from ansible.template import trust_as_template as _trust_as_template
+
+    HAS_DATATAGGING = True
+except ImportError:
+    HAS_DATATAGGING = False
 
 
 class Aggregator:
@@ -466,14 +623,18 @@ class ConstructableWithLookup(Constructable):
         else:
             t.available_variables = variables
 
+        template_string = "%s%s%s" % (
+            t.environment.variable_start_string,
+            template,
+            t.environment.variable_end_string,
+        )
+
+        if HAS_DATATAGGING:
+            template_string = _trust_as_template(template_string)
+
         """ Only change that we have overridden is that we do not disable lookups"""
         return t.template(
-            "%s%s%s"
-            % (
-                t.environment.variable_start_string,
-                template,
-                t.environment.variable_end_string,
-            ),
+            template_string,
             disable_lookups=False,
         )
 
@@ -549,6 +710,10 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
                     self.set_host_vars_aggregated(host, record, columns, aggregator)
                 else:
                     self.set_hostvars(host, record, columns)
+
+                for k, v in tuple(record.items()):
+                    if "." in k:
+                        record[k.replace(".", "_")] = v
 
                 self._set_composite_vars(compose, record, host, strict)
                 self._add_host_to_composed_groups(groups, record, host, strict)
@@ -641,95 +806,29 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
     def parse(self, inventory, loader, path, cache=True):
         super(InventoryModule, self).parse(inventory, loader, path)
 
-        self._read_config_data(path)
-        self.cache_key = self.get_cache_key(path)
-        cache_sub_key = "/".join(
-            [
-                self._get_instance()["host"].rstrip("/"),
-                "table",
-                self.get_option("table"),
-                self._construct_cache_suffix(),
-            ]
-        )
-
-        self.use_cache = self.get_option("cache") and cache
-        self.update_cache = self.get_option("cache") and not cache
-
-        try:
-            client = Client(**self._get_instance())
-        except ServiceNowError as e:
-            raise AnsibleParserError(e)
+        self.__ingest_inventory_config(path, cache)
 
         enhanced = self.get_option("enhanced")
         aggregation = self.get_option("aggregation")
-
-        sysparm_limit = self.get_option("sysparm_limit")
-        if sysparm_limit:
-            table_client = TableClient(client, batch_size=sysparm_limit)
-        else:
-            table_client = TableClient(client)
-
-        table = self.get_option("table")
         name_source = self.get_option("inventory_hostname_source")
         columns = self.get_option("columns")
-
-        query = self.get_option("query")
-        sysparm_query = self.get_option("sysparm_query")
-
-        if query and sysparm_query:
-            raise AnsibleParserError(
-                "Invalid configuration: 'query' and 'sysparm_query' are mutually "
-                "exclusive."
-            )
+        if not hasattr(self, "_cache"):
+            self._cache = dict()
 
         records = []
 
         if not self.update_cache:
             try:
-                records = self._cache[self.cache_key][cache_sub_key]
+                records = self._cache[self.cache_key][self._cache_sub_key]
             except KeyError:
                 pass
 
         if not records:
-            if self.cache_key not in self._cache:
-                self._cache[self.cache_key] = {path: ""}
-
-            records = fetch_records(
-                table_client,
-                table,
-                query or sysparm_query,
-                is_encoded_query=bool(sysparm_query),
-            )
-
-            referenced_columns = [x for x in columns if "." in x]
-            if referenced_columns:
-                referenced_records = fetch_records(
-                    table_client,
-                    table,
-                    query or sysparm_query,
-                    fields=referenced_columns + ["sys_id"],
-                    is_encoded_query=bool(sysparm_query),
-                )
-
-                referenced_dict = dict((x["sys_id"], x) for x in referenced_records)
-                # Keep track of processed 'sys_id' to avoid popping it twice if there were duplicates returned by ServiceNow.
-                processed_records = []
-                for record in records:
-                    referenced = referenced_dict.get(record["sys_id"], None)
-                    if referenced:
-                        if record["sys_id"] not in processed_records:
-                            referenced.pop("sys_id")
-                        processed_records.append(record["sys_id"])
-                        for key, value in referenced.items():
-                            record[key] = value
-
-            if enhanced:
-                rel_records = fetch_records(
-                    table_client, REL_TABLE, REL_QUERY, fields=REL_FIELDS
-                )
-                enhance_records_with_rel_groups(records, rel_records)
-
-            self._cache[self.cache_key] = {cache_sub_key: records}
+            self.__populate_records_from_remote(enhanced, path, columns)
+            try:
+                records = self._cache[self.cache_key][self._cache_sub_key]
+            except KeyError:
+                pass
 
         self.fill_constructed(
             records,
@@ -742,3 +841,112 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             enhanced,
             aggregation,
         )
+
+    def __ingest_inventory_config(self, path, cache):
+        self._read_config_data(path)
+        self.cache_key = self.get_cache_key(path)
+        self._cache_sub_key = "/".join(
+            [
+                self._get_instance()["host"].rstrip("/"),
+                "table",
+                self.get_option("table"),
+                self._construct_cache_suffix(),
+            ]
+        )
+
+        self.use_cache = self.get_option("cache") and cache
+        self.update_cache = self.get_option("cache") and not cache
+
+    def __populate_records_from_remote(self, enhanced, path, columns):
+
+        query = self.get_option("query")
+        sysparm_query = self.get_option("sysparm_query")
+
+        if query and sysparm_query:
+            raise AnsibleParserError(
+                "Invalid configuration: 'query' and 'sysparm_query' are mutually "
+                "exclusive."
+            )
+
+        if self.cache_key not in self._cache:
+            self._cache[self.cache_key] = {path: ""}
+
+        table = self.get_option("table")
+        table_client = self.__create_table_client()
+        records = fetch_records(
+            table_client,
+            table,
+            query or sysparm_query,
+            fields=self.__get_query_columns(columns),
+            is_encoded_query=bool(sysparm_query),
+        )
+
+        referenced_columns = [x for x in columns if "." in x]
+        if referenced_columns:
+            self.__fetch_referenced_columns(
+                table_client,
+                table,
+                query,
+                sysparm_query,
+                referenced_columns,
+                records,
+            )
+
+        if enhanced:
+            rel_records = fetch_records(
+                table_client, REL_TABLE, REL_QUERY, fields=REL_FIELDS
+            )
+            enhance_records_with_rel_groups(records, rel_records)
+
+        self._cache[self.cache_key] = {self._cache_sub_key: records}
+
+    def __create_table_client(self):
+        try:
+            client = Client(**self._get_instance())
+        except ServiceNowError as e:
+            raise AnsibleParserError(e)
+
+        sysparm_limit = self.get_option("sysparm_limit")
+        if sysparm_limit:
+            table_client = TableClient(client, batch_size=sysparm_limit)
+        else:
+            table_client = TableClient(client)
+
+        return table_client
+
+    def __get_query_columns(self, columns):
+        query_limit_columns = self.get_option("query_limit_columns")
+        query_additional_columns = self.get_option("query_additional_columns")
+
+        # Introduced for 2.8.0
+        # We only want to limit the table query when explicitly asked - existing documentation
+        # has examples that depend on this, and certainly deployed code does this and to do otherwise
+        # would break existing inventories. query_columns == None implies retrieving every column from
+        # the desired table, which can take a very long time to parse for large tables with many columns.
+        if query_limit_columns:
+            return list(set(query_additional_columns + columns))
+        else:
+            return None
+
+    def __fetch_referenced_columns(
+        self, table_client, table, query, sysparm_query, referenced_columns, records
+    ):
+        referenced_records = fetch_records(
+            table_client,
+            table,
+            query or sysparm_query,
+            fields=referenced_columns + ["sys_id"],
+            is_encoded_query=bool(sysparm_query),
+        )
+
+        referenced_dict = dict((x["sys_id"], x) for x in referenced_records)
+        # Keep track of processed 'sys_id' to avoid popping it twice if there were duplicates returned by ServiceNow.
+        processed_records = []
+        for record in records:
+            referenced = referenced_dict.get(record["sys_id"], None)
+            if referenced:
+                if record["sys_id"] not in processed_records:
+                    referenced.pop("sys_id")
+                processed_records.append(record["sys_id"])
+                for key, value in referenced.items():
+                    record[key] = value

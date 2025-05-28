@@ -4,6 +4,84 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.9.3
+======
+
+Release Summary
+---------------
+
+Fix regression in inventory plugin, and refactor inventory tests to be run as GitHub Actions
+
+Bugfixes
+--------
+
+- Correct regression due to data-tagging changes for ansible-core 2.19 (Fixes
+
+Known Issues
+------------
+
+- Version 2.9.3 has a known issue with the inventory plugin for (as-yet unreleased) ansible-core 2.19. (#460)
+
+v2.9.2
+======
+
+v2.9.1
+======
+
+Release Summary
+---------------
+
+Bugfix release for #451
+
+Bugfixes
+--------
+
+- inventory plugin - fix a syntax issue that causes the plugin to fail (https://github.com/ansible-collections/servicenow.itsm/issues/451)
+
+v2.9.0
+======
+
+Minor Changes
+-------------
+
+- plugins/action/api - Mark the template field as a trusted template source. This was the default behaviour of ansible-core until 2.19
+- plugins/modules/change_request_task - Throw an error if state=='pending' and on_hold=True, like the documentation says
+
+Bugfixes
+--------
+
+- Adding support in ansible-version 2.18, python version 3.11
+- Adding support in ansible-version 2.18, python version 3.12
+- Adding support in ansible-version 2.18, python version 3.13
+- Removing support in ansible-version 2.14
+- Update the unit tests to be compatible with ansible-core 2.19
+
+Known Issues
+------------
+
+- In YOKOHAMA, when state is RESOLVED/CLOSED and resolution_params is risk_accepted it fails on not having "fix_notes".
+- Issue is open in collection https://github.com/ansible-collections/servicenow.itsm/issues/448
+- This happens only in YOKOHAMA.
+- This looks like an api change.
+
+v2.8.0
+======
+
+Release Summary
+---------------
+
+Introduce feature to limit how many columns are retrieved by inventory queries, which can substantially improve inventory performance. Also includes changes to improve the integration test framework and enhance the release script.
+
+Minor Changes
+-------------
+
+- inventory - The inventory plugin now supports limiting the number of columns returned in the query. Users who wish to use this feature in conjunction with compose will need to add columns referenced by compose to the query additional_columns option. The default case preserves backwards compatibility by not limiting the columns returned. (https://github.com/ansible-collections/servicenow.itsm/pull/422)
+
+Bugfixes
+--------
+
+- tests - Fix problem and problem_task integration tests to be deterministic when being run in multithreaded environmnts (https://github.com/ansible-collections/servicenow.itsm/pull/421)
+
 v2.7.0
 ======
 

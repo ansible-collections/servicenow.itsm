@@ -8,21 +8,30 @@ on:
         default: ""
       matrix_exclude:
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
-        # 2.14 supports Python 3.9-3.11
         # 2.15 supports Python 3.9-3.11
         # 2.16 supports Python 3.10-3.12
+        # 2.17 supports Python 3.10-3.12
+        # 2.18 supports Python 3.11-3.13
         # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_17.html
         # milestone is 2.17 until after 2.17 branches from devel
         # devel is 2.17 until 2024-04-01
         default: >-
           [
             {
-              "ansible-version": "stable-2.14",
+              "ansible-version": "stable-2.15",
               "python-version": "3.12"
             },
             {
               "ansible-version": "stable-2.15",
-              "python-version": "3.12"
+              "python-version": "3.13",
+            },
+            {
+              "ansible-version": "stable-2.16",
+              "python-version": "3.9",
+            },
+            {
+              "ansible-version": "stable-2.16",
+              "python-version": "3.13",
             },
             {
               "ansible-version": "stable-2.17",
@@ -30,11 +39,27 @@ on:
             },
             {
               "ansible-version": "stable-2.17",
+              "python-version": "3.13"
+            },
+            {
+              "ansible-version": "stable-2.18",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "stable-2.18",
               "python-version": "3.10"
             },
             {
               "ansible-version": "milestone",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "milestone",
               "python-version": "3.10"
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.9"
             },
             {
               "ansible-version": "devel",
@@ -58,36 +83,40 @@ jobs:
           - stable-2.15
           - stable-2.16
           - stable-2.17
+          - stable-2.18
           - milestone
           - devel
         python-version:
+          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
+          - "3.13"
         servicenow-version:
-          - "utah"
-          - "vancouver"
           - "washington"
           - "xanadu"
+          - "yokohama"
         include:
-          - servicenow-version: "utah"
-            sn_host_secret: SN_HOST_UTAH
-            sn_username_secret: SN_USERNAME_UTAH
-            sn_password_secret: SN_PASSWORD_UTAH
-          - servicenow-version: "vancouver"
-            sn_host_secret: SN_HOST_VANCOUVER
-            sn_username_secret: SN_USERNAME_VANCOUVER
-            sn_password_secret: SN_PASSWORD_VANCOUVER
           - servicenow-version: "washington"
             sn_host_secret: SN_HOST_WASHINGTON
             sn_username_secret: SN_USERNAME_WASHINGTON
             sn_password_secret: SN_PASSWORD_WASHINGTON
+            sn_client_id_secret: SN_CLIENT_ID_WASHINGTON
+            sn_client_secret_secret: SN_CLIENT_SECRET_WASHINGTON
           - servicenow-version: "xanadu"
             sn_host_secret: SN_HOST_XANADU
             sn_username_secret: SN_USERNAME_XANADU
             sn_password_secret: SN_PASSWORD_XANADU
+            sn_client_id_secret: SN_CLIENT_ID_XANADU
+            sn_client_secret_secret: SN_CLIENT_SECRET_XANADU
+          - servicenow-version: "yokohama"
+            sn_host_secret: SN_HOST_YOKOHAMA
+            sn_username_secret: SN_USERNAME_YOKOHAMA
+            sn_password_secret: SN_PASSWORD_YOKOHAMA
+            sn_client_id_secret: SN_CLIENT_ID_YOKOHAMA
+            sn_client_secret_secret: SN_CLIENT_SECRET_YOKOHAMA
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
-    continue-on-error: ${{ matrix.ansible-version == 'devel' }}
+    continue-on-error: ${{ matrix.ansible-version == 'devel' || matrix.ansible-version == 'milestone' }}
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.servicenow-version }}"
     steps:
@@ -104,7 +133,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install ansible-core (${{ matrix.ansible-version }})
-        run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
+        run: python${{ matrix.python-version }} -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
       - name: Pre install collections dependencies first so the collection install does not
         run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p ${{ env.collection_base_dir }}
@@ -129,19 +158,27 @@ jobs:
         run: ansible --version
 
       - name: Print the python dependencies
-        run: python3 -m pip list
+        run: python${{ matrix.python-version }} -m pip list
 
       - name: Create integration_config.yml
         env:
           SN_HOST: ${{ secrets[matrix.sn_host_secret] }}
           SN_USERNAME: ${{ secrets[matrix.sn_username_secret] }}
           SN_PASSWORD: ${{ secrets[matrix.sn_password_secret] }}
+          SN_CLIENT_ID: ${{ secrets[matrix.sn_client_id] }}
+          SN_CLIENT_SECRET: ${{ secrets[matrix.sn_client_secret] }}
         run: |
           touch ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_host: '${{ env.SN_HOST }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_username: '${{ env.SN_USERNAME }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_password: '${{ env.SN_PASSWORD }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
+          echo "sn_client_id: '${{ env.SN_CLIENT_ID }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
+          echo "sn_client_secret: '${{ env.SN_CLIENT_SECRET }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "collection_base_dir: '${{ steps.identify.outputs.collection_path }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
+
+      - name: Run inventory integration tests
+        run: ansible-test integration inventory
+        working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Run itsm_api integration tests
         run: ansible-test integration itsm_api
@@ -186,23 +223,23 @@ jobs:
       - name: Run itsm_configuration_item_relations integration tests
         run: ansible-test integration itsm_configuration_item_relations
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run itsm_service_catalog_info integration tests
         run: ansible-test integration itsm_service_catalog_info
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run itsm_service_catalog integration tests
         run: ansible-test integration itsm_service_catalog
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run problem integration tests
         run: ansible-test integration problem
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run problem_task integration tests
         run: ansible-test integration problem_task
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Run problem_with_mapping integration tests
         run: ansible-test integration problem_with_mapping
         working-directory: ${{ steps.identify.outputs.collection_path }}

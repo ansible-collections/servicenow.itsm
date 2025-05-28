@@ -1,0 +1,18 @@
+---
+- name: Test Inventory Plugin - {{ test_name }}
+  gather_facts: false
+  hosts: localhost
+  vars_files:
+    - "{{ playbook_dir }}/test_session/vars.yml"
+
+  environment:
+    SN_HOST: "{{ sn_host }}"
+    SN_USERNAME: "{{ sn_username }}"
+    SN_PASSWORD: "{{ sn_password }}"
+
+  vars:
+    resource_prefix: "{{ unique_test_id }}-inven-{{ test_name }}"
+
+  tasks:
+    - name: Include Test Tasks
+      ansible.builtin.include_tasks: tests/{{ test_name }}.yml

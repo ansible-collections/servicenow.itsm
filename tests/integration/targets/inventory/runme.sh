@@ -1,43 +1,45 @@
 #!/bin/sh
 
-set -eu
+set -e
 
-# To reduce the amount of warnings coming from the inventory plugins
-# enabled by default, we whitelist our plugin only
+teardown() {
+    ansible-playbook teardown.yml
+    rm -f "roles"
+}
+
+symlink_roles_path() {
+    # ansible-test copies what it *thinks* the test needs to a temp working directory.
+    # This causes issues since this test uses runme.sh instead of a psuedo ansible role
+    # with a meta/main.yml for dependencies. So we hack out a symlink to the other test
+    # targets. Then the playbooks can import setup_* roles without issue
+    currentDir="$(pwd)"
+    case "$(pwd)" in
+        # running via ansible-test
+        *"tests/output/.tmp/integration"*)
+            rolesPath=${currentDir%"/output/.tmp/integration"*};
+            rolesPath="$rolesPath/integration/targets"
+            ;;
+        # running some other way, likely calling ./runme.sh
+        *)
+            rolesPath="$currentDir/.."
+            ;;
+    esac
+    ln -s "$rolesPath/" "roles"
+}
+
 export ANSIBLE_INVENTORY_ENABLED=servicenow.itsm.now
+trap teardown EXIT
 
-# When running script-based integration targets, `ansible-test integration`
-# does not make these variables available. We will need to pass them
-# explicitly, as extra vars to `ansible-playbook` command.
-readonly vars_file=../../integration_config.yml
+symlink_roles_path
+ansible-playbook "setup.yml"
 
-# The exports below allow the inventory plugin access to authentication data
-# from the environment.
-
-eval "$(cat <<EOF | python
-import yaml
-with open("$vars_file") as fd:
-    data = yaml.safe_load(fd)
-print("export SN_HOST='{}'".format(data["sn_host"]))
-print("export SN_USERNAME='{}'".format(data["sn_username"]))
-print("export SN_PASSWORD='{}'".format(data["sn_password"]))
-print("export SN_CLIENT_ID='{}'".format(data["sn_client_id"]))
-print("export SN_CLIENT_SECRET='{}'".format(data["sn_client_secret"]))
-EOF
-)"
-
-env | grep SN_
-
-# Each inventory source `files/{name}.now.yml` represents a separate context
-# for testing. The tests for each inventory source are in the
-# `playbooks/{name}.yml` playbook.
-
-set -x
-
-for inventory_config in files/*.now.yml
-do
-  ansible-playbook \
-    -i "$inventory_config" \
-    -e "@$vars_file" \
-    "playbooks/$(basename "$inventory_config" .now.yml).yml"
+for test in tests/*.yml; do
+    testName=${test#"tests/"}
+    testName=${testName%".yml"}
+    ansible-playbook \
+        -i "test_session/inventories/$testName.now.yml" \
+        -e "{\"test_name\":\"$testName\"}" \
+        test.yml
 done
+
+teardown

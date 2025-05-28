@@ -16,9 +16,26 @@ from ansible.module_utils.common.text.converters import to_text
 from ansible.template import Templar
 from ansible_collections.servicenow.itsm.plugins.inventory import now
 
+try:
+    # post 2.19 is strict about jinja template safety. This means test inputs
+    # for params (like groups) that could contain jinja templates need
+    # to be trusted using the method below
+    from ansible.template import trust_as_template as _trust_as_template
+
+    HAS_DATATAGGING = True
+except ImportError:
+    # pre 2.19
+    HAS_DATATAGGING = False
+
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
 )
+
+
+def trust_jinja_input(input):
+    if HAS_DATATAGGING:
+        return _trust_as_template(input)
+    return input
 
 
 @pytest.fixture
@@ -490,7 +507,7 @@ class TestInventoryModuleFillConstructed:
         name_source = "fqdn"
         compose = dict(
             cost_res='"%s %s" % (cost, cost_cc)',
-            amortized_cost="cost | int // 2",
+            amortized_cost="(cost | int // 2) | string",
             sys_updated_on_date="sys_updated_on | slice(2) | first | join",
             sys_updated_on_time="sys_updated_on | slice(2) | list | last | join | trim",
             silently_failed="non_existing + 3",
@@ -523,10 +540,10 @@ class TestInventoryModuleFillConstructed:
         assert a1.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            cost_res="82 EUR",
-            amortized_cost="41",
-            sys_updated_on_date="2021-09-17",
-            sys_updated_on_time="02:13:25",
+            cost_res=("82 EUR"),
+            amortized_cost=("41"),
+            sys_updated_on_date=("2021-09-17"),
+            sys_updated_on_time=("02:13:25"),
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
@@ -536,10 +553,10 @@ class TestInventoryModuleFillConstructed:
         assert a2.vars == dict(
             inventory_file=None,
             inventory_dir=None,
-            cost_res="94 USD",
-            amortized_cost="47",
-            sys_updated_on_date="2021-08-30",
-            sys_updated_on_time="01:47:03",
+            cost_res=("94 USD"),
+            amortized_cost=("47"),
+            sys_updated_on_date=("2021-08-30"),
+            sys_updated_on_time=("01:47:03"),
         )
 
     def test_construction_composite_vars_strict(self, inventory_plugin):
@@ -550,7 +567,7 @@ class TestInventoryModuleFillConstructed:
 
         columns = []
         name_source = "fqdn"
-        compose = dict(failed="non_existing + 3")
+        compose = dict(failed=trust_jinja_input("non_existing + 3"))
         groups = {}
         keyed_groups = []
         strict = True
@@ -611,9 +628,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a1_groups) == set()
 
         assert a1.vars == dict(
-            inventory_file=None,
-            inventory_dir=None,
-            ansible_host="a1_1",
+            inventory_file=None, inventory_dir=None, ansible_host="a1_1"
         )
 
         a2 = inventory_plugin.inventory.get_host("a2")
@@ -621,9 +636,7 @@ class TestInventoryModuleFillConstructed:
         assert set(a2_groups) == set()
 
         assert a2.vars == dict(
-            inventory_file=None,
-            inventory_dir=None,
-            ansible_host="a2_2",
+            inventory_file=None, inventory_dir=None, ansible_host="a2_2"
         )
 
     def test_construction_composed_groups(self, inventory_plugin):
@@ -636,9 +649,9 @@ class TestInventoryModuleFillConstructed:
         name_source = "fqdn"
         compose = {}
         groups = dict(
-            ip1='ip_address == "1.1.1.1"',
-            ip2='ip_address != "1.1.1.1"',
-            cost="cost_usd < 90",  # ignored due to strict = False
+            ip1=trust_jinja_input('ip_address == "1.1.1.1"'),
+            ip2=trust_jinja_input('ip_address != "1.1.1.1"'),
+            cost=trust_jinja_input("cost_usd < 90"),  # ignored due to strict = False
         )
         keyed_groups = []
         strict = False
@@ -685,9 +698,9 @@ class TestInventoryModuleFillConstructed:
         name_source = "fqdn"
         compose = {}
         groups = dict(
-            ip1='ip_address == "1.1.1.1"',
-            ip2='ip_address != "1.1.1.1"',
-            cost="cost_usd < 90",
+            ip1=trust_jinja_input('ip_address == "1.1.1.1"'),
+            ip2=trust_jinja_input('ip_address != "1.1.1.1"'),
+            cost=trust_jinja_input("cost_usd < 90"),
         )
         keyed_groups = []
         strict = True
@@ -748,6 +761,7 @@ class TestInventoryModuleFillConstructed:
 
         a1 = inventory_plugin.inventory.get_host("a1")
         a1_groups = (group.name for group in a1.groups)
+
         assert set(a1_groups) == set(("cc_EUR",))
 
         assert a1.vars == dict(inventory_file=None, inventory_dir=None)

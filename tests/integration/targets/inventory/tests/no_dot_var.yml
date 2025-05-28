@@ -1,0 +1,37 @@
+---
+- name: Test no_dot_var
+  block:
+    - name: Create imaginary VMs
+      servicenow.itsm.configuration_item:
+        name: "{{ resource_prefix }}-{{ item }}"
+        sys_class_name: cmdb_ci_server
+        ip_address: 10.1.0.{{ item }}
+        other:
+          state: "{{ (item % 4 == 0) | ansible.builtin.ternary('on', 'off') }}"
+          guest_os_fullname: "{{ (item < 105) | ansible.builtin.ternary('OS0', 'OS1') }}"
+      loop: "{{ range(100, 110) | list }}"
+      register: vms
+
+    - name: Reload inventory
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
+
+    - name: Verify the replaced variable names exist
+      ansible.builtin.assert:
+        that:
+          - groups.all | length == 10
+          - host_vars_00.location_name is defined
+          - host_vars_00.support_group_name is defined
+          - host_vars_04.location_name is defined
+          - host_vars_04.support_group_name is defined
+      vars:
+        host_vars_00: "{{ hostvars[resource_prefix + '-100'] }}"
+        host_vars_04: "{{ hostvars[resource_prefix + '-104'] }}"
+
+  always:
+    - name: Delete VMs
+      servicenow.itsm.configuration_item:
+        state: absent
+        sys_id: "{{ item.record.sys_id }}"
+      loop: "{{ vms.results }}"
+      loop_control:
+        label: "{{ item.record.name }}"

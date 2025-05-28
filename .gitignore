@@ -9,3 +9,5 @@ __pycache__
 htmlcov
 venv/
 .venv/
+tests/integration/targets/*/test_session
+tests/integration/targets/*/roles

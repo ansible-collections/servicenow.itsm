@@ -1,0 +1,36 @@
+---
+name: nightly
+
+concurrency:
+  group: ${{ github.run_id }}
+  cancel-in-progress: true
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # timezone is UTC
+
+jobs:
+  linters:
+    uses: ./.github/workflows/linters.yml
+  sanity:
+    uses: ./.github/workflows/sanity.yml
+  units:
+    uses: ./.github/workflows/units.yml
+  integrations:
+    uses: ./.github/workflows/integration.yml
+    secrets: inherit
+  nightly:
+    if: ${{ always() }}
+    needs:
+      - linters
+      - sanity
+      - units
+      - integrations
+    runs-on: ubuntu-latest
+    steps:
+      - run: >-
+          python -c "assert set([
+          '${{ needs.linters.result }}',
+          '${{ needs.sanity.result }}',
+          '${{ needs.units.result }}'
+          ]) == {'success'}"

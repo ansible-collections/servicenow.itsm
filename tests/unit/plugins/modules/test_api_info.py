@@ -11,6 +11,9 @@ import sys
 
 import pytest
 from ansible_collections.servicenow.itsm.plugins.modules import api_info
+from ansible_collections.servicenow.itsm.tests.unit.plugins.common.utils import (
+    set_module_args,
+)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -26,7 +29,8 @@ class TestMain:
             resource="sys_user",
         )
 
-        success, result = run_main(api_info, params)
+        with set_module_args(args=params):
+            success, result = run_main(api_info, params)
 
         assert success is True
 
@@ -45,12 +49,14 @@ class TestMain:
             no_count="true",
         )
 
-        success, result = run_main(api_info, params)
+        with set_module_args(args=params):
+            success, result = run_main(api_info, params)
 
         assert success is True
 
     def test_fail(self, run_main):
-        success, result = run_main(api_info)
+        with set_module_args(args={}):
+            success, result = run_main(api_info)
 
         assert success is False
 
