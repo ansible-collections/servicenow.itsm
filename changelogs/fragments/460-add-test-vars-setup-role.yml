@@ -1,0 +1,5 @@
+---
+trivial:
+  - tests/integration - Add test var setup role as dependency to all tests. This adds a consistent
+    setup to all tests, checks that auth variables are set as expected, and creates a thread safe
+    id that will be used in a future pr

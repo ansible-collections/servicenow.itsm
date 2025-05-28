@@ -1,0 +1,3 @@
+---
+trivial:
+  - tests/integration - Use the unique_test_id variable in all tests that previously used a password lookup

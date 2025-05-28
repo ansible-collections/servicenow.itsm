@@ -5,15 +5,9 @@
     SN_PASSWORD: "{{ sn_password }}"
 
   block:
-    - name: Generate random string for idempotency
-      ansible.builtin.set_fact:
-        suffix: "{{ lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
-
-    - debug: var=suffix
-
     - name: Create a problem (check mode)
       servicenow.itsm.problem: &problem-create
-        short_description: "my-problem_{{ suffix }}"
+        short_description: "my-problem_{{ unique_test_id }}"
         state: new
         attachments:
           - path: "{{ collection_base_dir }}/tests/integration/targets/problem/res/sample_file.txt"
@@ -29,7 +23,7 @@
     - name: Verify creation in check mode did not create a record
       servicenow.itsm.problem_info:
         query:
-          - short_description: "= my-problem_{{ suffix }}"
+          - short_description: "= my-problem_{{ unique_test_id }}"
       register: result
 
     - ansible.builtin.assert:
@@ -196,7 +190,7 @@
     - name: Create a bogus problem for cancellation
       servicenow.itsm.problem:
         state: assess
-        short_description: "cancel-me_{{ suffix }}"
+        short_description: "cancel-me_{{ unique_test_id }}"
         assigned_to: problem.manager
       register: bogus_problem
 
@@ -232,7 +226,7 @@
     - name: Create a new problem (initial state)
       servicenow.itsm.problem:
         state: "new"
-        short_description: "fixed-problem_{{ suffix }}"
+        short_description: "fixed-problem_{{ unique_test_id }}"
         assigned_to: "problem.manager"
       register: fixed_problem
 
@@ -271,7 +265,7 @@
     - name: Create an initial problem (new or assess)
       servicenow.itsm.problem:
         state: assess
-        short_description: "accepted-problem_{{ suffix }}"
+        short_description: "accepted-problem_{{ unique_test_id }}"
         assigned_to: problem.manager
       register: new_problem
 
@@ -306,7 +300,7 @@
         query:
           - number: = {{ risk_accepted_problem.record.number }}
             state: = resolved
-            short_description: "= accepted-problem_{{ suffix }}"
+            short_description: "= accepted-problem_{{ unique_test_id }}"
             assigned_to: = problem.manager
             resolution_code: = risk_accepted
             cause_notes: = cause
@@ -328,7 +322,7 @@
       servicenow.itsm.problem_info:
         query:
           - state: = resolved
-            short_description: "= accepted-problem_{{ suffix }}"
+            short_description: "= accepted-problem_{{ unique_test_id }}"
       register: result
 
     - ansible.builtin.assert:
@@ -340,7 +334,7 @@
       servicenow.itsm.problem:
         state: assess
         assigned_to: problem.manager
-        short_description: "a-duplicate_{{ suffix }}"
+        short_description: "a-duplicate_{{ unique_test_id }}"
       register: duplicated_problem
 
     - name: Advance problem to root cause analysis
