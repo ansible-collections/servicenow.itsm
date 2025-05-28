@@ -16,7 +16,7 @@
         query_params:
           sysparm_input_display_value: true
         data:
-          user_name: "{{ 'demo_username_' + lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
+          user_name: "{{ 'demo_username_' + unique_test_id }}"
           user_password: "{{ password }}"
           first_name: "first_name"
           last_name: Demouser
@@ -47,14 +47,14 @@
         SN_USERNAME: "{{ user.record.user_name }}"
         SN_PASSWORD: "{{ password }}"
       register: result
-        
+
     - debug:
         var: result
 
     - ansible.builtin.assert:
         that:
           - result.records | length > 0
-        
+
     - name: Create new email account
       servicenow.itsm.service_catalog:
         action: order_now

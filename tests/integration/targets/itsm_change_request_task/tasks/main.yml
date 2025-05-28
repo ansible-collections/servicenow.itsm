@@ -39,15 +39,12 @@
           - change_request_result.record.risk == "low"
           - change_request_result.record.impact == "low"
 
-    - ansible.builtin.set_fact:
-        prefix: "{{ lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
-
     - name: Create test change_request_task - check mode
       servicenow.itsm.change_request_task: &create-change_request_task
         change_request_number: "{{ change_request_result.record.number }}"
         type: planning
         state: pending
-        short_description: "{{ prefix }} Implement collision avoidance"
+        short_description: "{{ unique_test_id }} Implement collision avoidance"
         description: "Implement collision avoidance based on the newly installed TOF sensor arrays."
         other:
           approval: approved
@@ -60,7 +57,7 @@
           - result.record.change_request == change_request_result.record.sys_id
           - result.record.change_task_type == "planning"
           - result.record.state == "pending"
-          - prefix in result.record.short_description
+          - unique_test_id in result.record.short_description
           - result.record.description == "Implement collision avoidance based on the newly installed TOF sensor arrays."
           - result.record.approval == "approved"
 
@@ -84,7 +81,7 @@
           - result.records[0].change_request == change_request_result.record.sys_id
           - result.records[0].change_task_type == "planning"
           - result.records[0].state == "pending"
-          - prefix in result.records[0].short_description
+          - unique_test_id in result.records[0].short_description
           - result.records[0].description == "Implement collision avoidance based on the newly installed TOF sensor arrays."
           - result.records[0].approval == "approved"
 
@@ -136,7 +133,7 @@
     - ansible.builtin.assert: &update-change_request_task-result
         that:
           - result is changed
-          - prefix in result.record.short_description
+          - unique_test_id in result.record.short_description
           - result.record.state == "in_progress"
           - result.record.description == "Something changed"
           - result.record.change_task_type == "planning"
@@ -153,7 +150,7 @@
 
     - ansible.builtin.assert:
         that:
-          - prefix in result.records[0].short_description
+          - unique_test_id in result.records[0].short_description
           - result.records[0].state == "in_progress"
           - result.records[0].description == "Something changed"
           - result.records[0].change_task_type == "planning"
@@ -329,12 +326,12 @@
     - name: Get change_request_task info by sysparm query - short_description
       servicenow.itsm.change_request_task_info:
         query:
-          - short_description: "LIKE {{ prefix }}"
+          - short_description: "LIKE {{ unique_test_id }}"
       register: result
 
     - ansible.builtin.assert:
         that:
-          - prefix in result.records[0].short_description
+          - unique_test_id in result.records[0].short_description
 
     - name: Test bad parameter combinator (number + query)
       servicenow.itsm.change_request_task_info:
@@ -420,16 +417,13 @@
         impact: low
       register: change_request_result
 
-    - ansible.builtin.set_fact:
-        prefix: "{{ lookup('password', '/dev/null chars=ascii_letters,digit length=8') | lower }}"
-
     - name: Create test change_request_task
       servicenow.itsm.change_request_task:
         change_request_number: "{{ change_request_result.record.number }}"
         type: planning
         state: open
         assignment_group: "{{ assignment_groups[instance] | default('network') }}"
-        short_description: "{{ prefix }} Implement collision avoidance"
+        short_description: "{{ unique_test_id }} Changed Implement collision avoidance"
         description: "Implement collision avoidance based on the newly installed TOF sensor arrays."
         other:
           approval: approved
