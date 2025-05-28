@@ -20,10 +20,12 @@ description:
   - Builds inventory from ServiceNow table records.
   - Requires a configuration file ending in C(now.yml) or C(now.yaml).
   - The plugin sets host variables denoted by I(columns).
-  - For variables with dots (for example 'location.country'), use either
-    V(lookup\\('ansible.builtin.vars', 'variable.name'\\)) (version 2.1.0) or the simplified
-    form by replacing the dot with an underscore such as C(variable_name) (version 2.9.4).
-    See the example section for more details.
+  - Starting with version 2.1.0, you can access variables with dots in the name (for
+    example 'location.country') using a lookup
+    V(lookup\\('ansible.builtin.vars', 'location.country')\\).
+  - Starting with version 2.10.0, you can also access variables with dots in the name by
+    replacing the dots with underscores V\\(location_country\\).  See the example section
+    for more details.
 version_added: 1.0.0
 extends_documentation_fragment:
   - ansible.builtin.constructed
