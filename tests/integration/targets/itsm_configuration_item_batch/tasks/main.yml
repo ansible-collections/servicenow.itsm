@@ -25,7 +25,7 @@
         sys_class_name: cmdb_ci_ec2_instance
         id_column_set: vm_inst_id
         dataset:
-          - instance_id: "{{ unique_test_id }}"
+          - instance_id: "{{ unique_test_id }}-a"
             public_ip_address: 10.10.10.10
             tags:
               Name: instance_10
@@ -75,11 +75,11 @@
         sys_class_name: cmdb_ci_ec2_instance
         id_column_set: vm_inst_id
         dataset:
-          - instance_id: "{{ unique_test_id }}"
+          - instance_id: "{{ unique_test_id }}-b"
             public_ip_address: 1.2.3.4
             tags:
               Name: my_name
-          - instance_id: "{{ unique_test_id }}"
+          - instance_id: "{{ unique_test_id }}-c"
             public_ip_address: 4.3.2.1
             tags:
               Name: other_name
