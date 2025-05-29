@@ -27,7 +27,7 @@
         short_description: "my-problem_{{ unique_test_id }}"
         state: my_new
         attachments:
-          - path: "{{ collection_base_dir }}/tests/integration/targets/problem_with_mapping/res/sample_file.txt"
+          - path: "{{ role_path }}/res/sample_file.txt"
       register: first_problem
       check_mode: true
     - ansible.builtin.assert: &problem-create-assertions
