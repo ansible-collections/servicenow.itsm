@@ -20,8 +20,12 @@ description:
   - Builds inventory from ServiceNow table records.
   - Requires a configuration file ending in C(now.yml) or C(now.yaml).
   - The plugin sets host variables denoted by I(columns).
-  - For variables with dots (for example 'location.country') use lookup('ansible.builtin.vars', 'variable.name') notation.
-    See the example section for more details. This feature is added in version 2.1.0.
+  - Starting with version 2.1.0, you can access variables with dots in the name (for
+    example 'location.country') using a lookup
+    V(lookup\\('ansible.builtin.vars', 'location.country')\\).
+  - Starting with version 2.10.0, you can also access variables with dots in the name by
+    replacing the dots with underscores V\\(location_country\\).  See the example section
+    for more details.
 version_added: 1.0.0
 extends_documentation_fragment:
   - ansible.builtin.constructed
@@ -304,9 +308,14 @@ columns:
   - ip_address
   - location
   - location.country
+  - location.time_zone
 compose:
   street: location
-  country: lookup('ansible.builtin.vars', 'location.country')
+  country: location_country
+  timezone: location_time_zone
+  # alternatively you could use lookups
+  # country: lookup('ansible.builtin.vars', 'location.country')
+  # timezone: lookup('ansible.builtin.vars', 'location.time_zone')
 
 # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
 # @all:
@@ -316,8 +325,10 @@ compose:
 # |  |  |--{ip_address = }
 # |  |  |--{location = Via Nomentana 56, Rome}
 # |  |  |--{location.country = Italy}
+# |  |  |--{location.time_zone = Europe/Rome}
 # |  |  |--{name = OWA-SD-01}
 # |  |  |--{street = Via Nomentana 56, Rome}
+# |  |  |--{timezone = Europe/Rome}
 
 # Limit query to only return columns that we expressly include.
 # By default we retrieve all columns from a table, which can be
@@ -699,6 +710,10 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
                     self.set_host_vars_aggregated(host, record, columns, aggregator)
                 else:
                     self.set_hostvars(host, record, columns)
+
+                for k, v in tuple(record.items()):
+                    if "." in k:
+                        record[k.replace(".", "_")] = v
 
                 self._set_composite_vars(compose, record, host, strict)
                 self._add_host_to_composed_groups(groups, record, host, strict)

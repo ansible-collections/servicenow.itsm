@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - plugins/inventory/now - allow accessing dot variables by underscore alias in compose
+    (https://github.com/ansible-collections/servicenow.itsm/issues/428)

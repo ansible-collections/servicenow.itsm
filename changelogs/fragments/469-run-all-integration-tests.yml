@@ -1,0 +1,3 @@
+---
+trivial:
+  - tests/integration - Run all integration tests
