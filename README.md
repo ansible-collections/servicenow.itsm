@@ -1,5 +1,5 @@
 # Ansible Collection for ServiceNow ITSM
-
+ 
 The Ansible Collection for ServiceNow IT Service Management ([ITSM](https://www.servicenow.com/products/itsm.html)) provides Ansible content that enables users to automate the management of ServiceNow ITSM processes such as incidents, change requests, service catalogs, configuration items, and more.
 
 This collection is ideal for IT administrators, DevOps engineers, and automation specialists who work with ServiceNow and want to integrate its capabilities into their infrastructure automation workflows.
