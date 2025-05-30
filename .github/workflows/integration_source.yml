@@ -165,8 +165,8 @@ jobs:
           SN_HOST: ${{ secrets[matrix.sn_host_secret] }}
           SN_USERNAME: ${{ secrets[matrix.sn_username_secret] }}
           SN_PASSWORD: ${{ secrets[matrix.sn_password_secret] }}
-          SN_CLIENT_ID: ${{ secrets[matrix.sn_client_id] }}
-          SN_CLIENT_SECRET: ${{ secrets[matrix.sn_client_secret] }}
+          SN_CLIENT_ID: ${{ secrets[matrix.sn_client_id_secret] }}
+          SN_CLIENT_SECRET: ${{ secrets[matrix.sn_client_secret_secret] }}
         run: |
           touch ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_host: '${{ env.SN_HOST }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
