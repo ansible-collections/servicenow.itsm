@@ -50,11 +50,11 @@
         incident_mapping: "{{ mapping.incident }}"
         caller: admin
         state: new
-        short_description: Test incident
+        short_description: "{{ unique_test_id }} Test incident"
         impact: low
         urgency: low
         attachments:
-          - path: "{{ collection_base_dir }}/tests/integration/targets/itsm_incident_with_mapping/res/sample_file.txt"
+          - path: "{{ role_path }}/res/sample_file.txt"
       check_mode: true
       register: result
 
@@ -282,7 +282,7 @@
       servicenow.itsm.incident_info:
         incident_mapping: "{{ mapping.incident }}"
         query:
-          - short_description: STARTSWITH Test
+          - short_description: STARTSWITH {{ unique_test_id }}
       register: result
 
     - ansible.builtin.assert:

@@ -3,8 +3,11 @@
     SN_HOST: "{{ sn_host }}"
 
   block:
+    # We dont care if this incident actually exists, we have other tests for that. But
+    # leaving the number parameter out causes this to take a long time.
     - name: Basic authentication success
       servicenow.itsm.incident_info:
+        number: 0
       register: result
       environment:
         SN_USERNAME: "{{ sn_username }}"
@@ -87,7 +90,7 @@
       register: result
     - ansible.builtin.set_fact:
         sn_refresh_token: "{{ result.json.refresh_token }}"
-        sn_access_token: "{{ result.json.access_token }}"  # To be used in the test with access_token
+        sn_access_token: "{{ result.json.access_token }}" # To be used in the test with access_token
 
     - name: OAuth authentication success with refresh_token
       servicenow.itsm.incident_info:
