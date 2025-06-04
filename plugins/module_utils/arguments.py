@@ -95,7 +95,7 @@ SHARED_SPECS = dict(
             ),
             grant_type=dict(
                 type="str",
-                choices=["password", "refresh_token"],
+                choices=["password", "refresh_token", "client_credentials"],
                 fallback=(env_fallback, ["SN_GRANT_TYPE"]),
             ),
             api_path=dict(
@@ -132,7 +132,7 @@ SHARED_SPECS = dict(
             ),
         ),
         required_together=[("client_id", "client_secret"), ("username", "password")],
-        required_one_of=[("username", "refresh_token", "access_token")],
+        required_one_of=[("username", "refresh_token", "access_token", "client_id")],
         mutually_exclusive=[
             ("username", "refresh_token", "access_token"),
             ("client_id", "access_token"),
@@ -141,6 +141,7 @@ SHARED_SPECS = dict(
         required_if=[
             ("grant_type", "password", ("username", "password")),
             ("grant_type", "refresh_token", ("refresh_token",)),
+            ("grant_type", "client_connections", ("client_id", "client_secret")),
         ],
     ),
     sys_id=dict(type="str"),

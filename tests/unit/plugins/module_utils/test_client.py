@@ -156,6 +156,64 @@ class TestClientAuthHeader:
         assert c.client_secret == "secret"
         assert c.auth_header == {"Authorization": "Bearer token"}
 
+    def test_login_oauth_generate_auth_data(self, mocker):
+        c = client.Client(
+            "https://instance.com",
+            refresh_token="refresh_token",
+            grant_type="refresh_token",
+            username="user",
+            password="pass",
+            client_id="id",
+            client_secret="secret",
+        )
+
+        auth_data = parse_qs(c._login_oauth_generate_auth_data())
+        assert auth_data["grant_type"] == ["refresh_token"]
+        assert "username" not in auth_data
+        assert "password" not in auth_data
+        assert auth_data["refresh_token"] == ["refresh_token"]
+        assert auth_data["client_id"] == ["id"]
+        assert auth_data["client_secret"] == ["secret"]
+
+        c.grant_type = "client_credentials"
+        auth_data = parse_qs(c._login_oauth_generate_auth_data())
+        assert auth_data["grant_type"] == ["client_credentials"]
+        assert "username" not in auth_data
+        assert "password" not in auth_data
+        assert "refresh_token" not in auth_data
+        assert auth_data["client_id"] == ["id"]
+        assert auth_data["client_secret"] == ["secret"]
+
+        c.grant_type = "password"
+        auth_data = parse_qs(c._login_oauth_generate_auth_data())
+        assert auth_data["grant_type"] == ["password"]
+        assert auth_data["username"] == ["user"]
+        assert auth_data["password"] == ["pass"]
+        assert "refresh_token" not in auth_data
+        assert auth_data["client_id"] == ["id"]
+        assert auth_data["client_secret"] == ["secret"]
+
+    def test_oauth_client_credential(self, mocker):
+        resp_mock = mocker.MagicMock()
+        resp_mock.status = 200  # Used when testing on Python 3
+        resp_mock.getcode.return_value = 200  # Used when testing on Python 2
+        resp_mock.read.return_value = '{"access_token": "token"}'
+
+        request_mock = mocker.patch.object(client, "Request").return_value
+        request_mock.open.return_value = resp_mock
+
+        c = client.Client(
+            "https://instance.com",
+            grant_type="client_credential",
+            client_id="id",
+            client_secret="secret",
+        )
+
+        assert c.grant_type == "client_credential"
+        assert c.client_id == "id"
+        assert c.client_secret == "secret"
+        assert c.auth_header == {"Authorization": "Bearer token"}
+
     def test_oauth_failure(self, mocker):
         request_mock = mocker.patch.object(client, "Request").return_value
         request_mock.open.side_effect = HTTPError(

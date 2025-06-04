@@ -103,9 +103,14 @@ class Client:
     def _login_access_token(self, access_token):
         return dict(Authorization="Bearer {0}".format(access_token))
 
-    def _login_oauth(self):
+    def _login_oauth_generate_auth_data(self):
+        """
+        Creates a dictionary of auth data to be used in OAUTH requests, depending on the
+        grant type. See SNOW docs for more details:
+        https://support.servicenow.com/kb?id=kb_article_view&sysparm_article=KB1647747
+        """
         if self.grant_type == "refresh_token":
-            auth_data = urlencode(
+            return urlencode(
                 dict(
                     grant_type=self.grant_type,
                     refresh_token=self.refresh_token,
@@ -113,9 +118,17 @@ class Client:
                     client_secret=self.client_secret,
                 )
             )
-        # Only other possible value for grant_type is "password"
+        elif self.grant_type == "client_credentials":
+            return urlencode(
+                dict(
+                    grant_type=self.grant_type,
+                    client_id=self.client_id,
+                    client_secret=self.client_secret,
+                )
+            )
+        # Default value for grant_type is "password"
         else:
-            auth_data = urlencode(
+            return urlencode(
                 dict(
                     grant_type=self.grant_type,
                     username=self.username,
@@ -124,6 +137,9 @@ class Client:
                     client_secret=self.client_secret,
                 )
             )
+
+    def _login_oauth(self):
+        auth_data = self._login_oauth_generate_auth_data()
         resp = self._request(
             "POST",
             "{0}/oauth_token.do".format(self.host),
