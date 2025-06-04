@@ -46,6 +46,18 @@
         that:
           - result is success
 
+    - name: OAuth authentication success with client_credentials grant type
+      servicenow.itsm.incident_info:
+        number: "{{ incident_number }}"
+      environment:
+        SN_GRANT_TYPE: client_credentials
+        SN_CLIENT_ID: "{{ sn_client_id }}"
+        SN_CLIENT_SECRET: "{{ sn_client_secret }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is success
+
     - name: OAuth authentication failure with bad client secret
       servicenow.itsm.incident_info:
         number: "{{ incident_number }}"

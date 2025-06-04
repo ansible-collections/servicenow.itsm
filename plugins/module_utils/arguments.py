@@ -95,7 +95,7 @@ SHARED_SPECS = dict(
             ),
             grant_type=dict(
                 type="str",
-                choices=["password", "refresh_token"],
+                choices=["password", "refresh_token", "client_credentials"],
                 fallback=(env_fallback, ["SN_GRANT_TYPE"]),
             ),
             api_path=dict(
