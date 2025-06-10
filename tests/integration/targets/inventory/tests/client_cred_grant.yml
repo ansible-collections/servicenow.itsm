@@ -1,0 +1,18 @@
+---
+- name: Test
+  block:
+    - name: Create imaginary VMs
+      servicenow.itsm.configuration_item:
+        name: "{{ resource_prefix }}-{{ item }}"
+        sys_class_name: cmdb_ci_server
+        ip_address: 10.1.0.{{ item }}
+      loop: "{{ range(100, 102) }}"
+      register: vms
+
+    - name: Reload inventory
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
+
+    - name: Make sure inventory ran successfully
+      ansible.builtin.assert:
+        that:
+          - groups['all'] | length == 2

@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - plugins/inventory/now - Added support for the client_credentials authentication grant type
