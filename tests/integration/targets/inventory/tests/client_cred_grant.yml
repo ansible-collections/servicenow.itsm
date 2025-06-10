@@ -6,7 +6,7 @@
         name: "{{ resource_prefix }}-{{ item }}"
         sys_class_name: cmdb_ci_server
         ip_address: 10.1.0.{{ item }}
-      loop: "{{ range(100, 102) }}"
+      loop: "{{ range(100, 102) | list }}"
       register: vms
 
     - name: Reload inventory
