@@ -1,6 +1,6 @@
 #####
 #
-# Optional nput parameters
+# Optional Input parameters
 #
 #####
 
