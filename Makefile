@@ -1,27 +1,14 @@
-# Make sure we have ansible_collections/servicenow/itsm as a prefix. This is
-# ugly as hack, but it works. I suggest all future developer to treat next few
-# lines as an opportunity to learn a thing or two about GNU make ;)
-collection := $(notdir $(realpath $(CURDIR)      ))
-namespace  := $(notdir $(realpath $(CURDIR)/..   ))
-toplevel   := $(notdir $(realpath $(CURDIR)/../..))
+#####
+#
+# Optional nput parameters
+#
+#####
 
-err_msg := Place collection at <WHATEVER>/ansible_collections/servicenow/itsm
-ifeq (true,$(CI))
-  $(info Running in CI setting, skipping directory checks.)
-else ifneq (itsm,$(collection))
-  $(error $(err_msg))
-else ifneq (servicenow,$(namespace))
-  $(error $(err_msg))
-else ifneq (ansible_collections,$(toplevel))
-  $(error $(err_msg))
-endif
+# Integration or unit test target name. Specify with a target name to limit what test is run. Default will be all tests
+TARGET ?=
 
-python_version := $(shell \
-  python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))' \
-)
-
-unit_test_targets := $(shell find tests/unit -name '*.py')
-integration_test_targets := $(shell ls tests/integration/targets)
+# Integration or unit test python version. Specify to test with a specific python type. Default is the ansible-test default
+PYTHON_VERSION ?= default
 
 
 .PHONY: help
@@ -30,7 +17,6 @@ help:
 	@fgrep "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sort
 
 # Developer convenience targets
-
 .PHONY: format
 format:  ## Format python code with black
 	black plugins tests/unit
@@ -39,34 +25,42 @@ format:  ## Format python code with black
 clean:  ## Remove all auto-generated files
 	rm -rf tests/output
 
-.PHONY: $(unit_test_targets)
-$(unit_test_targets):
-	ansible-test units --requirements --python $(python_version) $@
+#####
+#
+# Test commands
+#
+#####
+.PHONY: install-collection
+install-collection:
+	ansible-galaxy collection install --force -p ~/.ansible/collections .
 
-.PHONY: $(integration_test_targets)
-$(integration_test_targets):
-	ansible-test integration --requirements --python $(python_version) --diff $@
-
-# Things also used in CI/CD
-
+## Run extra linter tests
 .PHONY: linters
-linters:  ## Run extra linter tests
+linters:
 	@pip install -r linters.requirements.txt; err=0; echo "\nStart tests.\n"; \
 	flake8 --select C90 --max-complexity 10 plugins || err=1; \
 	black --check --diff --color plugins tests/unit || err=1; \
 	if [ "$$err" = 1 ]; then echo "\nAt least one linter failed\n" >&2; exit 1; fi
 
+## Run sanity tests
 .PHONY: sanity
-sanity: linters ## Run sanity tests
+sanity: install-collection linters
+	cd ~/.ansible/collections/ansible_collections/servicenow/itsm; \
 	ansible-test sanity --docker
 
+ ## Run unit tests
 .PHONY: units
-units:  ## Run unit tests
-	-ansible-test coverage erase # On first run, there is nothing to erase.
-	ansible-test units --docker --coverage
-	ansible-test coverage html --requirements
-	ansible-test coverage report --omit 'tests/*' --show-missing
+units: install-collection
+	cd ~/.ansible/collections/ansible_collections/servicenow/itsm; \
+	ansible-test units --docker --coverage --python "$(PYTHON_VERSION)"; \
+	ansible-test coverage combine --export tests/output/coverage/; \
+	ansible-test coverage report --docker --omit 'tests/*' --show-missing
 
+## Run integration tests
 .PHONY: integration
-integration:  ## Run integration tests
-	ansible-test integration --docker --diff
+integration: install-collection
+	cd ~/.ansible/collections/ansible_collections/servicenow/itsm; \
+	./tests/integration/generate_integration_config.sh; \
+	ANSIBLE_ROLES_PATH=~/.ansible/collections/ansible_collections/servicenow/itsm/tests/integration/targets \
+		ANSIBLE_COLLECTIONS_PATH=~/.ansible/collections/ansible_collections \
+		ansible-test integration --docker --diff --python "$(PYTHON_VERSION)" $(TARGET)
