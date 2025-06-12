@@ -16,3 +16,12 @@
       ansible.builtin.assert:
         that:
           - groups['all'] | length == 2
+
+  always:
+    - name: Delete VMs
+      servicenow.itsm.configuration_item:
+        state: absent
+        sys_id: "{{ item.record.sys_id }}"
+      loop: "{{ vms.results }}"
+      loop_control:
+        label: "{{ item.record.name }}"
