@@ -142,6 +142,7 @@
         number: "{{ incident_number }}"
       environment:
         SN_ACCESS_TOKEN: "{{ sn_access_token }}"
+        SN_TOKEN_AUTH_METHOD: bearer
       register: result
     - ansible.builtin.assert:
         that:
@@ -154,7 +155,49 @@
         SN_ACCESS_TOKEN: bad-token
       register: result
       ignore_errors: true
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is failed
           - "'Failed to authenticate with the instance' in result.msg"
+
+    - name: Authenticate with API key using api_key parameter
+      servicenow.itsm.incident_info:
+        instance:
+          host: "{{ sn_host }}"
+          api_key: "{{ sn_api_key }}"
+        number: "{{ incident_number }}"
+      register: api_key_result
+      when: sn_api_key is defined
+
+    - name: Verify API key authentication success
+      ansible.builtin.assert:
+        that:
+          - api_key_result is success
+      when: sn_api_key is defined
+
+    - name: Authenticate with API key using environment variables only
+      servicenow.itsm.incident_info:
+        number: "{{ incident_number }}"
+      environment:
+        SN_API_KEY: "{{ sn_api_key }}"
+      register: api_key_env_result
+      when: sn_api_key is defined
+
+    - name: Verify API key environment variable authentication success
+      ansible.builtin.assert:
+        that:
+          - api_key_env_result is success
+      when: sn_api_key is defined
+
+    - name: Authenticate with OAuth token using access_token parameter
+      servicenow.itsm.incident_info:
+        instance:
+          host: "{{ sn_host }}"
+          access_token: "{{ sn_access_token }}"
+        number: "{{ incident_number }}"
+      register: bearer_result
+
+    - name: Verify bearer authentication success
+      ansible.builtin.assert:
+        that:
+          - bearer_result is success

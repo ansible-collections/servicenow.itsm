@@ -260,12 +260,19 @@ class TestClientAuthHeader:
         assert c.password == "pass"
         assert c.auth_header == {"Authorization": b"Basic dXNlcjpwYXNz"}  # user:pass
 
-    def test_login_access_token(self, mocker):
+    def test_api_key_authentication(self, mocker):
         mocker.patch.object(client, "Request")
-        c = client.Client("https://instance.com", access_token="token")
+        c = client.Client("https://instance.com", api_key="api-key-123")
 
-        assert c.access_token == "token"
-        assert c.auth_header == {"Authorization": "Bearer token"}
+        assert c.api_key == "api-key-123"
+        assert c.auth_header == {"x-sn-apikey": "api-key-123"}
+
+    def test_access_token_authentication(self, mocker):
+        mocker.patch.object(client, "Request")
+        c = client.Client("https://instance.com", access_token="oauth-token-456")
+
+        assert c.access_token == "oauth-token-456"
+        assert c.auth_header == {"Authorization": "Bearer oauth-token-456"}
 
 
 class TestClientRequest:

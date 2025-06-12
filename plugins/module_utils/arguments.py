@@ -122,6 +122,11 @@ SHARED_SPECS = dict(
                 no_log=True,
                 fallback=(env_fallback, ["SN_ACCESS_TOKEN"]),
             ),
+            api_key=dict(
+                type="str",
+                no_log=True,
+                fallback=(env_fallback, ["SN_API_KEY"]),
+            ),
             timeout=dict(
                 type="float",
                 fallback=(env_fallback, ["SN_TIMEOUT"]),
@@ -132,9 +137,11 @@ SHARED_SPECS = dict(
             ),
         ),
         required_together=[("client_id", "client_secret"), ("username", "password")],
-        required_one_of=[("username", "refresh_token", "access_token", "client_id")],
+        required_one_of=[
+            ("username", "refresh_token", "access_token", "api_key", "client_id")
+        ],
         mutually_exclusive=[
-            ("username", "refresh_token", "access_token"),
+            ("username", "refresh_token", "access_token", "api_key"),
             ("client_id", "access_token"),
             ("grant_type", "access_token"),
         ],
