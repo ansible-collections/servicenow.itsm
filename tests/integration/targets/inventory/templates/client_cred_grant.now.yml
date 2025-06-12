@@ -1,0 +1,9 @@
+---
+plugin: servicenow.itsm.now
+instance:
+  host: "{{ sn_host }}"
+  client_id: "{{ sn_client_id }}"
+  client_secret: "{{ sn_client_secret }}"
+  grant_type: client_credentials
+
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}

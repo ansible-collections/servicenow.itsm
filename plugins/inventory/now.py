@@ -59,14 +59,14 @@ options:
           - Username used for authentication.
         env:
           - name: SN_USERNAME
-        required: true
+        required: false
         type: str
       password:
         description:
           - Password used for authentication.
         env:
           - name: SN_PASSWORD
-        required: true
+        required: false
         type: str
       client_id:
         description:
@@ -86,7 +86,7 @@ options:
         description:
           - Grant type used for OAuth authentication.
           - If not set, the value of the C(SN_GRANT_TYPE) environment variable will be used.
-        choices: [ 'password', 'refresh_token' ]
+        choices: [ 'password', 'refresh_token', 'client_credentials' ]
         default: password
         env:
           - name: SN_GRANT_TYPE
