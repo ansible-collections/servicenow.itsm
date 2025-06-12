@@ -45,7 +45,7 @@ options:
             specifications.
           - If not set by any means, the default value (that is, I(password)) will be set
             internally to preserve backwards compatibility.
-        choices: [ 'password', 'refresh_token' ]
+        choices: [ 'password', 'refresh_token', 'client_credentials' ]
         type: str
         version_added: '1.1.0'
       api_path:
@@ -60,6 +60,7 @@ options:
           - If not set, the value of the C(SN_CLIENT_ID) environment
             variable will be used.
           - If provided, it requires I(client_secret).
+          - Required when I(grant_type=client_credentials).
         type: str
       client_secret:
         description:
@@ -67,6 +68,7 @@ options:
           - If not set, the value of the C(SN_CLIENT_SECRET) environment
             variable will be used.
           - If provided, it requires I(client_id).
+          - Required when I(grant_type=client_credentials).
         type: str
       custom_headers:
         description:

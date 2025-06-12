@@ -46,6 +46,23 @@
         that:
           - result is success
 
+    # The OAuth app in our SNOW instance has no available scopes/permissions,
+    # so generating a token with oauth_token.do is the only thing we test for
+    # grant_type client_credentials
+    - name: OAuth authentication success with client_credentials grant type
+      ansible.builtin.uri:
+        url: "{{ sn_host }}/oauth_token.do"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          grant_type: client_credentials
+          client_id: "{{ sn_client_id }}"
+          client_secret: "{{ sn_client_secret }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is success
+
     - name: OAuth authentication failure with bad client secret
       servicenow.itsm.incident_info:
         number: "{{ incident_number }}"
