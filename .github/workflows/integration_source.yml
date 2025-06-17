@@ -103,18 +103,24 @@ jobs:
             sn_password_secret: SN_PASSWORD_WASHINGTON
             sn_client_id_secret: SN_CLIENT_ID_WASHINGTON
             sn_client_secret_secret: SN_CLIENT_SECRET_WASHINGTON
+            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_WASHINGTON
+            sn_client_key_secret: SN_CLIENT_KEY_WASHINGTON
           - servicenow-version: "xanadu"
             sn_host_secret: SN_HOST_XANADU
             sn_username_secret: SN_USERNAME_XANADU
             sn_password_secret: SN_PASSWORD_XANADU
             sn_client_id_secret: SN_CLIENT_ID_XANADU
             sn_client_secret_secret: SN_CLIENT_SECRET_XANADU
+            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_XANADU
+            sn_client_key_secret: SN_CLIENT_KEY_XANADU
           - servicenow-version: "yokohama"
             sn_host_secret: SN_HOST_YOKOHAMA
             sn_username_secret: SN_USERNAME_YOKOHAMA
             sn_password_secret: SN_PASSWORD_YOKOHAMA
             sn_client_id_secret: SN_CLIENT_ID_YOKOHAMA
             sn_client_secret_secret: SN_CLIENT_SECRET_YOKOHAMA
+            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_YOKOHAMA
+            sn_client_key_secret: SN_CLIENT_KEY_YOKOHAMA
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
     continue-on-error: ${{ matrix.ansible-version == 'devel' || matrix.ansible-version == 'milestone' }}
 
@@ -167,13 +173,19 @@ jobs:
           SN_PASSWORD: ${{ secrets[matrix.sn_password_secret] }}
           SN_CLIENT_ID: ${{ secrets[matrix.sn_client_id_secret] }}
           SN_CLIENT_SECRET: ${{ secrets[matrix.sn_client_secret_secret] }}
+          SN_CLIENT_CERTIFICATE: ${{ secrets[matrix.sn_client_certificate_secret] }}
+          SN_CLIENT_KEY: ${{ secrets[matrix.sn_client_key_secret] }}
         run: |
+          echo "$SN_CLIENT_CERTIFICATE" > /tmp/snow_client_cert.pem
+          echo "$SN_CLIENT_KEY" > /tmp/snow_client_key.key
           touch ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_host: '${{ env.SN_HOST }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_username: '${{ env.SN_USERNAME }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_password: '${{ env.SN_PASSWORD }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_client_id: '${{ env.SN_CLIENT_ID }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "sn_client_secret: '${{ env.SN_CLIENT_SECRET }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
+          echo "sn_client_certificate_file: '/tmp/snow_client_cert.pem'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
+          echo "sn_client_key_file: '/tmp/snow_client_key.key'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
           echo "collection_base_dir: '${{ steps.identify.outputs.collection_path }}'" >> ${{ steps.identify.outputs.collection_path }}/tests/integration/integration_config.yml
 
       - name: Run integration tests
