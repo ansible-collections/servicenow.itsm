@@ -3,5 +3,9 @@
 sn_host: <your_host>
 sn_username: <your_user>
 sn_password: <your_password>
+
+# these are only needed for api_authentication and inventory tests
 sn_client_id: <your_client_id>
 sn_client_secret: <your_client_secret>
+sn_client_certificate_file: <your_client_certificate_key_file>
+sn_client_key_file: <your_client_key_file>
