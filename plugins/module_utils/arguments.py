@@ -156,9 +156,9 @@ SHARED_SPECS = dict(
             )
         ],
         mutually_exclusive=[
-            ("username", "refresh_token", "access_token", "client_certificate"),
-            ("client_id", "access_token", "client_certificate"),
-            ("grant_type", "access_token", "client_certificate"),
+            ("username", "refresh_token", "access_token", "client_certificate_file"),
+            ("client_id", "access_token", "client_certificate_file"),
+            ("grant_type", "access_token", "client_certificate_file"),
         ],
         required_if=[
             ("grant_type", "password", ("username", "password")),
