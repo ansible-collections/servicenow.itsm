@@ -82,6 +82,26 @@ options:
         env:
           - name: SN_CLIENT_SECRET
         type: str
+      client_certificate_file:
+        description:
+          - The path to the PEM certificate file that should be used for authentication.
+          - The file must be local and accessible to the Ansible controller.
+          - I(client_certificate_file) and I(client_key_file) must be provided together.
+          - If client certificate parameters are provided, they will be used instead of other
+            authentication methods.
+        env:
+          - name: SN_CLIENT_CERTIFICATE_FILE
+        type: str
+      client_key_file:
+        description:
+          - The path to the certificate key file that should be used for authentication.
+          - The file must be local and accessible to the Ansible controller.
+          - I(client_certificate_file) and I(client_key_file) must be provided together.
+          - If client certificate parameters are provided, they will be used instead of other
+            authentication methods.
+        env:
+          - name: SN_CLIENT_KEY_FILE
+        type: str
       grant_type:
         description:
           - Grant type used for OAuth authentication.
