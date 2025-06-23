@@ -33,6 +33,19 @@
           - result is failed
           - "'Failed to authenticate with the instance' in result.msg"
 
+    - name: Debug 1
+      ansible.builtin.debug:
+        var: sn_client_certificate_file
+    - name: Debug 2
+      ansible.builtin.debug:
+        var: sn_client_key_file
+    - name: Debug 3
+      ansible.builtin.command: cat {{ sn_client_certificate_file }}
+      register: result
+    - name: Debug 4
+      ansible.builtin.debug:
+        var: result
+
     - name: Client cert authentication success
       servicenow.itsm.incident_info:
         number: "{{ incident_number }}"

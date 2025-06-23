@@ -1,0 +1,8 @@
+---
+plugin: servicenow.itsm.now
+instance:
+  host: "{{ sn_host }}"
+  client_certificate_file: "{{ sn_client_certificate_file }}"
+  client_key_file: "{{ sn_client_key_file }}"
+
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}
