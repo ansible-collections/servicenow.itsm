@@ -86,10 +86,20 @@ options:
       access_token:
         description:
           - Access token obtained via OAuth authentication.
+          - Used for OAuth-generated tokens that require Authorization Bearer headers.
           - If not set, the value of the C(SN_ACCESS_TOKEN) environment
             variable will be used.
+          - Mutually exclusive with I(api_key).
         type: str
         version_added: '2.3.0'
+      api_key:
+        description:
+          - ServiceNow API key for direct authentication.
+          - Used for direct API keys that require x-sn-apikey headers.
+          - If not set, the value of the C(SN_API_KEY) environment
+            variable will be used.
+          - Mutually exclusive with I(access_token).
+        type: str
       timeout:
         description:
           - Timeout in seconds for the connection with the ServiceNow instance.

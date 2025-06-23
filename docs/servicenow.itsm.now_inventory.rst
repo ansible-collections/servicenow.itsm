@@ -325,6 +325,40 @@ Parameters
   <tr>
     <td></td>
     <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/access_token"></div>
+      <p style="display: inline;"><strong>access_token</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/access_token" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 1.4.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Access token used for OAuth authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_ACCESS_TOKEN</code> environment variable will be used.</p>
+      <p>Environment variable: <code>SN_ACCESS_TOKEN</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/api_key"></div>
+      <p style="display: inline;"><strong>api_key</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/api_key" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>API key used for bearer token authentication.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_API_KEY</code> environment variable will be used.</p>
+      <p>Environment variable: <code>SN_API_KEY</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
       <div class="ansibleOptionAnchor" id="parameter-instance/client_id"></div>
       <p style="display: inline;"><strong>client_id</strong></p>
       <a class="ansibleOptionLink" href="#parameter-instance/client_id" title="Permalink to this option"></a>
