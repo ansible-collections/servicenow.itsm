@@ -70,22 +70,6 @@ options:
           - If provided, it requires I(client_id).
           - Required when I(grant_type=client_credentials).
         type: str
-      client_certificate_file:
-        description:
-          - The path to the PEM certificate file that should be used for authentication.
-          - The file must be local and accessible to the host running the module.
-          - I(client_certificate_file) and I(client_key_file) must be provided together.
-          - If client certificate parameters are provided, they will be used instead of other
-            authentication methods.
-        type: str
-      client_key_file:
-        description:
-          - The path to the certificate key file that should be used for authentication.
-          - The file must be local and accessible to the host running the module.
-          - I(client_certificate_file) and I(client_key_file) must be provided together.
-          - If client certificate parameters are provided, they will be used instead of other
-            authentication methods.
-        type: str
       custom_headers:
         description:
           - A dictionary containing any extra headers which will be passed with the request.
