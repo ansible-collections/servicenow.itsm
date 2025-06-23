@@ -8,6 +8,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import json
+import ssl
 
 from ansible.module_utils.six import PY2
 from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
@@ -54,6 +55,8 @@ class Client:
         access_token=None,
         client_id=None,
         client_secret=None,
+        client_certificate_file=None,
+        client_key_file=None,
         custom_headers=None,
         api_path="api/now",
         timeout=None,
@@ -73,6 +76,8 @@ class Client:
         self.grant_type = "password" if grant_type is None else grant_type
         self.client_id = client_id
         self.client_secret = client_secret
+        self.client_certificate_file = client_certificate_file
+        self.client_key_file = client_key_file
         self.custom_headers = custom_headers
         self.api_path = tuple(api_path.strip("/").split("/"))
         self.refresh_token = refresh_token
@@ -160,6 +165,8 @@ class Client:
                 data=data,
                 headers=headers,
                 timeout=self.timeout,
+                client_cert=self.client_certificate_file,
+                client_key=self.client_key_file,
                 validate_certs=self.validate_certs,
             )
         except HTTPError as e:
@@ -173,6 +180,13 @@ class Client:
             # Other HTTP error codes do not necessarily mean errors.
             # This is for the caller to decide.
             return Response(e.code, e.read(), e.headers)
+        except ssl.SSLError as e:
+            if self.client_certificate_file:
+                raise ServiceNowError(
+                    "Failed to communicate with instance due to SSL error, likely related to the client certificate or key. "
+                    "Ensure the files are accessible on the Ansible host and in the correct format (see module documentation)."
+                )
+            raise
         except URLError as e:
             raise ServiceNowError(e.reason)
 

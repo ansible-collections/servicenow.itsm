@@ -33,6 +33,30 @@
           - result is failed
           - "'Failed to authenticate with the instance' in result.msg"
 
+    - name: Client cert authentication success
+      servicenow.itsm.incident_info:
+        number: "{{ incident_number }}"
+        instance:
+          client_certificate_file: "{{ sn_client_certificate_file }}"
+          client_key_file: "{{ sn_client_key_file }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is success
+
+    - name: Client cert authentication failure
+      servicenow.itsm.incident_info:
+        number: "{{ incident_number }}"
+        instance:
+          client_certificate_file: "{{ sn_client_certificate_file }}"
+          client_key_file: /dev/null
+      register: result
+      ignore_errors: true
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Failed to communicate with instance due to SSL error,' in result.msg"
+
     - name: OAuth authentication success with password
       servicenow.itsm.incident_info:
         number: "{{ incident_number }}"
