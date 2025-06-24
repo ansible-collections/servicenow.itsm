@@ -37,6 +37,11 @@ options:
       - Attachment's sys_id.
     type: str
     required: true
+  timeout:
+    description:
+      - Timeout in seconds for HTTP requests.
+    type: float
+    default: 60.0
 
 notes:
   - Supports check_mode.
@@ -132,6 +137,10 @@ def main():
         dest=dict(
             type="path",
             required=True,
+        ),
+        timeout=dict(
+            type="float",
+            default=60.0,
         ),
     )
 

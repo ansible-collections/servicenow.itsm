@@ -81,6 +81,11 @@ options:
       - Default is set to C(false).
     type: bool
     default: False
+  timeout:
+    description:
+      - Timeout in seconds for HTTP requests.
+    type: float
+    default: 60.0
 """
 
 EXAMPLES = """
@@ -268,6 +273,10 @@ def main():
             type="bool",
             default=False,  # to enforce False when this parameter is omitted from a playbook
         ),  # Do not execute a select count(*) on table (default: false)
+        timeout=dict(
+            type="float",
+            default=60.0,  # to enforce 60.0 when this parameter is omitted from a playbook
+        ),  # Timeout in seconds for HTTP requests (default: 60.0)
     )
 
     module = AnsibleModule(

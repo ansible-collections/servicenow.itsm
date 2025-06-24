@@ -137,6 +137,11 @@ options:
         change task documentation at
         U(https://docs.servicenow.com/bundle/tokyo-it-service-management/page/product/change-management/task/create-a-change-task.html).
     type: dict
+  timeout:
+    description:
+      - Timeout in seconds for HTTP requests.
+    type: float
+    default: 60.0
 """
 
 EXAMPLES = """
@@ -403,6 +408,10 @@ def main():
         ),
         other=dict(
             type="dict",
+        ),
+        timeout=dict(
+            type="float",
+            default=60.0,
         ),
     )
 

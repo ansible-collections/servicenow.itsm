@@ -130,6 +130,7 @@ SHARED_SPECS = dict(
             timeout=dict(
                 type="float",
                 fallback=(env_fallback, ["SN_TIMEOUT"]),
+                default=60.0,
             ),
             validate_certs=dict(
                 type="bool",

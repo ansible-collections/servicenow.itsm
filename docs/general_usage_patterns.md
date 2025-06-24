@@ -212,3 +212,7 @@ an exercise for the reader.
 
 Do note that we can use the same credential type for running playbooks and
 fetching inventory.
+
+## Default Timeout for HTTP Requests
+
+By default, all HTTP requests made by the collection have a 60 second timeout. This can be overridden by setting the `timeout` parameter in your playbook or by setting the `SN_TIMEOUT` environment variable.

@@ -58,6 +58,11 @@ options:
       - Data is returned as string because ServiceNow API expect this
     required: true
     type: dict
+  timeout:
+    description:
+      - Timeout in seconds for HTTP requests.
+    type: float
+    default: 60.0
 """
 
 EXAMPLES = r"""
@@ -228,6 +233,10 @@ def main():
         map=dict(
             type="dict",
             required=True,
+        ),
+        timeout=dict(
+            type="float",
+            default=60.0,
         ),
     )
 

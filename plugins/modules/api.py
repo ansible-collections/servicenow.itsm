@@ -80,6 +80,11 @@ options:
         you have specified relative path to the file.
       - Template file needs to be present on the Ansible Controller's system. Otherwise, an error is raised.
     type: str
+  timeout:
+    description:
+      - Timeout in seconds for HTTP requests.
+    type: float
+    default: 60.0
 """
 
 
@@ -363,6 +368,10 @@ def main():
         data=dict(type="dict", default=dict()),
         template=dict(
             type="str",
+        ),
+        timeout=dict(
+            type="float",
+            default=60.0
         ),
     )
 

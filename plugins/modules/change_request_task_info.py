@@ -31,6 +31,11 @@ extends_documentation_fragment:
   - servicenow.itsm.sysparm_display_value
 seealso:
   - module: servicenow.itsm.change_request_task
+  timeout:
+    description:
+      - Timeout in seconds for HTTP requests.
+    type: float
+    default: 60.0
 """
 
 EXAMPLES = r"""

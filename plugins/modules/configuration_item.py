@@ -119,6 +119,11 @@ options:
       - For the attributes of configuration items specific to I(sys_class_name),
         please consult the relevant ServiceNow documentation.
     type: dict
+  timeout:
+    description:
+      - Timeout in seconds for HTTP requests.
+    type: float
+    default: 60.0
 """
 
 EXAMPLES = r"""
@@ -466,6 +471,10 @@ def main():
         ),
         other=dict(
             type="dict",
+        ),
+        timeout=dict(
+            type="float",
+            default=60.0,
         ),
     )
 

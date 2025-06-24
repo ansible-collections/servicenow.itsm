@@ -1016,7 +1016,6 @@ Examples
       - name
       - classification
       - cpu_type
-      - cost
     compose:
         cost: cost ~ " " ~ cost_cc
         ansible_host: fqdn
