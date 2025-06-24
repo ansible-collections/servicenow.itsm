@@ -15,7 +15,11 @@ from ansible.inventory.data import InventoryData
 from ansible.module_utils.common.text.converters import to_text
 from ansible.template import Templar
 from ansible_collections.servicenow.itsm.plugins.inventory import now
-from ansible_collections.servicenow.itsm.plugins.module_utils.relations import REL_FIELDS, REL_TABLE, REL_QUERY
+from ansible_collections.servicenow.itsm.plugins.module_utils.relations import (
+    REL_FIELDS,
+    REL_TABLE,
+    REL_QUERY,
+)
 
 
 try:
@@ -995,36 +999,51 @@ class TestInventoryModuleEnhancedQueryFeatures:
             if option_name == "enhanced":
                 return options.get("enhanced", True)
             return options.get(option_name, None)
+
         return get_option
 
     def setup_mocks(self, mocker):
-        self.mock_fetch_records = mocker.patch('ansible_collections.servicenow.itsm.plugins.inventory.now.fetch_records')
+        self.mock_fetch_records = mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.inventory.now.fetch_records"
+        )
         self.mock_fetch_records.return_value = []
 
-        self.mock_enhance_records_with_rel_groups = mocker.patch('ansible_collections.servicenow.itsm.plugins.inventory.now.enhance_records_with_rel_groups')
+        self.mock_enhance_records_with_rel_groups = mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.inventory.now.enhance_records_with_rel_groups"
+        )
 
         self.mock_table_client = mocker.Mock()
         self.mock_records = []
 
-    def assert_fetch_records_called_with(self, query, expected_fields, is_encoded_query):
+    def assert_fetch_records_called_with(
+        self, query, expected_fields, is_encoded_query
+    ):
         self.mock_fetch_records.assert_called_once_with(
             self.mock_table_client,
             REL_TABLE,
             query=query,
             fields=expected_fields,
-            is_encoded_query=is_encoded_query
+            is_encoded_query=is_encoded_query,
         )
 
-    def test_populate_enhanced_records_with_enhanced_query(self, inventory_plugin, mocker):
+    def test_populate_enhanced_records_with_enhanced_query(
+        self, inventory_plugin, mocker
+    ):
         """Test __populate_enhanced_records_from_remote with enhanced_query option"""
-        mocker.patch.object(inventory_plugin, "get_option", side_effect=self.setup_get_option_side_effect(
-            enhanced_query=[{"type.name": "Contains:Contained By"}],
-            enhanced_additional_columns=["extra_col1", "extra_col2"],
-        ))
+        mocker.patch.object(
+            inventory_plugin,
+            "get_option",
+            side_effect=self.setup_get_option_side_effect(
+                enhanced_query=[{"type.name": "Contains:Contained By"}],
+                enhanced_additional_columns=["extra_col1", "extra_col2"],
+            ),
+        )
         self.setup_mocks(mocker)
 
         # Test the method
-        inventory_plugin._InventoryModule__populate_enhanced_records_from_remote(self.mock_table_client, self.mock_records)
+        inventory_plugin._InventoryModule__populate_enhanced_records_from_remote(
+            self.mock_table_client, self.mock_records
+        )
         expected_fields = REL_FIELDS.union({"extra_col1", "extra_col2"})
 
         self.assert_fetch_records_called_with(
@@ -1034,19 +1053,29 @@ class TestInventoryModuleEnhancedQueryFeatures:
         )
 
         # Verify enhance_records_with_rel_groups was called
-        self.mock_enhance_records_with_rel_groups.assert_called_once_with(self.mock_records, [])
+        self.mock_enhance_records_with_rel_groups.assert_called_once_with(
+            self.mock_records, []
+        )
 
-    def test_populate_enhanced_records_with_enhanced_sysparm_query(self, inventory_plugin, mocker):
+    def test_populate_enhanced_records_with_enhanced_sysparm_query(
+        self, inventory_plugin, mocker
+    ):
         """Test __populate_enhanced_records_from_remote with enhanced_sysparm_query option"""
 
-        mocker.patch.object(inventory_plugin, "get_option", side_effect=self.setup_get_option_side_effect(
-            enhanced_sysparm_query="type.nameSTARTSWITHContains",
-            enhanced_additional_columns=[],
-        ))
+        mocker.patch.object(
+            inventory_plugin,
+            "get_option",
+            side_effect=self.setup_get_option_side_effect(
+                enhanced_sysparm_query="type.nameSTARTSWITHContains",
+                enhanced_additional_columns=[],
+            ),
+        )
         self.setup_mocks(mocker)
 
         # Call the method
-        inventory_plugin._InventoryModule__populate_enhanced_records_from_remote(self.mock_table_client, self.mock_records)
+        inventory_plugin._InventoryModule__populate_enhanced_records_from_remote(
+            self.mock_table_client, self.mock_records
+        )
 
         # Verify fetch_records was called with correct parameters
         self.assert_fetch_records_called_with(
@@ -1056,17 +1085,27 @@ class TestInventoryModuleEnhancedQueryFeatures:
         )
 
         # Verify enhance_records_with_rel_groups was called
-        self.mock_enhance_records_with_rel_groups.assert_called_once_with(self.mock_records, [])
+        self.mock_enhance_records_with_rel_groups.assert_called_once_with(
+            self.mock_records, []
+        )
 
-    def test_populate_enhanced_records_with_default_query(self, inventory_plugin, mocker):
+    def test_populate_enhanced_records_with_default_query(
+        self, inventory_plugin, mocker
+    ):
         """Test __populate_enhanced_records_from_remote with no custom query (default REL_QUERY)"""
-        mocker.patch.object(inventory_plugin, "get_option", side_effect=self.setup_get_option_side_effect(
-            enhanced_additional_columns=["custom_col"],
-        ))
+        mocker.patch.object(
+            inventory_plugin,
+            "get_option",
+            side_effect=self.setup_get_option_side_effect(
+                enhanced_additional_columns=["custom_col"],
+            ),
+        )
         self.setup_mocks(mocker)
 
         # Call the method
-        inventory_plugin._InventoryModule__populate_enhanced_records_from_remote(self.mock_table_client, self.mock_records)
+        inventory_plugin._InventoryModule__populate_enhanced_records_from_remote(
+            self.mock_table_client, self.mock_records
+        )
 
         # Verify fetch_records was called with correct parameters
         expected_fields = REL_FIELDS.union({"custom_col"})
@@ -1077,24 +1116,39 @@ class TestInventoryModuleEnhancedQueryFeatures:
             is_encoded_query=False,
         )
 
-    def test_populate_enhanced_records_mutual_exclusivity_error(self, inventory_plugin, mocker):
+    def test_populate_enhanced_records_mutual_exclusivity_error(
+        self, inventory_plugin, mocker
+    ):
         """Test that enhanced_query and enhanced_sysparm_query are mutually exclusive"""
-        mocker.patch.object(inventory_plugin, "get_option", side_effect=self.setup_get_option_side_effect(
-            enhanced_query=[{"type.name": "STARTSWITH Contains"}],
-            enhanced_sysparm_query="type.nameSTARTSWITHContains",
-            enhanced_additional_columns=[],
-        ))
+        mocker.patch.object(
+            inventory_plugin,
+            "get_option",
+            side_effect=self.setup_get_option_side_effect(
+                enhanced_query=[{"type.name": "STARTSWITH Contains"}],
+                enhanced_sysparm_query="type.nameSTARTSWITHContains",
+                enhanced_additional_columns=[],
+            ),
+        )
         self.setup_mocks(mocker)
         # Verify that AnsibleParserError is raised
-        with pytest.raises(AnsibleParserError, match="Invalid configuration: 'enhanced_query' and 'enhanced_sysparm_query' are mutually exclusive"):
-            inventory_plugin._InventoryModule__populate_enhanced_records_from_remote(self.mock_table_client, self.mock_records)
+        with pytest.raises(
+            AnsibleParserError,
+            match="Invalid configuration: 'enhanced_query' and 'enhanced_sysparm_query' are mutually exclusive",
+        ):
+            inventory_plugin._InventoryModule__populate_enhanced_records_from_remote(
+                self.mock_table_client, self.mock_records
+            )
 
     def test_get_query_columns_with_enhanced(self, inventory_plugin, mocker):
         """Test __get_query_columns includes REL_FIELDS when enhanced is enabled"""
-        mocker.patch.object(inventory_plugin, "get_option", side_effect=self.setup_get_option_side_effect(
-            query_limit_columns=True,
-            query_additional_columns=["extra_col"],
-        ))
+        mocker.patch.object(
+            inventory_plugin,
+            "get_option",
+            side_effect=self.setup_get_option_side_effect(
+                query_limit_columns=True,
+                query_additional_columns=["extra_col"],
+            ),
+        )
 
         columns = ["name", "ip_address"]
         result = inventory_plugin._InventoryModule__get_query_columns(columns)
@@ -1105,9 +1159,13 @@ class TestInventoryModuleEnhancedQueryFeatures:
 
     def test_get_query_columns_no_limit(self, inventory_plugin, mocker):
         """Test __get_query_columns returns None when query_limit_columns is False"""
-        mocker.patch.object(inventory_plugin, "get_option", side_effect=self.setup_get_option_side_effect(
-            query_limit_columns=False,
-        ))
+        mocker.patch.object(
+            inventory_plugin,
+            "get_option",
+            side_effect=self.setup_get_option_side_effect(
+                query_limit_columns=False,
+            ),
+        )
 
         columns = ["name", "ip_address"]
         result = inventory_plugin._InventoryModule__get_query_columns(columns)

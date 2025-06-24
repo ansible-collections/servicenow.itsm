@@ -939,9 +939,12 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             )
 
         rel_records = fetch_records(
-            table_client, REL_TABLE,
+            table_client,
+            REL_TABLE,
             query=(enhanced_query or enhanced_sysparm_query or REL_QUERY),
-            fields=REL_FIELDS.union(set(self.get_option('enhanced_additional_columns'))),
+            fields=REL_FIELDS.union(
+                set(self.get_option("enhanced_additional_columns"))
+            ),
             is_encoded_query=bool(enhanced_sysparm_query),
         )
         enhance_records_with_rel_groups(records, rel_records)
