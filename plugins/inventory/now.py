@@ -152,6 +152,7 @@ options:
       - By default, only the columns sys_id, type.name, parent.sys_id, parent.name,
         parent.sys_class_name, child.sys_id, child.name, and child.sys_class_name are collected.
     type: list
+    elements: str
     default: []
     version_added: 2.10.0
   enhanced_query:
