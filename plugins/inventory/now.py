@@ -138,9 +138,41 @@ options:
   enhanced:
     description:
       - Enable enhanced inventory which provides relationship information from CMDB.
+      - This produces groups that reflect the relationships defined in CMDB. For example,
+        myhost_Depends_On would contain all hosts with a dependent relationship on myhost.
     type: bool
     default: false
     version_added: 1.3.0
+  enhanced_additional_columns:
+    description:
+      - Define a list of additional CMDB relationship columns to use when querying the relationship
+        table and creating groups using I(enhanced).
+      - If your relationship table has additional columns that you would like to use to in your
+        I(enhanced_query) or I(enhanced_sysparm_query) option, you should specify the column names here.
+      - By default, only the columns sys_id, type.name, parent.sys_id, parent.name,
+        parent.sys_class_name, child.sys_id, child.name, and child.sys_class_name are collected.
+    type: list
+    elements: str
+    default: []
+    version_added: 2.10.0
+  enhanced_query:
+    description:
+      - Define a query to limit the relationships queried and eventually turned into groups when using
+        I(enhanced).
+      - The default is to include all relationship types.
+      - This option is mutually exclusive with I(enhanced_sysparm_query).
+      - This query should follow the same format at the I(query) option.
+    type: str
+    version_added: 2.10.0
+  enhanced_sysparm_query:
+    description:
+      - Define a query to limit the relationships queried and eventually turned into groups when using
+        I(enhanced).
+      - The default is to include all relationship types.
+      - This option is mutually exclusive with I(enhanced_query).
+      - This query should follow the same format at the I(sysparm_query) option.
+    type: str
+    version_added: 2.10.0
   aggregation:
     description:
       - Enable multiple variable values aggregations.
@@ -893,12 +925,30 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             )
 
         if enhanced:
-            rel_records = fetch_records(
-                table_client, REL_TABLE, REL_QUERY, fields=REL_FIELDS
-            )
-            enhance_records_with_rel_groups(records, rel_records)
+            self.__populate_enhanced_records_from_remote(table_client, records)
 
         self._cache[self.cache_key] = {self._cache_sub_key: records}
+
+    def __populate_enhanced_records_from_remote(self, table_client, records):
+        enhanced_query = self.get_option("enhanced_query")
+        enhanced_sysparm_query = self.get_option("enhanced_sysparm_query")
+
+        if enhanced_query and enhanced_sysparm_query:
+            raise AnsibleParserError(
+                "Invalid configuration: 'enhanced_query' and 'enhanced_sysparm_query' are mutually "
+                "exclusive."
+            )
+
+        rel_records = fetch_records(
+            table_client,
+            REL_TABLE,
+            query=(enhanced_query or enhanced_sysparm_query or REL_QUERY),
+            fields=REL_FIELDS.union(
+                set(self.get_option("enhanced_additional_columns"))
+            ),
+            is_encoded_query=bool(enhanced_sysparm_query),
+        )
+        enhance_records_with_rel_groups(records, rel_records)
 
     def __create_table_client(self):
         try:
@@ -923,8 +973,13 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         # has examples that depend on this, and certainly deployed code does this and to do otherwise
         # would break existing inventories. query_columns == None implies retrieving every column from
         # the desired table, which can take a very long time to parse for large tables with many columns.
+        # When using enhanced, the sys_id property is required to determine in what relationship groups things
+        # should go.
         if query_limit_columns:
-            return list(set(query_additional_columns + columns))
+            _cols = set(query_additional_columns + columns)
+            if self.get_option("enhanced"):
+                _cols = _cols.union(REL_FIELDS)
+            return list(_cols)
         else:
             return None
 
