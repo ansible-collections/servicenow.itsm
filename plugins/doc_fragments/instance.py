@@ -103,9 +103,9 @@ options:
       timeout:
         description:
           - Timeout in seconds for the connection with the ServiceNow instance.
-          - If not set, the value of the C(SN_TIMEOUT) environment
-            variable will be used.
+          - If not set, the value of the C(SN_TIMEOUT) environment variable will be used.
         type: float
+        default: 60
       validate_certs:
         description:
           - If host's certificate is validated or not.
