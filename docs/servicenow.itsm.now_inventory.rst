@@ -3,7 +3,7 @@
 servicenow.itsm.now inventory -- Inventory source for ServiceNow table records.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.9.3).
+This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.10.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -25,7 +25,8 @@ Synopsis
 - Builds inventory from ServiceNow table records.
 - Requires a configuration file ending in :literal:`now.yml` or :literal:`now.yaml`.
 - The plugin sets host variables denoted by :emphasis:`columns`.
-- For variables with dots (for example 'location.country') use lookup('ansible.builtin.vars', 'variable.name') notation. See the example section for more details. This feature is added in version 2.1.0.
+- Starting with version 2.1.0, you can access variables with dots in the name (for example 'location.country') using a lookup :literal:`lookup\\('ansible.builtin.vars', 'location.country'`\ \\\\).
+- Starting with version 2.10.0, you can also access variables with dots in the name by replacing the dots with underscores V\\\\(location\_country\\\\). See the example section for more details.
 
 
 
@@ -284,12 +285,68 @@ Parameters
     </td>
     <td valign="top">
       <p>Enable enhanced inventory which provides relationship information from CMDB.</p>
+      <p>This produces groups that reflect the relationships defined in CMDB. For example, myhost_Depends_On would contain all hosts with a dependent relationship on myhost.</p>
       <p style="margin-top: 8px;"><b">Choices:</b></p>
       <ul>
         <li><p><code style="color: blue;"><b>false</b></code> <span style="color: blue;">← (default)</span></p></li>
         <li><p><code>true</code></p></li>
       </ul>
 
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-enhanced_additional_columns"></div>
+      <p style="display: inline;"><strong>enhanced_additional_columns</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-enhanced_additional_columns" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">list</span>
+        / <span style="color: purple;">elements=string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.10.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Define a list of additional CMDB relationship columns to use when querying the relationship table and creating groups using <em>enhanced</em>.</p>
+      <p>If your relationship table has additional columns that you would like to use to in your <em>enhanced_query</em> or <em>enhanced_sysparm_query</em> option, you should specify the column names here.</p>
+      <p>By default, only the columns sys_id, type.name, parent.sys_id, parent.name, parent.sys_class_name, child.sys_id, child.name, and child.sys_class_name are collected.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">[]</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-enhanced_query"></div>
+      <p style="display: inline;"><strong>enhanced_query</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-enhanced_query" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.10.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Define a query to limit the relationships queried and eventually turned into groups when using <em>enhanced</em>.</p>
+      <p>The default is to include all relationship types.</p>
+      <p>This option is mutually exclusive with <em>enhanced_sysparm_query</em>.</p>
+      <p>This query should follow the same format at the <em>query</em> option.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-enhanced_sysparm_query"></div>
+      <p style="display: inline;"><strong>enhanced_sysparm_query</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-enhanced_sysparm_query" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.10.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Define a query to limit the relationships queried and eventually turned into groups when using <em>enhanced</em>.</p>
+      <p>The default is to include all relationship types.</p>
+      <p>This option is mutually exclusive with <em>enhanced_query</em>.</p>
+      <p>This query should follow the same format at the <em>sysparm_query</em> option.</p>
     </td>
   </tr>
   <tr>
@@ -320,40 +377,6 @@ Parameters
     <td valign="top">
       <p>ServiceNow instance information.</p>
       <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">{}</code></p>
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-instance/access_token"></div>
-      <p style="display: inline;"><strong>access_token</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-instance/access_token" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 1.4.0</i></p>
-
-    </td>
-    <td valign="top">
-      <p>Access token used for OAuth authentication.</p>
-      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_ACCESS_TOKEN</code> environment variable will be used.</p>
-      <p>Environment variable: <code>SN_ACCESS_TOKEN</code></p>
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-instance/api_key"></div>
-      <p style="display: inline;"><strong>api_key</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-instance/api_key" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>API key used for bearer token authentication.</p>
-      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_API_KEY</code> environment variable will be used.</p>
-      <p>Environment variable: <code>SN_API_KEY</code></p>
     </td>
   </tr>
   <tr>
@@ -421,6 +444,7 @@ Parameters
       <ul>
         <li><p><code style="color: blue;"><b>&#34;password&#34;</b></code> <span style="color: blue;">← (default)</span></p></li>
         <li><p><code>&#34;refresh_token&#34;</code></p></li>
+        <li><p><code>&#34;client_credentials&#34;</code></p></li>
       </ul>
 
       <p style="margin-top: 8px;"><b>Configuration:</b></p>
@@ -463,7 +487,6 @@ Parameters
       <a class="ansibleOptionLink" href="#parameter-instance/password" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
-        / <span style="color: red;">required</span>
       </p>
 
     </td>
@@ -533,7 +556,6 @@ Parameters
       <a class="ansibleOptionLink" href="#parameter-instance/username" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
-        / <span style="color: red;">required</span>
       </p>
 
     </td>
@@ -1040,9 +1062,14 @@ Examples
       - ip_address
       - location
       - location.country
+      - location.time_zone
     compose:
       street: location
-      country: lookup('ansible.builtin.vars', 'location.country')
+      country: location_country
+      timezone: location_time_zone
+      # alternatively you could use lookups
+      # country: lookup('ansible.builtin.vars', 'location.country')
+      # timezone: lookup('ansible.builtin.vars', 'location.time_zone')
 
     # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
     # @all:
@@ -1052,8 +1079,10 @@ Examples
     # |  |  |--{ip_address = }
     # |  |  |--{location = Via Nomentana 56, Rome}
     # |  |  |--{location.country = Italy}
+    # |  |  |--{location.time_zone = Europe/Rome}
     # |  |  |--{name = OWA-SD-01}
     # |  |  |--{street = Via Nomentana 56, Rome}
+    # |  |  |--{timezone = Europe/Rome}
 
     # Limit query to only return columns that we expressly include.
     # By default we retrieve all columns from a table, which can be

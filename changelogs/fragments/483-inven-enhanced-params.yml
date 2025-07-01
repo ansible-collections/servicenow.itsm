@@ -1,3 +1,0 @@
----
-minor_changes:
-  - plugins/inventory/now - Added additional parameters to allow the user to configure the enhanced query and additional columns
