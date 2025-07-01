@@ -52,6 +52,7 @@ class Client:
         grant_type=None,
         refresh_token=None,
         access_token=None,
+        api_key=None,
         client_id=None,
         client_secret=None,
         custom_headers=None,
@@ -77,6 +78,7 @@ class Client:
         self.api_path = tuple(api_path.strip("/").split("/"))
         self.refresh_token = refresh_token
         self.access_token = access_token
+        self.api_key = api_key
         self.timeout = timeout
         self.validate_certs = validate_certs
         self.json_decoder_hook = json_decoder_hook
@@ -93,19 +95,29 @@ class Client:
     def _login(self):
         if self.client_id and self.client_secret:
             return self._login_oauth()
+        elif self.api_key:
+            return self._login_token(self.api_key, is_api_key=True)
         elif self.access_token:
-            return self._login_access_token(self.access_token)
+            return self._login_token(self.access_token, is_api_key=False)
         return self._login_username_password()
 
     def _login_username_password(self):
         return dict(Authorization=basic_auth_header(self.username, self.password))
 
-    def _login_access_token(self, access_token):
-        return dict(Authorization="Bearer {0}".format(access_token))
+    def _login_token(self, token, is_api_key=False):
+        if is_api_key:
+            return {"x-sn-apikey": token}
+        else:
+            return {"Authorization": "Bearer {0}".format(token)}
 
-    def _login_oauth(self):
+    def _login_oauth_generate_auth_data(self):
+        """
+        Creates a dictionary of auth data to be used in OAUTH requests, depending on the
+        grant type. See SNOW docs for more details:
+        https://support.servicenow.com/kb?id=kb_article_view&sysparm_article=KB1647747
+        """
         if self.grant_type == "refresh_token":
-            auth_data = urlencode(
+            return urlencode(
                 dict(
                     grant_type=self.grant_type,
                     refresh_token=self.refresh_token,
@@ -113,9 +125,17 @@ class Client:
                     client_secret=self.client_secret,
                 )
             )
-        # Only other possible value for grant_type is "password"
+        elif self.grant_type == "client_credentials":
+            return urlencode(
+                dict(
+                    grant_type=self.grant_type,
+                    client_id=self.client_id,
+                    client_secret=self.client_secret,
+                )
+            )
+        # Default value for grant_type is "password"
         else:
-            auth_data = urlencode(
+            return urlencode(
                 dict(
                     grant_type=self.grant_type,
                     username=self.username,
@@ -124,6 +144,9 @@ class Client:
                     client_secret=self.client_secret,
                 )
             )
+
+    def _login_oauth(self):
+        auth_data = self._login_oauth_generate_auth_data()
         resp = self._request(
             "POST",
             "{0}/oauth_token.do".format(self.host),
@@ -134,7 +157,7 @@ class Client:
             raise UnexpectedAPIResponse(resp.status, resp.data)
 
         access_token = resp.json["access_token"]
-        return self._login_access_token(access_token)
+        return self._login_token(access_token, is_api_key=False)
 
     def _request(self, method, path, data=None, headers=None):
         try:

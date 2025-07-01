@@ -18,6 +18,8 @@
           sn_host: '{{ sn_host }}'
           sn_username: '{{ sn_username }}'
           sn_password: '{{ sn_password }}'
+          sn_client_id: '{{ sn_client_id }}'
+          sn_client_secret: '{{ sn_client_secret }}'
           unique_test_id: '{{ unique_test_id }}'
 
     - name: Template session inventories

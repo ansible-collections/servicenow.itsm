@@ -1,0 +1,57 @@
+---
+- name: Test enhanced
+  block:
+    - name: Create imaginary VMs
+      servicenow.itsm.configuration_item:
+        name: "{{ resource_prefix }}-{{ item }}"
+        sys_class_name: cmdb_ci_ec2_instance
+        ip_address: 10.1.0.{{ item }}
+        environment: "{{ (item % 2 == 0) | ansible.builtin.ternary('development', 'production') }}"
+        other:
+          fqdn: f{{ item }}.example.com
+          guest_os_fullname: "{{ (item < 106) | ansible.builtin.ternary('OS0', 'OS1') }}"
+          vm_inst_id: i{{ item }}
+      loop: "{{ range(101, 109) | list }}"
+      register: vms
+
+    - name: Add cools relationship
+      servicenow.itsm.configuration_item_relations:
+        parent_sys_id: "{{ vms.results[0].record.sys_id }}"
+        parent_classname: cmdb_ci_ec2_instance
+        state: present
+        name: Cools::Cooled By
+        targets:
+          - name: "{{ vms.results[item].record.name }}"
+            sys_id: "{{ vms.results[item].record.sys_id }}"
+      loop: "{{ range(1, 3) | list }}"
+
+    - name: Add contains relationship
+      servicenow.itsm.configuration_item_relations:
+        parent_sys_id: "{{ vms.results[4].record.sys_id }}"
+        parent_classname: cmdb_ci_ec2_instance
+        state: present
+        name: Contains::Contained By
+        targets:
+          - name: "{{ vms.results[item].record.name }}"
+            sys_id: "{{ vms.results[item].record.sys_id }}"
+      loop: "{{ range(5, 7) | list }}"
+      register: contains_relations
+
+    - name: Reload inventory
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
+
+    - name: Make sure only the expected relationship groups were created
+      ansible.builtin.assert:
+        that:
+          - groups.all | length == 8
+          - groups.ungrouped | length == 5
+          - groups | length == 5
+
+  always:
+    - name: Delete VMs
+      servicenow.itsm.configuration_item:
+        state: absent
+        sys_id: "{{ item.record.sys_id }}"
+      loop: "{{ vms.results }}"
+      loop_control:
+        label: "{{ item.record.name }}"
