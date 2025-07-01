@@ -1,2 +1,0 @@
----
-release_summary: Enhancements to inventory process to be able to limit relationship scope for enhanced queries and add some authentication options including apikey and oauth mechanisms.

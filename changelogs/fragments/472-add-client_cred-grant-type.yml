@@ -1,3 +1,0 @@
----
-minor_changes:
-  - authentication - Adds support for the OAUTH client_credentials grant type

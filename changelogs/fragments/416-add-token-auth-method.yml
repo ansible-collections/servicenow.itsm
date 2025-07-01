@@ -1,4 +1,0 @@
----
-minor_changes:
-  - authentication - Added configurable token_auth_method parameter to support both x-sn-apikey and Authorization Bearer headers for access tokens
-    (https://github.com/ansible-collections/servicenow.itsm/issues/416)

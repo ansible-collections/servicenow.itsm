@@ -3,7 +3,7 @@
 servicenow.itsm.configuration_item_batch module -- Manage ServiceNow configuration items in batch mode
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.9.3).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.10.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -103,7 +103,26 @@ Parameters
     </td>
     <td valign="top">
       <p>Access token obtained via OAuth authentication.</p>
+      <p>Used for OAuth-generated tokens that require Authorization Bearer headers.</p>
       <p>If not set, the value of the <code class='docutils literal notranslate'>SN_ACCESS_TOKEN</code> environment variable will be used.</p>
+      <p>Mutually exclusive with <em>api_key</em>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/api_key"></div>
+      <p style="display: inline;"><strong>api_key</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/api_key" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>ServiceNow API key for direct authentication.</p>
+      <p>Used for direct API keys that require x-sn-apikey headers.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_API_KEY</code> environment variable will be used.</p>
+      <p>Mutually exclusive with <em>access_token</em>.</p>
     </td>
   </tr>
   <tr>
@@ -136,6 +155,7 @@ Parameters
       <p>ID of the client application used for OAuth authentication.</p>
       <p>If not set, the value of the <code class='docutils literal notranslate'>SN_CLIENT_ID</code> environment variable will be used.</p>
       <p>If provided, it requires <em>client_secret</em>.</p>
+      <p>Required when <em>grant_type=client_credentials</em>.</p>
     </td>
   </tr>
   <tr>
@@ -152,6 +172,7 @@ Parameters
       <p>Secret associated with <em>client_id</em>. Used for OAuth authentication.</p>
       <p>If not set, the value of the <code class='docutils literal notranslate'>SN_CLIENT_SECRET</code> environment variable will be used.</p>
       <p>If provided, it requires <em>client_id</em>.</p>
+      <p>Required when <em>grant_type=client_credentials</em>.</p>
     </td>
   </tr>
   <tr>
@@ -189,6 +210,7 @@ Parameters
       <ul>
         <li><p><code>&#34;password&#34;</code></p></li>
         <li><p><code>&#34;refresh_token&#34;</code></p></li>
+        <li><p><code>&#34;client_credentials&#34;</code></p></li>
       </ul>
 
     </td>

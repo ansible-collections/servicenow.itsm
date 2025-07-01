@@ -263,6 +263,38 @@ releases:
     - problem_mapping_bugix.yml
     - release_2_1_0.yml
     release_date: '2023-01-31'
+  2.10.0:
+    changes:
+      minor_changes:
+      - authentication - Added configurable token_auth_method parameter to support
+        both x-sn-apikey and Authorization Bearer headers for access tokens (https://github.com/ansible-collections/servicenow.itsm/issues/416)
+      - authentication - Adds support for the OAUTH client_credentials grant type
+      - plugins/inventory/now - Add support for ansible-core 2.19 in the inventory
+        plugin
+      - plugins/inventory/now - Added additional parameters to allow the user to configure
+        the enhanced query and additional columns
+      - plugins/inventory/now - Added support for the client_credentials authentication
+        grant type
+      - plugins/inventory/now - allow accessing dot variables by underscore alias
+        in compose (https://github.com/ansible-collections/servicenow.itsm/issues/428)
+      release_summary: Enhancements to inventory process to be able to limit relationship
+        scope for enhanced queries and add some authentication options including apikey
+        and oauth mechanisms.
+    fragments:
+    - 20250525-fix-integration-tests.yml
+    - 210_release_summary.yml
+    - 416-add-token-auth-method.yml
+    - 429-add-underscore-var.yml
+    - 459-add-2.19-support-for-inventory.yml
+    - 460-add-test-vars-setup-role.yml
+    - 465-use-unique-id-in-all-tests.yml
+    - 466-add-oauth-secrets-to-ci.yml
+    - 468-fix-config-item-batch-tests.yml.yml
+    - 469-run-all-integration-tests.yml
+    - 472-add-client_cred-grant-type.yml
+    - 474-add-client-cred-support-inven.yml
+    - 483-inven-enhanced-params.yml
+    release_date: '2025-07-01'
   2.2.0:
     changes:
       minor_changes:
