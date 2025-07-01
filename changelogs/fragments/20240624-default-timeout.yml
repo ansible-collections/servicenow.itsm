@@ -1,0 +1,3 @@
+minor_changes:
+  - The ServiceNow connection now defaults to a 10 second timeout if the `timeout` parameter is not set and the `SN_TIMEOUT` environment variable is not provided.
+  - This affects all modules and plugins that use the shared instance connection options.
