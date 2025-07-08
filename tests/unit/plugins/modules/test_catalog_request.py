@@ -12,7 +12,9 @@ import sys
 import pytest
 from ansible_collections.servicenow.itsm.plugins.module_utils import errors
 from ansible_collections.servicenow.itsm.plugins.modules import catalog_request
-
+from ansible_collections.servicenow.itsm.tests.unit.plugins.common.utils import (
+    set_module_args,
+)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
@@ -239,14 +241,69 @@ class TestErrorHandling:
 
 class TestMain:
     def test_missing_required_fields_for_absent_state(self, run_main):
-        success, result = run_main(
-            catalog_request,
-            dict(
-                instance=DEFAULT_INSTANCE,
-                state="absent",
-                # Missing required sys_id or number
-            ),
+        params = dict(
+            instance=DEFAULT_INSTANCE,
+            state="absent",
+            # Missing required sys_id or number
         )
+        with set_module_args(args=params):
+            success, result = run_main(catalog_request, params)
 
         assert success is False
         assert "missing" in result["msg"].lower()
+
+    def test_minimal_set_of_params(self, run_main):
+        params = dict(
+            instance=DEFAULT_INSTANCE,
+            state="present",
+            short_description="Test request",
+        )
+        with set_module_args(args=params):
+            success, result = run_main(catalog_request, params)
+
+        assert success is True
+
+    def test_all_params_present_state(self, run_main):
+        params = dict(
+            instance=DEFAULT_INSTANCE,
+            state="present",
+            sys_id="1234",
+            number="REQ0000001",
+            short_description="Test request",
+            priority="2",
+            urgency="3",
+            impact="2",
+            request_state="submitted",
+            requested_for="john.doe",
+            requested_by="jane.smith",
+            assignment_group="IT Support",
+            assigned_to="admin",
+        )
+        with set_module_args(args=params):
+            success, result = run_main(catalog_request, params)
+
+        assert success is True
+
+    def test_absent_state_with_sys_id(self, run_main):
+        params = dict(
+            instance=DEFAULT_INSTANCE,
+            state="absent",
+            sys_id="1234",
+        )
+        with set_module_args(args=params):
+            success, result = run_main(catalog_request, params)
+
+        assert success is True
+
+    def test_absent_state_with_number(self, run_main):
+        params = dict(
+            instance=DEFAULT_INSTANCE,
+            state="absent",
+            number="REQ0000001",
+        )
+        with set_module_args(args=params):
+            success, result = run_main(catalog_request, params)
+
+        assert success is True
+
+
