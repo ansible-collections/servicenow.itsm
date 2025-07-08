@@ -52,7 +52,7 @@ sanity: install-collection linters
 .PHONY: units
 units: install-collection
 	cd ~/.ansible/collections/ansible_collections/servicenow/itsm; \
-	ansible-test units --docker --coverage --python "$(PYTHON_VERSION)"; \
+	ansible-test units --docker --coverage --python "$(PYTHON_VERSION)" $(TARGET); \
 	ansible-test coverage combine --export tests/output/coverage/; \
 	ansible-test coverage report --docker --omit 'tests/*' --show-missing
 
