@@ -305,5 +305,3 @@ class TestMain:
             success, result = run_main(catalog_request, params)
 
         assert success is True
-
-
