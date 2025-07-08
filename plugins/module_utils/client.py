@@ -8,6 +8,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import json
+import ssl
 
 from ansible.module_utils.six import PY2
 from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
@@ -55,6 +56,8 @@ class Client:
         api_key=None,
         client_id=None,
         client_secret=None,
+        client_certificate_file=None,
+        client_key_file=None,
         custom_headers=None,
         api_path="api/now",
         timeout=None,
@@ -73,6 +76,8 @@ class Client:
         # Since version: 2.3.0: make up for removed default from arg specs to preserve backward compatibility.
         self.grant_type = "password" if grant_type is None else grant_type
         self.client_id = client_id
+        self.client_certificate_file = client_certificate_file
+        self.client_key_file = client_key_file
         self.client_secret = client_secret
         self.custom_headers = custom_headers
         self.api_path = tuple(api_path.strip("/").split("/"))
@@ -168,6 +173,8 @@ class Client:
                 headers=headers,
                 timeout=self.timeout,
                 validate_certs=self.validate_certs,
+                client_cert=self.client_certificate_file,
+                client_key=self.client_key_file,
             )
         except HTTPError as e:
             # Wrong username/password, or expired access token
@@ -182,6 +189,13 @@ class Client:
             return Response(e.code, e.read(), e.headers)
         except URLError as e:
             raise ServiceNowError(e.reason)
+        except ssl.SSLError as e:
+            if self.client_certificate_file:
+                raise ServiceNowError(
+                    "Failed to communicate with instance due to SSL error, likely related to the client certificate or key. "
+                    "Ensure the files are accessible on the Ansible host and in the correct format (see module documentation)."
+                )
+            raise
 
         if PY2:
             return Response(
