@@ -111,6 +111,16 @@ SHARED_SPECS = dict(
                 no_log=True,
                 fallback=(env_fallback, ["SN_CLIENT_SECRET"]),
             ),
+            client_certificate_file=dict(
+                type="str",
+                no_log=True,
+                fallback=(env_fallback, ["SN_CLIENT_CERTIFICATE_FILE"]),
+            ),
+            client_key_file=dict(
+                type="str",
+                no_log=True,
+                fallback=(env_fallback, ["SN_CLIENT_KEY_FILE"]),
+            ),
             custom_headers=dict(type="dict"),
             refresh_token=dict(
                 type="str",
@@ -137,14 +147,31 @@ SHARED_SPECS = dict(
                 default=True,
             ),
         ),
-        required_together=[("client_id", "client_secret"), ("username", "password")],
+        required_together=[
+            ("client_id", "client_secret"),
+            ("username", "password"),
+            ("client_certificate_file", "client_key_file"),
+        ],
         required_one_of=[
-            ("username", "refresh_token", "access_token", "api_key", "client_id")
+            (
+                "username",
+                "refresh_token",
+                "access_token",
+                "api_key",
+                "client_id",
+                "client_certificate_file",
+            )
         ],
         mutually_exclusive=[
-            ("username", "refresh_token", "access_token", "api_key"),
-            ("client_id", "access_token"),
-            ("grant_type", "access_token"),
+            (
+                "username",
+                "refresh_token",
+                "access_token",
+                "api_key",
+                "client_certificate_file",
+            ),
+            ("client_id", "access_token", "client_certificate_file"),
+            ("grant_type", "access_token", "client_certificate_file"),
         ],
         required_if=[
             ("grant_type", "password", ("username", "password")),
