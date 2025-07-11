@@ -20,6 +20,8 @@
           sn_password: '{{ sn_password }}'
           sn_client_id: '{{ sn_client_id }}'
           sn_client_secret: '{{ sn_client_secret }}'
+          sn_client_certificate_file: '{{ sn_client_certificate_file }}'
+          sn_client_key_file: '{{ sn_client_key_file }}'
           unique_test_id: '{{ unique_test_id }}'
 
     - name: Template session inventories
