@@ -4,7 +4,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-from ast import mod
 
 __metaclass__ = type
 
@@ -161,7 +160,9 @@ def run(module, table_client):
     elif module.params.get("query"):
         mapper = get_mapper(module, "catalog_request_mapping", dict())
         query = {
-            "sysparm_query": sysparms_query(module.params.get("query"), table_client, mapper)
+            "sysparm_query": sysparms_query(
+                module.params.get("query"), table_client, mapper
+            )
         }
     else:
         if module.params.get("sys_id"):
@@ -177,7 +178,14 @@ def run(module, table_client):
 
 def main():
     module_args = dict(
-        arguments.get_spec("instance", "sys_id", "number", "query", "sysparm_query", "sysparm_display_value"),
+        arguments.get_spec(
+            "instance",
+            "sys_id",
+            "number",
+            "query",
+            "sysparm_query",
+            "sysparm_display_value",
+        ),
     )
 
     module = AnsibleModule(
@@ -185,8 +193,8 @@ def main():
         supports_check_mode=True,
         mutually_exclusive=[
             ("sysparm_query", "query", "sys_id"),
-            ("sysparm_query", "query", "number")
-        ]
+            ("sysparm_query", "query", "number"),
+        ],
     )
 
     try:

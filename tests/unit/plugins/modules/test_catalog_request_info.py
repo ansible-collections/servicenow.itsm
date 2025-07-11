@@ -80,6 +80,7 @@ class TestMain:
 
         assert success is True
 
+
 class TestRun:
     def test_run_query(self, create_module, table_client, mocker):
         module = create_module(
@@ -95,14 +96,22 @@ class TestRun:
                 ],
             )
         )
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.module_utils.table.find_user", return_value=dict(sys_id="1234"))
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.module_utils.table.find_assignment_group", return_value=dict(sys_id="5678"))
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.module_utils.table.find_user",
+            return_value=dict(sys_id="1234"),
+        )
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.module_utils.table.find_assignment_group",
+            return_value=dict(sys_id="5678"),
+        )
         table_client.list_records.return_value = SAMPLE_RECORDS
 
         records = catalog_request_info.run(module, table_client)
         table_client.list_records.assert_called_once_with(
             "sc_request",
-            {'sysparm_query': 'priority=1^NQrequested_for=1234^NQrequested_by=1234^NQassignment_group=5678'}
+            {
+                "sysparm_query": "priority=1^NQrequested_for=1234^NQrequested_by=1234^NQassignment_group=5678"
+            },
         )
         assert records == SAMPLE_RECORDS
 
@@ -120,7 +129,7 @@ class TestRun:
         records = catalog_request_info.run(module, table_client)
         table_client.list_records.assert_called_once_with(
             "sc_request",
-            {'sysparm_query': 'short_descriptionLIKElaptop^request_state=submitted'}
+            {"sysparm_query": "short_descriptionLIKElaptop^request_state=submitted"},
         )
         assert records == SAMPLE_RECORDS
 
@@ -140,7 +149,11 @@ class TestRun:
         records = catalog_request_info.run(module, table_client)
         table_client.list_records.assert_called_once_with(
             "sc_request",
-            {'sys_id': '01a9ec0d3790200044e0bfc8bcbe5dc3', 'number': '1', 'sysparm_display_value': 'true'}
+            {
+                "sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3",
+                "number": "1",
+                "sysparm_display_value": "true",
+            },
         )
         assert records == SAMPLE_RECORDS
 
@@ -157,10 +170,10 @@ class TestRun:
 
         records = catalog_request_info.run(module, table_client)
         table_client.list_records.assert_called_once_with(
-            "sc_request",
-            {'sysparm_display_value': 'true'}
+            "sc_request", {"sysparm_display_value": "true"}
         )
         assert records == SAMPLE_RECORDS
+
 
 class TestRemapParams:
     def test_remap_params(self, mocker):
@@ -170,8 +183,14 @@ class TestRemapParams:
             {"requested_by": "= jane.smith"},
             {"assignment_group": "= IT Services"},
         ]
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.module_utils.table.find_user", return_value=dict(sys_id="1234"))
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.module_utils.table.find_assignment_group", return_value=dict(sys_id="5678"))
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.module_utils.table.find_user",
+            return_value=dict(sys_id="1234"),
+        )
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.module_utils.table.find_assignment_group",
+            return_value=dict(sys_id="5678"),
+        )
 
         remapped_query = catalog_request_info.remap_params(query, mocker.MagicMock())
         assert remapped_query == [
@@ -181,22 +200,39 @@ class TestRemapParams:
             {"assignment_group": ("=", "5678")},
         ]
 
+
 class TestSysparmsQuery:
     def test_sysparms_query(self, mocker):
         query_param = {
             "query": [{"priority": "= 1"}],
         }
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.module_utils.query.parse_query", return_value=("", None))
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.modules.catalog_request_info.remap_params")
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.module_utils.query.map_query_values")
-        mock_serialize = mocker.patch("ansible_collections.servicenow.itsm.plugins.module_utils.query.serialize_query")
-        catalog_request_info.sysparms_query(query_param, mocker.MagicMock(), mocker.MagicMock())
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.module_utils.query.parse_query",
+            return_value=("", None),
+        )
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.modules.catalog_request_info.remap_params"
+        )
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.module_utils.query.map_query_values"
+        )
+        mock_serialize = mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.module_utils.query.serialize_query"
+        )
+        catalog_request_info.sysparms_query(
+            query_param, mocker.MagicMock(), mocker.MagicMock()
+        )
         mock_serialize.assert_called_once()
 
     def test_sysparms_query_error(self, mocker):
         query_param = {
             "query": [{"priority": "= 1"}],
         }
-        mocker.patch("ansible_collections.servicenow.itsm.plugins.module_utils.query.parse_query", return_value=('', "error"))
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.module_utils.query.parse_query",
+            return_value=("", "error"),
+        )
         with pytest.raises(errors.ServiceNowError):
-            catalog_request_info.sysparms_query(query_param, mocker.MagicMock(), mocker.MagicMock())
+            catalog_request_info.sysparms_query(
+                query_param, mocker.MagicMock(), mocker.MagicMock()
+            )
