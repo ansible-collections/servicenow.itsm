@@ -173,6 +173,14 @@ options:
       - This query should follow the same format at the I(sysparm_query) option.
     type: str
     version_added: 2.10.0
+  enhanced_sysparm_limit:
+    description:
+      - Control the maximum number of records returned in a single query when using I(enhanced).
+      - This only affects queries against the relationship table. All other queries use the O(sysparm_limit)
+        option.
+      - If this is unset, the value of the O(sysparm_limit) and its relevant defaults will be used.
+    type: int
+    version_added: 2.11.0
   aggregation:
     description:
       - Enable multiple variable values aggregations.
@@ -904,7 +912,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             self._cache[self.cache_key] = {path: ""}
 
         table = self.get_option("table")
-        table_client = self.__create_table_client()
+        table_client, enhanced_table_client = self.__create_table_client()
         records = fetch_records(
             table_client,
             table,
@@ -925,7 +933,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             )
 
         if enhanced:
-            self.__populate_enhanced_records_from_remote(table_client, records)
+            self.__populate_enhanced_records_from_remote(enhanced_table_client, records)
 
         self._cache[self.cache_key] = {self._cache_sub_key: records}
 
@@ -962,7 +970,12 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         else:
             table_client = TableClient(client)
 
-        return table_client
+        enhanced_table_client = table_client
+        enhanced_sysparm_limit = self.get_option("enhanced_sysparm_limit")
+        if self.get_option("enhanced") and enhanced_sysparm_limit:
+            enhanced_table_client = TableClient(client, batch_size=enhanced_sysparm_limit)
+
+        return table_client, enhanced_table_client
 
     def __get_query_columns(self, columns):
         query_limit_columns = self.get_option("query_limit_columns")
