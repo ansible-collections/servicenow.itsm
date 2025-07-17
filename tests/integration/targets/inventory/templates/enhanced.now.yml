@@ -17,3 +17,4 @@ instance:
 
 enhanced: true
 enhanced_sysparm_query: type.nameSTARTSWITHContains
+enhanced_sysparm_limit: 5
