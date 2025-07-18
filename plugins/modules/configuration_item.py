@@ -64,6 +64,7 @@ options:
       - If this parameter is unset when a new configuration item needs to be created,
         the default value C(cmdb_ci) will be used.
     type: str
+    default: cmdb_ci
   asset_tag:
     description:
       - Asset tag of the asset logically related to this configuration item.
@@ -290,7 +291,7 @@ DIRECT_PAYLOAD_FIELDS = (
 def ensure_absent(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "name")
-    cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
+    cmdb_table = module.params["sys_class_name"]
     configuration_item = table_client.get_record(cmdb_table, query)
 
     if configuration_item:
@@ -322,7 +323,7 @@ def build_payload(module, table_client):
 
 
 def ensure_present(module, table_client, attachment_client):
-    cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
+    cmdb_table = module.params["sys_class_name"]
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
     query_sys_id = utils.filter_dict(module.params, "sys_id")
     query_name = utils.filter_dict(module.params, "name")
@@ -437,6 +438,7 @@ def main():
         ),
         sys_class_name=dict(
             type="str",
+            default="cmdb_ci",
         ),
         asset_tag=dict(
             type="str",
