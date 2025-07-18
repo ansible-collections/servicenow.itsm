@@ -973,7 +973,9 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         enhanced_table_client = table_client
         enhanced_sysparm_limit = self.get_option("enhanced_sysparm_limit")
         if self.get_option("enhanced") and enhanced_sysparm_limit:
-            enhanced_table_client = TableClient(client, batch_size=enhanced_sysparm_limit)
+            enhanced_table_client = TableClient(
+                client, batch_size=enhanced_sysparm_limit
+            )
 
         return table_client, enhanced_table_client
 
