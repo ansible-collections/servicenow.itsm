@@ -34,6 +34,19 @@
 
     - ansible.builtin.assert: *create-catalog_request-result
 
+    - name: Gather info about catalog request
+      servicenow.itsm.catalog_request_info:
+        sys_id: "{{ _create_result.record.sys_id }}"
+      register: _request_info
+
+    - ansible.builtin.assert:
+        that:
+          - _request_info.records[0].request_state == _create_result.record.request_state
+          - _request_info.records[0].priority == _create_result.record.priority
+          - _request_info.records[0].urgency == _create_result.record.urgency
+          - _request_info.records[0].impact == _create_result.record.impact
+          - _request_info.records[0].short_description == _create_result.record.short_description
+
     - name: Store catalog request details
       ansible.builtin.set_fact:
         catalog_request_number: "{{ _create_result.record.number }}"
@@ -97,17 +110,38 @@
         that:
           - no_change_result is not changed
 
+    - name: Retrieve catalog request info by number
+      servicenow.itsm.catalog_request_info:
+        number: "{{ catalog_request_number }}"
+      register: _request_info
+
+    - ansible.builtin.assert:
+        that:
+          - _request_info.records[0].due_date == other_result.record.due_date
+          - _request_info.records[0].stage == other_result.record.stage
+
     - name: Create minimal catalog request
       servicenow.itsm.catalog_request:
         state: present
         requested_for: admin
-        short_description: Minimal catalog request
+        short_description: "{{ unique_test_id }} - Minimal catalog request"
       register: minimal_result
 
     - ansible.builtin.assert:
         that:
           - minimal_result is changed
-          - minimal_result.record.short_description == "Minimal catalog request"
+          - minimal_result.record.short_description == unique_test_id + " - Minimal catalog request"
+
+    - name: Retrieve catalog requests by query
+      servicenow.itsm.catalog_request_info:
+        query:
+          - short_description: = {{ unique_test_id }} - Minimal catalog request
+      register: _request_info
+
+    - ansible.builtin.assert:
+        that:
+          - _request_info.records[0].short_description == minimal_result.record.short_description
+          - _request_info.records[0].requested_for == minimal_result.record.requested_for
 
     - name: Store minimal catalog request details
       ansible.builtin.set_fact:
