@@ -1,0 +1,287 @@
+---
+- environment:
+    SN_HOST: "{{ sn_host }}"
+    SN_USERNAME: "{{ sn_username }}"
+    SN_PASSWORD: "{{ sn_password }}"
+
+  block:
+    # Setup: Create a parent catalog request first
+    - name: Create parent catalog request for task testing
+      servicenow.itsm.catalog_request:
+        state: present
+        requested_by: admin
+        requested_for: admin
+        request_state: submitted
+        short_description: "{{ unique_test_id }} -Parent request for task testing"
+        description: "{{ unique_test_id }} - This catalog request will be used to test catalog request tasks"
+      register: parent_request
+
+    - name: Store parent request details
+      ansible.builtin.set_fact:
+        parent_request_number: "{{ parent_request.record.number }}"
+        parent_request_sys_id: "{{ parent_request.record.sys_id }}"
+
+    # Test 1: Create catalog request task - check mode
+    - name: Create test catalog_request_task - check mode
+      servicenow.itsm.catalog_request_task: &create-catalog_request_task
+        state: present
+        request: "{{ parent_request_number }}"
+        task_state: open
+        short_description: "{{ unique_test_id }} - Configure new laptop"
+        description: Install required software and configure user settings
+        assignment_group: network
+        priority: "2"
+        urgency: "2"
+        impact: "3"
+        order: 10
+        comments: Initial task creation
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &create-catalog_request_task-result
+        that:
+          - result is changed
+          - result.record.state == "open"
+          - result.record.priority == "2"
+          - result.record.urgency == "2"
+          - result.record.impact == "3"
+          - result.record.short_description == unique_test_id + " - Configure new laptop"
+          - result.record.order == 10
+
+    # Test 2: Create catalog request task
+    - name: Create test catalog_request_task
+      servicenow.itsm.catalog_request_task: *create-catalog_request_task
+      register: test_result
+
+    - ansible.builtin.assert: *create-catalog_request_task-result
+
+    - name: Store catalog request task details
+      ansible.builtin.set_fact:
+        catalog_task_number: "{{ test_result.record.number }}"
+        catalog_task_sys_id: "{{ test_result.record.sys_id }}"
+
+    # Test 3: Update catalog request task state
+    - name: Update catalog request task to work in progress
+      servicenow.itsm.catalog_request_task:
+        state: present
+        number: "{{ catalog_task_number }}"
+        task_state: work_in_progress
+        assigned_to: admin
+        work_notes: Started working on laptop configuration
+      register: update_result
+
+    - ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.record.state == "work_in_progress"
+
+    # Test 4: Create second task with sys_id reference
+    - name: Create second task using parent sys_id
+      servicenow.itsm.catalog_request_task:
+        state: present
+        request: "{{ parent_request_sys_id }}"
+        task_state: pending
+        short_description: "{{ unique_test_id }} - Install additional software"
+        description: "{{ unique_test_id }} - Install productivity applications"
+        order: 20
+        priority: "3"
+      register: second_task_result
+
+    - ansible.builtin.assert:
+        that:
+          - second_task_result is changed
+          - second_task_result.record.state == "pending"
+          - second_task_result.record.order == "20"
+          - second_task_result.record.priority == "3"
+
+    - name: Store second task details
+      ansible.builtin.set_fact:
+        second_task_number: "{{ second_task_result.record.number }}"
+        second_task_sys_id: "{{ second_task_result.record.sys_id }}"
+
+    # Test 5: Update task with other parameters
+    - name: Update catalog request task with other parameters
+      servicenow.itsm.catalog_request_task:
+        state: present
+        sys_id: "{{ catalog_task_sys_id }}"
+        due_date: "2024-12-31"
+        approval: not requested
+        delivery_plan: Standard
+        delivery_task: DTASK001
+        other:
+          vendor: Dell
+          special_instructions: Handle with care
+      register: other_result
+
+    - ansible.builtin.assert:
+        that:
+          - other_result is changed
+          - other_result.record.due_date == "2024-12-31 00:00:00"
+          - other_result.record.approval == "not requested"
+
+    # Test 6: Close task with close notes
+    - name: Close second task
+      servicenow.itsm.catalog_request_task:
+        state: present
+        number: "{{ second_task_number }}"
+        task_state: closed_complete
+        close_notes: "{{ unique_test_id }} - Software installation completed successfully"
+      register: close_result
+
+    - ansible.builtin.assert:
+        that:
+          - close_result is changed
+          - close_result.record.state == "closed_complete"
+          - close_result.record.close_notes == unique_test_id + " - Software installation completed successfully"
+
+    # Test 7: No change when same values provided
+    - name: Update catalog request task with same values (no change)
+      servicenow.itsm.catalog_request_task:
+        state: present
+        number: "{{ second_task_number }}"
+        task_state: closed_complete
+        close_notes: "{{ unique_test_id }} - Software installation completed successfully"
+      register: no_change_result
+
+    - ansible.builtin.assert:
+        that:
+          - no_change_result is not changed
+
+    # Test 13: Create task with minimal parameters
+    - name: Create minimal catalog request task
+      servicenow.itsm.catalog_request_task:
+        state: present
+        request: "{{ parent_request_number }}"
+        short_description: "{{ unique_test_id }} - Minimal task"
+      register: minimal_result
+
+    - ansible.builtin.assert:
+        that:
+          - minimal_result is changed
+          - minimal_result.record.short_description == unique_test_id + " - Minimal task"
+
+    - name: Store minimal task details
+      ansible.builtin.set_fact:
+        minimal_task_number: "{{ minimal_result.record.number }}"
+
+    # Test 14: Error handling - invalid request
+    - name: Test error handling with invalid request
+      servicenow.itsm.catalog_request_task:
+        state: present
+        request: NONEXISTENT123
+        short_description: "{{ unique_test_id }} - This should fail"
+      register: error_result
+      ignore_errors: true
+
+    - ansible.builtin.assert:
+        that:
+          - error_result is failed
+          - "'No api/now/table/sc_request records match' in error_result.msg"
+
+    # Test 15: Error handling - invalid user
+    - name: Test error handling with invalid user
+      servicenow.itsm.catalog_request_task:
+        state: present
+        request: "{{ parent_request_number }}"
+        assigned_to: nonexistent_user_12345
+        short_description: "{{ unique_test_id }} - This should fail"
+      register: user_error_result
+      ignore_errors: true
+
+    - ansible.builtin.assert:
+        that:
+          - user_error_result is failed
+          - "'No api/now/table/sys_user records match' in user_error_result.msg"
+
+    # Test 16: Check mode for update
+    - name: Update catalog request task in check mode
+      servicenow.itsm.catalog_request_task:
+        state: present
+        number: "{{ catalog_task_number }}"
+        task_state: closed_complete
+        close_notes: Check mode completion
+      check_mode: true
+      register: check_update_result
+
+    - ansible.builtin.assert:
+        that:
+          - check_update_result is changed
+          - check_update_result.record.state == "closed_complete"
+
+    # Test 18: Test deletion in check mode
+    - name: Delete catalog request task - check mode
+      servicenow.itsm.catalog_request_task:
+        state: absent
+        number: "{{ minimal_task_number }}"
+      check_mode: true
+      register: delete_check_result
+
+    - ansible.builtin.assert:
+        that:
+          - delete_check_result is changed
+
+    # Test 20: Actually delete the minimal task
+    - name: Delete minimal catalog request task
+      servicenow.itsm.catalog_request_task:
+        state: absent
+        number: "{{ minimal_task_number }}"
+      register: delete_result
+
+    - ansible.builtin.assert:
+        that:
+          - delete_result is changed
+
+    # Test 22: Delete non-existent record (should not change)
+    - name: Delete already deleted task
+      servicenow.itsm.catalog_request_task:
+        state: absent
+        number: "{{ minimal_task_number }}"
+      register: delete_nonexistent_result
+
+    - ansible.builtin.assert:
+        that:
+          - delete_nonexistent_result is not changed
+
+    # Test 23: Test task ordering and priorities
+    - name: Create high priority task
+      servicenow.itsm.catalog_request_task:
+        state: present
+        request: "{{ parent_request_number }}"
+        short_description: "{{ unique_test_id }} - High priority task"
+        priority: "1"
+        urgency: "1"
+        impact: "1"
+        order: 5
+      register: high_priority_result
+
+    - ansible.builtin.assert:
+        that:
+          - high_priority_result is changed
+          - high_priority_result.record.priority == "1"
+          - high_priority_result.record.urgency == "1"
+          - high_priority_result.record.impact == "1"
+          - high_priority_result.record.order == "5"
+
+    - name: Store high priority task details
+      ansible.builtin.set_fact:
+        high_priority_task_number: "{{ high_priority_result.record.number }}"
+
+  always:
+    # Cleanup: Delete test tasks and requests
+    - name: Delete test catalog request tasks
+      servicenow.itsm.catalog_request_task:
+        state: absent
+        number: "{{ item }}"
+      loop:
+        - "{{ catalog_task_number | default('') }}"
+        - "{{ second_task_number | default('') }}"
+        - "{{ minimal_task_number | default('') }}"
+        - "{{ high_priority_task_number | default('') }}"
+      ignore_errors: true
+      when: item != ""
+
+    - name: Delete parent catalog request
+      servicenow.itsm.catalog_request:
+        state: absent
+        number: "{{ parent_request_number }}"
+      when: parent_request_number is defined

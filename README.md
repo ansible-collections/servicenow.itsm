@@ -68,6 +68,7 @@ Here are a few common automation scenarios enabled by this collection:
 | [change_request_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_info_module.rst) | List ServiceNow change requests |
 | [change_request_task](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_task_module.rst) | Manage change request tasks |
 | [change_request_task_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_task_info_module.rst) | List change request tasks |
+| [catalog_request_task](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.catalog_request_task_module.rst) | Manage ServiceNow catalog requests tasks|
 | [configuration_item](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.configuration_item_module.rst) | Manage configuration items |
 | [configuration_item_batch](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.configuration_item_batch_module.rst) | Manage configuration items in batch |
 | [configuration_item_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.configuration_item_info_module.rst) | List configuration items |
@@ -163,7 +164,7 @@ Known exceptions or compatibility issues will be tracked via the GitHub Issues p
 
 ## Contributing
 
-We welcome contributions! Open an issue or a pull request on the GitHub repository:  
+We welcome contributions! Open an issue or a pull request on the GitHub repository:
 - https://github.com/ansible-collections/servicenow.itsm
 
 Guidelines:
@@ -213,5 +214,5 @@ git push upstream $VERSION
 
 ## License Information
 
-This collection is licensed under the GNU General Public License v3.0 or later.  
+This collection is licensed under the GNU General Public License v3.0 or later.
 See: [https://www.gnu.org/licenses/gpl-3.0.txt](https://www.gnu.org/licenses/gpl-3.0.txt)
