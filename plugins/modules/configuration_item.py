@@ -18,6 +18,7 @@ author:
   - Tadej Borovsak (@tadeboro)
   - Matej Pevec (@mysteriouswolf)
   - Polona Mihalič (@PolonaM)
+  - Mathijs de Ruiter (@EUCTechTopis)
 
 short_description: Manage ServiceNow configuration items
 
@@ -63,6 +64,7 @@ options:
       - If this parameter is unset when a new configuration item needs to be created,
         the default value C(cmdb_ci) will be used.
     type: str
+    default: cmdb_ci
   asset_tag:
     description:
       - Asset tag of the asset logically related to this configuration item.
@@ -289,13 +291,10 @@ DIRECT_PAYLOAD_FIELDS = (
 def ensure_absent(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
     query = utils.filter_dict(module.params, "sys_id", "name")
-    configuration_item = table_client.get_record("cmdb_ci", query)
+    cmdb_table = module.params["sys_class_name"]
+    configuration_item = table_client.get_record(cmdb_table, query)
 
     if configuration_item:
-        cmdb_table = configuration_item["sys_class_name"]
-        if cmdb_table != "cmdb_ci":
-            configuration_item = table_client.get_record(cmdb_table, query)
-
         attachment_client.delete_attached_records(
             cmdb_table,
             configuration_item["sys_id"],
@@ -324,6 +323,7 @@ def build_payload(module, table_client):
 
 
 def ensure_present(module, table_client, attachment_client):
+    cmdb_table = module.params["sys_class_name"]
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
     query_sys_id = utils.filter_dict(module.params, "sys_id")
     query_name = utils.filter_dict(module.params, "name")
@@ -333,10 +333,9 @@ def ensure_present(module, table_client, attachment_client):
     )
 
     if not query_sys_id:
-        configuration_item = table_client.get_record("cmdb_ci", query_name)
+        configuration_item = table_client.get_record(cmdb_table, query_name)
         # User did not specify existing CI, so we need to create a new one.
         if not configuration_item:
-            cmdb_table = module.params["sys_class_name"] or "cmdb_ci"
             new = mapper.to_ansible(
                 table_client.create_record(
                     cmdb_table, mapper.to_snow(payload), module.check_mode
@@ -360,11 +359,13 @@ def ensure_present(module, table_client, attachment_client):
     else:
         # Get existing record using provided sys_id
         old = mapper.to_ansible(
-            table_client.get_record("cmdb_ci", query_sys_id, must_exist=True)
+            table_client.get_record(cmdb_table, query_sys_id, must_exist=True)
         )
         # Check if provided name already exists
         if query_name:
-            configuration_item = table_client.get_record("cmdb_ci", query_name)
+            configuration_item = table_client.get_record(
+                old["sys_class_name"], query_name
+            )
             if configuration_item:
                 old2 = mapper.to_ansible(configuration_item)
                 if old["sys_id"] != old2["sys_id"]:
@@ -373,6 +374,7 @@ def ensure_present(module, table_client, attachment_client):
                             module.params["name"]
                         )
                     )
+
     # Update existing record
     cmdb_table = old["sys_class_name"]
     # If necessary, fetch the record from the table for the extended CI class
@@ -436,6 +438,7 @@ def main():
         ),
         sys_class_name=dict(
             type="str",
+            default="cmdb_ci",
         ),
         asset_tag=dict(
             type="str",

@@ -746,10 +746,12 @@ class TestEnsurePresent:
                 return dict(
                     sys_id="01a9ec0d3790200044e0bfc8bcbe5dc3",
                     name="my_new_name",
+                    sys_class_name="cmdb_ci",
                 )
             return dict(
                 sys_id="different_sys_id",
                 name="my_new_name",
+                sys_class_name="cmdb_ci",
             )
 
         table_client.get_record.side_effect = get_record_side_effect
