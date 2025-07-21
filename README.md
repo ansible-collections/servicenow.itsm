@@ -64,6 +64,8 @@ Here are a few common automation scenarios enabled by this collection:
 | [api_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.api_info_module.rst) | Manage ServiceNow GET requests |
 | [attachment_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.attachment_info_module.rst) | Download attachment using sys_id |
 | [attachment_upload](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.attachment_upload_module.rst) | Upload attachment to a table |
+| [catalog_request_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.catalog_request_info.rst) | List ServiceNow catalog requests |
+| [catalog_request](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.catalog_request.rst) | Manage ServiceNow catalog requests |
 | [change_request](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_module.rst) | Manage ServiceNow change requests |
 | [change_request_info](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_info_module.rst) | List ServiceNow change requests |
 | [change_request_task](https://github.com/ansible-collections/servicenow.itsm/blob/main/docs/servicenow.itsm.change_request_task_module.rst) | Manage change request tasks |
