@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - catalog_request_task - Add module to manage ServiceNow catalog request tasks
