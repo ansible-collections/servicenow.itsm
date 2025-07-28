@@ -830,6 +830,8 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             refresh_token=os.getenv("SN_REFRESH_TOKEN"),
             grant_type=os.getenv("SN_GRANT_TYPE"),
             timeout=get_timeout_from_env(),
+            client_certificate_file=os.getenv("SN_CLIENT_CERTIFICATE_FILE"),
+            client_key_file=os.getenv("SN_CLIENT_KEY_FILE"),
         )
 
     def _get_instance(self):
@@ -980,6 +982,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
 
     def __create_table_client(self):
         try:
+            raise Exception(self._get_instance())
             client = Client(**self._get_instance())
         except ServiceNowError as e:
             raise AnsibleParserError(e)
