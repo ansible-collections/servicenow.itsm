@@ -46,6 +46,23 @@
         that:
           - result is success
 
+    # The OAuth app in our SNOW instance has no available scopes/permissions,
+    # so generating a token with oauth_token.do is the only thing we test for
+    # grant_type client_credentials
+    - name: OAuth authentication success with client_credentials grant type
+      ansible.builtin.uri:
+        url: "{{ sn_host }}/oauth_token.do"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          grant_type: client_credentials
+          client_id: "{{ sn_client_id }}"
+          client_secret: "{{ sn_client_secret }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is success
+
     - name: OAuth authentication failure with bad client secret
       servicenow.itsm.incident_info:
         number: "{{ incident_number }}"
@@ -125,6 +142,7 @@
         number: "{{ incident_number }}"
       environment:
         SN_ACCESS_TOKEN: "{{ sn_access_token }}"
+        SN_TOKEN_AUTH_METHOD: bearer
       register: result
     - ansible.builtin.assert:
         that:
@@ -137,7 +155,73 @@
         SN_ACCESS_TOKEN: bad-token
       register: result
       ignore_errors: true
-    - assert:
+    - ansible.builtin.assert:
         that:
           - result is failed
           - "'Failed to authenticate with the instance' in result.msg"
+
+    - name: Authenticate with API key using api_key parameter
+      servicenow.itsm.incident_info:
+        instance:
+          host: "{{ sn_host }}"
+          api_key: "{{ sn_api_key }}"
+        number: "{{ incident_number }}"
+      register: api_key_result
+      when: sn_api_key is defined
+
+    - name: Verify API key authentication success
+      ansible.builtin.assert:
+        that:
+          - api_key_result is success
+      when: sn_api_key is defined
+
+    - name: Authenticate with API key using environment variables only
+      servicenow.itsm.incident_info:
+        number: "{{ incident_number }}"
+      environment:
+        SN_API_KEY: "{{ sn_api_key }}"
+      register: api_key_env_result
+      when: sn_api_key is defined
+
+    - name: Verify API key environment variable authentication success
+      ansible.builtin.assert:
+        that:
+          - api_key_env_result is success
+      when: sn_api_key is defined
+
+    - name: Authenticate with OAuth token using access_token parameter
+      servicenow.itsm.incident_info:
+        instance:
+          host: "{{ sn_host }}"
+          access_token: "{{ sn_access_token }}"
+        number: "{{ incident_number }}"
+      register: bearer_result
+
+    - name: Verify bearer authentication success
+      ansible.builtin.assert:
+        that:
+          - bearer_result is success
+
+    - name: Client cert authentication success
+      servicenow.itsm.incident_info:
+        number: "{{ incident_number }}"
+        instance:
+          client_certificate_file: "{{ sn_client_certificate_file }}"
+          client_key_file: "{{ sn_client_key_file }}"
+      register: result
+    - ansible.builtin.assert:
+        that:
+          - result is success
+
+    - name: Client cert authentication failure
+      servicenow.itsm.incident_info:
+        number: "{{ incident_number }}"
+        instance:
+          client_certificate_file: "{{ sn_client_certificate_file }}"
+          client_key_file: /dev/null
+      register: result
+      ignore_errors: true
+    - ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'Failed to communicate with instance due to SSL error,' in result.msg"

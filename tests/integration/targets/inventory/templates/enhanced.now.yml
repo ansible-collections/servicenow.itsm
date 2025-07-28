@@ -1,0 +1,20 @@
+---
+plugin: servicenow.itsm.now
+table: cmdb_ci_ec2_instance
+columns:
+  - state
+  - environment
+  - fqdn
+  - ip_address
+  - name
+
+strict: true
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}
+instance:
+  host: "{{ sn_host }}"
+  username: "{{ sn_username }}"
+  password: "{{ sn_password }}"
+
+enhanced: true
+enhanced_sysparm_query: type.nameSTARTSWITHContains
+enhanced_sysparm_limit: 5

@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - now - added enhanced_sysparm_limit option to now inventory plugin, allowing control of the maximum number of relationship
+    records returned in a single query when using enhanced.

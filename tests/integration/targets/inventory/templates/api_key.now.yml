@@ -1,0 +1,17 @@
+plugin: servicenow.itsm.now
+host: "{{ sn_host }}"
+instance:
+  api_key: "{{ sn_api_key | default(omit) }}"
+table: cmdb_ci_ip_switch
+columns:
+  - name
+  - ip_address
+keyed_groups:
+  - key: manufacturer
+    prefix: manufacturer
+  - key: model_id
+    prefix: model
+  - key: location
+    prefix: location
+hostnames:
+  - name 

@@ -4,6 +4,24 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.10.0
+=======
+
+Release Summary
+---------------
+
+Enhancements to inventory process to be able to limit relationship scope for enhanced queries and add some authentication options including apikey and oauth mechanisms.
+
+Minor Changes
+-------------
+
+- authentication - Added configurable token_auth_method parameter to support both x-sn-apikey and Authorization Bearer headers for access tokens (https://github.com/ansible-collections/servicenow.itsm/issues/416)
+- authentication - Adds support for the OAUTH client_credentials grant type
+- plugins/inventory/now - Add support for ansible-core 2.19 in the inventory plugin
+- plugins/inventory/now - Added additional parameters to allow the user to configure the enhanced query and additional columns
+- plugins/inventory/now - Added support for the client_credentials authentication grant type
+- plugins/inventory/now - allow accessing dot variables by underscore alias in compose (https://github.com/ansible-collections/servicenow.itsm/issues/428)
+
 v2.9.3
 ======
 

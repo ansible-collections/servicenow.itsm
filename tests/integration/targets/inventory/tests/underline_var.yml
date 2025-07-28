@@ -1,8 +1,5 @@
 ---
-- name: Test underline var in compose
-  vars:
-    inventory_file_name: underline_var.now.yml
-    resource_prefix: "{{ unique_test_id }}-inven-underline-var"
+- name: Test
   block:
     - name: Create test location
       servicenow.itsm.api:
@@ -24,31 +21,31 @@
         ip_address: 10.1.0.{{ item }}
         other:
           location: "{{ test_location.record.sys_id }}"
-      loop: "{{ range(100, 102) }}"
+      loop: "{{ range(100, 102) | list }}"
       register: vms
 
     - name: Reload inventory
-      ansible.builtin.include_tasks: refresh_inventory.yml
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
 
     - name: Check 100
       ansible.builtin.assert:
         that:
           - host_vars.name == resource_prefix + '-100'
           - host_vars.location_name_from_underline == resource_prefix + "-location"
-          - host_vars.location_name_from_dot.__ansible_unsafe == resource_prefix + "-location"
+          - host_vars.location_name_from_dot == resource_prefix + "-location"
           - host_vars.location_name == "test"
       vars:
-        host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-100'] }}"
+        host_vars: "{{ hostvars[resource_prefix + '-100'] }}"
 
     - name: Check 101
       ansible.builtin.assert:
         that:
           - host_vars.name == resource_prefix + '-101'
           - host_vars.location_name_from_underline == resource_prefix + "-location"
-          - host_vars.location_name_from_dot.__ansible_unsafe == resource_prefix + "-location"
+          - host_vars.location_name_from_dot == resource_prefix + "-location"
           - host_vars.location_name == "test"
       vars:
-        host_vars: "{{ inventory_results._meta.hostvars[resource_prefix + '-101'] }}"
+        host_vars: "{{ hostvars[resource_prefix + '-101'] }}"
 
   always:
     - name: Delete location

@@ -1,3 +1,0 @@
----
-minor_changes:
-  - plugins/inventory/now - Add support for ansible-core 2.19 in the inventory plugin

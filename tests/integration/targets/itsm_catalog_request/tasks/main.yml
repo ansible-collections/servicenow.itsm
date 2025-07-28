@@ -1,0 +1,239 @@
+- environment:
+    SN_HOST: "{{ sn_host }}"
+    SN_USERNAME: "{{ sn_username }}"
+    SN_PASSWORD: "{{ sn_password }}"
+
+  block:
+    - name: Create test catalog_request - check mode
+      servicenow.itsm.catalog_request: &create-catalog_request
+        requested_by: admin
+        requested_for: admin
+        state: present
+        request_state: draft
+        priority: 2
+        urgency: 2
+        impact: 3
+        short_description: "{{ unique_test_id }} - Test catalog request for integration testing"
+        description: This is a test catalog request created during integration testing
+        comments: Initial catalog request creation
+      check_mode: true
+      register: result
+
+    - ansible.builtin.assert: &create-catalog_request-result
+        that:
+          - result is changed
+          - result.record.request_state == "draft"
+          - result.record.priority == "2"
+          - result.record.urgency == "2"
+          - result.record.impact == "3"
+          - result.record.short_description == unique_test_id + " - Test catalog request for integration testing"
+
+    - name: Create test catalog_request
+      servicenow.itsm.catalog_request: *create-catalog_request
+      register: _create_result
+
+    - ansible.builtin.assert: *create-catalog_request-result
+
+    - name: Gather info about catalog request
+      servicenow.itsm.catalog_request_info:
+        sys_id: "{{ _create_result.record.sys_id }}"
+      register: _request_info
+
+    - ansible.builtin.assert:
+        that:
+          - _request_info.records[0].request_state == _create_result.record.request_state
+          - _request_info.records[0].priority == _create_result.record.priority
+          - _request_info.records[0].urgency == _create_result.record.urgency
+          - _request_info.records[0].impact == _create_result.record.impact
+          - _request_info.records[0].short_description == _create_result.record.short_description
+
+    - name: Store catalog request details
+      ansible.builtin.set_fact:
+        catalog_request_number: "{{ _create_result.record.number }}"
+        catalog_request_sys_id: "{{ _create_result.record.sys_id }}"
+
+    - name: Update catalog request state to submitted
+      servicenow.itsm.catalog_request:
+        state: present
+        number: "{{ catalog_request_number }}"
+        request_state: submitted
+        work_notes: Moving request to submitted state
+      register: update_result
+
+    - ansible.builtin.assert:
+        that:
+          - update_result is changed
+          - update_result.record.request_state == "in_process" # ServiceNow business rules can automate state transitions
+
+    - name: Update catalog request with assignment group
+      servicenow.itsm.catalog_request:
+        state: present
+        sys_id: "{{ catalog_request_sys_id }}"
+        assignment_group: network
+        request_state: in_process
+        work_notes: Assigned to group for processing
+      register: assign_result
+
+    - ansible.builtin.assert:
+        that:
+          - assign_result is changed
+          - assign_result.record.request_state == "in_process"
+          - assign_result.record.assignment_group != ""
+
+    - name: Update catalog request with other parameters
+      servicenow.itsm.catalog_request:
+        state: present
+        number: "{{ catalog_request_number }}"
+        due_date: "2024-12-31"
+        stage: fulfillment
+        approval: not_requested
+        other:
+          business_justification: Required for testing
+          special_instructions: Handle with care
+      register: other_result
+
+    - ansible.builtin.assert:
+        that:
+          - other_result is changed
+          - other_result.record.due_date == "2024-12-31 00:00:00"
+          - other_result.record.stage == "fulfillment"
+
+    - name: Update catalog request with same values (no change)
+      servicenow.itsm.catalog_request:
+        state: present
+        number: "{{ catalog_request_number }}"
+        request_state: in_process
+        stage: fulfillment
+      register: no_change_result
+
+    - ansible.builtin.assert:
+        that:
+          - no_change_result is not changed
+
+    - name: Retrieve catalog request info by number
+      servicenow.itsm.catalog_request_info:
+        number: "{{ catalog_request_number }}"
+      register: _request_info
+
+    - ansible.builtin.assert:
+        that:
+          - _request_info.records[0].due_date == other_result.record.due_date
+          - _request_info.records[0].stage == other_result.record.stage
+
+    - name: Create minimal catalog request
+      servicenow.itsm.catalog_request:
+        state: present
+        requested_for: admin
+        short_description: "{{ unique_test_id }} - Minimal catalog request"
+      register: minimal_result
+
+    - ansible.builtin.assert:
+        that:
+          - minimal_result is changed
+          - minimal_result.record.short_description == unique_test_id + " - Minimal catalog request"
+
+    - name: Retrieve catalog requests by query
+      servicenow.itsm.catalog_request_info:
+        query:
+          - short_description: = {{ unique_test_id }} - Minimal catalog request
+      register: _request_info
+
+    - ansible.builtin.assert:
+        that:
+          - _request_info.records[0].short_description == minimal_result.record.short_description
+          - _request_info.records[0].requested_for == minimal_result.record.requested_for
+
+    - name: Store minimal catalog request details
+      ansible.builtin.set_fact:
+        minimal_catalog_request_number: "{{ minimal_result.record.number }}"
+
+    - name: Test error handling with invalid user
+      servicenow.itsm.catalog_request:
+        state: present
+        requested_for: nonexistent_user_12345
+        short_description: This should fail
+      register: error_result
+      ignore_errors: true
+
+    - ansible.builtin.assert:
+        that:
+          - error_result is failed
+          - "'not found' in error_result.msg or 'does not exist' in error_result.msg or 'No api/now/table/sys_user records match' in error_result.msg"
+
+    - name: Test error handling with invalid group
+      servicenow.itsm.catalog_request:
+        state: present
+        requested_for: admin
+        assignment_group: nonexistent_group_12345
+        short_description: This should also fail
+      register: group_error_result
+      ignore_errors: true
+
+    - ansible.builtin.assert:
+        that:
+          - group_error_result is failed
+          - "'not found' in group_error_result.msg or 'does not exist' in group_error_result.msg or 'No api/now/table/sys_user_group records match' in group_error_result.msg"
+
+    - name: Update catalog request in check mode
+      servicenow.itsm.catalog_request:
+        state: present
+        number: "{{ catalog_request_number }}"
+        request_state: delivered
+        comments: This is a check mode update
+      check_mode: true
+      register: check_update_result
+
+    - ansible.builtin.assert:
+        that:
+          - check_update_result is changed
+
+    - name: Update catalog request after check mode
+      servicenow.itsm.catalog_request:
+        state: present
+        number: "{{ catalog_request_number }}"
+        request_state: delivered
+        comments: This is a check mode update
+      register: check_update_result
+
+    - ansible.builtin.assert:
+        that:
+          - check_update_result is changed
+
+    - name: Test deletion of minimal catalog request in check mode
+      servicenow.itsm.catalog_request:
+        state: absent
+        number: "{{ minimal_catalog_request_number }}"
+      check_mode: true
+      register: check_delete_result
+
+    - name: Test deletion of minimal catalog request after check mode
+      servicenow.itsm.catalog_request:
+        state: absent
+        number: "{{ minimal_catalog_request_number }}"
+      register: delete_result
+
+    - name: Test deletion of minimal catalog request - idempotence
+      servicenow.itsm.catalog_request:
+        state: absent
+        number: "{{ minimal_catalog_request_number }}"
+      register: delete_result_idemp
+
+    - ansible.builtin.assert:
+        that:
+          - check_delete_result is changed
+          - delete_result is changed
+          - delete_result_idemp is not changed
+
+  always:
+    # Cleanup: Delete test catalog requests
+    - name: Delete test catalog request
+      servicenow.itsm.catalog_request:
+        state: absent
+        number: "{{ catalog_request_number }}"
+      when: catalog_request_number is defined
+
+    - name: Delete minimal catalog request (cleanup)
+      servicenow.itsm.catalog_request:
+        state: absent
+        number: "{{ minimal_catalog_request_number }}"
+      when: minimal_catalog_request_number is defined

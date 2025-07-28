@@ -74,6 +74,30 @@ PROBLEM_TASK_MAPPING_SPEC = dict(
     ),
 )
 
+CATALOG_REQUEST_MAPPING_SPEC = dict(
+    type="dict",
+    required=False,
+    options=dict(
+        priority=dict(type="dict"),
+        urgency=dict(type="dict"),
+        impact=dict(type="dict"),
+        state=dict(type="dict"),
+        approval=dict(type="dict"),
+    ),
+)
+
+CATALOG_REQUEST_TASK_MAPPING_SPEC = dict(
+    type="dict",
+    required=False,
+    options=dict(
+        priority=dict(type="dict"),
+        urgency=dict(type="dict"),
+        impact=dict(type="dict"),
+        state=dict(type="dict"),
+        approval=dict(type="dict"),
+    ),
+)
+
 SHARED_SPECS = dict(
     instance=dict(
         type="dict",
@@ -95,7 +119,7 @@ SHARED_SPECS = dict(
             ),
             grant_type=dict(
                 type="str",
-                choices=["password", "refresh_token"],
+                choices=["password", "refresh_token", "client_credentials"],
                 fallback=(env_fallback, ["SN_GRANT_TYPE"]),
             ),
             api_path=dict(
@@ -111,6 +135,16 @@ SHARED_SPECS = dict(
                 no_log=True,
                 fallback=(env_fallback, ["SN_CLIENT_SECRET"]),
             ),
+            client_certificate_file=dict(
+                type="str",
+                no_log=True,
+                fallback=(env_fallback, ["SN_CLIENT_CERTIFICATE_FILE"]),
+            ),
+            client_key_file=dict(
+                type="str",
+                no_log=True,
+                fallback=(env_fallback, ["SN_CLIENT_KEY_FILE"]),
+            ),
             custom_headers=dict(type="dict"),
             refresh_token=dict(
                 type="str",
@@ -122,8 +156,14 @@ SHARED_SPECS = dict(
                 no_log=True,
                 fallback=(env_fallback, ["SN_ACCESS_TOKEN"]),
             ),
+            api_key=dict(
+                type="str",
+                no_log=True,
+                fallback=(env_fallback, ["SN_API_KEY"]),
+            ),
             timeout=dict(
                 type="float",
+                default=10,
                 fallback=(env_fallback, ["SN_TIMEOUT"]),
             ),
             validate_certs=dict(
@@ -131,16 +171,36 @@ SHARED_SPECS = dict(
                 default=True,
             ),
         ),
-        required_together=[("client_id", "client_secret"), ("username", "password")],
-        required_one_of=[("username", "refresh_token", "access_token")],
+        required_together=[
+            ("client_id", "client_secret"),
+            ("username", "password"),
+            ("client_certificate_file", "client_key_file"),
+        ],
+        required_one_of=[
+            (
+                "username",
+                "refresh_token",
+                "access_token",
+                "api_key",
+                "client_id",
+                "client_certificate_file",
+            )
+        ],
         mutually_exclusive=[
-            ("username", "refresh_token", "access_token"),
-            ("client_id", "access_token"),
-            ("grant_type", "access_token"),
+            (
+                "username",
+                "refresh_token",
+                "access_token",
+                "api_key",
+                "client_certificate_file",
+            ),
+            ("client_id", "access_token", "client_certificate_file"),
+            ("grant_type", "access_token", "client_certificate_file"),
         ],
         required_if=[
             ("grant_type", "password", ("username", "password")),
             ("grant_type", "refresh_token", ("refresh_token",)),
+            ("grant_type", "client_connections", ("client_id", "client_secret")),
         ],
     ),
     sys_id=dict(type="str"),
@@ -181,6 +241,8 @@ SHARED_SPECS = dict(
     configuration_item_mapping=CONFIGURATION_ITEM_MAPPING_SPEC,
     problem_mapping=PROBLEM_MAPPING_SPEC,
     problem_task_mapping=PROBLEM_TASK_MAPPING_SPEC,
+    catalog_request_mapping=CATALOG_REQUEST_MAPPING_SPEC,
+    catalog_request_task_mapping=CATALOG_REQUEST_TASK_MAPPING_SPEC,
 )
 
 

@@ -1,0 +1,3 @@
+---
+trivial:
+  - makefile - updated available commands to make running tests locally easier

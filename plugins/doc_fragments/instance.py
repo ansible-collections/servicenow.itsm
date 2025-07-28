@@ -45,7 +45,7 @@ options:
             specifications.
           - If not set by any means, the default value (that is, I(password)) will be set
             internally to preserve backwards compatibility.
-        choices: [ 'password', 'refresh_token' ]
+        choices: [ 'password', 'refresh_token', 'client_credentials' ]
         type: str
         version_added: '1.1.0'
       api_path:
@@ -60,6 +60,7 @@ options:
           - If not set, the value of the C(SN_CLIENT_ID) environment
             variable will be used.
           - If provided, it requires I(client_secret).
+          - Required when I(grant_type=client_credentials).
         type: str
       client_secret:
         description:
@@ -67,6 +68,23 @@ options:
           - If not set, the value of the C(SN_CLIENT_SECRET) environment
             variable will be used.
           - If provided, it requires I(client_id).
+          - Required when I(grant_type=client_credentials).
+        type: str
+      client_certificate_file:
+        description:
+          - The path to the PEM certificate file that should be used for authentication.
+          - The file must be local and accessible to the host running the module.
+          - I(client_certificate_file) and I(client_key_file) must be provided together.
+          - If client certificate parameters are provided, they will be used instead of other
+            authentication methods.
+        type: str
+      client_key_file:
+        description:
+          - The path to the certificate key file that should be used for authentication.
+          - The file must be local and accessible to the host running the module.
+          - I(client_certificate_file) and I(client_key_file) must be provided together.
+          - If client certificate parameters are provided, they will be used instead of other
+            authentication methods.
         type: str
       custom_headers:
         description:
@@ -84,16 +102,26 @@ options:
       access_token:
         description:
           - Access token obtained via OAuth authentication.
+          - Used for OAuth-generated tokens that require Authorization Bearer headers.
           - If not set, the value of the C(SN_ACCESS_TOKEN) environment
             variable will be used.
+          - Mutually exclusive with I(api_key).
         type: str
         version_added: '2.3.0'
+      api_key:
+        description:
+          - ServiceNow API key for direct authentication.
+          - Used for direct API keys that require x-sn-apikey headers.
+          - If not set, the value of the C(SN_API_KEY) environment
+            variable will be used.
+          - Mutually exclusive with I(access_token).
+        type: str
       timeout:
         description:
           - Timeout in seconds for the connection with the ServiceNow instance.
-          - If not set, the value of the C(SN_TIMEOUT) environment
-            variable will be used.
+          - If not set, the value of the C(SN_TIMEOUT) environment variable will be used.
         type: float
+        default: 10
       validate_certs:
         description:
           - If host's certificate is validated or not.

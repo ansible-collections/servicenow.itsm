@@ -1,0 +1,15 @@
+- name: "Test: api_key"
+  vars:
+    ansible_inventory_sources:
+      - "{{ inventory_dir }}/api_key.now.yml"
+  block:
+    - name: "Refresh inventory"
+      ansible.builtin.meta: refresh_inventory
+    - name: "Verify that the host is in inventory"
+      ansible.builtin.assert:
+        that:
+          - test_configuration_item_name in hostvars
+        fail_msg: "Host '{{ test_configuration_item_name }}' not in inventory"
+  when:
+    - ansible_version.full is version('2.11', '>=')
+    - sn_api_key is defined and sn_api_key 

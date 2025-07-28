@@ -5,6 +5,9 @@ strict: false
 
 instance:
   timeout: 1200
+  host: "{{ sn_host }}"
+  username: "{{ sn_username }}"
+  password: "{{ sn_password }}"
 
 columns:
   - name
