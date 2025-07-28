@@ -185,6 +185,8 @@ class TestInstance:
                 SN_CLIENT_SECRET="client_secret",
                 SN_REFRESH_TOKEN="refresh_token",
                 SN_GRANT_TYPE="grant_type",
+                SN_CLIENT_CERTIFICATE_FILE="client_certificate_file",
+                SN_CLIENT_KEY_FILE="client_key_file",
                 SN_TIMEOUT="100",
             ).get(key)
 
@@ -199,6 +201,8 @@ class TestInstance:
             client_secret="client_secret",
             refresh_token="refresh_token",
             grant_type="grant_type",
+            client_certificate_file="client_certificate_file",
+            client_key_file="client_key_file",
             timeout=100,
         )
 
@@ -220,6 +224,8 @@ class TestInstance:
             refresh_token="SN_REFRESH_TOKEN",
             grant_type="SN_GRANT_TYPE",
             timeout=120,
+            client_certificate_file="SN_CLIENT_CERTIFICATE_FILE",
+            client_key_file="SN_CLIENT_KEY_FILE",
         )
 
     def test_get_timeout_default_value(self, inventory_plugin, mocker):
@@ -233,6 +239,8 @@ class TestInstance:
                 SN_REFRESH_TOKEN="refresh_token",
                 SN_GRANT_TYPE="grant_type",
                 SN_TIMEOUT="wrong_timeout",
+                SN_CLIENT_CERTIFICATE_FILE="client_certificate_file",
+                SN_CLIENT_KEY_FILE="client_key_file",
             ).get(key)
 
         mocker.patch("os.getenv", new=getenv)
@@ -247,6 +255,8 @@ class TestInstance:
             refresh_token="refresh_token",
             grant_type="grant_type",
             timeout=120,
+            client_certificate_file="client_certificate_file",
+            client_key_file="client_key_file",
         )
 
     def test_get_timeout_missing_env_value(self, inventory_plugin, mocker):
@@ -259,6 +269,8 @@ class TestInstance:
                 SN_CLIENT_SECRET="client_secret",
                 SN_REFRESH_TOKEN="refresh_token",
                 SN_GRANT_TYPE="grant_type",
+                SN_CLIENT_CERTIFICATE_FILE="client_certificate_file",
+                SN_CLIENT_KEY_FILE="client_key_file",
             ).get(key)
 
         mocker.patch("os.getenv", new=getenv)
@@ -273,6 +285,8 @@ class TestInstance:
             refresh_token="refresh_token",
             grant_type="grant_type",
             timeout=120,
+            client_certificate_file="client_certificate_file",
+            client_key_file="client_key_file",
         )
 
     def test_get_timeout(self, inventory_plugin, mocker):
@@ -286,6 +300,8 @@ class TestInstance:
                 SN_REFRESH_TOKEN="refresh_token",
                 SN_GRANT_TYPE="grant_type",
                 SN_TIMEOUT="50",
+                SN_CLIENT_CERTIFICATE_FILE="client_certificate_file",
+                SN_CLIENT_KEY_FILE="client_key_file",
             ).get(key)
 
         mocker.patch("os.getenv", new=getenv)
@@ -300,6 +316,8 @@ class TestInstance:
             refresh_token="refresh_token",
             grant_type="grant_type",
             timeout=50,
+            client_certificate_file="client_certificate_file",
+            client_key_file="client_key_file",
         )
 
 
