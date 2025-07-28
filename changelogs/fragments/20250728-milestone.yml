@@ -1,0 +1,3 @@
+---
+trivial:
+  - workflows - Removed milestone, added stable-2.19 to testing matrix. Milestone and devel are close anyway
