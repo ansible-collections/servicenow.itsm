@@ -60,6 +60,31 @@
         catalog_task_number: "{{ test_result.record.number }}"
         catalog_task_sys_id: "{{ test_result.record.sys_id }}"
 
+    - name: Lookup test catalog_request_task info - number
+      servicenow.itsm.catalog_request_task_info:
+        number: "{{ catalog_task_number }}"
+      register: _num_info_result
+
+    - debug:
+        var: _num_info_result
+
+    - ansible.builtin.assert:
+        that:
+          - _num_info_result.records | length == 1
+          - _num_info_result.records[0].number == catalog_task_number
+          - _num_info_result.records[0].state == "1"
+
+    - name: Lookup test catalog_request_task info - sys_id
+      servicenow.itsm.catalog_request_task_info:
+        sys_id: "{{ catalog_task_sys_id }}"
+      register: _sys_id_info_result
+
+    - ansible.builtin.assert:
+        that:
+          - _sys_id_info_result.records | length == 1
+          - _sys_id_info_result.records[0].sys_id == catalog_task_sys_id
+          - _sys_id_info_result.records[0].state == "1"
+
     # Test 3: Update catalog request task state
     - name: Update catalog request task to work in progress
       servicenow.itsm.catalog_request_task:
