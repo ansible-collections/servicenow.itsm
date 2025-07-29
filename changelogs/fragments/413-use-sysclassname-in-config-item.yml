@@ -1,3 +1,0 @@
----
-bugfixes:
-  - configuration_item - use sys_class_name when getting existing records instead of always querying cmdb_ci

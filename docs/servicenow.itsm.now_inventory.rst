@@ -3,7 +3,7 @@
 servicenow.itsm.now inventory -- Inventory source for ServiceNow table records.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.10.0).
+This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.11.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -333,6 +333,23 @@ Parameters
   </tr>
   <tr>
     <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-enhanced_sysparm_limit"></div>
+      <p style="display: inline;"><strong>enhanced_sysparm_limit</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-enhanced_sysparm_limit" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">integer</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.11.0</i></p>
+
+    </td>
+    <td valign="top">
+      <p>Control the maximum number of records returned in a single query when using <em>enhanced</em>.</p>
+      <p>This only affects queries against the relationship table. All other queries use the <code class="ansible-option literal notranslate"><strong><a class="reference internal" href="#parameter-sysparm_limit"><span class="std std-ref"><span class="pre">sysparm_limit</span></span></a></strong></code> option.</p>
+      <p>If this is unset, the value of the <code class="ansible-option literal notranslate"><strong><a class="reference internal" href="#parameter-sysparm_limit"><span class="std std-ref"><span class="pre">sysparm_limit</span></span></a></strong></code> and its relevant defaults will be used.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
       <div class="ansibleOptionAnchor" id="parameter-enhanced_sysparm_query"></div>
       <p style="display: inline;"><strong>enhanced_sysparm_query</strong></p>
       <a class="ansibleOptionLink" href="#parameter-enhanced_sysparm_query" title="Permalink to this option"></a>
@@ -382,6 +399,31 @@ Parameters
   <tr>
     <td></td>
     <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/client_certificate_file"></div>
+      <p style="display: inline;"><strong>client_certificate_file</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/client_certificate_file" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>The path to the PEM certificate file that should be used for authentication.</p>
+      <p>The file must be local and accessible to the Ansible controller.</p>
+      <p><em>client_certificate_file</em> and <em>client_key_file</em> must be provided together.</p>
+      <p>If client certificate parameters are provided, they will be used instead of other authentication methods.</p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>Environment variable: <code>SN_CLIENT_CERTIFICATE_FILE</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
       <div class="ansibleOptionAnchor" id="parameter-instance/client_id"></div>
       <p style="display: inline;"><strong>client_id</strong></p>
       <a class="ansibleOptionLink" href="#parameter-instance/client_id" title="Permalink to this option"></a>
@@ -397,6 +439,31 @@ Parameters
       <ul>
       <li>
         <p>Environment variable: <code>SN_CLIENT_ID</code></p>
+
+      </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/client_key_file"></div>
+      <p style="display: inline;"><strong>client_key_file</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/client_key_file" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+
+    </td>
+    <td valign="top">
+      <p>The path to the certificate key file that should be used for authentication.</p>
+      <p>The file must be local and accessible to the Ansible controller.</p>
+      <p><em>client_certificate_file</em> and <em>client_key_file</em> must be provided together.</p>
+      <p>If client certificate parameters are provided, they will be used instead of other authentication methods.</p>
+      <p style="margin-top: 8px;"><b>Configuration:</b></p>
+      <ul>
+      <li>
+        <p>Environment variable: <code>SN_CLIENT_KEY_FILE</code></p>
 
       </li>
       </ul>

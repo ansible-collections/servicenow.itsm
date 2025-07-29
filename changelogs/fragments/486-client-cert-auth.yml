@@ -1,3 +1,0 @@
-minor_changes:
-  - plugins/module_utils/client - Added support for the client certificate authentication
-    (https://github.com/ansible-collections/servicenow.itsm/issues/415)
