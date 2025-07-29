@@ -295,6 +295,51 @@ releases:
     - 474-add-client-cred-support-inven.yml
     - 483-inven-enhanced-params.yml
     release_date: '2025-07-01'
+  2.11.0:
+    changes:
+      bugfixes:
+      - configuration_item - use sys_class_name when getting existing records instead
+        of always querying cmdb_ci
+      minor_changes:
+      - The ServiceNow connection now defaults to a 10 second timeout if the `timeout`
+        parameter is not set and the `SN_TIMEOUT` environment variable is not provided.
+      - This affects all modules and plugins that use the shared instance connection
+        options.
+      - catalog_request - Add module to manage ServiceNow catalog requests
+      - catalog_request_info - Add module to gather information about ServiceNow catalog
+        requests
+      - catalog_request_task - Add module to manage ServiceNow catalog request tasks
+      - catalog_request_task_info - Added module to retrieve information about ServiceNow
+        tasks in a catalog request
+      - now - added enhanced_sysparm_limit option to now inventory plugin, allowing
+        control of the maximum number of relationship records returned in a single
+        query when using enhanced.
+      - plugins/inventory/now - Added support for the client certificate authentication
+      - plugins/module_utils/client - Added support for the client certificate authentication
+        (https://github.com/ansible-collections/servicenow.itsm/issues/415)
+    fragments:
+    - 20240624-default-timeout.yml
+    - 20250728-milestone.yml
+    - 413-use-sysclassname-in-config-item.yml
+    - 475-local-test-makefile.yml
+    - 479-client-certificate-auth-inven.yml
+    - 486-client-cert-auth.yml
+    - 487-add-catalog-request-module.yml
+    - 488-add-catalog-request-info-module.yml
+    - 489-add-enhanced-query-limit.yml
+    - 490-add-catalog-request-task-module.yml
+    - 491-add-catalog_request_task_info.yml
+    modules:
+    - description: List ServiceNow catalog requests
+      name: catalog_request_info
+      namespace: ''
+    - description: Manage ServiceNow catalog request tasks
+      name: catalog_request_task
+      namespace: ''
+    - description: List ServiceNow catalog request tasks
+      name: catalog_request_task_info
+      namespace: ''
+    release_date: '2025-07-29'
   2.2.0:
     changes:
       minor_changes:

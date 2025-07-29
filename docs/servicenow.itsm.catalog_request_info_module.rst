@@ -1,7 +1,7 @@
 .. Created with antsibull-docs 2.16.3
 
-servicenow.itsm.service_catalog_info module -- List ServiceNow service catalogs along with categories and items
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+servicenow.itsm.catalog_request_info module -- List ServiceNow catalog requests
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.11.0).
 
@@ -10,9 +10,9 @@ To check whether it is installed, run ``ansible-galaxy collection list``.
 
 To install it, use: :code:`ansible-galaxy collection install servicenow.itsm`.
 
-To use it in a playbook, specify: ``servicenow.itsm.service_catalog_info``.
+To use it in a playbook, specify: ``servicenow.itsm.catalog_request_info``.
 
-New in servicenow.itsm 2.6.0
+New in servicenow.itsm 2.11.0
 
 .. contents::
    :local:
@@ -22,8 +22,8 @@ New in servicenow.itsm 2.6.0
 Synopsis
 --------
 
-- Retrieve information about ServiceCatalogs.
-- For more information, refer to ServiceNow service catalog documentation at \ `https://developer.servicenow.com/dev.do#!/reference/api/utah/rest/c\_ServiceCatalogAPI <https://developer.servicenow.com/dev.do#!/reference/api/utah/rest/c_ServiceCatalogAPI>`__
+- Retrieve information about ServiceNow catalog requests (sc\_request).
+- For more information, refer to the ServiceNow service catalog documentation at \ `https://docs.servicenow.com/bundle/utah-servicenow-platform/page/product/service-catalog/concept/c\_ServiceCatalogProcess.html <https://docs.servicenow.com/bundle/utah-servicenow-platform/page/product/service-catalog/concept/c_ServiceCatalogProcess.html>`__.
 
 
 
@@ -45,25 +45,6 @@ Parameters
   </tr>
   </thead>
   <tbody>
-  <tr>
-    <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-categories"></div>
-      <p style="display: inline;"><strong>categories</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-categories" title="Permalink to this option"></a>
-      <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">boolean</span>
-      </p>
-    </td>
-    <td valign="top">
-      <p>If set to <code class="ansible-value literal notranslate">true</code>, the categories will be fetched from ServiceNow.</p>
-      <p style="margin-top: 8px;"><b">Choices:</b></p>
-      <ul>
-        <li><p><code style="color: blue;"><b>false</b></code> <span style="color: blue;">← (default)</span></p></li>
-        <li><p><code>true</code></p></li>
-      </ul>
-
-    </td>
-  </tr>
   <tr>
     <td colspan="2" valign="top">
       <div class="ansibleOptionAnchor" id="parameter-instance"></div>
@@ -341,37 +322,32 @@ Parameters
 
   <tr>
     <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-items_info"></div>
-      <p style="display: inline;"><strong>items_info</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-items_info" title="Permalink to this option"></a>
+      <div class="ansibleOptionAnchor" id="parameter-number"></div>
+      <p style="display: inline;"><strong>number</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-number" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
         <span style="color: purple;">string</span>
       </p>
     </td>
     <td valign="top">
-      <p>List of options for fetching service catalog items.</p>
-      <p>Set to <code class="ansible-value literal notranslate">full</code>, if the whole item will be fetched.</p>
-      <p style="margin-top: 8px;"><b">Choices:</b></p>
-      <ul>
-        <li><p><code>&#34;full&#34;</code></p></li>
-        <li><p><code>&#34;brief&#34;</code></p></li>
-        <li><p><code style="color: blue;"><b>&#34;none&#34;</b></code> <span style="color: blue;">← (default)</span></p></li>
-      </ul>
-
+      <p>Number of the record to retrieve.</p>
+      <p>Note that contrary to <em>sys_id</em>, <em>number</em> may not uniquely identify a record.</p>
     </td>
   </tr>
   <tr>
     <td colspan="2" valign="top">
-      <div class="ansibleOptionAnchor" id="parameter-items_query"></div>
-      <p style="display: inline;"><strong>items_query</strong></p>
-      <a class="ansibleOptionLink" href="#parameter-items_query" title="Permalink to this option"></a>
+      <div class="ansibleOptionAnchor" id="parameter-query"></div>
+      <p style="display: inline;"><strong>query</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-query" title="Permalink to this option"></a>
       <p style="font-size: small; margin-bottom: 0;">
-        <span style="color: purple;">string</span>
+        <span style="color: purple;">list</span>
+        / <span style="color: purple;">elements=dictionary</span>
       </p>
     </td>
     <td valign="top">
-      <p>Query for the item content.</p>
-      <p>For more information, please refer to <a href='https://developer.servicenow.com/dev.do#!/reference/api/utah/rest/c_ServiceCatalogAPI#servicecat-GET-items'>https://developer.servicenow.com/dev.do#!/reference/api/utah/rest/c_ServiceCatalogAPI#servicecat-GET-items</a></p>
+      <p>Provides a set of operators for use with filters, condition builders, and encoded queries.</p>
+      <p>The data type of a field determines what operators are available for it. Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/tokyo-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/tokyo-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</p>
+      <p>Mutually exclusive with <code class='docutils literal notranslate'>sysparm_query</code>.</p>
     </td>
   </tr>
   <tr>
@@ -387,6 +363,44 @@ Parameters
       <p>Unique identifier of the record to retrieve.</p>
     </td>
   </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-sysparm_display_value"></div>
+      <p style="display: inline;"><strong>sysparm_display_value</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-sysparm_display_value" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.0.0</i></p>
+    </td>
+    <td valign="top">
+      <p>Return field display values <code class='docutils literal notranslate'>true</code>, actual values <code class='docutils literal notranslate'>false</code>, or both <code class='docutils literal notranslate'>all</code>.</p>
+      <p style="margin-top: 8px;"><b">Choices:</b></p>
+      <ul>
+        <li><p><code>&#34;true&#34;</code></p></li>
+        <li><p><code style="color: blue;"><b>&#34;false&#34;</b></code> <span style="color: blue;">← (default)</span></p></li>
+        <li><p><code>&#34;all&#34;</code></p></li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-sysparm_query"></div>
+      <p style="display: inline;"><strong>sysparm_query</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-sysparm_query" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+      <p><i style="font-size: small; color: darkgreen;">added in servicenow.itsm 2.0.0</i></p>
+    </td>
+    <td valign="top">
+      <p>An encoded query string used to filter the results as an alternative to <code class='docutils literal notranslate'>query</code>.</p>
+      <p>Refer to the ServiceNow Available Filters Queries documentation at <a href='https://docs.servicenow.com/bundle/tokyo-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html'>https://docs.servicenow.com/bundle/tokyo-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html</a>.</p>
+      <p>If not set, the value of the <code class='docutils literal notranslate'>SN_SYSPARM_QUERY</code> environment, if specified.</p>
+      <p>Mutually exclusive with <code class='docutils literal notranslate'>query</code>.</p>
+    </td>
+  </tr>
   </tbody>
   </table>
 
@@ -394,35 +408,63 @@ Parameters
 
 
 
+See Also
+--------
+
+* `servicenow.itsm.catalog\_request <catalog_request_module.rst>`__
+
+  Manage ServiceNow catalog requests.
+* `servicenow.itsm.catalog\_request\_task\_info <catalog_request_task_info_module.rst>`__
+
+  List ServiceNow catalog request tasks.
 
 Examples
 --------
 
 .. code-block:: yaml
 
-    - name: Return all catalogs without categories but with items (brief information)
-      servicenow.itsm.service_catalog_info:
-        categories: false
-        items_info: brief
+    - name: Retrieve all catalog requests
+      servicenow.itsm.catalog_request_info:
+      register: result
 
-    - name: Return service catalog without categories but with items (brief information)
-      servicenow.itsm.service_catalog_info:
-        sys_id: "{{ service_catalog.sys_id }}"
-        categories: false
-        items_info: full
+    - name: Retrieve a specific catalog request by its sys_id
+      servicenow.itsm.catalog_request_info:
+        sys_id: 471bfbc7a9fe198101e77a3e10e5d47f
+      register: result
 
-    - name: Return service catalog with categories and with items (full information)
-      servicenow.itsm.service_catalog_info:
-        sys_id: "{{ service_catalog.sys_id }}"
-        categories: true
-        items_info: full
+    - name: Retrieve catalog requests by number
+      servicenow.itsm.catalog_request_info:
+        number: REQ0007601
+      register: result
 
-    - name: Return service catalog with categories and with all items containing word "iPhone"
-      servicenow.itsm.service_catalog_info:
-        sys_id: "{{ service_catalog.sys_id }}"
-        categories: true
-        items_info: full
-        items_query: iPhone
+    - name: Retrieve catalog requests that contain laptop in short description
+      servicenow.itsm.catalog_request_info:
+        query:
+          - short_description: LIKE laptop
+      register: result
+
+    - name: Retrieve catalog requests by request state
+      servicenow.itsm.catalog_request_info:
+        query:
+          - request_state: = submitted
+      register: result
+
+    - name: Retrieve catalog requests requested by specific user
+      servicenow.itsm.catalog_request_info:
+        query:
+          - requested_by: = abel.tuter
+      register: result
+
+    - name: Retrieve catalog requests for specific user
+      servicenow.itsm.catalog_request_info:
+        query:
+          - requested_for: = john.doe
+      register: result
+
+    - name: Retrieve catalog requests using sysparm_query
+      servicenow.itsm.catalog_request_info:
+        sysparm_query: short_descriptionLIKElaptop^request_state=submitted
+      register: result
 
 
 
@@ -452,9 +494,9 @@ The following are the fields unique to this module:
       </p>
     </td>
     <td valign="top">
-      <p>List of catalogs.</p>
+      <p>A list of catalog request records.</p>
       <p style="margin-top: 8px;"><b>Returned:</b> success</p>
-      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>[{&#34;categories&#34;: [{&#34;description&#34;: &#34;Datacenter hardware and services to the support business\n\t\t\tsystems.\n\t\t&#34;, &#34;full_description&#34;: null, &#34;subcategories&#34;: [{&#34;sys_id&#34;: &#34;d67c446ec0a80165000335aa37eafbc1&#34;, &#34;title&#34;: &#34;Services&#34;}], &#34;sys_id&#34;: &#34;803e95e1c3732100fca206e939ba8f2a&#34;, &#34;title&#34;: &#34;Infrastructure&#34;}, {&#34;description&#34;: &#34;Request for IT services to be performed&#34;, &#34;full_description&#34;: null, &#34;subcategories&#34;: [], &#34;sys_id&#34;: &#34;d67c446ec0a80165000335aa37eafbc1&#34;, &#34;title&#34;: &#34;Services&#34;}], &#34;description&#34;: &#34;Products and services for the IT department&#34;, &#34;has_categories&#34;: true, &#34;has_items&#34;: true, &#34;items&#34;: [{&#34;catalogs&#34;: [{&#34;active&#34;: true, &#34;sys_id&#34;: &#34;e0d08b13c3330100c8b837659bba8fb4&#34;, &#34;title&#34;: &#34;Service Catalog&#34;}, {&#34;active&#34;: true, &#34;sys_id&#34;: &#34;742ce428d7211100f2d224837e61036d&#34;, &#34;title&#34;: &#34;Technical Catalog&#34;}], &#34;category&#34;: {&#34;sys_id&#34;: &#34;e15706fc0a0a0aa7007fc21e1ab70c2f&#34;, &#34;title&#34;: &#34;Can We Help You?&#34;}, &#34;description&#34;: &#34;&lt;p&gt;Some description&lt;/p&gt;&#34;, &#34;mandatory_attachment&#34;: false, &#34;name&#34;: &#34;Request Knowledge Base&#34;, &#34;order&#34;: 0, &#34;request_method&#34;: &#34;&#34;, &#34;short_description&#34;: &#34;Request for a Knowledge Base&#34;, &#34;sys_class_name&#34;: &#34;sc_cat_item_producer&#34;, &#34;sys_id&#34;: &#34;81c887819f203100d8f8700c267fcfb5&#34;, &#34;type&#34;: &#34;record_producer&#34;}], &#34;sys_id&#34;: &#34;742ce428d7211100f2d224837e61036d&#34;, &#34;title&#34;: &#34;Technical Catalog&#34;}]</code></p>
+      <p style="margin-top: 8px; color: blue; word-wrap: break-word; word-break: break-all;"><b style="color: black;">Sample:</b> <code>[{&#34;active&#34;: &#34;true&#34;, &#34;approval&#34;: &#34;not_requested&#34;, &#34;assigned_to&#34;: &#34;&#34;, &#34;assignment_group&#34;: &#34;&#34;, &#34;attachments&#34;: [], &#34;business_service&#34;: &#34;&#34;, &#34;comments&#34;: &#34;&#34;, &#34;delivery_plan&#34;: &#34;&#34;, &#34;delivery_task&#34;: &#34;&#34;, &#34;description&#34;: &#34;User needs a new laptop for remote work&#34;, &#34;due_date&#34;: &#34;&#34;, &#34;impact&#34;: &#34;3&#34;, &#34;number&#34;: &#34;REQ0000123&#34;, &#34;opened_at&#34;: &#34;2024-01-15 10:30:00&#34;, &#34;opened_by&#34;: &#34;jane.smith&#34;, &#34;priority&#34;: &#34;2&#34;, &#34;request_state&#34;: &#34;submitted&#34;, &#34;requested_by&#34;: &#34;jane.smith&#34;, &#34;requested_for&#34;: &#34;john.doe&#34;, &#34;short_description&#34;: &#34;Request for new laptop&#34;, &#34;stage&#34;: &#34;request_approved&#34;, &#34;sys_created_by&#34;: &#34;jane.smith&#34;, &#34;sys_created_on&#34;: &#34;2024-01-15 10:30:00&#34;, &#34;sys_id&#34;: &#34;b25d93a37b1200001c9c9b5b8a9619a8&#34;, &#34;sys_updated_by&#34;: &#34;jane.smith&#34;, &#34;sys_updated_on&#34;: &#34;2024-01-15 10:30:00&#34;, &#34;urgency&#34;: &#34;2&#34;, &#34;work_notes&#34;: &#34;&#34;}]</code></p>
     </td>
   </tr>
   </tbody>
@@ -466,7 +508,7 @@ The following are the fields unique to this module:
 Authors
 ~~~~~~~
 
-- Cosmin Tupangiu (@tupyy)
+- ServiceNow ITSM Collection Contributors (@ansible-collections)
 
 
 

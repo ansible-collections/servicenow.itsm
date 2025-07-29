@@ -1,3 +1,0 @@
----
-minor_changes:
-  - catalog_request_task_info - Added module to retrieve information about ServiceNow tasks in a catalog request
