@@ -234,3 +234,10 @@ def map_query_values(query, mapper):
             subquery[k] = (subquery[k][0], v)
 
     return query
+
+
+def construct_sysparm_query_from_query(query):
+    parsed, err = parse_query(query)
+    if err:
+        raise ValueError(err)
+    return serialize_query(parsed)
