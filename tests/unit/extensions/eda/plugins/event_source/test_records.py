@@ -16,9 +16,7 @@ def source():
         mock.AsyncMock(),
         dict(
             table="change_request",
-            instance=dict(
-                host="http://my.host.name", username="user", password="pass"
-            ),
+            instance=dict(host="http://my.host.name", username="user", password="pass"),
             sysparm_query="foo",
         ),
     )
