@@ -99,7 +99,7 @@ class RecordsSource:
             return {'sysparm_query': args.get("sysparm_query")}
 
         if not args.get("query"):
-            return {}
+            return None
 
         try:
             return {'sysparm_query': construct_sysparm_query_from_query(args.get("query"))}
@@ -123,7 +123,7 @@ class RecordsSource:
             self.updated_since,
         )
         for record in self.table_client.list_records(
-            self.table_name, self.sysparm_query
+            self.table_name, self.list_query
         ):
             await self.process_record(record, reported_records)
 
