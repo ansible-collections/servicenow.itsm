@@ -86,7 +86,7 @@ class RecordsSource:
         )
 
         self.table_name = args.get("table")
-        self.sysparm_query = self.get_sysparm_query(args)
+        self.list_query = self.format_list_query(args)
         self.interval = int(args.get("interval", 5))
         self.updated_since = self.parse_string_to_datetime(args.get("updated_since"))
 
@@ -94,15 +94,15 @@ class RecordsSource:
         self.table_client = table.TableClient(self.snow_client)
         self.previously_reported_records = dict()
 
-    def get_sysparm_query(self, args):
+    def format_list_query(self, args):
         if args.get("sysparm_query"):
-            return args.get("sysparm_query")
+            return {'sysparm_query': args.get("sysparm_query")}
 
         if not args.get("query"):
-            raise AnsibleParserError("Either query or sysparm_query must be specified")
+            return {}
 
         try:
-            return construct_sysparm_query_from_query(args.get("query"))
+            return {'sysparm_query': construct_sysparm_query_from_query(args.get("query"))}
         except ValueError as e:
             raise AnsibleParserError("Unable to parse query: %s" % e)
 
