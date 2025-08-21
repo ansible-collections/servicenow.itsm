@@ -1,3 +1,7 @@
+# This is a duplicate of the requirements.txt file in tests/unit/
+# This file is installed by the unit-source.yml workflow, while the other
+# is installed by ansible-test (used in the makefile).
 pytest
 mock
 pytest-mock
+pytest-asyncio

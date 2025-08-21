@@ -3,7 +3,7 @@
 servicenow.itsm.configuration_item module -- Manage ServiceNow configuration items
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.10.0).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.11.0).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -305,6 +305,23 @@ Parameters
   <tr>
     <td></td>
     <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/client_certificate_file"></div>
+      <p style="display: inline;"><strong>client_certificate_file</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/client_certificate_file" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The path to the PEM certificate file that should be used for authentication.</p>
+      <p>The file must be local and accessible to the host running the module.</p>
+      <p><em>client_certificate_file</em> and <em>client_key_file</em> must be provided together.</p>
+      <p>If client certificate parameters are provided, they will be used instead of other authentication methods.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
       <div class="ansibleOptionAnchor" id="parameter-instance/client_id"></div>
       <p style="display: inline;"><strong>client_id</strong></p>
       <a class="ansibleOptionLink" href="#parameter-instance/client_id" title="Permalink to this option"></a>
@@ -317,6 +334,23 @@ Parameters
       <p>If not set, the value of the <code class='docutils literal notranslate'>SN_CLIENT_ID</code> environment variable will be used.</p>
       <p>If provided, it requires <em>client_secret</em>.</p>
       <p>Required when <em>grant_type=client_credentials</em>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td valign="top">
+      <div class="ansibleOptionAnchor" id="parameter-instance/client_key_file"></div>
+      <p style="display: inline;"><strong>client_key_file</strong></p>
+      <a class="ansibleOptionLink" href="#parameter-instance/client_key_file" title="Permalink to this option"></a>
+      <p style="font-size: small; margin-bottom: 0;">
+        <span style="color: purple;">string</span>
+      </p>
+    </td>
+    <td valign="top">
+      <p>The path to the certificate key file that should be used for authentication.</p>
+      <p>The file must be local and accessible to the host running the module.</p>
+      <p><em>client_certificate_file</em> and <em>client_key_file</em> must be provided together.</p>
+      <p>If client certificate parameters are provided, they will be used instead of other authentication methods.</p>
     </td>
   </tr>
   <tr>
@@ -438,6 +472,7 @@ Parameters
     <td valign="top">
       <p>Timeout in seconds for the connection with the ServiceNow instance.</p>
       <p>If not set, the value of the <code class='docutils literal notranslate'>SN_TIMEOUT</code> environment variable will be used.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">10.0</code></p>
     </td>
   </tr>
   <tr>
@@ -606,6 +641,7 @@ Parameters
       <p>The value of this parameter should point to a ServiceNow CMDB configuration item table, for instance <code class='docutils literal notranslate'>cmdb_ci_server</code>.</p>
       <p>For a list of valid CMDB tables, refer to ServiceNow documentation on <a href='https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-tables-details.html'>https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/reference/cmdb-tables-details.html</a>.</p>
       <p>If this parameter is unset when a new configuration item needs to be created, the default value <code class='docutils literal notranslate'>cmdb_ci</code> will be used.</p>
+      <p style="margin-top: 8px;"><b style="color: blue;">Default:</b> <code style="color: blue;">&#34;cmdb_ci&#34;</code></p>
     </td>
   </tr>
   <tr>
@@ -717,6 +753,7 @@ Authors
 - Tadej Borovsak (@tadeboro)
 - Matej Pevec (@mysteriouswolf)
 - Polona Mihalič (@PolonaM)
+- Mathijs de Ruiter (@EUCTechTopis)
 
 
 

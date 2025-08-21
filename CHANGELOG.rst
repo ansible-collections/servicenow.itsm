@@ -4,6 +4,34 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.11.0
+=======
+
+Minor Changes
+-------------
+
+- The ServiceNow connection now defaults to a 10 second timeout if the `timeout` parameter is not set and the `SN_TIMEOUT` environment variable is not provided.
+- This affects all modules and plugins that use the shared instance connection options.
+- catalog_request - Add module to manage ServiceNow catalog requests
+- catalog_request_info - Add module to gather information about ServiceNow catalog requests
+- catalog_request_task - Add module to manage ServiceNow catalog request tasks
+- catalog_request_task_info - Added module to retrieve information about ServiceNow tasks in a catalog request
+- now - added enhanced_sysparm_limit option to now inventory plugin, allowing control of the maximum number of relationship records returned in a single query when using enhanced.
+- plugins/inventory/now - Added support for the client certificate authentication
+- plugins/module_utils/client - Added support for the client certificate authentication (https://github.com/ansible-collections/servicenow.itsm/issues/415)
+
+Bugfixes
+--------
+
+- configuration_item - use sys_class_name when getting existing records instead of always querying cmdb_ci
+
+New Modules
+-----------
+
+- servicenow.itsm.catalog_request_info - List ServiceNow catalog requests
+- servicenow.itsm.catalog_request_task - Manage ServiceNow catalog request tasks
+- servicenow.itsm.catalog_request_task_info - List ServiceNow catalog request tasks
+
 v2.10.0
 =======
 
