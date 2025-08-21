@@ -1,0 +1,3 @@
+---
+trivial:
+  - linters - Fix black linter error in event source plugin
