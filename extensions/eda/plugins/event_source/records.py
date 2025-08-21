@@ -96,13 +96,15 @@ class RecordsSource:
 
     def format_list_query(self, args):
         if args.get("sysparm_query"):
-            return {'sysparm_query': args.get("sysparm_query")}
+            return {"sysparm_query": args.get("sysparm_query")}
 
         if not args.get("query"):
             return None
 
         try:
-            return {'sysparm_query': construct_sysparm_query_from_query(args.get("query"))}
+            return {
+                "sysparm_query": construct_sysparm_query_from_query(args.get("query"))
+            }
         except ValueError as e:
             raise AnsibleParserError("Unable to parse query: %s" % e)
 
@@ -122,9 +124,7 @@ class RecordsSource:
             self.table_name,
             self.updated_since,
         )
-        for record in self.table_client.list_records(
-            self.table_name, self.list_query
-        ):
+        for record in self.table_client.list_records(self.table_name, self.list_query):
             await self.process_record(record, reported_records)
 
         self.previously_reported_records = reported_records
