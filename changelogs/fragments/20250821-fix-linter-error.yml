@@ -1,0 +1,5 @@
+---
+trivial:
+  - linters - Fix black linter error in event source plugin
+  - units - Exclude Python 3.11 from devel and milestone unit tests
+  - integration - Exclude Python 3.11 from devel integration tests
