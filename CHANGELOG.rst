@@ -4,6 +4,19 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.12.0
+=======
+
+Release Summary
+---------------
+
+Add Event-Driven Ansible record polling feature and fix some CI/CD issues.
+
+Minor Changes
+-------------
+
+- records - add EDA event source plugin that allows you to monitor a table for new or updated records
+
 v2.11.0
 =======
 
