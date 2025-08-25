@@ -340,6 +340,18 @@ releases:
       name: catalog_request_task_info
       namespace: ''
     release_date: '2025-07-29'
+  2.12.0:
+    changes:
+      minor_changes:
+      - records - add EDA event source plugin that allows you to monitor a table for
+        new or updated records
+      release_summary: Add Event-Driven Ansible record polling feature and fix some
+        CI/CD issues.
+    fragments:
+    - 20250821-fix-linter-error.yml
+    - 20250825-release-summary.yml
+    - 494-add-eda-event-source-plugin.yml
+    release_date: '2025-08-25'
   2.2.0:
     changes:
       minor_changes:

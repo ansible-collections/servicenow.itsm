@@ -1,3 +1,0 @@
----
-minor_changes:
-  - records - add EDA event source plugin that allows you to monitor a table for new or updated records
