@@ -8,6 +8,8 @@ module: records
 short_description: Event Driven Ansible source for ServiceNow records.
 description:
   - Poll the ServiceNow API for any new records in a table, using them as a source for Event Driven Ansible.
+  - This plugin can use the same environment variables as the rest of the ServiceNow collection to
+    configure the instance connection.
 
 author:
   - ServiceNow ITSM Collection Contributors (@ansible-collections)
@@ -41,9 +43,10 @@ EXAMPLES = r"""
   sources:
     - name: Watch for updated change requests
       servicenow.itsm.records:
-        instance: https://dev-012345.service-now.com
-        username: ansible
-        password: ansible
+        instance:
+          host: https://dev-012345.service-now.com
+          username: ansible
+          password: ansible
         table: change_request
         interval: 1
         updated_since: "2025-08-13 12:00:00"
