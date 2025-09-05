@@ -12,8 +12,8 @@ import sys
 
 import pytest
 from ansible.module_utils.common.text.converters import to_text
-from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
-from ansible.module_utils.six.moves.urllib.parse import parse_qs, urlparse
+from urllib.error import HTTPError, URLError
+from urllib.parse import parse_qs, urlparse
 from ansible_collections.servicenow.itsm.plugins.module_utils import client, errors
 
 pytestmark = pytest.mark.skipif(
