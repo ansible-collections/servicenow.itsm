@@ -1,3 +1,0 @@
----
-trivial:
-  - ignore the devel sanity pylint errors associated with the six library, since we still support py2 remotes

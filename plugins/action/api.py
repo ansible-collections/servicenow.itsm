@@ -19,7 +19,6 @@ from ansible.errors import (
 )
 from ansible.module_utils._text import to_bytes, to_text
 from ansible.module_utils.common.validation import check_mutually_exclusive
-from ansible.module_utils.six import iteritems
 from ansible.plugins.action import ActionBase
 from yaml import Loader
 
@@ -165,7 +164,7 @@ class ActionModule(ActionBase):
 
         # template the source data locally & get ready to transfer
         with self.get_template_data(template_item["path"]) as template_data:
-            for key, value in iteritems(template_item):
+            for key, value in template_item.items():
                 if hasattr(self._templar.environment, key):
                     if value is not None:
                         setattr(self._templar.environment, key, value)

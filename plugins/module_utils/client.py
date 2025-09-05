@@ -10,9 +10,8 @@ __metaclass__ = type
 import json
 import ssl
 
-from ansible.module_utils.six import PY2
-from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
-from ansible.module_utils.six.moves.urllib.parse import quote, urlencode
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote, urlencode
 from ansible.module_utils.urls import Request, basic_auth_header
 
 from .errors import AuthError, ServiceNowError, UnexpectedAPIResponse
@@ -197,13 +196,6 @@ class Client:
                 )
             raise
 
-        if PY2:
-            return Response(
-                raw_resp.getcode(),
-                raw_resp.read(),
-                raw_resp.info(),
-                self.json_decoder_hook,
-            )
         return Response(
             raw_resp.status, raw_resp.read(), raw_resp.headers, self.json_decoder_hook
         )

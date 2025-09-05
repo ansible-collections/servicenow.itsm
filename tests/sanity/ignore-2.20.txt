@@ -1,3 +1,0 @@
-plugins/action/api.py pylint:ansible-bad-import-from # ignore six import check because ansible-core 2.16 is supported on AAP and supports a py2 remote
-plugins/module_utils/client.py pylint:ansible-bad-import-from # ignore six import check because ansible-core 2.16 is supported on AAP and supports a py2 remote
-plugins/module_utils/validation.py pylint:ansible-bad-import-from # ignore six import check because ansible-core 2.16 is supported on AAP and supports a py2 remotes

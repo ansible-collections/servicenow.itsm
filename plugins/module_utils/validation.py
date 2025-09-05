@@ -7,13 +7,11 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible.module_utils.six import text_type
-
 from .errors import ServiceNowError
 
 
 def _assert_str_or_none(param, val):
-    if not isinstance(val, (str, text_type, type(None))):
+    if not isinstance(val, (str, type(None))):
         raise ServiceNowError(
             "Expected '{0}' to be text or None, got {1}".format(param, type(val))
         )
