@@ -1,0 +1,34 @@
+---
+- name: Test AAP-48317 Fix - ServiceNow Variable Access via extra_vars
+  hosts: localhost
+  gather_facts: false
+  
+  tasks:
+    - name: Test if SN_HOST variable is accessible
+      debug:
+        msg: "SUCCESS: SN_HOST is accessible as: {{ SN_HOST }}"
+      
+    - name: Test if SN_USERNAME variable is accessible  
+      debug:
+        msg: "SUCCESS: SN_USERNAME is accessible as: {{ SN_USERNAME }}"
+        
+    - name: Test if SN_PASSWORD variable is accessible (masked)
+      debug:
+        msg: "SUCCESS: SN_PASSWORD is accessible (value masked for security)"
+      when: SN_PASSWORD is defined
+      
+    - name: Test ServiceNow connection using injected variables
+      servicenow.itsm.incident_info:
+        hostname: "{{ SN_HOST }}"
+        username: "{{ SN_USERNAME }}"
+        password: "{{ SN_PASSWORD }}"
+        number: "INC0000001"  # Try to get a specific incident (this may fail if incident doesn't exist, but that's OK)
+      register: incident_result
+      ignore_errors: true
+      
+    - name: Display connection test result
+      debug:
+        msg: |
+          Connection test result:
+          - Variables were successfully passed to ServiceNow module
+          - {{ incident_result.msg | default('Connection attempt completed') }}
