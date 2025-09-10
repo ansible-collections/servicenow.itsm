@@ -1,5 +1,5 @@
 ---
 bugfixes:
-  - records - Prevent missed events between polls by avoiding future 'since' timestamps; advance the 'since' timestamp (cursor) to the latest seen value at second precision (monotonic). (issue #<issue_number>)
+  - records - Prevent missed events between polls by avoiding future 'since' timestamps; advance the 'since' timestamp (cursor) to the latest seen value at second precision (monotonic). (issue #502)
 
 
