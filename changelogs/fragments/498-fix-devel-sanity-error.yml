@@ -1,4 +1,0 @@
----
-bugfixes:
-  - api - Remove six imports since py2 support is not needed
-  - client, validation - Remove six imports since py2 support is not needed
