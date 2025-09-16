@@ -4,6 +4,17 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.12.1
+=======
+
+Bugfixes
+--------
+
+- api - Remove six imports since py2 support is not needed
+- client, validation - Remove six imports since py2 support is not needed
+- eda/plugins/event_source/records - Add meta file so EDA plugin docs will be parsed by Galaxy (fixes https://github.com/ansible-collections/servicenow.itsm/issues/498)
+- records - Prevent missed events between polls by avoiding future 'since' timestamps; advance the 'since' timestamp (cursor) to the latest seen value at second precision (monotonic). (issue
+
 v2.12.0
 =======
 
