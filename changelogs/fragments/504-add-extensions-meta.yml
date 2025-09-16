@@ -1,0 +1,4 @@
+---
+bugfixes:
+  - eda/plugins/event_source/records - Add meta file so EDA plugin docs will be parsed by Galaxy
+    (fixes https://github.com/ansible-collections/servicenow.itsm/issues/498)
