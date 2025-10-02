@@ -157,7 +157,7 @@ Known exceptions or compatibility issues will be tracked via the GitHub Issues p
 
 | ServiceNow Release | Collection Release |   EOL   |
 | ------------------ | ------------------ | ------- |
-| Zurich             | 3.0.0+             |   TBA   |
+| Zurich             | 2.13.0+            |   TBA   |
 | Yokohama           | 2.9.0+             |   TBA   |
 | Xanadu             | 2.7.0+             |   TBA   |
 | Washington DC      | 2.5.0+             | Q4 2025 |
