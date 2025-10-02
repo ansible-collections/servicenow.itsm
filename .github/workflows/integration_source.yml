@@ -96,19 +96,10 @@ jobs:
           - "3.12"
           - "3.13"
         servicenow-version:
-          - "washington"
           - "xanadu"
           - "yokohama"
+          - "zurich"
         include:
-          - servicenow-version: "washington"
-            sn_host_secret: SN_HOST_WASHINGTON
-            sn_username_secret: SN_USERNAME_WASHINGTON
-            sn_password_secret: SN_PASSWORD_WASHINGTON
-            sn_client_id_secret: SN_CLIENT_ID_WASHINGTON
-            sn_client_secret_secret: SN_CLIENT_SECRET_WASHINGTON
-            sn_api_key_secret: SN_API_KEY_WASHINGTON
-            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_WASHINGTON
-            sn_client_key_secret: SN_CLIENT_KEY_WASHINGTON
           - servicenow-version: "xanadu"
             sn_host_secret: SN_HOST_XANADU
             sn_username_secret: SN_USERNAME_XANADU
@@ -127,6 +118,15 @@ jobs:
             sn_api_key_secret: SN_API_KEY_YOKOHAMA
             sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_YOKOHAMA
             sn_client_key_secret: SN_CLIENT_KEY_YOKOHAMA
+          - servicenow-version: "zurich"
+            sn_host_secret: SN_HOST_ZURICH
+            sn_username_secret: SN_USERNAME_ZURICH
+            sn_password_secret: SN_PASSWORD_ZURICH
+            sn_client_id_secret: SN_CLIENT_ID_ZURICH
+            sn_client_secret_secret: SN_CLIENT_SECRET_ZURICH
+            sn_api_key_secret: SN_API_KEY_ZURICH
+            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_ZURICH
+            sn_client_key_secret: SN_CLIENT_KEY_ZURICH
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
     continue-on-error: ${{ matrix.ansible-version == 'devel' || matrix.ansible-version == 'milestone' }}
 
