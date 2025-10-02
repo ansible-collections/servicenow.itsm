@@ -2,12 +2,13 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-
 DOCUMENTATION = r"""
 module: records
 short_description: Event Driven Ansible source for ServiceNow records.
 description:
   - Poll the ServiceNow API for any new records in a table, using them as a source for Event Driven Ansible.
+  - This plugin can use the same environment variables as the rest of the ServiceNow collection to
+    configure the instance connection.
 
 author:
   - ServiceNow ITSM Collection Contributors (@ansible-collections)
@@ -41,9 +42,10 @@ EXAMPLES = r"""
   sources:
     - name: Watch for updated change requests
       servicenow.itsm.records:
-        instance: https://dev-012345.service-now.com
-        username: ansible
-        password: ansible
+        instance:
+          host: https://dev-012345.service-now.com
+          username: ansible
+          password: ansible
         table: change_request
         interval: 1
         updated_since: "2025-08-13 12:00:00"
@@ -92,7 +94,7 @@ class RecordsSource:
 
         self.snow_client = client.Client(**self.instance_config)
         self.table_client = table.TableClient(self.snow_client)
-        self.previously_reported_records = dict()
+        self.previously_reported_records: Dict[str, str] = dict()
 
     def format_list_query(self, args):
         if args.get("sysparm_query"):
@@ -115,31 +117,60 @@ class RecordsSource:
             await asyncio.sleep(self.interval)
 
     async def _poll_for_records(self):
-        next_polling_time = datetime.datetime.now() + datetime.timedelta(
-            seconds=self.interval
-        )
-        reported_records = dict()
+        # Mark the start of this poll. We'll advance the since timestamp (cursor)
+        # at the end to a safe value: max(poll_start_floor, newest_seen_this_poll).
+        poll_start = datetime.datetime.now()
+        poll_start_floor = poll_start.replace(microsecond=0)
+
+        reported_records: Dict[str, str] = dict()
+        newest_seen = self.updated_since  # start from current since timestamp (cursor)
+
         logger.info(
             "Polling for new records in %s since %s",
             self.table_name,
             self.updated_since,
         )
+
         for record in self.table_client.list_records(self.table_name, self.list_query):
             await self.process_record(record, reported_records)
+            # Track the newest timestamp actually observed this cycle
+            try:
+                ts = self.parse_string_to_datetime(record["sys_updated_on"])
+                if ts > newest_seen:
+                    newest_seen = ts
+            except Exception:
+                # If a record has an unexpected timestamp format, ignore it for advancing the since timestamp
+                pass
 
         self.previously_reported_records = reported_records
-        self.updated_since = next_polling_time
+
+        # Compute next 'since' timestamp (lower bound/cursor for next poll):
+        # - never in the future
+        # - aligned to seconds
+        # - monotonically non-decreasing
+        next_since = max(newest_seen, poll_start_floor)
+        if next_since > self.updated_since:
+            logger.debug(
+                "Advancing since timestamp: %s -> %s", self.updated_since, next_since
+            )
+            self.updated_since = next_since
+        else:
+            logger.debug(
+                "Since timestamp unchanged (next_since=%s <= updated_since=%s)",
+                next_since,
+                self.updated_since,
+            )
 
     async def process_record(self, record, reported_records):
+        # Ignore anything strictly older than our since timestamp.
         if self.parse_string_to_datetime(record["sys_updated_on"]) < self.updated_since:
             return
 
         if self.has_record_been_reported(record):
-            # We already reported this record during the last polling interval, so we can skip it.
+            # Already reported in the immediately previous cycle.
             return
         else:
-            # We havent reported this record yet, so we need to store it in the reported_records dict
-            # and send it to the queue.
+            # Not reported yet: remember it for this cycle and emit.
             reported_records[record["sys_id"]] = record["sys_updated_on"]
             await self.queue.put(record)
 
@@ -155,9 +186,11 @@ class RecordsSource:
     def parse_string_to_datetime(self, date_string: str = None):
         format_string = "%Y-%m-%d %H:%M:%S"
         if date_string is None:
-            return datetime.datetime.now()
+            # Truncate to whole seconds to match ServiceNow precision
+            return datetime.datetime.now().replace(microsecond=0)
 
         try:
+            # ServiceNow returns second-precision strings (no microseconds)
             return datetime.datetime.strptime(date_string, format_string)
         except ValueError:
             raise ValueError("Invalid date string: %s" % date_string)

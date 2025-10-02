@@ -1,0 +1,4 @@
+---
+extensions:
+  - args:
+      ext_dir: eda/plugins/event_source
