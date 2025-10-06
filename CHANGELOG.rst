@@ -4,6 +4,19 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.13.0
+=======
+
+Release Summary
+---------------
+
+The collection now supports the Zurich ServiceNow release, which has been added to the test matrix. The ServiceNow Washington release has gone EOL so it has been dropped. Also drop ansible-core 2.17 from test matrix as it is going EOL.
+
+Minor Changes
+-------------
+
+- add support for SNOW ZURICH release
+
 v2.12.1
 =======
 

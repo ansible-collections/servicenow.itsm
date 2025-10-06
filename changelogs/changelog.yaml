@@ -368,6 +368,19 @@ releases:
     - 504-add-extensions-meta.yml
     - eda-records-fix.yml
     release_date: '2025-09-16'
+  2.13.0:
+    changes:
+      minor_changes:
+      - add support for SNOW ZURICH release
+      release_summary: The collection now supports the Zurich ServiceNow release,
+        which has been added to the test matrix. The ServiceNow Washington release
+        has gone EOL so it has been dropped. Also drop ansible-core 2.17 from test
+        matrix as it is going EOL.
+    fragments:
+    - 213_release_summary.yml
+    - 507-add-support-for-zurich.yml
+    - 508-drop-217.yml
+    release_date: '2025-10-06'
   2.2.0:
     changes:
       minor_changes:
