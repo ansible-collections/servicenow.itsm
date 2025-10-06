@@ -6,7 +6,7 @@ This collection is ideal for IT administrators, DevOps engineers, and automation
 
 ## Requirements
 
-- **Ansible-Core**: >= 2.15.0
+- **Ansible-Core**: >= 2.15.0, except 2.17
 - **Python**: With ansible-core, as listed for control nodes [here](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
 - No additional Python libraries or external Ansible collections are required.
 - A ServiceNow instance and user credentials are required for module authentication.
@@ -149,7 +149,7 @@ Using environment:
 ## Testing
 
 This collection is tested with:
-- Ansible-Core >= 2.15.0
+- Ansible-Core >= 2.15.0, except 2.17
 - Python, as specified for control nodes [here](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
 - Supported ServiceNow versions according to the table below
 
