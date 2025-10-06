@@ -33,19 +33,19 @@ on:
               "python-version": "3.13"
             },
             {
-              "ansible-version": "stable-2.17",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.17",
-              "python-version": "3.13"
-            },
-            {
               "ansible-version": "stable-2.18",
               "python-version": "3.9"
             },
             {
               "ansible-version": "stable-2.18",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "stable-2.19",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "stable-2.19",
               "python-version": "3.10"
             },
             {
@@ -89,8 +89,8 @@ jobs:
         ansible-version:
           - stable-2.15
           - stable-2.16
-          - stable-2.17
           - stable-2.18
+          - stable-2.19
           - milestone
           - devel
         python-version:
