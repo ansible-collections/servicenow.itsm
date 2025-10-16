@@ -112,9 +112,15 @@ class RecordsSource:
 
     async def start_polling(self):
         while True:
-            await self._poll_for_records()
+            logger.debug("Staring poll iteration")
+            try:
+                await self._poll_for_records()
+            except Exception as e:
+                logger.error("Error polling for records: %s", e)
+                logger.info("Plugin will keep running")
             logger.info("Sleeping for %s seconds", self.interval)
             await asyncio.sleep(self.interval)
+            logger.debug("Ending poll iteration")
 
     async def _poll_for_records(self):
         # Mark the start of this poll. We'll advance the since timestamp (cursor)
@@ -132,6 +138,7 @@ class RecordsSource:
         )
 
         for record in self.table_client.list_records(self.table_name, self.list_query):
+            logger.debug("Processing record: %s", record)
             await self.process_record(record, reported_records)
             # Track the newest timestamp actually observed this cycle
             try:
@@ -141,6 +148,7 @@ class RecordsSource:
             except Exception:
                 # If a record has an unexpected timestamp format, ignore it for advancing the since timestamp
                 pass
+        logger.debug("Ending poll for records")
 
         self.previously_reported_records = reported_records
 
