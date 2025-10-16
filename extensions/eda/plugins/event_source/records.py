@@ -78,6 +78,7 @@ from ansible.errors import AnsibleParserError
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class RecordsSource:
@@ -113,6 +114,7 @@ class RecordsSource:
     async def start_polling(self):
         while True:
             logger.debug("Staring poll iteration")
+            logger.debug(f"{len(self.previously_reported_records)=}")
             try:
                 await self._poll_for_records()
             except Exception as e:
