@@ -61,6 +61,7 @@ import asyncio
 from typing import Any, Dict
 import datetime
 import logging
+import re
 
 # Need to add the project root to the path so that we can import the module_utils.
 # The EDA team may come up with a better solution for this in the future.
@@ -89,27 +90,42 @@ class RecordsSource:
         )
 
         self.table_name = args.get("table")
-        self.list_query = self.format_list_query(args)
-        self.interval = int(args.get("interval", 5))
         self.updated_since = self.parse_string_to_datetime(args.get("updated_since"))
+        self.interval = int(args.get("interval", 5))
+        self._format_list_query(args)
 
         self.snow_client = client.Client(**self.instance_config)
         self.table_client = table.TableClient(self.snow_client)
         self.previously_reported_records: Dict[str, str] = dict()
 
-    def format_list_query(self, args):
-        if args.get("sysparm_query"):
-            return {"sysparm_query": args.get("sysparm_query")}
+    def _format_list_query(self, args):
+        self.list_query = {"sysparm_query": args.get("sysparm_query") or ""}
 
-        if not args.get("query"):
-            return None
+        if args.get("query"):
+            try:
+                self.list_query["sysparm_query"] = construct_sysparm_query_from_query(args.get("query"))
+            except ValueError as e:
+                raise AnsibleParserError("Unable to parse query: %s" % e)
 
-        try:
-            return {
-                "sysparm_query": construct_sysparm_query_from_query(args.get("query"))
-            }
-        except ValueError as e:
-            raise AnsibleParserError("Unable to parse query: %s" % e)
+        # If the user specified a sys_updated_on filter, we need to remove it from the query so that we can add our own.
+        updated_on_search = re.search(r"sys_updated_on.*(\^NQ)|sys_updated_on.*(\^)|sys_updated_on.*$", self.list_query["sysparm_query"])
+        if updated_on_search:
+            re.sub(r"sys_updated_on.*(\^NQ)|sys_updated_on.*(\^)|sys_updated_on.*$", '', self.list_query["sysparm_query"])
+
+        # If the user defined some query, add an AND operator to the end before adding the timestamp filter
+        if len(self.list_query["sysparm_query"]) > 0:
+            self.list_query["sysparm_query"] += "^"
+
+        self._add_update_time_to_list_query(self.updated_since)
+
+    def _add_update_time_to_list_query(self, newest_seen):
+        newest_seen_date_str = newest_seen.strftime("%Y-%m-%d")
+        newest_seen_time_str = newest_seen.strftime("%H:%M:%S")
+        query_string = "sys_updated_on>=javascript:gs.dateGenerate('%s', '%s')" % (newest_seen_date_str, newest_seen_time_str)
+        if "sys_updated_on>=javascript" in self.list_query["sysparm_query"]:
+            self.list_query["sysparm_query"] = re.sub(r"sys_updated_on.*", query_string, self.list_query["sysparm_query"])
+        else:
+            self.list_query["sysparm_query"] += query_string
 
     async def start_polling(self):
         while True:
@@ -132,12 +148,13 @@ class RecordsSource:
 
         reported_records: Dict[str, str] = dict()
         newest_seen = self.updated_since  # start from current since timestamp (cursor)
-
+        self._add_update_time_to_list_query(newest_seen)
         logger.info(
             "Polling for new records in %s since %s",
             self.table_name,
             self.updated_since,
         )
+        logger.debug(f"{self.list_query=}")
 
         for record in self.table_client.list_records(self.table_name, self.list_query):
             logger.debug("Processing record: %s", record)
@@ -161,12 +178,12 @@ class RecordsSource:
         next_since = max(newest_seen, poll_start_floor)
         if next_since > self.updated_since:
             logger.debug(
-                "Advancing since timestamp: %s -> %s", self.updated_since, next_since
+                "Advancing most recent timestamp observed: %s -> %s", self.updated_since, next_since
             )
             self.updated_since = next_since
         else:
             logger.debug(
-                "Since timestamp unchanged (next_since=%s <= updated_since=%s)",
+                "Most recent timestamp observed is unchanged (next_since=%s <= updated_since=%s)",
                 next_since,
                 self.updated_since,
             )
