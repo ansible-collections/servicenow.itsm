@@ -1,4 +1,0 @@
----
-trivial:
-  - Drop ansible-core 2.17 from test matrix
-  - Include ansible-core 2.19 in unit tests
