@@ -9,6 +9,8 @@ description:
   - Poll the ServiceNow API for any new records in a table, using them as a source for Event Driven Ansible.
   - This plugin can use the same environment variables as the rest of the ServiceNow collection to
     configure the instance connection.
+  - If you supply O(query) or O(sysparm_query), the plugin will remove any reference to ORDEREDBY and sys_updated_on
+    in the query so that it can add its own.
 
 author:
   - ServiceNow ITSM Collection Contributors (@ansible-collections)
@@ -55,6 +57,7 @@ EXAMPLES = r"""
         table: change_request
         interval: 1
         updated_since: "2025-08-13 12:00:00"
+        timezone: America/New_York
 
   rules:
     - name: New record created
@@ -95,14 +98,15 @@ logger.setLevel(logging.DEBUG)
 DATE_FORMAT_STRING = "%Y-%m-%d %H:%M:%S"
 
 
-def get_tz_aware_datetime_from_string(date_string: str = None):
+def get_tz_aware_datetime_from_string(date_string: str = None, date_string_timezone: str = "UTC"):
     if date_string is None:
         # Truncate to whole seconds to match ServiceNow precision
         return datetime.now(timezone.utc).replace(microsecond=0)
 
     try:
         # ServiceNow returns second-precision strings (no microseconds)
-        return datetime.strptime(date_string, DATE_FORMAT_STRING).astimezone(timezone.utc)
+        tz_aware_datetime = datetime.strptime(date_string, DATE_FORMAT_STRING).astimezone(ZoneInfo(date_string_timezone))
+        return tz_aware_datetime.astimezone(timezone.utc)
     except ValueError:
         raise ValueError("Invalid date string: %s" % date_string)
 
@@ -174,8 +178,10 @@ class RecordsSource:
             sysparm_query=args.get("sysparm_query")
         )
 
-
-        self.initial_polling_start_time = get_tz_aware_datetime_from_string(args.get("updated_since"))
+        self.initial_polling_start_time = get_tz_aware_datetime_from_string(
+            date_string=args.get("updated_since"),
+            date_string_timezone=args.get("timezone")
+        )
         self.interval = int(args.get("interval", 5))
         self._latest_sys_updated_on_floor = None
         self.previously_reported_records: Dict[str, str] = dict()
@@ -183,6 +189,9 @@ class RecordsSource:
 
     # entrypoint for main logic
     async def start_polling(self):
+        """
+        Main entrypoint for the plugin. Start the polling loop and keep running until the plugin is stopped.
+        """
         remote_snow_timezone = self.lookup_snow_user_timezone()
 
         while True:
@@ -198,11 +207,18 @@ class RecordsSource:
 
     @property
     def latest_sys_updated_on_floor(self):
+        """
+        Return either the initial polling start time provided by the user, or the
+        latest sys_updated_on timestamp of the last record processed.
+        """
         return self._latest_sys_updated_on_floor or self.initial_polling_start_time
 
     async def _poll_for_records(self, remote_snow_timezone: ZoneInfo):
         """
-        Poll for new records in the table since the polling_start_time.
+        Poll for new records in the table since the polling_start_time. We update the list query
+        with the latest timestamp seen, and then process any new records that are found.
+
+        If we find any records, we update the latest_sys_updated_on_floor to the latest timestamp seen.
         """
         reported_records: Dict[str, str] = dict()
         self.list_query["sysparm_query"] = self.query_formatter.inject_sys_updated_on_filter(
@@ -223,7 +239,9 @@ class RecordsSource:
         if _last_record_processed:
             logger.debug("Increasing the next query sys_updated_on timestamp to %s", _last_record_processed["sys_updated_on"])
             self._latest_sys_updated_on_floor = get_tz_aware_datetime_from_string(_last_record_processed["sys_updated_on"])
-        self.previously_reported_records = reported_records
+            # If we find any new records, we will be increasing the next query sys_updated_on timestamp and
+            # need to remember which records we have seen so that we don't report them again.
+            self.previously_reported_records = reported_records
 
     def lookup_snow_user_timezone(self):
         """
@@ -246,6 +264,13 @@ class RecordsSource:
         return ZoneInfo(user_timezone_str)
 
     async def process_record(self, record, reported_records):
+        """
+        Process a single record. We ignore anything strictly older than our since timestamp, and we
+        ignore anything that has already been reported in the immediately previous cycle.
+
+        If it is a new record, we need to remember it for the next cycle (so that we don't report it again),
+        and add it to the queue for EDA.
+        """
         # Ignore anything strictly older than our since timestamp.
         if get_tz_aware_datetime_from_string(record["sys_updated_on"]) < self.latest_sys_updated_on_floor:
             return
