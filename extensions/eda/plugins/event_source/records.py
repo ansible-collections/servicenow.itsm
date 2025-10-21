@@ -92,7 +92,6 @@ from ansible.errors import AnsibleParserError
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 DATE_FORMAT_STRING = "%Y-%m-%d %H:%M:%S"
@@ -105,10 +104,14 @@ def get_tz_aware_datetime_from_string(date_string: str = None, date_string_timez
 
     try:
         # ServiceNow returns second-precision strings (no microseconds)
-        tz_aware_datetime = datetime.strptime(date_string, DATE_FORMAT_STRING).astimezone(ZoneInfo(date_string_timezone))
-        return tz_aware_datetime.astimezone(timezone.utc)
+        tz_naive_datetime = datetime.strptime(date_string, DATE_FORMAT_STRING)
     except ValueError:
         raise ValueError("Invalid date string: %s" % date_string)
+
+    try:
+        return tz_naive_datetime.replace(tzinfo=ZoneInfo(date_string_timezone))
+    except ValueError:
+        raise ValueError("Invalid timezone string: %s" % date_string_timezone)
 
 
 class QueryFormatter:
@@ -193,6 +196,7 @@ class RecordsSource:
         Main entrypoint for the plugin. Start the polling loop and keep running until the plugin is stopped.
         """
         remote_snow_timezone = self.lookup_snow_user_timezone()
+        logger.info("Remote ServiceNow user's timezone is '%s'", remote_snow_timezone)
 
         while True:
             logger.debug("Staring poll iteration. previously_reported_records=%s" % len(self.previously_reported_records))
@@ -237,8 +241,9 @@ class RecordsSource:
 
         logger.debug("Ending poll for records")
         if _last_record_processed:
-            logger.debug("Increasing the next query sys_updated_on timestamp to %s", _last_record_processed["sys_updated_on"])
             self._latest_sys_updated_on_floor = get_tz_aware_datetime_from_string(_last_record_processed["sys_updated_on"])
+            logger.debug("Increasing the next query sys_updated_on timestamp to %s", self._latest_sys_updated_on_floor)
+
             # If we find any new records, we will be increasing the next query sys_updated_on timestamp and
             # need to remember which records we have seen so that we don't report them again.
             self.previously_reported_records = reported_records
@@ -272,25 +277,27 @@ class RecordsSource:
         and add it to the queue for EDA.
         """
         # Ignore anything strictly older than our since timestamp.
-        if get_tz_aware_datetime_from_string(record["sys_updated_on"]) < self.latest_sys_updated_on_floor:
+        record_update_timestamp = record["sys_updated_on"]
+        if get_tz_aware_datetime_from_string(record_update_timestamp) < self.latest_sys_updated_on_floor:
+            logger.warning("Record update timestamp %s is somehow older than the latest sys_updated_on floor %s", record_update_timestamp, self.latest_sys_updated_on_floor)
             return
 
         if self.has_record_been_reported(record):
-            # Already reported in the immediately previous cycle.
+            logger.debug("Record %s has already been reported in the immediately previous cycle", record["sys_id"])
             return
 
         # Not reported yet: remember it for this cycle and emit.
+        logger.debug("Record %s is new and will be reported", record["sys_id"])
         reported_records[record["sys_id"]] = record["sys_updated_on"]
         await self.queue.put(record)
 
     def has_record_been_reported(self, record):
-        if record["sys_id"] in self.previously_reported_records:
-            if (
-                record["sys_updated_on"]
-                == self.previously_reported_records[record["sys_id"]]
-            ):
-                return True
-        return False
+        if record["sys_id"] not in self.previously_reported_records:
+            return False
+        if record["sys_updated_on"] != self.previously_reported_records[record["sys_id"]]:
+            return False
+
+        return True
 
 
 # Entrypoint from ansible-rulebook
