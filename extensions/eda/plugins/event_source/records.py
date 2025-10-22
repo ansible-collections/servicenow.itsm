@@ -68,11 +68,8 @@ EXAMPLES = r"""
 
 import asyncio
 from typing import Any, Dict
-from datetime import (
-    datetime,
-    timezone
-)
-from zoneinfo import ZoneInfo
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import logging
 import re
 
@@ -97,7 +94,9 @@ logger = logging.getLogger(__name__)
 DATE_FORMAT_STRING = "%Y-%m-%d %H:%M:%S"
 
 
-def get_tz_aware_datetime_from_string(date_string: str = None, date_string_timezone: str = "UTC"):
+def get_tz_aware_datetime_from_string(
+    date_string: str = None, date_string_timezone: str = "UTC"
+):
     if date_string is None:
         # Truncate to whole seconds to match ServiceNow precision
         return datetime.now(timezone.utc).replace(microsecond=0)
@@ -106,19 +105,19 @@ def get_tz_aware_datetime_from_string(date_string: str = None, date_string_timez
         # ServiceNow returns second-precision strings (no microseconds)
         tz_naive_datetime = datetime.strptime(date_string, DATE_FORMAT_STRING)
     except ValueError:
-        raise ValueError("Invalid date string: %s" % date_string)
+        raise AnsibleParserError("Invalid date string: %s" % date_string)
 
     try:
         return tz_naive_datetime.replace(tzinfo=ZoneInfo(date_string_timezone))
-    except ValueError:
-        raise ValueError("Invalid timezone string: %s" % date_string_timezone)
+    except ZoneInfoNotFoundError:
+        raise AnsibleParserError("Invalid timezone string: %s" % date_string_timezone)
 
 
 class QueryFormatter:
     def __init__(self):
         pass
 
-    def format_and_clean_query_parameters(self, query = None, sysparm_query = None):
+    def format_and_clean_query_parameters(self, query=None, sysparm_query=None):
         """
         Take the query or sysparm_query parameter from the user and format it into a list query
         that can be used to query the table.
@@ -135,8 +134,10 @@ class QueryFormatter:
                 raise AnsibleParserError("Unable to parse query: %s" % e)
 
         # If the user specified a sys_updated_on or ORDERBY filter, we need to remove it from the query so that we can add our own.
-        re.sub(r"\^?N?Q?sys_updated_on.*(\^?)", '\1', sysparm_query)
-        re.sub(r"\^?N?Q?ORDERBY.*(\^?)", '\1', sysparm_query)
+        sysparm_query = re.sub(
+            r"\^?N?Q?sys_updated_on[^\^]*(\^?)", r"\1", sysparm_query
+        )
+        sysparm_query = re.sub(r"\^?N?Q?ORDERBY[^\^]*(\^?)", r"\1", sysparm_query)
 
         if len(sysparm_query) > 0:
             sysparm_query += "^"
@@ -147,19 +148,29 @@ class QueryFormatter:
             "sysparm_display_value": "false",  # Only return "raw", or UTC values. Display values are in the user's timezone, which varies.
         }
 
-    def inject_sys_updated_on_filter(self, sysparm_query: str, sys_update_on_datetime: datetime, snow_timezone: ZoneInfo):
+    def inject_sys_updated_on_filter(
+        self,
+        sysparm_query: str,
+        sys_update_on_datetime: datetime,
+        snow_timezone: ZoneInfo,
+    ):
         """
         Add the newest_seen timestamp onto our list query. This ensures that we are always polling for new and unseen records.
         """
         # Convert the latest polling start time to the user's timezone so we can use it in the query.
-        sys_update_on_datetime_in_snow_tz = sys_update_on_datetime.astimezone(snow_timezone)
+        sys_update_on_datetime_in_snow_tz = sys_update_on_datetime.astimezone(
+            snow_timezone
+        )
         sys_updated_on_date_str = sys_update_on_datetime_in_snow_tz.strftime("%Y-%m-%d")
         sys_updated_on_time_str = sys_update_on_datetime_in_snow_tz.strftime("%H:%M:%S")
 
         # Inject the sys_updated_on filter into the query, with new timestamp
-        query_string = "sys_updated_on>=javascript:gs.dateGenerate('%s', '%s')" % (sys_updated_on_date_str, sys_updated_on_time_str)
-        if "sys_updated_on>=" in sysparm_query:
-            sysparm_query = re.sub(r"sys_updated_on>=.*", query_string, sysparm_query)
+        query_string = "sys_updated_on>=javascript:gs.dateGenerate('%s', '%s')" % (
+            sys_updated_on_date_str,
+            sys_updated_on_time_str,
+        )
+        if "sys_updated_on>" in sysparm_query:
+            sysparm_query = re.sub(r"sys_updated_on>=?.*", query_string, sysparm_query)
         else:
             sysparm_query += "^%s" % query_string
 
@@ -177,18 +188,16 @@ class RecordsSource:
         self.table_client = table.TableClient(self.snow_client)
         self.query_formatter = QueryFormatter()
         self.list_query = self.query_formatter.format_and_clean_query_parameters(
-            query=args.get("query"),
-            sysparm_query=args.get("sysparm_query")
+            query=args.get("query"), sysparm_query=args.get("sysparm_query")
         )
 
         self.initial_polling_start_time = get_tz_aware_datetime_from_string(
             date_string=args.get("updated_since"),
-            date_string_timezone=args.get("timezone")
+            date_string_timezone=args.get("timezone"),
         )
         self.interval = int(args.get("interval", 5))
         self._latest_sys_updated_on_floor = None
-        self.previously_reported_records: Dict[str, str] = dict()
-
+        self.reported_records_last_poll: Dict[str, str] = dict()
 
     # entrypoint for main logic
     async def start_polling(self):
@@ -199,7 +208,10 @@ class RecordsSource:
         logger.info("Remote ServiceNow user's timezone is '%s'", remote_snow_timezone)
 
         while True:
-            logger.debug("Staring poll iteration. previously_reported_records=%s" % len(self.previously_reported_records))
+            logger.debug(
+                "Staring poll iteration. The last time there was an update, there were %s records that were reported",
+                len(self.reported_records_last_poll),
+            )
             try:
                 await self._poll_for_records(remote_snow_timezone)
             except Exception as e:
@@ -224,29 +236,44 @@ class RecordsSource:
 
         If we find any records, we update the latest_sys_updated_on_floor to the latest timestamp seen.
         """
-        reported_records: Dict[str, str] = dict()
-        self.list_query["sysparm_query"] = self.query_formatter.inject_sys_updated_on_filter(
-            sysparm_query=self.list_query["sysparm_query"],
-            sys_update_on_datetime=self.latest_sys_updated_on_floor,
-            snow_timezone=remote_snow_timezone
+        reported_records_this_poll: Dict[str, str] = dict()
+        self.list_query["sysparm_query"] = (
+            self.query_formatter.inject_sys_updated_on_filter(
+                sysparm_query=self.list_query["sysparm_query"],
+                sys_update_on_datetime=self.latest_sys_updated_on_floor,
+                snow_timezone=remote_snow_timezone,
+            )
         )
-        logger.info(f"Polling for records updated on or after {self.latest_sys_updated_on_floor} (UTC)")
+        logger.info(
+            "Polling for records updated on or after %s (UTC)",
+            self.latest_sys_updated_on_floor,
+        )
         logger.debug("List query: %s", self.list_query)
 
         _last_record_processed = None
         for record in self.table_client.list_records(self.table_name, self.list_query):
-            logger.debug("Processing record with sys_id %s and sys_updated_on %s", record["sys_id"], record["sys_updated_on"])
-            await self.process_record(record, reported_records)
-            _last_record_processed = record
+            logger.debug(
+                "Processing record with sys_id %s and sys_updated_on %s",
+                record["sys_id"],
+                record["sys_updated_on"],
+            )
+            if self.should_record_be_sent_to_queue(record, reported_records_this_poll):
+                await self.queue.put(record)
+                _last_record_processed = record
 
         logger.debug("Ending poll for records")
         if _last_record_processed:
-            self._latest_sys_updated_on_floor = get_tz_aware_datetime_from_string(_last_record_processed["sys_updated_on"])
-            logger.debug("Increasing the next query sys_updated_on timestamp to %s", self._latest_sys_updated_on_floor)
+            self._latest_sys_updated_on_floor = get_tz_aware_datetime_from_string(
+                _last_record_processed["sys_updated_on"]
+            )
+            logger.debug(
+                "Increasing the next query sys_updated_on timestamp to %s",
+                self._latest_sys_updated_on_floor,
+            )
 
             # If we find any new records, we will be increasing the next query sys_updated_on timestamp and
             # need to remember which records we have seen so that we don't report them again.
-            self.previously_reported_records = reported_records
+            self.reported_records_last_poll = reported_records_this_poll
 
     def lookup_snow_user_timezone(self):
         """
@@ -258,19 +285,22 @@ class RecordsSource:
             table="sys_user",
             query={
                 "sysparm_query": "user_name=javascript:gs.getUserName()",
-                'sysparm_exclude_reference_link': 'true'
-            }
+                "sysparm_exclude_reference_link": "true",
+            },
         )
         try:
             user_timezone_str = user_timezone_records[0]["time_zone"]
-        except (AttributeError, IndexError) as e:
-            raise Exception("Unable to lookup user timezone in ServiceNow: %s" % e) from e
+        except (KeyError, IndexError) as e:
+            raise AnsibleParserError(
+                "Unable to lookup user timezone in ServiceNow: %s" % e
+            ) from e
 
         return ZoneInfo(user_timezone_str)
 
-    async def process_record(self, record, reported_records):
+    def should_record_be_sent_to_queue(self, record, reported_records_this_poll):
         """
-        Process a single record. We ignore anything strictly older than our since timestamp, and we
+        Determine if a record should be sent to the queue.
+        We ignore anything strictly older than our since timestamp, and we
         ignore anything that has already been reported in the immediately previous cycle.
 
         If it is a new record, we need to remember it for the next cycle (so that we don't report it again),
@@ -278,23 +308,42 @@ class RecordsSource:
         """
         # Ignore anything strictly older than our since timestamp.
         record_update_timestamp = record["sys_updated_on"]
-        if get_tz_aware_datetime_from_string(record_update_timestamp) < self.latest_sys_updated_on_floor:
-            logger.warning("Record update timestamp %s is somehow older than the latest sys_updated_on floor %s", record_update_timestamp, self.latest_sys_updated_on_floor)
-            return
+        if (
+            get_tz_aware_datetime_from_string(record_update_timestamp)
+            < self.latest_sys_updated_on_floor
+        ):
+            logger.warning(
+                "Record update timestamp %s is somehow older than the latest sys_updated_on floor %s",
+                record_update_timestamp,
+                self.latest_sys_updated_on_floor,
+            )
+            return False
 
-        if self.has_record_been_reported(record):
-            logger.debug("Record %s has already been reported in the immediately previous cycle", record["sys_id"])
-            return
+        if self.has_record_been_reported(record, reported_records_this_poll):
+            logger.debug(
+                "Record %s has already been reported in the this cycle or the last cycle.",
+                record["sys_id"],
+            )
+            return False
 
         # Not reported yet: remember it for this cycle and emit.
         logger.debug("Record %s is new and will be reported", record["sys_id"])
-        reported_records[record["sys_id"]] = record["sys_updated_on"]
-        await self.queue.put(record)
+        reported_records_this_poll[record["sys_id"]] = record["sys_updated_on"]
+        return True
 
-    def has_record_been_reported(self, record):
-        if record["sys_id"] not in self.previously_reported_records:
+    def has_record_been_reported(self, record, reported_records_this_poll):
+        sys_id = record["sys_id"]
+        updated_on = record["sys_updated_on"]
+
+        if (
+            sys_id not in self.reported_records_last_poll
+            and sys_id not in reported_records_this_poll
+        ):
             return False
-        if record["sys_updated_on"] != self.previously_reported_records[record["sys_id"]]:
+
+        if updated_on != reported_records_this_poll.get(
+            sys_id
+        ) and updated_on != self.reported_records_last_poll.get(sys_id):
             return False
 
         return True
@@ -303,4 +352,8 @@ class RecordsSource:
 # Entrypoint from ansible-rulebook
 async def main(queue: asyncio.Queue, args: Dict[str, Any]):
     records_source = RecordsSource(queue, args)
-    await records_source.start_polling()
+    try:
+        await records_source.start_polling()
+    except Exception as e:
+        logger.error("Error occured during polling: %s", e)
+        raise e
