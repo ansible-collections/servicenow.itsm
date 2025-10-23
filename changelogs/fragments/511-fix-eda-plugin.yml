@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - eda/records - Fix bug where the plugin would incorrectly report records and fail to restart
