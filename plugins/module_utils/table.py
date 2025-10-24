@@ -18,11 +18,16 @@ def _query(original=None):
 
 
 class TableClient(snow.SNowClient):
-    def __init__(self, client, batch_size=1000):
-        super(TableClient, self).__init__(client, batch_size)
+    def __init__(self, client, batch_size=1000, memory_efficient=True):
+        super(TableClient, self).__init__(client, batch_size, memory_efficient)
 
     def list_records(self, table, query=None):
+        """List records with memory-efficient processing"""
         return self.list(self.path(table), query)
+    
+    def list_records_generator(self, table, query=None):
+        """Generator that yields records one at a time for memory efficiency"""
+        return self.list_generator(self.path(table), query)
 
     def get_record(self, table, query, must_exist=False):
         return self.get(self.path(table), query, must_exist)

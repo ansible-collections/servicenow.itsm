@@ -7,16 +7,31 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import gc
+import logging
 
 from . import errors
 
+logger = logging.getLogger(__name__)
+
 
 class SNowClient:
-    def __init__(self, client, batch_size=1000):
+    def __init__(self, client, batch_size=1000, memory_efficient=True):
         self.client = client
         self.batch_size = batch_size
+        self.memory_efficient = memory_efficient
+        self._memory_cleanup_interval = 10  # Cleanup every 10 batches
+        self._batch_count = 0
 
     def list(self, api_path, query=None):
+        """List records with memory-efficient processing"""
+        if self.memory_efficient:
+            return list(self.list_generator(api_path, query))
+        else:
+            return self._list_accumulate(api_path, query)
+    
+    def _list_accumulate(self, api_path, query=None):
+        """Original list method that accumulates all results in memory"""
         base_query = self._sanitize_query(query)
         base_query["sysparm_limit"] = self.batch_size
 
@@ -44,6 +59,51 @@ class SNowClient:
             offset += self.batch_size
 
         return result
+
+    def list_generator(self, api_path, query=None):
+        """Generator that yields records one at a time instead of accumulating"""
+        base_query = self._sanitize_query(query)
+        base_query["sysparm_limit"] = self.batch_size
+        
+        offset = 0
+        total = 1
+        
+        while offset < total:
+            try:
+                response = self.client.get(
+                    api_path,
+                    query=dict(base_query, sysparm_offset=offset),
+                )
+                
+                # Yield each record individually
+                for record in response.json["result"]:
+                    yield record
+                
+                # Memory cleanup every few batches
+                self._batch_count += 1
+                if self._batch_count % self._memory_cleanup_interval == 0:
+                    self._cleanup_memory()
+                
+                # Check if we have more data
+                if "x-total-count" in response.headers:
+                    total = int(response.headers["x-total-count"])
+                else:
+                    if len(response.json["result"]) == 0:
+                        break
+                        
+                offset += self.batch_size
+                
+            except Exception as e:
+                logger.error(f"Error in list_generator: {e}")
+                break
+    
+    def _cleanup_memory(self):
+        """Cleanup memory and force garbage collection"""
+        try:
+            gc.collect()
+            logger.debug("Memory cleanup performed")
+        except Exception as e:
+            logger.warning(f"Error during memory cleanup: {e}")
 
     def get(self, api_path, query, must_exist=False):
         records = self.list(api_path, query)

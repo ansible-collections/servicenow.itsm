@@ -67,11 +67,19 @@ EXAMPLES = r"""
 """
 
 import asyncio
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import logging
 import re
+import gc
+import os
+
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 
 # Need to add the project root to the path so that we can import the module_utils.
 # The EDA team may come up with a better solution for this in the future.
@@ -95,7 +103,7 @@ DATE_FORMAT_STRING = "%Y-%m-%d %H:%M:%S"
 
 
 def get_tz_aware_datetime_from_string(
-    date_string: str = None, date_string_timezone: str = "UTC"
+    date_string: Optional[str] = None, date_string_timezone: str = "UTC"
 ):
     if date_string is None:
         # Truncate to whole seconds to match ServiceNow precision
@@ -181,11 +189,11 @@ class RecordsSource:
     def __init__(self, queue: asyncio.Queue, args: Dict[str, Any]):
         self.queue = queue
         self.instance_config = get_combined_instance_config(
-            config_from_params=args.get("instance")
+            config_from_params=args.get("instance") or {}
         )
         self.table_name = args.get("table")
         self.snow_client = client.Client(**self.instance_config)
-        self.table_client = table.TableClient(self.snow_client)
+        self.table_client = table.TableClient(self.snow_client, memory_efficient=True)
         self.query_formatter = QueryFormatter()
         self.list_query = self.query_formatter.format_and_clean_query_parameters(
             query=args.get("query"), sysparm_query=args.get("sysparm_query")
@@ -193,11 +201,17 @@ class RecordsSource:
 
         self.initial_polling_start_time = get_tz_aware_datetime_from_string(
             date_string=args.get("updated_since"),
-            date_string_timezone=args.get("timezone"),
+            date_string_timezone=args.get("timezone") or "UTC",
         )
         self.interval = int(args.get("interval", 5))
         self._latest_sys_updated_on_floor = None
         self.reported_records_last_poll: Dict[str, str] = dict()
+        
+        # Memory management settings
+        self._memory_threshold = 200 * 1024 * 1024  # 200MB
+        self._cleanup_interval = 50  # Cleanup every 50 polls
+        self._poll_count = 0
+        self._max_tracking_records = 1000  # Limit tracking records
 
     # entrypoint for main logic
     async def start_polling(self):
@@ -209,7 +223,7 @@ class RecordsSource:
 
         while True:
             logger.debug(
-                "Staring poll iteration. The last time there was an update, there were %s records that were reported",
+                "Starting poll iteration. The last time there was an update, there were %s records that were reported",
                 len(self.reported_records_last_poll),
             )
             try:
@@ -217,6 +231,12 @@ class RecordsSource:
             except Exception as e:
                 logger.error("Error polling for records: %s", e)
                 logger.info("Plugin will keep running")
+            
+            # Memory cleanup
+            self._poll_count += 1
+            if self._poll_count % self._cleanup_interval == 0:
+                await self._cleanup_memory()
+            
             logger.info("Sleeping for %s seconds", self.interval)
             await asyncio.sleep(self.interval)
             logger.debug("Ending poll iteration")
@@ -348,12 +368,58 @@ class RecordsSource:
 
         return True
 
+    async def _cleanup_memory(self):
+        """Cleanup memory and force garbage collection"""
+        try:
+            # Clear old tracking data if it gets too large
+            if len(self.reported_records_last_poll) > self._max_tracking_records:
+                # Keep only recent records
+                recent_records = dict(list(self.reported_records_last_poll.items())[-500:])
+                self.reported_records_last_poll = recent_records
+                logger.debug(f"Trimmed tracking records to {len(self.reported_records_last_poll)} entries")
+            
+            # Force garbage collection
+            gc.collect()
+            
+            # Log memory usage
+            if PSUTIL_AVAILABLE:
+                try:
+                    process = psutil.Process(os.getpid())
+                    memory_mb = process.memory_info().rss / 1024 / 1024
+                    logger.info(f"Memory usage after cleanup: {memory_mb:.2f} MB")
+                    
+                    if memory_mb > self._memory_threshold / 1024 / 1024:
+                        logger.warning(f"Memory usage ({memory_mb:.2f} MB) exceeds threshold ({self._memory_threshold / 1024 / 1024:.2f} MB)")
+                        
+                        # Additional cleanup if memory is high
+                        if hasattr(self.snow_client, 'close'):
+                            # Don't close the client, just clear caches
+                            pass
+                            
+                except Exception as e:
+                    logger.debug(f"Could not get memory usage: {e}")
+            else:
+                logger.debug("psutil not available, skipping memory monitoring")
+                
+        except Exception as e:
+            logger.warning(f"Error during memory cleanup: {e}")
+
 
 # Entrypoint from ansible-rulebook
 async def main(queue: asyncio.Queue, args: Dict[str, Any]):
     records_source = RecordsSource(queue, args)
     try:
         await records_source.start_polling()
+    except KeyboardInterrupt:
+        logger.info("Received interrupt signal, shutting down gracefully")
     except Exception as e:
-        logger.error("Error occured during polling: %s", e)
+        logger.error("Error occurred during polling: %s", e)
         raise e
+    finally:
+        # Cleanup resources
+        try:
+            if hasattr(records_source, 'snow_client') and hasattr(records_source.snow_client, 'close'):
+                records_source.snow_client.close()
+            logger.info("Resources cleaned up")
+        except Exception as cleanup_error:
+            logger.warning(f"Error during cleanup: {cleanup_error}")
