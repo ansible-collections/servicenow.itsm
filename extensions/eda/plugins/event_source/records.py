@@ -2,6 +2,16 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+import asyncio
+import gc
+import logging
+import os
+import re
+import sys
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
 DOCUMENTATION = r"""
 module: records
 short_description: Event Driven Ansible source for ServiceNow records.
@@ -66,34 +76,27 @@ EXAMPLES = r"""
         debug:
 """
 
-import asyncio
-from typing import Any, Dict, Optional
-from datetime import datetime, timezone
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import logging
-import re
-import gc
-import os
-
 try:
     import psutil
+
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
 
 # Need to add the project root to the path so that we can import the module_utils.
 # The EDA team may come up with a better solution for this in the future.
-import sys
-import os
-
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from plugins.module_utils.instance_config import get_combined_instance_config
-from plugins.module_utils import client, table
-from plugins.module_utils.query import construct_sysparm_query_from_query
-from ansible.errors import AnsibleParserError
+# These imports must come after the path manipulation
+from ansible.errors import AnsibleParserError  # noqa: E402
+
+from plugins.module_utils.instance_config import (  # noqa: E402
+    get_combined_instance_config,
+)
+from plugins.module_utils import client, table  # noqa: E402
+from plugins.module_utils.query import construct_sysparm_query_from_query  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
@@ -112,13 +115,15 @@ def get_tz_aware_datetime_from_string(
     try:
         # ServiceNow returns second-precision strings (no microseconds)
         tz_naive_datetime = datetime.strptime(date_string, DATE_FORMAT_STRING)
-    except ValueError:
-        raise AnsibleParserError("Invalid date string: %s" % date_string)
+    except ValueError as exc:
+        raise AnsibleParserError(f"Invalid date string: {date_string}") from exc
 
     try:
         return tz_naive_datetime.replace(tzinfo=ZoneInfo(date_string_timezone))
-    except ZoneInfoNotFoundError:
-        raise AnsibleParserError("Invalid timezone string: %s" % date_string_timezone)
+    except ZoneInfoNotFoundError as exc:
+        raise AnsibleParserError(
+            f"Invalid timezone string: {date_string_timezone}"
+        ) from exc
 
 
 class QueryFormatter:
@@ -139,9 +144,10 @@ class QueryFormatter:
             try:
                 sysparm_query = construct_sysparm_query_from_query(query)
             except ValueError as e:
-                raise AnsibleParserError("Unable to parse query: %s" % e)
+                raise AnsibleParserError(f"Unable to parse query: {e}") from e
 
-        # If the user specified a sys_updated_on or ORDERBY filter, we need to remove it from the query so that we can add our own.
+        # If the user specified a sys_updated_on or ORDERBY filter, we need to remove it
+        # from the query so that we can add our own.
         sysparm_query = re.sub(
             r"\^?N?Q?sys_updated_on[^\^]*(\^?)", r"\1", sysparm_query
         )
@@ -153,7 +159,9 @@ class QueryFormatter:
 
         return {
             "sysparm_query": sysparm_query,
-            "sysparm_display_value": "false",  # Only return "raw", or UTC values. Display values are in the user's timezone, which varies.
+            # Only return "raw", or UTC values. Display values are in the user's
+            # timezone, which varies.
+            "sysparm_display_value": "false",
         }
 
     def inject_sys_updated_on_filter(
@@ -163,9 +171,11 @@ class QueryFormatter:
         snow_timezone: ZoneInfo,
     ):
         """
-        Add the newest_seen timestamp onto our list query. This ensures that we are always polling for new and unseen records.
+        Add the newest_seen timestamp onto our list query. This ensures that we are
+        always polling for new and unseen records.
         """
-        # Convert the latest polling start time to the user's timezone so we can use it in the query.
+        # Convert the latest polling start time to the user's timezone so we can
+        # use it in the query.
         sys_update_on_datetime_in_snow_tz = sys_update_on_datetime.astimezone(
             snow_timezone
         )
@@ -173,14 +183,14 @@ class QueryFormatter:
         sys_updated_on_time_str = sys_update_on_datetime_in_snow_tz.strftime("%H:%M:%S")
 
         # Inject the sys_updated_on filter into the query, with new timestamp
-        query_string = "sys_updated_on>=javascript:gs.dateGenerate('%s', '%s')" % (
-            sys_updated_on_date_str,
-            sys_updated_on_time_str,
+        query_string = (
+            f"sys_updated_on>=javascript:gs.dateGenerate('{sys_updated_on_date_str}', "
+            f"'{sys_updated_on_time_str}')"
         )
         if "sys_updated_on>" in sysparm_query:
             sysparm_query = re.sub(r"sys_updated_on>=?.*", query_string, sysparm_query)
         else:
-            sysparm_query += "^%s" % query_string
+            sysparm_query += f"^{query_string}"
 
         return sysparm_query
 
@@ -205,8 +215,8 @@ class RecordsSource:
         )
         self.interval = int(args.get("interval", 5))
         self._latest_sys_updated_on_floor = None
-        self.reported_records_last_poll: Dict[str, str] = dict()
-        
+        self.reported_records_last_poll: Dict[str, str] = {}
+
         # Memory management settings
         self._memory_threshold = 200 * 1024 * 1024  # 200MB
         self._cleanup_interval = 50  # Cleanup every 50 polls
@@ -216,14 +226,16 @@ class RecordsSource:
     # entrypoint for main logic
     async def start_polling(self):
         """
-        Main entrypoint for the plugin. Start the polling loop and keep running until the plugin is stopped.
+        Main entrypoint for the plugin. Start the polling loop and keep running
+        until the plugin is stopped.
         """
         remote_snow_timezone = self.lookup_snow_user_timezone()
         logger.info("Remote ServiceNow user's timezone is '%s'", remote_snow_timezone)
 
         while True:
             logger.debug(
-                "Starting poll iteration. The last time there was an update, there were %s records that were reported",
+                "Starting poll iteration. The last time there was an update, "
+                "there were %s records that were reported",
                 len(self.reported_records_last_poll),
             )
             try:
@@ -231,12 +243,12 @@ class RecordsSource:
             except Exception as e:
                 logger.error("Error polling for records: %s", e)
                 logger.info("Plugin will keep running")
-            
+
             # Memory cleanup
             self._poll_count += 1
             if self._poll_count % self._cleanup_interval == 0:
                 await self._cleanup_memory()
-            
+
             logger.info("Sleeping for %s seconds", self.interval)
             await asyncio.sleep(self.interval)
             logger.debug("Ending poll iteration")
@@ -254,9 +266,10 @@ class RecordsSource:
         Poll for new records in the table since the polling_start_time. We update the list query
         with the latest timestamp seen, and then process any new records that are found.
 
-        If we find any records, we update the latest_sys_updated_on_floor to the latest timestamp seen.
+        If we find any records, we update the latest_sys_updated_on_floor to the
+        latest timestamp seen.
         """
-        reported_records_this_poll: Dict[str, str] = dict()
+        reported_records_this_poll: Dict[str, str] = {}
         self.list_query["sysparm_query"] = (
             self.query_formatter.inject_sys_updated_on_filter(
                 sysparm_query=self.list_query["sysparm_query"],
@@ -291,8 +304,9 @@ class RecordsSource:
                 self._latest_sys_updated_on_floor,
             )
 
-            # If we find any new records, we will be increasing the next query sys_updated_on timestamp and
-            # need to remember which records we have seen so that we don't report them again.
+            # If we find any new records, we will be increasing the next query
+            # sys_updated_on timestamp and need to remember which records we have
+            # seen so that we don't report them again.
             self.reported_records_last_poll = reported_records_this_poll
 
     def lookup_snow_user_timezone(self):
@@ -312,7 +326,7 @@ class RecordsSource:
             user_timezone_str = user_timezone_records[0]["time_zone"]
         except (KeyError, IndexError) as e:
             raise AnsibleParserError(
-                "Unable to lookup user timezone in ServiceNow: %s" % e
+                f"Unable to lookup user timezone in ServiceNow: {e}"
             ) from e
 
         return ZoneInfo(user_timezone_str)
@@ -374,35 +388,44 @@ class RecordsSource:
             # Clear old tracking data if it gets too large
             if len(self.reported_records_last_poll) > self._max_tracking_records:
                 # Keep only recent records
-                recent_records = dict(list(self.reported_records_last_poll.items())[-500:])
+                recent_records = dict(
+                    list(self.reported_records_last_poll.items())[-500:]
+                )
                 self.reported_records_last_poll = recent_records
-                logger.debug(f"Trimmed tracking records to {len(self.reported_records_last_poll)} entries")
-            
+                logger.debug(
+                    "Trimmed tracking records to %s entries",
+                    len(self.reported_records_last_poll),
+                )
+
             # Force garbage collection
             gc.collect()
-            
+
             # Log memory usage
             if PSUTIL_AVAILABLE:
                 try:
                     process = psutil.Process(os.getpid())
                     memory_mb = process.memory_info().rss / 1024 / 1024
-                    logger.info(f"Memory usage after cleanup: {memory_mb:.2f} MB")
-                    
+                    logger.info("Memory usage after cleanup: %.2f MB", memory_mb)
+
                     if memory_mb > self._memory_threshold / 1024 / 1024:
-                        logger.warning(f"Memory usage ({memory_mb:.2f} MB) exceeds threshold ({self._memory_threshold / 1024 / 1024:.2f} MB)")
-                        
+                        logger.warning(
+                            "Memory usage (%.2f MB) exceeds threshold (%.2f MB)",
+                            memory_mb,
+                            self._memory_threshold / 1024 / 1024,
+                        )
+
                         # Additional cleanup if memory is high
-                        if hasattr(self.snow_client, 'close'):
+                        if hasattr(self.snow_client, "close"):
                             # Don't close the client, just clear caches
                             pass
-                            
+
                 except Exception as e:
-                    logger.debug(f"Could not get memory usage: {e}")
+                    logger.debug("Could not get memory usage: %s", e)
             else:
                 logger.debug("psutil not available, skipping memory monitoring")
-                
+
         except Exception as e:
-            logger.warning(f"Error during memory cleanup: {e}")
+            logger.warning("Error during memory cleanup: %s", e)
 
 
 # Entrypoint from ansible-rulebook
@@ -418,8 +441,10 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
     finally:
         # Cleanup resources
         try:
-            if hasattr(records_source, 'snow_client') and hasattr(records_source.snow_client, 'close'):
+            if hasattr(records_source, "snow_client") and hasattr(
+                records_source.snow_client, "close"
+            ):
                 records_source.snow_client.close()
             logger.info("Resources cleaned up")
         except Exception as cleanup_error:
-            logger.warning(f"Error during cleanup: {cleanup_error}")
+            logger.warning("Error during cleanup: %s", cleanup_error)

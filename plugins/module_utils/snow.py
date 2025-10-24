@@ -29,7 +29,7 @@ class SNowClient:
             return list(self.list_generator(api_path, query))
         else:
             return self._list_accumulate(api_path, query)
-    
+
     def _list_accumulate(self, api_path, query=None):
         """Original list method that accumulates all results in memory"""
         base_query = self._sanitize_query(query)
@@ -64,60 +64,57 @@ class SNowClient:
         """Generator that yields records one at a time instead of accumulating"""
         base_query = self._sanitize_query(query)
         base_query["sysparm_limit"] = self.batch_size
-        
+
         offset = 0
         total = 1
-        
+
         while offset < total:
             try:
                 response = self.client.get(
                     api_path,
                     query=dict(base_query, sysparm_offset=offset),
                 )
-                
+
                 # Yield each record individually
-                for record in response.json["result"]:
-                    yield record
-                
+                yield from response.json["result"]
+
                 # Memory cleanup every few batches
                 self._batch_count += 1
                 if self._batch_count % self._memory_cleanup_interval == 0:
                     self._cleanup_memory()
-                
+
                 # Check if we have more data
                 if "x-total-count" in response.headers:
                     total = int(response.headers["x-total-count"])
                 else:
                     if len(response.json["result"]) == 0:
                         break
-                        
+
                 offset += self.batch_size
-                
+
             except Exception as e:
-                logger.error(f"Error in list_generator: {e}")
+                logger.error("Error in list_generator: %s", e)
                 break
-    
+
     def _cleanup_memory(self):
         """Cleanup memory and force garbage collection"""
         try:
             gc.collect()
             logger.debug("Memory cleanup performed")
         except Exception as e:
-            logger.warning(f"Error during memory cleanup: {e}")
+            logger.warning("Error during memory cleanup: %s", e)
 
     def get(self, api_path, query, must_exist=False):
         records = self.list(api_path, query)
 
         if len(records) > 1:
             raise errors.ServiceNowError(
-                "{0} {1} records match the {2} query.".format(
-                    len(records), api_path, query
-                )
+                f"{len(records)} {api_path} records match the {query} query."
             )
 
         if must_exist and not records:
             raise errors.ServiceNowError(
-                "No {0} records match the {1} query.".format(api_path, query)
+                f"No {api_path} records match the {query} query."
             )
 
         return records[0] if records else None
@@ -128,7 +125,7 @@ class SNowClient:
         record = response.json.get("result", None)
         if must_exist and not record:
             raise errors.ServiceNowError(
-                "No {0} records match the sys_id {1}.".format(api_path, sys_id)
+                f"No {api_path} records match the sys_id {sys_id}."
             )
 
         return record
@@ -149,6 +146,6 @@ class SNowClient:
         self.client.delete("/".join((api_path.rstrip("/"), sys_id)))
 
     def _sanitize_query(self, query):
-        query = query or dict()
+        query = query or {}
         query.setdefault("sysparm_exclude_reference_link", "true")
         return query

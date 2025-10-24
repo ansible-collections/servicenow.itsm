@@ -12,7 +12,7 @@ from . import snow
 
 
 def _query(original=None):
-    original = original or dict()
+    original = original or {}
     original.setdefault("sysparm_exclude_reference_link", "true")
     return original
 
@@ -24,7 +24,7 @@ class TableClient(snow.SNowClient):
     def list_records(self, table, query=None):
         """List records with memory-efficient processing"""
         return self.list(self.path(table), query)
-    
+
     def list_records_generator(self, table, query=None):
         """Generator that yields records one at a time for memory efficiency"""
         return self.list_generator(self.path(table), query)

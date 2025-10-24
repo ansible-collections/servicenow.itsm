@@ -10,7 +10,6 @@ __metaclass__ = type
 import json
 import ssl
 import time
-import gc
 import logging
 
 from urllib.error import HTTPError, URLError
@@ -21,11 +20,13 @@ from .errors import AuthError, ServiceNowError, UnexpectedAPIResponse
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_HEADERS = dict(Accept="application/json")
+DEFAULT_HEADERS = {"Accept": "application/json"}
 
 
 class Response:
-    def __init__(self, status, data, headers=None, json_decoder_hook=None, max_cache_size=100):
+    def __init__(
+        self, status, data, headers=None, json_decoder_hook=None, max_cache_size=100
+    ):
         self.status = status
         self.data = data
         # [('h1', 'v1'), ('H2', 'V2')] -> {'h1': 'v1', 'h2': 'V2'}
@@ -49,15 +50,15 @@ class Response:
             try:
                 self._json = json.loads(self.data, object_hook=self.json_decoder_hook)
                 self._cache_entries += 1
-                
+
                 # Auto-cleanup if cache gets too large
                 if self._cache_entries > self._max_cache_size:
                     logger.debug("JSON cache size exceeded, clearing cache")
                     self.clear_cache()
-            except ValueError:
+            except ValueError as exc:
                 raise ServiceNowError(
-                    "Received invalid JSON response: {0}".format(self.data)
-                )
+                    f"Received invalid JSON response: {self.data}"
+                ) from exc
         return self._json
 
 
@@ -85,8 +86,8 @@ class Client:
     ):
         if not (host or "").startswith(("https://", "http://")):
             raise ServiceNowError(
-                "Invalid instance host value: '{0}'. "
-                "Value must start with 'https://' or 'http://'".format(host)
+                f"Invalid instance host value: '{host}'. "
+                "Value must start with 'https://' or 'http://'"
             )
 
         self.host = host
@@ -117,46 +118,48 @@ class Client:
     def __enter__(self):
         """Context manager entry"""
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit - cleanup resources"""
         self.close()
-    
+
     def __del__(self):
         """Cleanup connections when client is destroyed"""
         try:
             self.close()
-        except:
+        except Exception:
             pass  # Ignore errors during cleanup
-    
+
     def close(self):
         """Explicitly close connections and cleanup resources"""
         try:
-            if hasattr(self._client, 'close'):
+            if hasattr(self._client, "close"):
                 self._client.close()
             self._auth_header = None
             self._client = None
             logger.debug("Client connections closed")
         except Exception as e:
-            logger.warning(f"Error during client cleanup: {e}")
-    
+            logger.warning("Error during client cleanup: %s", e)
+
     def _refresh_connection(self):
         """Refresh the underlying connection"""
         try:
-            if hasattr(self._client, 'close'):
+            if hasattr(self._client, "close"):
                 self._client.close()
-        except:
+        except Exception:
             pass
         self._client = Request()
         self._connection_created = time.time()
         self._request_count = 0
         logger.debug("Connection refreshed")
-    
+
     def _should_refresh_connection(self):
         """Check if connection should be refreshed"""
-        return (time.time() - self._connection_created > self.connection_timeout or 
-                self._request_count > 1000)
-    
+        return (
+            time.time() - self._connection_created > self.connection_timeout
+            or self._request_count > 1000
+        )
+
     @property
     def auth_header(self):
         if not self._auth_header:
@@ -173,13 +176,13 @@ class Client:
         return self._login_username_password()
 
     def _login_username_password(self):
-        return dict(Authorization=basic_auth_header(self.username, self.password))
+        return {"Authorization": basic_auth_header(self.username, self.password)}
 
     def _login_token(self, token, is_api_key=False):
         if is_api_key:
             return {"x-sn-apikey": token}
         else:
-            return {"Authorization": "Bearer {0}".format(token)}
+            return {"Authorization": f"Bearer {token}"}
 
     def _login_oauth_generate_auth_data(self):
         """
@@ -220,9 +223,9 @@ class Client:
         auth_data = self._login_oauth_generate_auth_data()
         resp = self._request(
             "POST",
-            "{0}/oauth_token.do".format(self.host),
+            f"{self.host}/oauth_token.do",
             data=auth_data,
-            headers=dict(Accept="application/json"),
+            headers={"Accept": "application/json"},
         )
         if resp.status != 200:
             raise UnexpectedAPIResponse(resp.status, resp.data)
@@ -232,109 +235,155 @@ class Client:
 
     def _request(self, method, path, data=None, headers=None):
         """Make a request with retry logic and connection management"""
-        # Check if we need to refresh the connection
         if self._should_refresh_connection():
             self._refresh_connection()
-        
+
         for attempt in range(self.max_retries):
             try:
-                raw_resp = self._client.open(
-                    method,
-                    path,
-                    data=data,
-                    headers=headers,
-                    timeout=self.timeout,
-                    validate_certs=self.validate_certs,
-                    client_cert=self.client_certificate_file,
-                    client_key=self.client_key_file,
-                )
-                
-                # Increment request count
-                self._request_count += 1
-                
-                # Read response data
-                response_data = raw_resp.read()
-                
-                return Response(
-                    raw_resp.status, response_data, raw_resp.headers, self.json_decoder_hook
-                )
-                
+                return self._make_single_request(method, path, data, headers)
             except HTTPError as e:
-                # Wrong username/password, or expired access token
-                if e.code == 401:
-                    raise AuthError(
-                        "Failed to authenticate with the instance: {0} {1}".format(
-                            e.code, e.reason
-                        ),
-                    )
-                # Other HTTP error codes do not necessarily mean errors.
-                # This is for the caller to decide.
-                return Response(e.code, e.read(), e.headers)
+                return self._handle_http_error(e)
             except (URLError, ConnectionError, TimeoutError) as e:
-                if attempt == self.max_retries - 1:
-                    raise ServiceNowError(f"Connection failed after {self.max_retries} attempts: {e.reason}")
-                logger.warning(f"Connection error, retrying... ({attempt + 1}/{self.max_retries}): {e}")
-                time.sleep(2 ** attempt)  # Exponential backoff
-                self._refresh_connection()
+                if not self._handle_connection_error(e, attempt):
+                    break
             except ssl.SSLError as e:
-                if self.client_certificate_file:
-                    raise ServiceNowError(
-                        "Failed to communicate with instance due to SSL error, likely related to the client certificate or key. "
-                        "Ensure the files are accessible on the Ansible host and in the correct format (see module documentation)."
-                    )
-                raise
+                self._handle_ssl_error(e)
             except Exception as e:
-                if attempt == self.max_retries - 1:
-                    raise
-                logger.warning(f"Unexpected error, retrying... ({attempt + 1}/{self.max_retries}): {e}")
-                time.sleep(2 ** attempt)
-                self._refresh_connection()
+                if not self._handle_generic_error(e, attempt):
+                    break
 
-    def _request_streaming(self, method, path, data=None, headers=None, chunk_size=8192):
+    def _make_single_request(self, method, path, data, headers):
+        """Make a single HTTP request and return response"""
+        raw_resp = self._client.open(
+            method,
+            path,
+            data=data,
+            headers=headers,
+            timeout=self.timeout,
+            validate_certs=self.validate_certs,
+            client_cert=self.client_certificate_file,
+            client_key=self.client_key_file,
+        )
+
+        # Increment request count
+        self._request_count += 1
+
+        # Read response data
+        response_data = raw_resp.read()
+
+        return Response(
+            raw_resp.status,
+            response_data,
+            raw_resp.headers,
+            self.json_decoder_hook,
+        )
+
+    def _handle_http_error(self, error):
+        """Handle HTTP errors"""
+        if error.code == 401:
+            raise AuthError(
+                f"Failed to authenticate with the instance: {error.code} {error.reason}",
+            )
+        # Other HTTP error codes do not necessarily mean errors.
+        # This is for the caller to decide.
+        return Response(error.code, error.read(), error.headers)
+
+    def _handle_connection_error(self, error, attempt):
+        """Handle connection errors with retry logic"""
+        if attempt == self.max_retries - 1:
+            raise ServiceNowError(
+                f"Connection failed after {self.max_retries} attempts: {error.reason}"
+            )
+        logger.warning(
+            "Connection error, retrying... (%s/%s): %s",
+            attempt + 1,
+            self.max_retries,
+            error,
+        )
+        time.sleep(2**attempt)  # Exponential backoff
+        self._refresh_connection()
+        return True
+
+    def _handle_ssl_error(self, error):  # pylint: disable=unused-argument
+        """Handle SSL errors"""
+        if self.client_certificate_file:
+            raise ServiceNowError(
+                "Failed to communicate with instance due to SSL error, likely related to the client certificate or key. "
+                "Ensure the files are accessible on the Ansible host and in the correct format (see module documentation)."
+            )
+        raise error
+
+    def _handle_generic_error(self, error, attempt):
+        """Handle generic errors with retry logic"""
+        if attempt == self.max_retries - 1:
+            raise error
+        logger.warning(
+            "Unexpected error, retrying... (%s/%s): %s",
+            attempt + 1,
+            self.max_retries,
+            error,
+        )
+        time.sleep(2**attempt)
+        self._refresh_connection()
+        return True
+
+    def _request_streaming(
+        self, method, path, data=None, headers=None, chunk_size=8192
+    ):
         """Stream large responses instead of loading into memory"""
-        # Check if we need to refresh the connection
         if self._should_refresh_connection():
             self._refresh_connection()
-        
+
         for attempt in range(self.max_retries):
             try:
-                raw_resp = self._client.open(
-                    method,
-                    path,
-                    data=data,
-                    headers=headers,
-                    timeout=self.timeout,
-                    validate_certs=self.validate_certs,
-                    client_cert=self.client_certificate_file,
-                    client_key=self.client_key_file,
+                return self._make_streaming_request(
+                    method, path, data, headers, chunk_size
                 )
-                
-                # Increment request count
-                self._request_count += 1
-                
-                # Stream response data
-                response_data = b""
-                for chunk in iter(lambda: raw_resp.read(chunk_size), b""):
-                    response_data += chunk
-                    
-                return Response(
-                    raw_resp.status, response_data, raw_resp.headers, self.json_decoder_hook
-                )
-                
             except (URLError, ConnectionError, TimeoutError) as e:
-                if attempt == self.max_retries - 1:
-                    raise ServiceNowError(f"Connection failed after {self.max_retries} attempts: {e.reason}")
-                logger.warning(f"Connection error, retrying... ({attempt + 1}/{self.max_retries}): {e}")
-                time.sleep(2 ** attempt)
-                self._refresh_connection()
+                if not self._handle_connection_error(e, attempt):
+                    break
             except Exception as e:
-                if attempt == self.max_retries - 1:
-                    raise
-                logger.warning(f"Unexpected error, retrying... ({attempt + 1}/{self.max_retries}): {e}")
-                time.sleep(2 ** attempt)
-                self._refresh_connection()
+                if not self._handle_generic_error(e, attempt):
+                    break
 
-    def request(self, method, path, query=None, data=None, headers=None, bytes=None, stream=False):
+    def _make_streaming_request(self, method, path, data, headers, chunk_size):
+        """Make a streaming HTTP request and return response"""
+        raw_resp = self._client.open(
+            method,
+            path,
+            data=data,
+            headers=headers,
+            timeout=self.timeout,
+            validate_certs=self.validate_certs,
+            client_cert=self.client_certificate_file,
+            client_key=self.client_key_file,
+        )
+
+        # Increment request count
+        self._request_count += 1
+
+        # Stream response data
+        response_data = b""
+        for chunk in iter(lambda: raw_resp.read(chunk_size), b""):
+            response_data += chunk
+
+        return Response(
+            raw_resp.status,
+            response_data,
+            raw_resp.headers,
+            self.json_decoder_hook,
+        )
+
+    def request(
+        self,
+        method,
+        path,
+        query=None,
+        data=None,
+        headers=None,
+        bytes=None,  # pylint: disable=redefined-builtin
+        stream=False,
+    ):
         # Make sure we only have one kind of payload
         if data is not None and bytes is not None:
             raise AssertionError(
@@ -344,9 +393,9 @@ class Client:
         escaped_path = quote(path.strip("/"))
         if escaped_path:
             escaped_path = "/" + escaped_path
-        url = "{0}{1}".format(self.host, escaped_path)
+        url = f"{self.host}{escaped_path}"
         if query:
-            url = "{0}?{1}".format(url, urlencode(query))
+            url = f"{url}?{urlencode(query)}"
         headers = dict(headers or DEFAULT_HEADERS, **self.auth_header)
         if self.custom_headers:
             headers = dict(headers, **self.custom_headers)
@@ -355,7 +404,7 @@ class Client:
             headers["Content-type"] = "application/json"
         elif bytes is not None:
             data = bytes
-        
+
         # Use streaming for large requests if requested
         if stream:
             return self._request_streaming(method, url, data=data, headers=headers)
