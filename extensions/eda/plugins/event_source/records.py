@@ -68,13 +68,12 @@ EXAMPLES = r"""
 
 import asyncio
 from typing import Any, Dict
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import logging
 import re
 import gc
 import os
-import time
 
 # Need to add the project root to the path so that we can import the module_utils.
 # The EDA team may come up with a better solution for this in the future.
