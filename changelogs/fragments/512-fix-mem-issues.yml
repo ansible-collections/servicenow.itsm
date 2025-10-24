@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - eda/records - Fix memory utilization problems for EDA plugin
