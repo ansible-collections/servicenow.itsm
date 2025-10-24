@@ -128,13 +128,19 @@ class TestRecordsSource:
             2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc
         )
 
-    def test_lookup_snow_user_timezone(self, source):
-        source.table_client.list_records.return_value = [
+    @patch("ansible_collections.servicenow.itsm.extensions.eda.plugins.event_source.records.table.TableClient")
+    def test_lookup_snow_user_timezone(self, mock_table_client, source):
+        # Mock the temporary client
+        mock_temp_client = Mock()
+        mock_temp_client.list_records.return_value = [
             dict(time_zone="America/New_York")
         ]
+        mock_table_client.return_value = mock_temp_client
+        
         assert source.lookup_snow_user_timezone() == ZoneInfo("America/New_York")
 
-        source.table_client.list_records.return_value = [dict()]
+        # Test error case
+        mock_temp_client.list_records.return_value = [dict()]
         with pytest.raises(
             AnsibleParserError, match="Unable to lookup user timezone in ServiceNow:"
         ):
