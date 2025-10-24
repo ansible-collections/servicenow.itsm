@@ -185,7 +185,7 @@ class RecordsSource:
         )
         self.table_name = args.get("table")
         self.snow_client = client.Client(**self.instance_config)
-        self.table_client = table.TableClient(self.snow_client)
+        self.table_client = table.TableClient(self.snow_client, memory_efficient=True)
         self.query_formatter = QueryFormatter()
         self.list_query = self.query_formatter.format_and_clean_query_parameters(
             query=args.get("query"), sysparm_query=args.get("sysparm_query")

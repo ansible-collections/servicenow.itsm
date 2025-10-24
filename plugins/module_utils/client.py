@@ -9,6 +9,8 @@ __metaclass__ = type
 
 import json
 import ssl
+import time
+import logging
 
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
@@ -16,11 +18,15 @@ from ansible.module_utils.urls import Request, basic_auth_header
 
 from .errors import AuthError, ServiceNowError, UnexpectedAPIResponse
 
+logger = logging.getLogger(__name__)
+
 DEFAULT_HEADERS = dict(Accept="application/json")
 
 
 class Response:
-    def __init__(self, status, data, headers=None, json_decoder_hook=None):
+    def __init__(
+        self, status, data, headers=None, json_decoder_hook=None, max_cache_size=100
+    ):
         self.status = status
         self.data = data
         # [('h1', 'v1'), ('H2', 'V2')] -> {'h1': 'v1', 'h2': 'V2'}
@@ -30,16 +36,29 @@ class Response:
 
         self._json = None
         self.json_decoder_hook = json_decoder_hook
+        self._max_cache_size = max_cache_size
+        self._cache_entries = 0
+
+    def clear_cache(self):
+        """Clear cached JSON data to free memory"""
+        self._json = None
+        self._cache_entries = 0
 
     @property
     def json(self):
         if self._json is None:
             try:
                 self._json = json.loads(self.data, object_hook=self.json_decoder_hook)
-            except ValueError:
+                self._cache_entries += 1
+
+                # Auto-cleanup if cache gets too large
+                if self._cache_entries > self._max_cache_size:
+                    logger.debug("JSON cache size exceeded, clearing cache")
+                    self.clear_cache()
+            except ValueError as exc:
                 raise ServiceNowError(
                     "Received invalid JSON response: {0}".format(self.data)
-                )
+                ) from exc
         return self._json
 
 
@@ -62,6 +81,8 @@ class Client:
         timeout=None,
         validate_certs=None,
         json_decoder_hook=None,
+        connection_timeout=300,  # 5 minutes
+        max_retries=3,
     ):
         if not (host or "").startswith(("https://", "http://")):
             raise ServiceNowError(
@@ -86,9 +107,58 @@ class Client:
         self.timeout = timeout
         self.validate_certs = validate_certs
         self.json_decoder_hook = json_decoder_hook
+        self.connection_timeout = connection_timeout
+        self.max_retries = max_retries
 
         self._auth_header = None
         self._client = Request()
+        self._connection_created = time.time()
+        self._request_count = 0
+
+    def __enter__(self):
+        """Context manager entry"""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit - cleanup resources"""
+        self.close()
+
+    def __del__(self):
+        """Cleanup connections when client is destroyed"""
+        try:
+            self.close()
+        except Exception:
+            pass  # Ignore errors during cleanup
+
+    def close(self):
+        """Explicitly close connections and cleanup resources"""
+        try:
+            if hasattr(self._client, "close"):
+                self._client.close()
+            self._auth_header = None
+            self._client = None
+            logger.debug("Client connections closed")
+        except Exception as e:
+            logger.warning("Error during client cleanup: %s", e)
+
+    def _refresh_connection(self):
+        """Refresh the underlying connection"""
+        try:
+            if hasattr(self._client, "close"):
+                self._client.close()
+        except Exception:
+            pass
+        self._client = Request()
+        self._connection_created = time.time()
+        self._request_count = 0
+        logger.debug("Connection refreshed")
+
+    def _should_refresh_connection(self):
+        """Check if connection should be refreshed"""
+        return (
+            time.time() - self._connection_created > self.connection_timeout
+            or self._request_count > 1000
+        )
 
     @property
     def auth_header(self):
@@ -164,6 +234,10 @@ class Client:
         return self._login_token(access_token, is_api_key=False)
 
     def _request(self, method, path, data=None, headers=None):
+        # Check if connection should be refreshed
+        if self._should_refresh_connection():
+            self._refresh_connection()
+
         try:
             raw_resp = self._client.open(
                 method,
@@ -195,6 +269,9 @@ class Client:
                     "Ensure the files are accessible on the Ansible host and in the correct format (see module documentation)."
                 )
             raise
+
+        # Increment request count for connection management
+        self._request_count += 1
 
         return Response(
             raw_resp.status, raw_resp.read(), raw_resp.headers, self.json_decoder_hook
