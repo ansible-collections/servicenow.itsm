@@ -7,16 +7,35 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import gc
+import logging
 
 from . import errors
 
+logger = logging.getLogger(__name__)
+
 
 class SNowClient:
-    def __init__(self, client, batch_size=1000):
+    def __init__(self, client, batch_size=1000, memory_efficient=False):
         self.client = client
         self.batch_size = batch_size
+        self.memory_efficient = memory_efficient
+        self._memory_cleanup_interval = 100  # Cleanup every 100 operations
+        self._batch_count = 0
+
+    def _cleanup_memory(self):
+        """Force garbage collection to free memory"""
+        gc.collect()
+        logger.debug("Memory cleanup performed")
 
     def list(self, api_path, query=None):
+        if self.memory_efficient:
+            return self.list_generator(api_path, query)
+        else:
+            return self._list_accumulate(api_path, query)
+
+    def _list_accumulate(self, api_path, query=None):
+        """Original list method that accumulates all results"""
         base_query = self._sanitize_query(query)
         base_query["sysparm_limit"] = self.batch_size
 
@@ -43,7 +62,46 @@ class SNowClient:
 
             offset += self.batch_size
 
+            # Memory cleanup
+            self._batch_count += 1
+            if self._batch_count % self._memory_cleanup_interval == 0:
+                self._cleanup_memory()
+
         return result
+
+    def list_generator(self, api_path, query=None):
+        """Memory-efficient generator-based listing"""
+        base_query = self._sanitize_query(query)
+        base_query["sysparm_limit"] = self.batch_size
+
+        offset = 0
+        total = 1  # Dummy value that ensures loop executes at least once
+
+        while offset < total:
+            response = self.client.get(
+                api_path,
+                query=dict(base_query, sysparm_offset=offset),
+            )
+
+            # Yield records one by one
+            yield from response.json["result"]
+
+            # This is a header only for Table API.
+            # When using this client for generic api, the header is not present anymore
+            # and we need to find a new method to break from the loop
+            # It can be removed from Table API but for it's better to keep it for now.
+            if "x-total-count" in response.headers:
+                total = int(response.headers["x-total-count"])
+            else:
+                if len(response.json["result"]) == 0:
+                    break
+
+            offset += self.batch_size
+
+            # Memory cleanup
+            self._batch_count += 1
+            if self._batch_count % self._memory_cleanup_interval == 0:
+                self._cleanup_memory()
 
     def get(self, api_path, query, must_exist=False):
         records = self.list(api_path, query)
