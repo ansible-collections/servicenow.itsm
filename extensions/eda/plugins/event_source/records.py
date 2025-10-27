@@ -68,7 +68,7 @@ EXAMPLES = r"""
 
 import asyncio
 from typing import Any, Dict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import logging
 import re
@@ -204,12 +204,13 @@ class RecordsSource:
         self.reported_records_last_poll: Dict[str, str] = dict()
 
         # Memory management attributes
-        self._memory_threshold = 100 * 1024 * 1024  # 100MB threshold
-        self._cleanup_interval = 3600  # 1 hour cleanup interval
+        self._memory_threshold = 50 * 1024 * 1024  # 50MB threshold (reduced from 100MB)
+        self._cleanup_interval = 300  # 5 minutes cleanup interval (reduced from 1 hour)
         self._poll_count = 0
-        self._max_tracking_records = (
-            10000  # Limit tracking records to prevent memory bloat
-        )
+        self._max_tracking_records = 5000  # Reduced from 10000
+        self._max_tracking_age_hours = 24  # Maximum age for tracking records
+        self._last_cleanup_time = datetime.now(timezone.utc)
+        self._memory_cleanup_count = 0
 
     def _get_memory_usage(self):
         """Get current memory usage in bytes"""
@@ -224,24 +225,61 @@ class RecordsSource:
 
     def _cleanup_memory(self):
         """Perform memory cleanup operations"""
-        logger.debug("Performing memory cleanup")
+        self._memory_cleanup_count += 1
+        logger.debug("Performing memory cleanup #%d", self._memory_cleanup_count)
 
         # Force garbage collection
         gc.collect()
 
-        # Clear old tracking records if we have too many
+        # Clear any cached response data in the client
+        if hasattr(self.snow_client, "_client") and self.snow_client._client:
+            # Clear any cached data in the underlying HTTP client
+            if hasattr(self.snow_client._client, "clear_cache"):
+                self.snow_client._client.clear_cache()
+
+        # Refresh connections to prevent connection leaks
+        if hasattr(self.snow_client, "_refresh_connection"):
+            self.snow_client._refresh_connection()
+
+        # Time-based cleanup: Remove records older than max_tracking_age_hours
+        current_time = datetime.now(timezone.utc)
+        cutoff_time = current_time - timedelta(hours=self._max_tracking_age_hours)
+
+        # Count records to be removed
+        records_to_remove = []
+        for sys_id, timestamp_str in self.reported_records_last_poll.items():
+            try:
+                record_time = get_tz_aware_datetime_from_string(timestamp_str)
+                if record_time < cutoff_time:
+                    records_to_remove.append(sys_id)
+            except Exception:
+                # If timestamp parsing fails, remove the record
+                records_to_remove.append(sys_id)
+
+        # Remove old records
+        for sys_id in records_to_remove:
+            del self.reported_records_last_poll[sys_id]
+
+        if records_to_remove:
+            logger.debug(
+                "Removed %d old tracking records (older than %d hours)",
+                len(records_to_remove),
+                self._max_tracking_age_hours,
+            )
+
+        # Count-based cleanup: If still too many records, keep only the most recent
         if len(self.reported_records_last_poll) > self._max_tracking_records:
-            # Keep only the most recent 50% of records
+            # Sort by timestamp and keep only the most recent records
             sorted_items = sorted(
                 self.reported_records_last_poll.items(),
                 key=lambda x: x[1],
                 reverse=True,
             )
-            self.reported_records_last_poll = dict(
-                sorted_items[: self._max_tracking_records // 2]
-            )
+            # Keep 75% instead of 50% to reduce reprocessing
+            keep_count = int(self._max_tracking_records * 0.75)
+            self.reported_records_last_poll = dict(sorted_items[:keep_count])
             logger.debug(
-                "Cleared old tracking records, kept %d most recent",
+                "Cleared excess tracking records, kept %d most recent",
                 len(self.reported_records_last_poll),
             )
 
@@ -249,16 +287,98 @@ class RecordsSource:
         memory_usage = self._get_memory_usage()
         if memory_usage > 0:
             logger.debug(
-                "Memory usage after cleanup: %.2f MB", memory_usage / 1024 / 1024
+                "Memory usage after cleanup: %.2f MB (tracking %d records)",
+                memory_usage / 1024 / 1024,
+                len(self.reported_records_last_poll),
             )
 
     def _should_cleanup_memory(self):
         """Check if memory cleanup should be performed"""
         self._poll_count += 1
-        return (
-            self._poll_count % 100 == 0  # Every 100 polls
-            or self._get_memory_usage() > self._memory_threshold
-        )
+        current_time = datetime.now(timezone.utc)
+
+        # Time-based cleanup (every 5 minutes)
+        time_since_last_cleanup = (
+            current_time - self._last_cleanup_time
+        ).total_seconds()
+        if time_since_last_cleanup >= self._cleanup_interval:
+            self._last_cleanup_time = current_time
+            return True
+
+        # Poll-based cleanup (every 50 polls instead of 100)
+        if self._poll_count % 50 == 0:
+            return True
+
+        # Memory pressure cleanup
+        memory_usage = self._get_memory_usage()
+        if memory_usage > self._memory_threshold:
+            logger.warning(
+                "Memory usage %.2f MB exceeds threshold %.2f MB, triggering cleanup",
+                memory_usage / 1024 / 1024,
+                self._memory_threshold / 1024 / 1024,
+            )
+            return True
+
+        # Emergency cleanup for severe memory pressure (80% of threshold)
+        emergency_threshold = self._memory_threshold * 0.8
+        if memory_usage > emergency_threshold:
+            logger.warning(
+                "Memory usage %.2f MB exceeds emergency threshold %.2f MB, triggering aggressive cleanup",
+                memory_usage / 1024 / 1024,
+                emergency_threshold / 1024 / 1024,
+            )
+            self._force_cleanup_all_caches()
+            return True
+
+        # Record count cleanup
+        if len(self.reported_records_last_poll) > self._max_tracking_records:
+            logger.warning(
+                "Tracking %d records exceeds limit %d, triggering cleanup",
+                len(self.reported_records_last_poll),
+                self._max_tracking_records,
+            )
+            return True
+
+        return False
+
+    def _force_cleanup_all_caches(self):
+        """Force cleanup of all cached data to prevent memory leaks"""
+        logger.debug("Forcing cleanup of all cached data")
+
+        # Clear tracking records
+        self.reported_records_last_poll.clear()
+
+        # Force garbage collection multiple times
+        for _ in range(3):
+            gc.collect()
+
+        # Clear client caches
+        if hasattr(self.snow_client, "_client") and self.snow_client._client:
+            if hasattr(self.snow_client._client, "clear_cache"):
+                self.snow_client._client.clear_cache()
+
+        # Refresh connections
+        if hasattr(self.snow_client, "_refresh_connection"):
+            self.snow_client._refresh_connection()
+
+        logger.debug("All cached data cleared")
+
+    def get_memory_stats(self):
+        """Get current memory statistics for monitoring"""
+        memory_usage = self._get_memory_usage()
+        return {
+            "memory_usage_mb": memory_usage / 1024 / 1024 if memory_usage > 0 else 0,
+            "tracking_records_count": len(self.reported_records_last_poll),
+            "max_tracking_records": self._max_tracking_records,
+            "memory_threshold_mb": self._memory_threshold / 1024 / 1024,
+            "cleanup_count": self._memory_cleanup_count,
+            "poll_count": self._poll_count,
+            "memory_usage_percentage": (
+                (memory_usage / self._memory_threshold * 100)
+                if memory_usage > 0 and self._memory_threshold > 0
+                else 0
+            ),
+        }
 
     async def __aenter__(self):
         """Async context manager entry"""
@@ -299,6 +419,18 @@ class RecordsSource:
             # Perform memory cleanup if needed
             if self._should_cleanup_memory():
                 self._cleanup_memory()
+
+            # Log memory statistics every 100 polls
+            if self._poll_count % 100 == 0:
+                stats = self.get_memory_stats()
+                logger.info(
+                    "Memory stats: %.2f MB (%.1f%% of threshold), tracking %d/%d records, %d cleanups performed",
+                    stats["memory_usage_mb"],
+                    stats["memory_usage_percentage"],
+                    stats["tracking_records_count"],
+                    stats["max_tracking_records"],
+                    stats["cleanup_count"],
+                )
 
             logger.info("Sleeping for %s seconds", self.interval)
             await asyncio.sleep(self.interval)
@@ -360,12 +492,16 @@ class RecordsSource:
 
             record_count += 1
 
-            # Periodic memory cleanup during processing
-            if record_count % 1000 == 0:
+            # Periodic memory cleanup during processing (more frequent)
+            if record_count % 500 == 0:  # Reduced from 1000
                 logger.debug(
                     "Processed %d records, performing memory cleanup", record_count
                 )
                 self._cleanup_memory()
+
+            # Force garbage collection every 100 records to prevent accumulation
+            if record_count % 100 == 0:
+                gc.collect()
 
         logger.debug("Ending poll for records")
         if _last_record_processed:
