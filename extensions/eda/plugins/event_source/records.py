@@ -423,6 +423,9 @@ class RecordsSource:
 
         If it is a new record, we need to remember it for the next cycle (so that we don't report it again),
         and add it to the queue for EDA.
+
+        Note: If a record is updated (new timestamp), it will be processed again, which is the
+        desired behavior for Event Driven Ansible - we want to react to record changes.
         """
         # Ignore anything strictly older than our since timestamp.
         record_update_timestamp = record["sys_updated_on"]
@@ -450,21 +453,40 @@ class RecordsSource:
         return True
 
     def has_record_been_reported(self, record, reported_records_this_poll):
+        """
+        Check if a record has already been reported in the current or previous poll cycle.
+        Returns True if the record has been reported, False otherwise.
+        """
         sys_id = record["sys_id"]
         updated_on = record["sys_updated_on"]
 
-        if (
-            sys_id not in self.reported_records_last_poll
-            and sys_id not in reported_records_this_poll
-        ):
-            return False
+        # Check if we've already processed this record in the current poll
+        if sys_id in reported_records_this_poll:
+            logger.debug("Record %s already processed in current poll cycle", sys_id)
+            return True
 
-        if updated_on != reported_records_this_poll.get(
-            sys_id
-        ) and updated_on != self.reported_records_last_poll.get(sys_id):
-            return False
+        # Check if we've processed this record in the previous poll
+        # If the timestamp matches, it's the same version of the record
+        if sys_id in self.reported_records_last_poll:
+            last_reported_timestamp = self.reported_records_last_poll[sys_id]
+            if updated_on == last_reported_timestamp:
+                logger.debug(
+                    "Record %s already processed in previous poll cycle with same timestamp %s",
+                    sys_id,
+                    updated_on,
+                )
+                return True
+            else:
+                logger.debug(
+                    "Record %s was processed before but has new timestamp %s (was %s), will process again",
+                    sys_id,
+                    updated_on,
+                    last_reported_timestamp,
+                )
 
-        return True
+        # Record has not been reported yet
+        logger.debug("Record %s is new and will be processed", sys_id)
+        return False
 
 
 # Entrypoint from ansible-rulebook
