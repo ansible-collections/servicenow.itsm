@@ -464,7 +464,9 @@ class RecordsSource:
         # Only consider it reported if the timestamp matches (same version)
         if sys_id in reported_records_this_poll:
             if updated_on == reported_records_this_poll[sys_id]:
-                logger.debug("Record %s already processed in current poll cycle", sys_id)
+                logger.debug(
+                    "Record %s already processed in current poll cycle", sys_id
+                )
                 return True
             else:
                 logger.debug(
