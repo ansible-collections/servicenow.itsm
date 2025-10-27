@@ -66,28 +66,27 @@ EXAMPLES = r"""
         debug:
 """
 
-import asyncio
-from typing import Any, Dict
-from datetime import datetime, timezone, timedelta
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import logging
-import re
-import gc
-import os
-
 # Need to add the project root to the path so that we can import the module_utils.
 # The EDA team may come up with a better solution for this in the future.
-import sys
 import os
+import sys
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from plugins.module_utils.instance_config import get_combined_instance_config
-from plugins.module_utils import client, table
-from plugins.module_utils.query import construct_sysparm_query_from_query
+import asyncio
+import gc
+import logging
+import re
+from datetime import datetime, timezone, timedelta
+from typing import Any, Dict
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
 from ansible.errors import AnsibleParserError
+from plugins.module_utils import client, table
+from plugins.module_utils.instance_config import get_combined_instance_config
+from plugins.module_utils.query import construct_sysparm_query_from_query
 
 
 logger = logging.getLogger(__name__)
@@ -349,7 +348,7 @@ class RecordsSource:
         self.reported_records_last_poll.clear()
 
         # Force garbage collection multiple times
-        for _ in range(3):
+        for _unused in range(3):
             gc.collect()
 
         # Clear client caches
