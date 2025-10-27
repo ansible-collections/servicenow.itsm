@@ -158,6 +158,7 @@ class QueryFormatter:
     ):
         """
         Add the newest_seen timestamp onto our list query. This ensures that we are always polling for new and unseen records.
+        We use >= to include records with the same timestamp, which is important for handling multiple records updated simultaneously.
         """
         # Convert the latest polling start time to the user's timezone so we can use it in the query.
         sys_update_on_datetime_in_snow_tz = sys_update_on_datetime.astimezone(
@@ -167,6 +168,7 @@ class QueryFormatter:
         sys_updated_on_time_str = sys_update_on_datetime_in_snow_tz.strftime("%H:%M:%S")
 
         # Inject the sys_updated_on filter into the query, with new timestamp
+        # Using >= ensures we capture records with the same timestamp
         query_string = "sys_updated_on>=javascript:gs.dateGenerate('%s', '%s')" % (
             sys_updated_on_date_str,
             sys_updated_on_time_str,
@@ -332,6 +334,7 @@ class RecordsSource:
         logger.debug("List query: %s", self.list_query)
 
         _last_record_processed = None
+        _latest_timestamp = None
         record_count = 0
 
         # Use the regular method for now to maintain compatibility with tests
@@ -348,6 +351,13 @@ class RecordsSource:
                 await self.queue.put(record)
                 _last_record_processed = record
 
+                # Track the latest timestamp seen (not just the last processed record)
+                record_timestamp = get_tz_aware_datetime_from_string(
+                    record["sys_updated_on"]
+                )
+                if _latest_timestamp is None or record_timestamp > _latest_timestamp:
+                    _latest_timestamp = record_timestamp
+
             record_count += 1
 
             # Periodic memory cleanup during processing
@@ -359,9 +369,15 @@ class RecordsSource:
 
         logger.debug("Ending poll for records")
         if _last_record_processed:
-            self._latest_sys_updated_on_floor = get_tz_aware_datetime_from_string(
-                _last_record_processed["sys_updated_on"]
-            )
+            # Update the timestamp to the latest timestamp seen (not just the last processed record)
+            # This ensures we don't miss records with the same timestamp
+            if _latest_timestamp:
+                self._latest_sys_updated_on_floor = _latest_timestamp
+            else:
+                # Fallback to last processed record if no timestamp was tracked
+                self._latest_sys_updated_on_floor = get_tz_aware_datetime_from_string(
+                    _last_record_processed["sys_updated_on"]
+                )
             logger.debug(
                 "Increasing the next query sys_updated_on timestamp to %s",
                 self._latest_sys_updated_on_floor,
@@ -369,6 +385,10 @@ class RecordsSource:
 
             # If we find any new records, we will be increasing the next query sys_updated_on timestamp and
             # need to remember which records we have seen so that we don't report them again.
+            self.reported_records_last_poll = reported_records_this_poll
+        else:
+            # No records were processed, but we should still update the tracking
+            # to prevent processing the same records again
             self.reported_records_last_poll = reported_records_this_poll
 
     def lookup_snow_user_timezone(self):
