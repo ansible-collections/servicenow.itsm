@@ -475,7 +475,7 @@ class RecordsSource:
                 snow_timezone=remote_snow_timezone,
             )
         )
-        logger.info(
+        logger.debug(
             "Polling for records updated on or after %s (UTC)",
             self.latest_sys_updated_on_floor,
         )
