@@ -83,6 +83,13 @@ from datetime import datetime, timezone, timedelta
 from typing import Any, Dict
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+try:
+    import psutil
+
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+
 from ansible.errors import AnsibleParserError
 from plugins.module_utils import client, table
 from plugins.module_utils.instance_config import get_combined_instance_config
@@ -213,12 +220,14 @@ class RecordsSource:
 
     def _get_memory_usage(self):
         """Get current memory usage in bytes"""
-        try:
-            import psutil
-
-            process = psutil.Process(os.getpid())
-            return process.memory_info().rss
-        except ImportError:
+        if PSUTIL_AVAILABLE:
+            try:
+                process = psutil.Process(os.getpid())
+                return process.memory_info().rss
+            except Exception:
+                # psutil available but failed to get memory info, return 0
+                return 0
+        else:
             # psutil not available, return 0
             return 0
 
