@@ -79,16 +79,10 @@ import asyncio
 import gc
 import logging
 import re
+import resource
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-
-try:
-    import psutil
-
-    PSUTIL_AVAILABLE = True
-except ImportError:
-    PSUTIL_AVAILABLE = False
 
 from ansible.errors import AnsibleParserError
 from plugins.module_utils import client, table
@@ -219,16 +213,14 @@ class RecordsSource:
         self._memory_cleanup_count = 0
 
     def _get_memory_usage(self):
-        """Get current memory usage in bytes"""
-        if PSUTIL_AVAILABLE:
-            try:
-                process = psutil.Process(os.getpid())
-                return process.memory_info().rss
-            except Exception:
-                # psutil available but failed to get memory info, return 0
-                return 0
-        else:
-            # psutil not available, return 0
+        """Get current memory usage in bytes using resource module"""
+        try:
+            # Get the current RSS (Resident Set Size) in bytes
+            # resource.getrusage() returns memory usage in KB, so multiply by 1024
+            memory_info = resource.getrusage(resource.RUSAGE_SELF)
+            return memory_info.ru_maxrss * 1024  # Convert KB to bytes
+        except Exception:
+            # If resource module fails, return 0
             return 0
 
     def _cleanup_memory(self):
