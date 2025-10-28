@@ -419,6 +419,7 @@ class RecordsSource:
         """
         remote_snow_timezone = self.lookup_snow_user_timezone()
         logger.info("Remote ServiceNow user's timezone is '%s'", remote_snow_timezone)
+        logger.info("Poll sleep interval is %s seconds", self.interval)
 
         while True:
             logger.debug(
@@ -447,7 +448,7 @@ class RecordsSource:
                     stats["cleanup_count"],
                 )
 
-            logger.info("Sleeping for %s seconds", self.interval)
+            logger.debug("Sleeping for %s seconds", self.interval)
             await asyncio.sleep(self.interval)
             logger.debug("Ending poll iteration")
 
