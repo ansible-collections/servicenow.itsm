@@ -34,7 +34,7 @@ class SNowClient:
         self._response_objects.clear()
 
         # Force garbage collection multiple times
-        for _ in range(3):
+        for _unused in range(3):
             gc.collect()
         logger.debug("Memory cleanup performed")
 
