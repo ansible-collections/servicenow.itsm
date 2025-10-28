@@ -236,6 +236,14 @@ class RecordsSource:
             if hasattr(self.snow_client._client, "clear_cache"):
                 self.snow_client._client.clear_cache()
 
+            # Clean up unused responses
+            if hasattr(self.snow_client._client, "cleanup_unused_responses"):
+                self.snow_client._client.cleanup_unused_responses()
+
+        # Clean up table client responses
+        if hasattr(self.table_client, "cleanup_responses"):
+            self.table_client.cleanup_responses()
+
         # Refresh connections to prevent connection leaks
         if hasattr(self.snow_client, "_refresh_connection"):
             self.snow_client._refresh_connection()
@@ -355,6 +363,14 @@ class RecordsSource:
         if hasattr(self.snow_client, "_client") and self.snow_client._client:
             if hasattr(self.snow_client._client, "clear_cache"):
                 self.snow_client._client.clear_cache()
+
+            # Clean up unused responses
+            if hasattr(self.snow_client._client, "cleanup_unused_responses"):
+                self.snow_client._client.cleanup_unused_responses()
+
+        # Clean up table client responses
+        if hasattr(self.table_client, "cleanup_responses"):
+            self.table_client.cleanup_responses()
 
         # Refresh connections
         if hasattr(self.snow_client, "_refresh_connection"):
@@ -492,15 +508,23 @@ class RecordsSource:
             record_count += 1
 
             # Periodic memory cleanup during processing (more frequent)
-            if record_count % 500 == 0:  # Reduced from 1000
+            if record_count % 200 == 0:  # More frequent cleanup
                 logger.debug(
                     "Processed %d records, performing memory cleanup", record_count
                 )
                 self._cleanup_memory()
 
-            # Force garbage collection every 100 records to prevent accumulation
-            if record_count % 100 == 0:
+            # Force garbage collection every 50 records to prevent accumulation
+            if record_count % 50 == 0:
                 gc.collect()
+
+            # Clean up client responses every 100 records
+            if record_count % 100 == 0:
+                if hasattr(self.snow_client, "_client") and self.snow_client._client:
+                    if hasattr(self.snow_client._client, "cleanup_unused_responses"):
+                        self.snow_client._client.cleanup_unused_responses()
+                if hasattr(self.table_client, "cleanup_responses"):
+                    self.table_client.cleanup_responses()
 
         logger.debug("Ending poll for records")
         if _last_record_processed:

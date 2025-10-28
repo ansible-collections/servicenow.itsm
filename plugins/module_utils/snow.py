@@ -20,13 +20,33 @@ class SNowClient:
         self.client = client
         self.batch_size = batch_size
         self.memory_efficient = memory_efficient
-        self._memory_cleanup_interval = 100  # Cleanup every 100 operations
+        self._memory_cleanup_interval = 50  # More frequent cleanup
         self._batch_count = 0
+        self._response_objects = []  # Track response objects for cleanup
+        self._max_response_objects = 100  # Maximum tracked responses
 
     def _cleanup_memory(self):
         """Force garbage collection to free memory"""
-        gc.collect()
+        # Clean up tracked response objects
+        for response in self._response_objects:
+            if hasattr(response, "clear_cache"):
+                response.clear_cache()
+        self._response_objects.clear()
+
+        # Force garbage collection multiple times
+        for _ in range(3):
+            gc.collect()
         logger.debug("Memory cleanup performed")
+
+    def cleanup_responses(self):
+        """Explicitly clean up all tracked response objects"""
+        cleaned_count = 0
+        for response in self._response_objects:
+            if hasattr(response, "clear_cache"):
+                response.clear_cache()
+                cleaned_count += 1
+        self._response_objects.clear()
+        logger.debug("Cleaned up %d response objects", cleaned_count)
 
     def list(self, api_path, query=None):
         if self.memory_efficient:
@@ -48,6 +68,13 @@ class SNowClient:
                 api_path,
                 query=dict(base_query, sysparm_offset=offset),
             )
+
+            # Track response for cleanup
+            self._response_objects.append(response)
+            if len(self._response_objects) > self._max_response_objects:
+                old_response = self._response_objects.pop(0)
+                if hasattr(old_response, "clear_cache"):
+                    old_response.clear_cache()
 
             result.extend(response.json["result"])
             # This is a header only for Table API.
@@ -82,6 +109,13 @@ class SNowClient:
                 api_path,
                 query=dict(base_query, sysparm_offset=offset),
             )
+
+            # Track response for cleanup
+            self._response_objects.append(response)
+            if len(self._response_objects) > self._max_response_objects:
+                old_response = self._response_objects.pop(0)
+                if hasattr(old_response, "clear_cache"):
+                    old_response.clear_cache()
 
             # Yield records one by one
             yield from response.json["result"]
@@ -123,6 +157,13 @@ class SNowClient:
     def get_by_sys_id(self, api_path, sys_id, must_exist=False):
         response = self.client.get("/".join([api_path.rstrip("/"), sys_id]))
 
+        # Track response for cleanup
+        self._response_objects.append(response)
+        if len(self._response_objects) > self._max_response_objects:
+            old_response = self._response_objects.pop(0)
+            if hasattr(old_response, "clear_cache"):
+                old_response.clear_cache()
+
         record = response.json.get("result", None)
         if must_exist and not record:
             raise errors.ServiceNowError(
@@ -132,19 +173,44 @@ class SNowClient:
         return record
 
     def create(self, api_path, payload, query=None):
-        return self.client.post(
+        response = self.client.post(
             api_path, payload, query=self._sanitize_query(query)
-        ).json["result"]
+        )
+
+        # Track response for cleanup
+        self._response_objects.append(response)
+        if len(self._response_objects) > self._max_response_objects:
+            old_response = self._response_objects.pop(0)
+            if hasattr(old_response, "clear_cache"):
+                old_response.clear_cache()
+
+        return response.json["result"]
 
     def update(self, api_path, sys_id, payload, query=None):
-        return self.client.patch(
+        response = self.client.patch(
             "/".join((api_path.rstrip("/"), sys_id)),
             payload,
             query=self._sanitize_query(query),
-        ).json["result"]
+        )
+
+        # Track response for cleanup
+        self._response_objects.append(response)
+        if len(self._response_objects) > self._max_response_objects:
+            old_response = self._response_objects.pop(0)
+            if hasattr(old_response, "clear_cache"):
+                old_response.clear_cache()
+
+        return response.json["result"]
 
     def delete(self, api_path, sys_id):
-        self.client.delete("/".join((api_path.rstrip("/"), sys_id)))
+        response = self.client.delete("/".join((api_path.rstrip("/"), sys_id)))
+
+        # Track response for cleanup
+        self._response_objects.append(response)
+        if len(self._response_objects) > self._max_response_objects:
+            old_response = self._response_objects.pop(0)
+            if hasattr(old_response, "clear_cache"):
+                old_response.clear_cache()
 
     def _sanitize_query(self, query):
         query = query or dict()
