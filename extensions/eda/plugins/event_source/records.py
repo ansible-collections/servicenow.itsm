@@ -204,7 +204,6 @@ class RecordsSource:
         self.reported_records_last_poll: Dict[str, str] = dict()
 
         # Memory management attributes
-        self._memory_threshold = 50 * 1024 * 1024  # 50MB threshold (reduced from 100MB)
         self._cleanup_interval = 300  # 5 minutes cleanup interval (reduced from 1 hour)
         self._poll_count = 0
         self._max_tracking_records = 5000  # Reduced from 10000
@@ -317,27 +316,6 @@ class RecordsSource:
         if self._poll_count % 50 == 0:
             return True
 
-        # Memory pressure cleanup
-        memory_usage = self._get_memory_usage()
-        if memory_usage > self._memory_threshold:
-            logger.warning(
-                "Memory usage %.2f MB exceeds threshold %.2f MB, triggering cleanup",
-                memory_usage / 1024 / 1024,
-                self._memory_threshold / 1024 / 1024,
-            )
-            return True
-
-        # Emergency cleanup for severe memory pressure (80% of threshold)
-        emergency_threshold = self._memory_threshold * 0.8
-        if memory_usage > emergency_threshold:
-            logger.warning(
-                "Memory usage %.2f MB exceeds emergency threshold %.2f MB, triggering aggressive cleanup",
-                memory_usage / 1024 / 1024,
-                emergency_threshold / 1024 / 1024,
-            )
-            self._force_cleanup_all_caches()
-            return True
-
         # Record count cleanup
         if len(self.reported_records_last_poll) > self._max_tracking_records:
             logger.warning(
@@ -386,14 +364,8 @@ class RecordsSource:
             "memory_usage_mb": memory_usage / 1024 / 1024 if memory_usage > 0 else 0,
             "tracking_records_count": len(self.reported_records_last_poll),
             "max_tracking_records": self._max_tracking_records,
-            "memory_threshold_mb": self._memory_threshold / 1024 / 1024,
             "cleanup_count": self._memory_cleanup_count,
             "poll_count": self._poll_count,
-            "memory_usage_percentage": (
-                (memory_usage / self._memory_threshold * 100)
-                if memory_usage > 0 and self._memory_threshold > 0
-                else 0
-            ),
         }
 
     async def __aenter__(self):
@@ -441,9 +413,8 @@ class RecordsSource:
             if self._poll_count % 100 == 0:
                 stats = self.get_memory_stats()
                 logger.info(
-                    "Memory stats: %.2f MB (%.1f%% of threshold), tracking %d/%d records, %d cleanups performed",
+                    "Memory stats: %.2f MB, tracking %d/%d records, %d cleanups performed",
                     stats["memory_usage_mb"],
-                    stats["memory_usage_percentage"],
                     stats["tracking_records_count"],
                     stats["max_tracking_records"],
                     stats["cleanup_count"],
