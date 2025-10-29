@@ -412,7 +412,7 @@ class RecordsSource:
             # Log memory statistics every 100 polls
             if self._poll_count % 100 == 0:
                 stats = self.get_memory_stats()
-                logger.info(
+                logger.debug(
                     "Memory stats: %.2f MB, tracking %d/%d records, %d cleanups performed",
                     stats["memory_usage_mb"],
                     stats["tracking_records_count"],
