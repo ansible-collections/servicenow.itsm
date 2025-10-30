@@ -187,7 +187,7 @@ class QueryFormatter:
         sysparm_query = re.sub(
             rf"\^?N?Q?{escaped_timestamp_field}[^\^]*(\^?)", r"\1", sysparm_query
         )
-        sysparm_query = re.sub(rf"\^?N?Q?ORDERBY[^\^]*(\^?)", r"\1", sysparm_query)
+        sysparm_query = re.sub(r"\^?N?Q?ORDERBY[^\^]*(\^?)", r"\1", sysparm_query)
 
         if len(sysparm_query) > 0:
             sysparm_query += "^"
