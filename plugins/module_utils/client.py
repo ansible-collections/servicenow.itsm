@@ -9,6 +9,8 @@ __metaclass__ = type
 
 import json
 import ssl
+import time
+import logging
 
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
@@ -16,11 +18,15 @@ from ansible.module_utils.urls import Request, basic_auth_header
 
 from .errors import AuthError, ServiceNowError, UnexpectedAPIResponse
 
+logger = logging.getLogger(__name__)
+
 DEFAULT_HEADERS = dict(Accept="application/json")
 
 
 class Response:
-    def __init__(self, status, data, headers=None, json_decoder_hook=None):
+    def __init__(
+        self, status, data, headers=None, json_decoder_hook=None, max_cache_size=100
+    ):
         self.status = status
         self.data = data
         # [('h1', 'v1'), ('H2', 'V2')] -> {'h1': 'v1', 'h2': 'V2'}
@@ -30,17 +36,42 @@ class Response:
 
         self._json = None
         self.json_decoder_hook = json_decoder_hook
+        self._max_cache_size = max_cache_size
+        self._cache_entries = 0
+        self._access_count = 0  # Track total accesses for cleanup
+
+    def clear_cache(self):
+        """Clear cached JSON data to free memory"""
+        self._json = None
+        self._cache_entries = 0
+        self._access_count = 0
 
     @property
     def json(self):
         if self._json is None:
             try:
                 self._json = json.loads(self.data, object_hook=self.json_decoder_hook)
-            except ValueError:
+                self._cache_entries += 1
+                self._access_count += 1
+
+                # Auto-cleanup if cache gets too large
+                if self._cache_entries > self._max_cache_size:
+                    logger.debug("JSON cache size exceeded, clearing cache")
+                    self.clear_cache()
+            except ValueError as exc:
                 raise ServiceNowError(
                     "Received invalid JSON response: {0}".format(self.data)
-                )
+                ) from exc
+        else:
+            self._access_count += 1
+
         return self._json
+
+    def cleanup_if_unused(self, max_access_count=10):
+        """Clean up cache if it hasn't been accessed recently"""
+        if self._access_count > max_access_count and self._json is not None:
+            logger.debug("Clearing unused response cache")
+            self.clear_cache()
 
 
 class Client:
@@ -62,6 +93,8 @@ class Client:
         timeout=None,
         validate_certs=None,
         json_decoder_hook=None,
+        connection_timeout=300,  # 5 minutes
+        max_retries=3,
     ):
         if not (host or "").startswith(("https://", "http://")):
             raise ServiceNowError(
@@ -86,9 +119,86 @@ class Client:
         self.timeout = timeout
         self.validate_certs = validate_certs
         self.json_decoder_hook = json_decoder_hook
+        self.connection_timeout = connection_timeout
+        self.max_retries = max_retries
 
         self._auth_header = None
         self._client = Request()
+        self._connection_created = time.time()
+        self._request_count = 0
+        self._response_cache = []  # Track response objects for cleanup
+        self._max_response_cache = 50  # Maximum cached responses
+
+    def __enter__(self):
+        """Context manager entry"""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit - cleanup resources"""
+        self.close()
+
+    def __del__(self):
+        """Cleanup connections when client is destroyed"""
+        try:
+            self.close()
+        except Exception:
+            pass  # Ignore errors during cleanup
+
+    def close(self):
+        """Explicitly close connections and cleanup resources"""
+        try:
+            # Clear all cached responses
+            for response in self._response_cache:
+                if hasattr(response, "clear_cache"):
+                    response.clear_cache()
+            self._response_cache.clear()
+
+            if hasattr(self._client, "close"):
+                self._client.close()
+            self._auth_header = None
+            self._client = None
+            logger.debug("Client connections closed")
+        except Exception as e:
+            logger.warning("Error during client cleanup: %s", e)
+
+    def _refresh_connection(self):
+        """Refresh the underlying connection"""
+        try:
+            if hasattr(self._client, "close"):
+                self._client.close()
+        except Exception:
+            pass
+
+        # Clear response cache during connection refresh
+        for response in self._response_cache:
+            if hasattr(response, "clear_cache"):
+                response.clear_cache()
+        self._response_cache.clear()
+
+        self._client = Request()
+        self._connection_created = time.time()
+        self._request_count = 0
+        logger.debug("Connection refreshed")
+
+    def _should_refresh_connection(self):
+        """Check if connection should be refreshed"""
+        return (
+            time.time() - self._connection_created > self.connection_timeout
+            or self._request_count > 1000
+        )
+
+    def cleanup_unused_responses(self):
+        """Clean up unused response objects to free memory"""
+        cleaned_count = 0
+        for response in self._response_cache[:]:
+            if hasattr(response, "cleanup_if_unused"):
+                response.cleanup_if_unused()
+                if response._json is None:  # Cache was cleared
+                    self._response_cache.remove(response)
+                    cleaned_count += 1
+
+        if cleaned_count > 0:
+            logger.debug("Cleaned up %d unused response objects", cleaned_count)
 
     @property
     def auth_header(self):
@@ -164,6 +274,10 @@ class Client:
         return self._login_token(access_token, is_api_key=False)
 
     def _request(self, method, path, data=None, headers=None):
+        # Check if connection should be refreshed
+        if self._should_refresh_connection():
+            self._refresh_connection()
+
         try:
             raw_resp = self._client.open(
                 method,
@@ -196,9 +310,23 @@ class Client:
                 )
             raise
 
-        return Response(
+        # Increment request count for connection management
+        self._request_count += 1
+
+        # Create response and track it for cleanup
+        response = Response(
             raw_resp.status, raw_resp.read(), raw_resp.headers, self.json_decoder_hook
         )
+
+        # Add to response cache and cleanup if needed
+        self._response_cache.append(response)
+        if len(self._response_cache) > self._max_response_cache:
+            # Remove oldest responses and clear their cache
+            old_response = self._response_cache.pop(0)
+            if hasattr(old_response, "clear_cache"):
+                old_response.clear_cache()
+
+        return response
 
     def request(self, method, path, query=None, data=None, headers=None, bytes=None):
         # Make sure we only have one kind of payload
