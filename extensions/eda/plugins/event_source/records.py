@@ -158,17 +158,21 @@ class QueryFormatter:
     ):
         """
         Add the newest_seen timestamp onto our list query. This ensures that we are always polling for new and unseen records.
-        We use >= to include records with the same timestamp, which is important for handling multiple records updated simultaneously.
+        We advance the timestamp by 1 second to avoid processing the same records multiple times.
         """
         # Convert the latest polling start time to the user's timezone so we can use it in the query.
         sys_update_on_datetime_in_snow_tz = sys_update_on_datetime.astimezone(
             snow_timezone
         )
-        sys_updated_on_date_str = sys_update_on_datetime_in_snow_tz.strftime("%Y-%m-%d")
-        sys_updated_on_time_str = sys_update_on_datetime_in_snow_tz.strftime("%H:%M:%S")
 
-        # Inject the sys_updated_on filter into the query, with new timestamp
-        # Using >= ensures we capture records with the same timestamp
+        # Advance the timestamp by 1 second to avoid processing the same records
+        advanced_datetime = sys_update_on_datetime_in_snow_tz + timedelta(seconds=1)
+
+        sys_updated_on_date_str = advanced_datetime.strftime("%Y-%m-%d")
+        sys_updated_on_time_str = advanced_datetime.strftime("%H:%M:%S")
+
+        # Inject the sys_updated_on filter into the query, with advanced timestamp
+        # Using >= ensures we capture records with the advanced timestamp or newer
         query_string = "sys_updated_on>=javascript:gs.dateGenerate('%s', '%s')" % (
             sys_updated_on_date_str,
             sys_updated_on_time_str,
