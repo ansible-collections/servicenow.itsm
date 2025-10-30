@@ -42,6 +42,20 @@ options:
       - All timestamps will be converted to UTC during processing, since that is the timezone that ServiceNow uses.
     required: false
     default: UTC
+  timestamp_field:
+    description:
+      - The field name to use for timestamp-based filtering and deduplication.
+      - Defaults to 'sys_updated_on' for standard ServiceNow tables.
+      - For custom tables or tables without sys_updated_on, specify the appropriate timestamp field.
+      - Common alternatives include 'sys_created_on', 'last_modified', or custom timestamp fields.
+    required: false
+    default: 'sys_updated_on'
+  order_by_field:
+    description:
+      - The field name to use for ordering records.
+      - Defaults to the same value as timestamp_field.
+      - Should be a field that can be used for consistent ordering of records.
+    required: false
 """
 
 EXAMPLES = r"""
@@ -58,6 +72,27 @@ EXAMPLES = r"""
         interval: 1
         updated_since: "2025-08-13 12:00:00"
         timezone: America/New_York
+
+    - name: Watch for custom table records
+      servicenow.itsm.records:
+        instance:
+          host: https://dev-012345.service-now.com
+          username: ansible
+          password: ansible
+        table: u_custom_table
+        timestamp_field: u_last_modified
+        order_by_field: u_last_modified
+        interval: 5
+
+    - name: Watch for records using sys_created_on
+      servicenow.itsm.records:
+        instance:
+          host: https://dev-012345.service-now.com
+          username: ansible
+          password: ansible
+        table: some_table_without_updated_on
+        timestamp_field: sys_created_on
+        interval: 10
 
   rules:
     - name: New record created
@@ -119,13 +154,22 @@ class QueryFormatter:
     def __init__(self):
         pass
 
-    def format_and_clean_query_parameters(self, query=None, sysparm_query=None):
+    def format_and_clean_query_parameters(
+        self,
+        query=None,
+        sysparm_query=None,
+        timestamp_field="sys_updated_on",
+        order_by_field=None,
+    ):
         """
         Take the query or sysparm_query parameter from the user and format it into a list query
         that can be used to query the table.
-        We will remove any pre-existing sys_updated_on filter so that we can add our own, since that
+        We will remove any pre-existing timestamp field filter so that we can add our own, since that
         parameter will change as the plugin continues to run.
         """
+        if order_by_field is None:
+            order_by_field = timestamp_field
+
         if sysparm_query is None:
             sysparm_query = ""
 
@@ -135,52 +179,57 @@ class QueryFormatter:
             except ValueError as e:
                 raise AnsibleParserError("Unable to parse query: %s" % e)
 
-        # If the user specified a sys_updated_on or ORDERBY filter, we need to remove it from the query so that we can add our own.
+        # If the user specified a timestamp field or ORDERBY filter, we need to remove it from the query so that we can add our own.
+        # Escape special regex characters in the field name
+        escaped_timestamp_field = re.escape(timestamp_field)
+        escaped_order_by_field = re.escape(order_by_field)
+
         sysparm_query = re.sub(
-            r"\^?N?Q?sys_updated_on[^\^]*(\^?)", r"\1", sysparm_query
+            rf"\^?N?Q?{escaped_timestamp_field}[^\^]*(\^?)", r"\1", sysparm_query
         )
-        sysparm_query = re.sub(r"\^?N?Q?ORDERBY[^\^]*(\^?)", r"\1", sysparm_query)
+        sysparm_query = re.sub(rf"\^?N?Q?ORDERBY[^\^]*(\^?)", r"\1", sysparm_query)
 
         if len(sysparm_query) > 0:
             sysparm_query += "^"
-        sysparm_query += "ORDERBYsys_updated_on"
+        sysparm_query += f"ORDERBY{order_by_field}"
 
         return {
             "sysparm_query": sysparm_query,
             "sysparm_display_value": "false",  # Only return "raw", or UTC values. Display values are in the user's timezone, which varies.
         }
 
-    def inject_sys_updated_on_filter(
+    def inject_timestamp_filter(
         self,
         sysparm_query: str,
-        sys_update_on_datetime: datetime,
+        timestamp_datetime: datetime,
         snow_timezone: ZoneInfo,
+        timestamp_field: str,
     ):
         """
         Add the newest_seen timestamp onto our list query. This ensures that we are always polling for new and unseen records.
         We advance the timestamp by 1 second to avoid processing the same records multiple times.
         """
         # Convert the latest polling start time to the user's timezone so we can use it in the query.
-        sys_update_on_datetime_in_snow_tz = sys_update_on_datetime.astimezone(
-            snow_timezone
-        )
+        timestamp_datetime_in_snow_tz = timestamp_datetime.astimezone(snow_timezone)
 
         # Advance the timestamp by 1 second to avoid processing the same records
-        advanced_datetime = sys_update_on_datetime_in_snow_tz + timedelta(seconds=1)
+        advanced_datetime = timestamp_datetime_in_snow_tz + timedelta(seconds=1)
 
-        sys_updated_on_date_str = advanced_datetime.strftime("%Y-%m-%d")
-        sys_updated_on_time_str = advanced_datetime.strftime("%H:%M:%S")
+        timestamp_date_str = advanced_datetime.strftime("%Y-%m-%d")
+        timestamp_time_str = advanced_datetime.strftime("%H:%M:%S")
 
-        # Inject the sys_updated_on filter into the query, with advanced timestamp
+        # Inject the timestamp filter into the query, with advanced timestamp
         # Using >= ensures we capture records with the advanced timestamp or newer
-        query_string = "sys_updated_on>=javascript:gs.dateGenerate('%s', '%s')" % (
-            sys_updated_on_date_str,
-            sys_updated_on_time_str,
-        )
-        if "sys_updated_on>" in sysparm_query:
-            sysparm_query = re.sub(r"sys_updated_on>=?.*", query_string, sysparm_query)
+        query_string = f"{timestamp_field}>=javascript:gs.dateGenerate('{timestamp_date_str}', '{timestamp_time_str}')"
+
+        # Escape special regex characters in the field name
+        escaped_timestamp_field = re.escape(timestamp_field)
+        if f"{timestamp_field}>" in sysparm_query:
+            sysparm_query = re.sub(
+                rf"{escaped_timestamp_field}>=?.*", query_string, sysparm_query
+            )
         else:
-            sysparm_query += "^%s" % query_string
+            sysparm_query += f"^{query_string}"
 
         return sysparm_query
 
@@ -192,11 +241,16 @@ class RecordsSource:
             config_from_params=args.get("instance")
         )
         self.table_name = args.get("table")
+        self.timestamp_field = args.get("timestamp_field", "sys_updated_on")
+        self.order_by_field = args.get("order_by_field", self.timestamp_field)
         self.snow_client = client.Client(**self.instance_config)
         self.table_client = table.TableClient(self.snow_client, memory_efficient=True)
         self.query_formatter = QueryFormatter()
         self.list_query = self.query_formatter.format_and_clean_query_parameters(
-            query=args.get("query"), sysparm_query=args.get("sysparm_query")
+            query=args.get("query"),
+            sysparm_query=args.get("sysparm_query"),
+            timestamp_field=self.timestamp_field,
+            order_by_field=self.order_by_field,
         )
 
         self.initial_polling_start_time = get_tz_aware_datetime_from_string(
@@ -204,7 +258,9 @@ class RecordsSource:
             date_string_timezone=args.get("timezone"),
         )
         self.interval = int(args.get("interval", 5))
-        self._latest_sys_updated_on_floor = None
+        self.timestamp_field = args.get("timestamp_field", "sys_updated_on")
+        self.order_by_field = args.get("order_by_field", self.timestamp_field)
+        self._latest_timestamp_floor = None
         self.reported_records_last_poll: Dict[str, str] = dict()
 
         # Memory management attributes
@@ -429,12 +485,12 @@ class RecordsSource:
             logger.debug("Ending poll iteration")
 
     @property
-    def latest_sys_updated_on_floor(self):
+    def latest_timestamp_floor(self):
         """
         Return either the initial polling start time provided by the user, or the
-        latest sys_updated_on timestamp of the last record processed.
+        latest timestamp of the last record processed.
         """
-        return self._latest_sys_updated_on_floor or self.initial_polling_start_time
+        return self._latest_timestamp_floor or self.initial_polling_start_time
 
     async def _poll_for_records(self, remote_snow_timezone: ZoneInfo):
         """
@@ -444,16 +500,16 @@ class RecordsSource:
         If we find any records, we update the latest_sys_updated_on_floor to the latest timestamp seen.
         """
         reported_records_this_poll: Dict[str, str] = dict()
-        self.list_query["sysparm_query"] = (
-            self.query_formatter.inject_sys_updated_on_filter(
-                sysparm_query=self.list_query["sysparm_query"],
-                sys_update_on_datetime=self.latest_sys_updated_on_floor,
-                snow_timezone=remote_snow_timezone,
-            )
+        self.list_query["sysparm_query"] = self.query_formatter.inject_timestamp_filter(
+            sysparm_query=self.list_query["sysparm_query"],
+            timestamp_datetime=self.latest_timestamp_floor,
+            snow_timezone=remote_snow_timezone,
+            timestamp_field=self.timestamp_field,
         )
         logger.debug(
-            "Polling for records updated on or after %s (UTC)",
-            self.latest_sys_updated_on_floor,
+            "Polling for records with %s on or after %s (UTC)",
+            self.timestamp_field,
+            self.latest_timestamp_floor,
         )
         logger.debug("List query: %s", self.list_query)
 
@@ -467,20 +523,25 @@ class RecordsSource:
 
         for record in records_iter:
             logger.debug(
-                "Processing record with sys_id %s and sys_updated_on %s",
+                "Processing record with sys_id %s and %s %s",
                 record["sys_id"],
-                record["sys_updated_on"],
+                self.timestamp_field,
+                record.get(self.timestamp_field, "N/A"),
             )
             if self.should_record_be_sent_to_queue(record, reported_records_this_poll):
                 await self.queue.put(record)
                 _last_record_processed = record
 
                 # Track the latest timestamp seen (not just the last processed record)
-                record_timestamp = get_tz_aware_datetime_from_string(
-                    record["sys_updated_on"]
-                )
-                if _latest_timestamp is None or record_timestamp > _latest_timestamp:
-                    _latest_timestamp = record_timestamp
+                if self.timestamp_field in record:
+                    record_timestamp = get_tz_aware_datetime_from_string(
+                        record[self.timestamp_field]
+                    )
+                    if (
+                        _latest_timestamp is None
+                        or record_timestamp > _latest_timestamp
+                    ):
+                        _latest_timestamp = record_timestamp
 
             record_count += 1
 
@@ -508,15 +569,16 @@ class RecordsSource:
             # Update the timestamp to the latest timestamp seen (not just the last processed record)
             # This ensures we don't miss records with the same timestamp
             if _latest_timestamp:
-                self._latest_sys_updated_on_floor = _latest_timestamp
-            else:
+                self._latest_timestamp_floor = _latest_timestamp
+            elif self.timestamp_field in _last_record_processed:
                 # Fallback to last processed record if no timestamp was tracked
-                self._latest_sys_updated_on_floor = get_tz_aware_datetime_from_string(
-                    _last_record_processed["sys_updated_on"]
+                self._latest_timestamp_floor = get_tz_aware_datetime_from_string(
+                    _last_record_processed[self.timestamp_field]
                 )
             logger.debug(
-                "Increasing the next query sys_updated_on timestamp to %s",
-                self._latest_sys_updated_on_floor,
+                "Increasing the next query %s timestamp to %s",
+                self.timestamp_field,
+                self._latest_timestamp_floor,
             )
 
             # If we find any new records, we will be increasing the next query sys_updated_on timestamp and
@@ -563,16 +625,26 @@ class RecordsSource:
         Note: If a record is updated (new timestamp), it will be processed again, which is the
         desired behavior for Event Driven Ansible - we want to react to record changes.
         """
+        # Check if the record has the required timestamp field
+        if self.timestamp_field not in record:
+            logger.warning(
+                "Record %s does not have timestamp field %s, skipping",
+                record["sys_id"],
+                self.timestamp_field,
+            )
+            return False
+
         # Ignore anything strictly older than our since timestamp.
-        record_update_timestamp = record["sys_updated_on"]
+        record_update_timestamp = record[self.timestamp_field]
         if (
             get_tz_aware_datetime_from_string(record_update_timestamp)
-            < self.latest_sys_updated_on_floor
+            < self.latest_timestamp_floor
         ):
             logger.warning(
-                "Record update timestamp %s is somehow older than the latest sys_updated_on floor %s",
+                "Record update timestamp %s is somehow older than the latest %s floor %s",
                 record_update_timestamp,
-                self.latest_sys_updated_on_floor,
+                self.timestamp_field,
+                self.latest_timestamp_floor,
             )
             return False
 
@@ -585,7 +657,7 @@ class RecordsSource:
 
         # Not reported yet: remember it for this cycle and emit.
         logger.debug("Record %s is new and will be reported", record["sys_id"])
-        reported_records_this_poll[record["sys_id"]] = record["sys_updated_on"]
+        reported_records_this_poll[record["sys_id"]] = record[self.timestamp_field]
         return True
 
     def has_record_been_reported(self, record, reported_records_this_poll):
@@ -594,7 +666,12 @@ class RecordsSource:
         Returns True if the record has been reported, False otherwise.
         """
         sys_id = record["sys_id"]
-        updated_on = record["sys_updated_on"]
+
+        # Check if the record has the required timestamp field
+        if self.timestamp_field not in record:
+            return False
+
+        updated_on = record[self.timestamp_field]
 
         # Check if we've already processed this record in the current poll
         # Only consider it reported if the timestamp matches (same version)
