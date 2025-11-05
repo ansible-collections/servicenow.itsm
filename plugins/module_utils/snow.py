@@ -20,7 +20,7 @@ class SNowClient:
         self.client = client
         self.batch_size = batch_size
         self.memory_efficient = memory_efficient
-        self._memory_cleanup_interval = 50  # More frequent cleanup
+        self._memory_cleanup_interval = 50  # Decrease for more frequent cleanup
         self._batch_count = 0
         self._response_objects = []  # Track response objects for cleanup
         self._max_response_objects = 100  # Maximum tracked responses
