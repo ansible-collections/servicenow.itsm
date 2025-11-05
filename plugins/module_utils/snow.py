@@ -22,39 +22,13 @@ class SNowClient:
         self.memory_efficient = memory_efficient
         self._memory_cleanup_interval = 50  # Decrease for more frequent cleanup
         self._batch_count = 0
-        self._response_objects = []  # Track response objects for cleanup
-        self._max_response_objects = 100  # Maximum tracked responses
 
     def _cleanup_memory(self):
         """Force garbage collection to free memory"""
-        # Clean up tracked response objects
-        for response in self._response_objects:
-            if hasattr(response, "clear_cache"):
-                response.clear_cache()
-        self._response_objects.clear()
-
         # Force garbage collection multiple times
         for _unused in range(3):
             gc.collect()
         logger.debug("Memory cleanup performed")
-
-    def _track_response(self, response):
-        """Track a response object for cleanup, managing the queue size"""
-        self._response_objects.append(response)
-        if len(self._response_objects) > self._max_response_objects:
-            old_response = self._response_objects.pop(0)
-            if hasattr(old_response, "clear_cache"):
-                old_response.clear_cache()
-
-    def cleanup_responses(self):
-        """Explicitly clean up all tracked response objects"""
-        cleaned_count = 0
-        for response in self._response_objects:
-            if hasattr(response, "clear_cache"):
-                response.clear_cache()
-                cleaned_count += 1
-        self._response_objects.clear()
-        logger.debug("Cleaned up %d response objects", cleaned_count)
 
     def list(self, api_path, query=None):
         if self.memory_efficient:
@@ -76,9 +50,6 @@ class SNowClient:
                 api_path,
                 query=dict(base_query, sysparm_offset=offset),
             )
-
-            # Track response for cleanup
-            self._track_response(response)
 
             result.extend(response.json["result"])
             # This is a header only for Table API.
@@ -113,9 +84,6 @@ class SNowClient:
                 api_path,
                 query=dict(base_query, sysparm_offset=offset),
             )
-
-            # Track response for cleanup
-            self._track_response(response)
 
             # Yield records one by one
             yield from response.json["result"]
@@ -157,9 +125,6 @@ class SNowClient:
     def get_by_sys_id(self, api_path, sys_id, must_exist=False):
         response = self.client.get("/".join([api_path.rstrip("/"), sys_id]))
 
-        # Track response for cleanup
-        self._track_response(response)
-
         record = response.json.get("result", None)
         if must_exist and not record:
             raise errors.ServiceNowError(
@@ -173,9 +138,6 @@ class SNowClient:
             api_path, payload, query=self._sanitize_query(query)
         )
 
-        # Track response for cleanup
-        self._track_response(response)
-
         return response.json["result"]
 
     def update(self, api_path, sys_id, payload, query=None):
@@ -185,16 +147,10 @@ class SNowClient:
             query=self._sanitize_query(query),
         )
 
-        # Track response for cleanup
-        self._track_response(response)
-
         return response.json["result"]
 
     def delete(self, api_path, sys_id):
         response = self.client.delete("/".join((api_path.rstrip("/"), sys_id)))
-
-        # Track response for cleanup
-        self._track_response(response)
 
     def _sanitize_query(self, query):
         query = query or dict()
