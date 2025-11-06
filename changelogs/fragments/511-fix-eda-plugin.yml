@@ -1,3 +1,0 @@
----
-bugfixes:
-  - eda/records - Fix bug where the plugin would incorrectly report records and fail to restart (https://github.com/ansible-collections/servicenow.itsm/pull/511)

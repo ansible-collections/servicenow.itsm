@@ -4,6 +4,20 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.13.1
+=======
+
+Release Summary
+---------------
+
+Fix memory leak issues in client code and consequently also in the EDA records query plugin.
+
+Bugfixes
+--------
+
+- eda/records - Fix bug where the plugin would incorrectly report records and fail to restart (https://github.com/ansible-collections/servicenow.itsm/pull/511)
+- eda/records, client - Fix memory leaks (https://github.com/ansible-collections/servicenow.itsm/pull/513)
+
 v2.13.0
 =======
 

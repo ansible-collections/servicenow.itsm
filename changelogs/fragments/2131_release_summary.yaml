@@ -1,2 +1,0 @@
----
-release_summary: Fix memory leak issues in client code and consequently also in the EDA records query plugin.

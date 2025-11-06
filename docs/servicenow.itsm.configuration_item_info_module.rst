@@ -3,12 +3,12 @@
 servicenow.itsm.configuration_item_info module -- List ServiceNow configuration item
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.13.0).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.13.1).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
 
-To install it, use: :code:`ansible-galaxy collection install servicenow.itsm`.
+To install it, use: :code:`ansible\-galaxy collection install servicenow.itsm`.
 
 To use it in a playbook, specify: ``servicenow.itsm.configuration_item_info``.
 
@@ -23,7 +23,7 @@ Synopsis
 --------
 
 - Retrieve information about the ServiceNow configuration items and also attachments related to this CI.
-- For more information, refer to the ServiceNow configuration item management documentation at \ `https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/concept/c\_ITILConfigurationManagement.html <https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/concept/c_ITILConfigurationManagement.html>`__.
+- For more information, refer to the ServiceNow configuration item management documentation at \ `https://docs.servicenow.com/bundle/tokyo\-servicenow\-platform/page/product/configuration\-management/concept/c\_ITILConfigurationManagement.html <https://docs.servicenow.com/bundle/tokyo-servicenow-platform/page/product/configuration-management/concept/c_ITILConfigurationManagement.html>`__.
 
 
 
@@ -616,5 +616,5 @@ Authors
 Collection links
 ~~~~~~~~~~~~~~~~
 
-* `Issue Tracker <https://github.com/ansible-collections/servicenow.itsm/issues>`__
-* `Repository (Sources) <https://github.com/ansible-collections/servicenow.itsm>`__
+* `Issue Tracker <https://github.com/ansible\-collections/servicenow.itsm/issues>`__
+* `Repository (Sources) <https://github.com/ansible\-collections/servicenow.itsm>`__

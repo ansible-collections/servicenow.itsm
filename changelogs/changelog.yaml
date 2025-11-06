@@ -381,6 +381,19 @@ releases:
     - 507-add-support-for-zurich.yml
     - 508-drop-217.yml
     release_date: '2025-10-06'
+  2.13.1:
+    changes:
+      bugfixes:
+      - eda/records - Fix bug where the plugin would incorrectly report records and
+        fail to restart (https://github.com/ansible-collections/servicenow.itsm/pull/511)
+      - eda/records, client - Fix memory leaks (https://github.com/ansible-collections/servicenow.itsm/pull/513)
+      release_summary: Fix memory leak issues in client code and consequently also
+        in the EDA records query plugin.
+    fragments:
+    - 2131_release_summary.yaml
+    - 511-fix-eda-plugin.yml
+    - 513-fix-mem-issues.yml
+    release_date: '2025-11-06'
   2.2.0:
     changes:
       minor_changes:
