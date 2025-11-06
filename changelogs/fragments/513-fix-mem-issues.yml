@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - eda/records, client - Fix memory leaks (https://github.com/ansible-collections/servicenow.itsm/pull/513)
