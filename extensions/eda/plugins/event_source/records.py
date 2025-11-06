@@ -11,6 +11,12 @@ description:
     configure the instance connection.
   - If you supply O(query) or O(sysparm_query), the plugin will remove any reference to ORDEREDBY and sys_updated_on
     in the query so that it can add its own.
+  - B(NOTE:) This approach is useful for small-scale event handling, but for large-scale event processing we
+    recommend using a ServiceNow-side mechanism (such as, but not necssarily limtied to, a Spoke app or business
+    rules). The only contetxt this plugin has are the record contents and (possibly) a timestamp. For large and
+    busy environments, this places a significant burden on the action to ensure that data to be double-processed,
+    and in addition it is difficult with this scheme to determine if events have been missed. Architecturally, these
+    problems are easier to solve with the additional data available at the source.
 
 author:
   - ServiceNow ITSM Collection Contributors (@ansible-collections)
