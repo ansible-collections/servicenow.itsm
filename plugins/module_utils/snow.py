@@ -25,9 +25,7 @@ class SNowClient:
 
     def _cleanup_memory(self):
         """Force garbage collection to free memory"""
-        # Force garbage collection multiple times
-        for _unused in range(3):
-            gc.collect()
+        gc.collect()
         logger.debug("Memory cleanup performed")
 
     def list(self, api_path, query=None):
