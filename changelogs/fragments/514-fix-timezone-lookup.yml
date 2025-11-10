@@ -1,0 +1,3 @@
+---
+bugfixes:
+ - records - Fix timezone lookup when user uses System timezone (https://github.com/ansible-collections/servicenow.itsm/issues/516)
