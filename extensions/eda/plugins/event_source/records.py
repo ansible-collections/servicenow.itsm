@@ -11,6 +11,8 @@ description:
     configure the instance connection.
   - If you supply O(query) or O(sysparm_query), the plugin will remove any reference to ORDEREDBY and sys_updated_on
     in the query so that it can add its own.
+  - The ServiceNow user you use to connect B(MUST) have an explicit time zone set in its user record. If it does not,
+    the plugin will error out with a message indicating this.
   - B(NOTE:) This approach is useful for small-scale event handling, but for large-scale event processing we
     recommend using a ServiceNow-side mechanism (such as, but not necssarily limtied to, a Spoke app or business
     rules). The only contetxt this plugin has are the record contents and (possibly) a timestamp. For large and
@@ -604,16 +606,6 @@ class RecordsSource:
         # Use a temporary non-memory-efficient client for this lookup since we need a list result
         temp_client = table.TableClient(self.snow_client, memory_efficient=False)
 
-        # First we get system timezone
-        system_timezone_records = temp_client.list_records(
-            table="sys_properties",
-            query={
-                "sysparm_query": "name=glide.sys.default.tz",
-                "sysparm_exclude_reference_link": "true",
-            }
-        )
-        logger.info("ServiceNow system properties is %s", system_timezone_records[0])
-
         user_timezone_records = temp_client.list_records(
             table="sys_user",
             query={
@@ -622,10 +614,14 @@ class RecordsSource:
             },
         )
         try:
-            snow_timezone_str = user_timezone_records[0]["time_zone"]
-            logger.debug("ServiceNow user record is %s", user_timezone_records[0])
-            logger.info("ServiceNow user timezone is %s", snow_timezone_str)
-            user_timezone_str = snow_timezone_str
+            user_timezone_str = user_timezone_records[0]["time_zone"]
+            servicenow_user_name = user_timezone_records[0]["user_name"]
+            logger.info("ServiceNow user timezone is %s", user_timezone_str)
+            if user_timezone_str == "":
+                raise KeyError(
+                    "ServiceNow timezone not set for user %s. User must have time_zone set to non-default to use this plugin."
+                    % servicenow_user_name
+                )
             python_zone_info = ZoneInfo(user_timezone_str)
         except (KeyError, IndexError) as e:
             raise AnsibleParserError(
