@@ -615,12 +615,13 @@ class RecordsSource:
             logger.debug("ServiceNow user record is %s", user_timezone_records[0])
             logger.info("ServiceNow user timezone is %s", snow_timezone_str)
             user_timezone_str = snow_timezone_str
+            python_zone_info = ZoneInfo(user_timezone_str)
         except (KeyError, IndexError) as e:
             raise AnsibleParserError(
                 "Unable to lookup user timezone in ServiceNow: %s" % e
             ) from e
 
-        return ZoneInfo(user_timezone_str)
+        return python_zone_info
 
     def should_record_be_sent_to_queue(self, record, reported_records_this_poll):
         """
