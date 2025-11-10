@@ -36,7 +36,7 @@ options:
     description:
       - THe number of seconds to wait before performing another query.
     required: false
-    default: 5
+    default: 60
   updated_since:
     description:
       - Specify the time that a record must be updated after to be considered new and captured by this plugin.
@@ -44,10 +44,17 @@ options:
       - If not specified, the plugin will use the current time as a default. This means any records updated
         after the plugin started will be captured.
     required: false
+  remote_servicenow_timezone:
+    description:
+      - The timezone to use for ServiceNow timestamps.
+      - If not set, the ServiceNow user record will be queried for an explicit timezone, which will then be used.
+      - If neither this parameter nor an explicit user timezone are set in ServiceNow, the plugin will error out.
+      - All timestamps will be converted to UTC during processing for time comparisons.
+    required: false
   timezone:
     description:
-      - The timezone that the O(updated_since) parameter is in.
-      - All timestamps will be converted to UTC during processing, since that is the timezone that ServiceNow uses.
+      - The timezone that the O(updated_since) parameter is in, for local processing in EDA.
+      - All timestamps will be converted to UTC during processing for time comparisons.
     required: false
     default: UTC
   timestamp_field:
@@ -265,7 +272,11 @@ class RecordsSource:
             date_string=args.get("updated_since"),
             date_string_timezone=args.get("timezone"),
         )
-        self.interval = int(args.get("interval", 5))
+
+        if args.get("remote_servicenow_timezone"):
+            self.remote_snow_timezone = ZoneInfo(args.get("remote_servicenow_timezone"))
+
+        self.interval = int(args.get("interval", 60))
         self.timestamp_field = args.get("timestamp_field", "sys_updated_on")
         self.order_by_field = args.get("order_by_field", self.timestamp_field)
         self._latest_timestamp_floor = None
@@ -458,8 +469,12 @@ class RecordsSource:
         """
         Main entrypoint for the plugin. Start the polling loop and keep running until the plugin is stopped.
         """
-        remote_snow_timezone = self.lookup_snow_user_timezone()
-        logger.info("Remote ServiceNow user's timezone is '%s'", remote_snow_timezone)
+        if self.remote_snow_timezone is None:
+            self.remote_snow_timezone = self.lookup_snow_user_timezone()
+            logger.info(
+                "Remote ServiceNow user's timezone is '%s'", remote_snow_timezone
+            )
+
         logger.info("Poll sleep interval is %s seconds", self.interval)
 
         while True:
@@ -468,7 +483,7 @@ class RecordsSource:
                 len(self.reported_records_last_poll),
             )
             try:
-                await self._poll_for_records(remote_snow_timezone)
+                await self._poll_for_records()
             except Exception as e:
                 logger.error("Error polling for records: %s", e)
                 logger.info("Plugin will keep running")
@@ -500,7 +515,7 @@ class RecordsSource:
         """
         return self._latest_timestamp_floor or self.initial_polling_start_time
 
-    async def _poll_for_records(self, remote_snow_timezone: ZoneInfo):
+    async def _poll_for_records(self):
         """
         Poll for new records in the table since the polling_start_time. We update the list query
         with the latest timestamp seen, and then process any new records that are found.
@@ -511,7 +526,7 @@ class RecordsSource:
         self.list_query["sysparm_query"] = self.query_formatter.inject_timestamp_filter(
             sysparm_query=self.list_query["sysparm_query"],
             timestamp_datetime=self.latest_timestamp_floor,
-            snow_timezone=remote_snow_timezone,
+            snow_timezone=self.remote_snow_timezone,
             timestamp_field=self.timestamp_field,
         )
         logger.debug(
@@ -627,7 +642,6 @@ class RecordsSource:
             raise AnsibleParserError(
                 "Unable to lookup user timezone in ServiceNow: %s" % e
             ) from e
-
         return python_zone_info
 
     def should_record_be_sent_to_queue(self, record, reported_records_this_poll):

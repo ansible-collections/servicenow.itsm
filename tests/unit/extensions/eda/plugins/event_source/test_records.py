@@ -173,12 +173,19 @@ class TestRecordsSource:
                     host="http://my.host.name", username="user", password="pass"
                 ),
                 sysparm_query="foo",
+                remote_servicenow_timezone="America/New_York",
             ),
         )
         source.table_client = Mock()
         source.initial_polling_start_time = datetime(
             2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc
         )
+        # Ensure remote_snow_timezone is set on the object
+        if (
+            not hasattr(source, "remote_snow_timezone")
+            or source.remote_snow_timezone is None
+        ):
+            source.remote_snow_timezone = ZoneInfo("America/New_York")
         return source
 
     @pytest.fixture
@@ -193,12 +200,19 @@ class TestRecordsSource:
                 sysparm_query="foo",
                 timestamp_field="u_last_modified",
                 order_by_field="u_last_modified",
+                remote_servicenow_timezone="America/New_York",
             ),
         )
         source.table_client = Mock()
         source.initial_polling_start_time = datetime(
             2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc
         )
+        # Ensure remote_snow_timezone is set on the object
+        if (
+            not hasattr(source, "remote_snow_timezone")
+            or source.remote_snow_timezone is None
+        ):
+            source.remote_snow_timezone = ZoneInfo("America/New_York")
         return source
 
     def test_latest_timestamp_floor(self, source):
@@ -225,7 +239,7 @@ class TestRecordsSource:
         # Mock the temporary client
         mock_temp_client = Mock()
         mock_temp_client.list_records.return_value = [
-            dict(time_zone="America/New_York")
+            dict(time_zone="America/New_York", user_name="test_user")
         ]
         mock_table_client.return_value = mock_temp_client
 
@@ -329,13 +343,13 @@ class TestRecordsSource:
             dict(sys_id="789", sys_updated_on="2026-08-13 12:00:00"),
         ]
         source.should_record_be_sent_to_queue = Mock(return_value=True)
-        await source._poll_for_records(ZoneInfo("America/New_York"))
+        await source._poll_for_records()
         assert source.queue.put.call_count == 3
 
         source.table_client.list_records.return_value = []
         source.queue.put.reset_mock()
         source.should_record_be_sent_to_queue = Mock(return_value=False)
-        await source._poll_for_records(ZoneInfo("America/New_York"))
+        await source._poll_for_records()
         assert source.queue.put.call_count == 0
 
     @pytest.mark.asyncio
@@ -345,7 +359,7 @@ class TestRecordsSource:
             dict(sys_id="456", u_last_modified="2026-08-13 12:00:00"),
         ]
         custom_source.should_record_be_sent_to_queue = Mock(return_value=True)
-        await custom_source._poll_for_records(ZoneInfo("America/New_York"))
+        await custom_source._poll_for_records()
         assert custom_source.queue.put.call_count == 2
 
     @pytest.mark.asyncio
@@ -355,6 +369,6 @@ class TestRecordsSource:
             dict(sys_id="456", sys_updated_on="2026-08-13 12:00:00"),
         ]
         # Don't mock should_record_be_sent_to_queue - let it use the real logic
-        await source._poll_for_records(ZoneInfo("America/New_York"))
+        await source._poll_for_records()
         # Should only process the record with the timestamp field
         assert source.queue.put.call_count == 1
