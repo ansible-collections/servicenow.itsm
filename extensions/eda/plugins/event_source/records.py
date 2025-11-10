@@ -608,6 +608,7 @@ class RecordsSource:
         system_timezone_records = temp_client.list_records(
             table="sys_properties",
             query={
+                "sysparm_query": "name=glide.sys.default.tz",
                 "sysparm_exclude_reference_link": "true",
             }
         )
