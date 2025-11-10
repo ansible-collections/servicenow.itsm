@@ -612,7 +612,8 @@ class RecordsSource:
         )
         try:
             snow_timezone_str = user_timezone_records[0]["time_zone"]
-            logger.debug("ServiceNow user timezone is %s", snow_timezone_str)
+            logger.debug("ServiceNow user record is %s", user_timezone_records[0])
+            logger.info("ServiceNow user timezone is %s", snow_timezone_str)
             user_timezone_str = snow_timezone_str
         except (KeyError, IndexError) as e:
             raise AnsibleParserError(
