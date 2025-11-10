@@ -474,7 +474,8 @@ class RecordsSource:
         if self.remote_snow_timezone is None:
             self.remote_snow_timezone = self.lookup_snow_user_timezone()
             logger.info(
-                "Remote ServiceNow user's timezone is '%s'", self.remote_snow_timezone
+                "Remote ServiceNow user's timezone set by ServiceNow lookup to '%s'",
+                self.remote_snow_timezone,
             )
 
         logger.info("Poll sleep interval is %s seconds", self.interval)
@@ -636,7 +637,7 @@ class RecordsSource:
             logger.info("ServiceNow user timezone is %s", user_timezone_str)
             if user_timezone_str == "":
                 raise KeyError(
-                    "ServiceNow timezone not set for user %s. User must have time_zone set to non-default to use this plugin."
+                    "ServiceNow timezone not set for user %s. Either remote_servicenow_timezone parameter or time_zone in user table must be set."
                     % servicenow_user_name
                 )
             python_zone_info = ZoneInfo(user_timezone_str)
