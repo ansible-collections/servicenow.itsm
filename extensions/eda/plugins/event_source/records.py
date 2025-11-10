@@ -275,6 +275,10 @@ class RecordsSource:
 
         if args.get("remote_servicenow_timezone"):
             self.remote_snow_timezone = ZoneInfo(args.get("remote_servicenow_timezone"))
+            logger.info(
+                "remote_servicenow_timezone set by parameter to %s"
+                % args.get("remote_servicenow_timezone")
+            )
         else:
             self.remote_snow_timezone = None
 
