@@ -607,7 +607,9 @@ class RecordsSource:
         # First we get system timezone
         system_timezone_records = temp_client.list_records(
             table="sys_properties",
-            columns=['glide.sys.default.tz']
+            query={
+                "sysparm_exclude_reference_link": "true",
+            }
         )
         logger.info("ServiceNow system properties is %s", system_timezone_records[0])
 
