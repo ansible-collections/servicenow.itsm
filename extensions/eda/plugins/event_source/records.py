@@ -603,6 +603,11 @@ class RecordsSource:
         """
         # Use a temporary non-memory-efficient client for this lookup since we need a list result
         temp_client = table.TableClient(self.snow_client, memory_efficient=False)
+
+        # First we get system timezone
+        system_timezone_records = temp_client.list_records(table="sys_properties")
+        logger.info("ServiceNow user record is %s", system_timezone_records[0])
+
         user_timezone_records = temp_client.list_records(
             table="sys_user",
             query={
