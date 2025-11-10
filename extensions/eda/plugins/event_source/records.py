@@ -275,6 +275,8 @@ class RecordsSource:
 
         if args.get("remote_servicenow_timezone"):
             self.remote_snow_timezone = ZoneInfo(args.get("remote_servicenow_timezone"))
+        else:
+            self.remote_snow_timezone = None
 
         self.interval = int(args.get("interval", 60))
         self.timestamp_field = args.get("timestamp_field", "sys_updated_on")
@@ -472,7 +474,7 @@ class RecordsSource:
         if self.remote_snow_timezone is None:
             self.remote_snow_timezone = self.lookup_snow_user_timezone()
             logger.info(
-                "Remote ServiceNow user's timezone is '%s'", remote_snow_timezone
+                "Remote ServiceNow user's timezone is '%s'", self.remote_snow_timezone
             )
 
         logger.info("Poll sleep interval is %s seconds", self.interval)
