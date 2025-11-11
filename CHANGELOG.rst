@@ -10,7 +10,7 @@ v2.13.2
 Release Summary
 ---------------
 
-Allow ServiceNow timezone to be passed via parameter (remote_servicenow_timezone) to the plugin. Clarify error message to indicate that it must be set explicitly (that is, not to the system default) in the ServiceNow user record if not passed in via parameter.
+Allow ServiceNow timezone to be passed via parameter (remote_servicenow_timezone) to the plugin. Clarify error message to indicate that it must be set explicitly (either as a user setting or as the system default) in ServiceNow if not passed in via parameter.
 
 Bugfixes
 --------
