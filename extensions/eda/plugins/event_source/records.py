@@ -11,6 +11,8 @@ description:
     configure the instance connection.
   - If you supply O(query) or O(sysparm_query), the plugin will remove any reference to ORDEREDBY and sys_updated_on
     in the query so that it can add its own.
+  - If O(remote_servicenow_timezone) is not set the plugin will query for a user-specific timezone then
+    an explicit system-wide timezone in ServiceNow. If none of these three are set, the plugin will error out.
   - B(NOTE:) This approach is useful for small-scale event handling, but for large-scale event processing we
     recommend using a ServiceNow-side mechanism (such as, but not necssarily limtied to, a Spoke app or business
     rules). The only contetxt this plugin has are the record contents and (possibly) a timestamp. For large and
@@ -34,7 +36,7 @@ options:
     description:
       - THe number of seconds to wait before performing another query.
     required: false
-    default: 5
+    default: 60
   updated_since:
     description:
       - Specify the time that a record must be updated after to be considered new and captured by this plugin.
@@ -42,10 +44,17 @@ options:
       - If not specified, the plugin will use the current time as a default. This means any records updated
         after the plugin started will be captured.
     required: false
+  remote_servicenow_timezone:
+    description:
+      - The timezone to use for ServiceNow timestamps.
+      - If not set, the ServiceNow user record will be queried for an explicit timezone, which will then be used.
+      - If neither this parameter nor an explicit user timezone are set in ServiceNow, the plugin will error out.
+      - All timestamps will be converted to UTC during processing for time comparisons.
+    required: false
   timezone:
     description:
-      - The timezone that the O(updated_since) parameter is in.
-      - All timestamps will be converted to UTC during processing, since that is the timezone that ServiceNow uses.
+      - The timezone that the O(updated_since) parameter is in, for local processing in EDA.
+      - All timestamps will be converted to UTC during processing for time comparisons.
     required: false
     default: UTC
   timestamp_field:
@@ -109,26 +118,28 @@ EXAMPLES = r"""
 
 # Need to add the project root to the path so that we can import the module_utils.
 # The EDA team may come up with a better solution for this in the future.
-import os
-import sys
+import os  # noqa: E402
+import sys  # noqa: E402
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-import asyncio
-import gc
-import logging
-import re
-import resource
-from datetime import datetime, timezone, timedelta
-from typing import Any, Dict
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+import asyncio  # noqa: E402
+import gc  # noqa: E402
+import logging  # noqa: E402
+import re  # noqa: E402
+import resource  # noqa: E402
+from datetime import datetime, timezone, timedelta  # noqa: E402
+from typing import Any, Dict  # noqa: E402
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError  # noqa: E402
 
-from ansible.errors import AnsibleParserError
-from plugins.module_utils import client, table
-from plugins.module_utils.instance_config import get_combined_instance_config
-from plugins.module_utils.query import construct_sysparm_query_from_query
+from ansible.errors import AnsibleParserError, AnsibleError  # noqa: E402
+from plugins.module_utils import client, table  # noqa: E402
+from plugins.module_utils.instance_config import (  # noqa: E402
+    get_combined_instance_config,
+)
+from plugins.module_utils.query import construct_sysparm_query_from_query  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
@@ -188,7 +199,6 @@ class QueryFormatter:
         # If the user specified a timestamp field or ORDERBY filter, we need to remove it from the query so that we can add our own.
         # Escape special regex characters in the field name
         escaped_timestamp_field = re.escape(timestamp_field)
-        escaped_order_by_field = re.escape(order_by_field)
 
         sysparm_query = re.sub(
             rf"\^?N?Q?{escaped_timestamp_field}[^\^]*(\^?)", r"\1", sysparm_query
@@ -263,7 +273,17 @@ class RecordsSource:
             date_string=args.get("updated_since"),
             date_string_timezone=args.get("timezone"),
         )
-        self.interval = int(args.get("interval", 5))
+
+        if args.get("remote_servicenow_timezone"):
+            self.remote_snow_timezone = ZoneInfo(args.get("remote_servicenow_timezone"))
+            logger.info(
+                "remote_servicenow_timezone set by parameter to %s",
+                args.get("remote_servicenow_timezone"),
+            )
+        else:
+            self.remote_snow_timezone = None
+
+        self.interval = int(args.get("interval", 60))
         self.timestamp_field = args.get("timestamp_field", "sys_updated_on")
         self.order_by_field = args.get("order_by_field", self.timestamp_field)
         self._latest_timestamp_floor = None
@@ -456,8 +476,13 @@ class RecordsSource:
         """
         Main entrypoint for the plugin. Start the polling loop and keep running until the plugin is stopped.
         """
-        remote_snow_timezone = self.lookup_snow_user_timezone()
-        logger.info("Remote ServiceNow user's timezone is '%s'", remote_snow_timezone)
+        if self.remote_snow_timezone is None:
+            self.remote_snow_timezone = self.lookup_snow_user_timezone()
+            logger.info(
+                "Remote ServiceNow user's timezone set by ServiceNow lookup to '%s'",
+                self.remote_snow_timezone,
+            )
+
         logger.info("Poll sleep interval is %s seconds", self.interval)
 
         while True:
@@ -466,7 +491,7 @@ class RecordsSource:
                 len(self.reported_records_last_poll),
             )
             try:
-                await self._poll_for_records(remote_snow_timezone)
+                await self._poll_for_records()
             except Exception as e:
                 logger.error("Error polling for records: %s", e)
                 logger.info("Plugin will keep running")
@@ -498,7 +523,7 @@ class RecordsSource:
         """
         return self._latest_timestamp_floor or self.initial_polling_start_time
 
-    async def _poll_for_records(self, remote_snow_timezone: ZoneInfo):
+    async def _poll_for_records(self):
         """
         Poll for new records in the table since the polling_start_time. We update the list query
         with the latest timestamp seen, and then process any new records that are found.
@@ -509,7 +534,7 @@ class RecordsSource:
         self.list_query["sysparm_query"] = self.query_formatter.inject_timestamp_filter(
             sysparm_query=self.list_query["sysparm_query"],
             timestamp_datetime=self.latest_timestamp_floor,
-            snow_timezone=remote_snow_timezone,
+            snow_timezone=self.remote_snow_timezone,
             timestamp_field=self.timestamp_field,
         )
         logger.debug(
@@ -600,9 +625,13 @@ class RecordsSource:
         The SNOW user's timezone may be different from the local timezone of the machine running the plugin.
         We need to lookup this timezone so we can convert our UTC timestamp into this timezone for the
         table query.
+        First checks for an explicit user timezone, then falls back to system default timezone.
+        Raises AnsibleError if neither is set.
         """
         # Use a temporary non-memory-efficient client for this lookup since we need a list result
         temp_client = table.TableClient(self.snow_client, memory_efficient=False)
+
+        # First, try to get the user's explicit timezone
         user_timezone_records = temp_client.list_records(
             table="sys_user",
             query={
@@ -611,13 +640,67 @@ class RecordsSource:
             },
         )
         try:
-            user_timezone_str = user_timezone_records[0]["time_zone"]
+            if not user_timezone_records:
+                raise IndexError("No user record found")
+            user_timezone_str = user_timezone_records[0].get("time_zone", "")
+            servicenow_user_name = user_timezone_records[0].get("user_name", "unknown")
+
+            # If user has explicit timezone set, use it
+            if user_timezone_str and user_timezone_str != "":
+                logger.info("ServiceNow user timezone is %s", user_timezone_str)
+                try:
+                    return ZoneInfo(user_timezone_str)
+                except ZoneInfoNotFoundError as e:
+                    raise AnsibleError(
+                        "Invalid timezone '%s' set for user %s: %s"
+                        % (user_timezone_str, servicenow_user_name, e)
+                    ) from e
         except (KeyError, IndexError) as e:
             raise AnsibleParserError(
-                "Unable to lookup user timezone in ServiceNow: %s" % e
+                "Unable to lookup user record in ServiceNow: %s" % e
             ) from e
 
-        return ZoneInfo(user_timezone_str)
+        # User timezone is not set, try system default timezone
+        logger.info(
+            "User %s does not have explicit timezone set, checking system default",
+            servicenow_user_name,
+        )
+        system_timezone_records = temp_client.list_records(
+            table="sys_properties",
+            query={
+                "sysparm_query": "name=glide.sys.default.tz",
+                "sysparm_exclude_reference_link": "true",
+            },
+        )
+        try:
+            if not system_timezone_records:
+                # System property not found, fall through to final error
+                pass
+            else:
+                system_timezone_str = system_timezone_records[0].get("value", "")
+
+                if system_timezone_str and system_timezone_str != "":
+                    logger.info(
+                        "ServiceNow system default timezone is %s", system_timezone_str
+                    )
+                    try:
+                        return ZoneInfo(system_timezone_str)
+                    except ZoneInfoNotFoundError as e:
+                        raise AnsibleError(
+                            "Invalid system default timezone '%s': %s"
+                            % (system_timezone_str, e)
+                        ) from e
+        except KeyError as e:
+            raise AnsibleParserError(
+                "Unable to lookup system timezone property in ServiceNow: %s" % e
+            ) from e
+
+        # Neither user nor system timezone is set
+        raise AnsibleError(
+            "ServiceNow timezone not set. Either set remote_servicenow_timezone parameter, "
+            "set time_zone in user table for user %s, or set glide.sys.default.tz system property."
+            % servicenow_user_name
+        )
 
     def should_record_be_sent_to_queue(self, record, reported_records_this_poll):
         """

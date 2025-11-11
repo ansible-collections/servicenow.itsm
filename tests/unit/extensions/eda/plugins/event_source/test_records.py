@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import pytest
 from unittest.mock import patch, AsyncMock, Mock
-from ansible.errors import AnsibleParserError
+from ansible.errors import AnsibleParserError, AnsibleError
 import sys
 import os
 
@@ -173,12 +173,19 @@ class TestRecordsSource:
                     host="http://my.host.name", username="user", password="pass"
                 ),
                 sysparm_query="foo",
+                remote_servicenow_timezone="America/New_York",
             ),
         )
         source.table_client = Mock()
         source.initial_polling_start_time = datetime(
             2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc
         )
+        # Ensure remote_snow_timezone is set on the object
+        if (
+            not hasattr(source, "remote_snow_timezone")
+            or source.remote_snow_timezone is None
+        ):
+            source.remote_snow_timezone = ZoneInfo("America/New_York")
         return source
 
     @pytest.fixture
@@ -193,12 +200,19 @@ class TestRecordsSource:
                 sysparm_query="foo",
                 timestamp_field="u_last_modified",
                 order_by_field="u_last_modified",
+                remote_servicenow_timezone="America/New_York",
             ),
         )
         source.table_client = Mock()
         source.initial_polling_start_time = datetime(
             2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc
         )
+        # Ensure remote_snow_timezone is set on the object
+        if (
+            not hasattr(source, "remote_snow_timezone")
+            or source.remote_snow_timezone is None
+        ):
+            source.remote_snow_timezone = ZoneInfo("America/New_York")
         return source
 
     def test_latest_timestamp_floor(self, source):
@@ -221,21 +235,106 @@ class TestRecordsSource:
         assert source.order_by_field == "sys_updated_on"
 
     @patch("extensions.eda.plugins.event_source.records.table.TableClient")
-    def test_lookup_snow_user_timezone(self, mock_table_client, source):
+    def test_lookup_snow_user_timezone_explicit(self, mock_table_client, source):
         # Mock the temporary client
         mock_temp_client = Mock()
+        # Test with explicit user timezone set
         mock_temp_client.list_records.return_value = [
-            dict(time_zone="America/New_York")
+            dict(time_zone="America/New_York", user_name="test_user")
         ]
         mock_table_client.return_value = mock_temp_client
 
         assert source.lookup_snow_user_timezone() == ZoneInfo("America/New_York")
 
-        # Test error case
-        mock_temp_client.list_records.return_value = [dict()]
+    @patch("extensions.eda.plugins.event_source.records.table.TableClient")
+    def test_lookup_snow_user_timezone_system_default(self, mock_table_client, source):
+        # Mock the temporary client
+        mock_temp_client = Mock()
+        # First call returns user with empty timezone, second call returns system property
+        mock_temp_client.list_records.side_effect = [
+            [dict(time_zone="", user_name="test_user")],  # User with no timezone
+            [
+                dict(name="glide.sys.default.tz", value="Europe/London")
+            ],  # System timezone
+        ]
+        mock_table_client.return_value = mock_temp_client
+
+        assert source.lookup_snow_user_timezone() == ZoneInfo("Europe/London")
+
+    @patch("extensions.eda.plugins.event_source.records.table.TableClient")
+    def test_lookup_snow_user_timezone_neither_set(self, mock_table_client, source):
+        # Mock the temporary client
+        mock_temp_client = Mock()
+        # First call returns user with empty timezone, second call returns empty system property
+        mock_temp_client.list_records.side_effect = [
+            [dict(time_zone="", user_name="test_user")],  # User with no timezone
+            [dict(name="glide.sys.default.tz", value="")],  # System timezone not set
+        ]
+        mock_table_client.return_value = mock_temp_client
+
+        with pytest.raises(AnsibleError, match="ServiceNow timezone not set"):
+            source.lookup_snow_user_timezone()
+
+    @patch("extensions.eda.plugins.event_source.records.table.TableClient")
+    def test_lookup_snow_user_timezone_invalid_user_timezone(
+        self, mock_table_client, source
+    ):
+        # Mock the temporary client
+        mock_temp_client = Mock()
+        # Test with invalid user timezone
+        mock_temp_client.list_records.return_value = [
+            dict(time_zone="Invalid/Timezone", user_name="test_user")
+        ]
+        mock_table_client.return_value = mock_temp_client
+
+        with pytest.raises(AnsibleError, match="Invalid timezone"):
+            source.lookup_snow_user_timezone()
+
+    @patch("extensions.eda.plugins.event_source.records.table.TableClient")
+    def test_lookup_snow_user_timezone_no_user_record(self, mock_table_client, source):
+        # Mock the temporary client
+        mock_temp_client = Mock()
+        # Test error case - no user record found
+        mock_temp_client.list_records.return_value = []
+        mock_table_client.return_value = mock_temp_client
+
         with pytest.raises(
-            AnsibleParserError, match="Unable to lookup user timezone in ServiceNow:"
+            AnsibleParserError, match="Unable to lookup user record in ServiceNow:"
         ):
+            source.lookup_snow_user_timezone()
+
+    @patch("extensions.eda.plugins.event_source.records.table.TableClient")
+    def test_lookup_snow_user_timezone_no_system_property(
+        self, mock_table_client, source
+    ):
+        # Mock the temporary client
+        mock_temp_client = Mock()
+        # First call returns user with empty timezone, second call returns no system property
+        mock_temp_client.list_records.side_effect = [
+            [dict(time_zone="", user_name="test_user")],  # User with no timezone
+            [],  # System property not found
+        ]
+        mock_table_client.return_value = mock_temp_client
+
+        with pytest.raises(AnsibleError, match="ServiceNow timezone not set"):
+            source.lookup_snow_user_timezone()
+
+    @patch("extensions.eda.plugins.event_source.records.table.TableClient")
+    def test_lookup_snow_user_timezone_invalid_system_timezone(
+        self, mock_table_client, source
+    ):
+        # Mock the temporary client
+        mock_temp_client = Mock()
+        # First call returns user with empty timezone, second call returns invalid system timezone
+        mock_temp_client.list_records.side_effect = [
+            [dict(time_zone="", user_name="test_user")],  # User with no timezone
+            [
+                dict(name="glide.sys.default.tz", value="Invalid/Timezone")
+            ],  # Invalid system timezone
+        ]
+        mock_table_client.return_value = mock_temp_client
+
+        with pytest.raises(AnsibleError, match="Invalid system default timezone"):
             source.lookup_snow_user_timezone()
 
     def test_should_record_be_sent_to_queue_old_record(self, source):
@@ -329,13 +428,13 @@ class TestRecordsSource:
             dict(sys_id="789", sys_updated_on="2026-08-13 12:00:00"),
         ]
         source.should_record_be_sent_to_queue = Mock(return_value=True)
-        await source._poll_for_records(ZoneInfo("America/New_York"))
+        await source._poll_for_records()
         assert source.queue.put.call_count == 3
 
         source.table_client.list_records.return_value = []
         source.queue.put.reset_mock()
         source.should_record_be_sent_to_queue = Mock(return_value=False)
-        await source._poll_for_records(ZoneInfo("America/New_York"))
+        await source._poll_for_records()
         assert source.queue.put.call_count == 0
 
     @pytest.mark.asyncio
@@ -345,7 +444,7 @@ class TestRecordsSource:
             dict(sys_id="456", u_last_modified="2026-08-13 12:00:00"),
         ]
         custom_source.should_record_be_sent_to_queue = Mock(return_value=True)
-        await custom_source._poll_for_records(ZoneInfo("America/New_York"))
+        await custom_source._poll_for_records()
         assert custom_source.queue.put.call_count == 2
 
     @pytest.mark.asyncio
@@ -355,6 +454,6 @@ class TestRecordsSource:
             dict(sys_id="456", sys_updated_on="2026-08-13 12:00:00"),
         ]
         # Don't mock should_record_be_sent_to_queue - let it use the real logic
-        await source._poll_for_records(ZoneInfo("America/New_York"))
+        await source._poll_for_records()
         # Should only process the record with the timestamp field
         assert source.queue.put.call_count == 1
