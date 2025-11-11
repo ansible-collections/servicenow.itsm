@@ -11,8 +11,11 @@ description:
     configure the instance connection.
   - If you supply O(query) or O(sysparm_query), the plugin will remove any reference to ORDEREDBY and sys_updated_on
     in the query so that it can add its own.
-  - The ServiceNow user you use to connect B(MUST) have an explicit time zone set in its user record. If it does not,
-    the plugin will error out with a message indicating this.
+  - To interpret the timezone on the ServiceNow side, there are three options:
+    - Pass the O(remote_servicenow_timezone) option to the plugin explicitly
+    - Set the time_zone field explicitly for the ServiceNow user the plugin will run as
+    - Set the system default timezone via system_properties glide.sys.default.tz.
+    If none of these are set, the plugin will error out.
   - B(NOTE:) This approach is useful for small-scale event handling, but for large-scale event processing we
     recommend using a ServiceNow-side mechanism (such as, but not necssarily limtied to, a Spoke app or business
     rules). The only contetxt this plugin has are the record contents and (possibly) a timestamp. For large and
@@ -134,7 +137,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Any, Dict
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from ansible.errors import AnsibleParserError
+from ansible.errors import AnsibleParserError, AnsibleError
 from plugins.module_utils import client, table
 from plugins.module_utils.instance_config import get_combined_instance_config
 from plugins.module_utils.query import construct_sysparm_query_from_query
@@ -624,10 +627,13 @@ class RecordsSource:
         The SNOW user's timezone may be different from the local timezone of the machine running the plugin.
         We need to lookup this timezone so we can convert our UTC timestamp into this timezone for the
         table query.
+        First checks for an explicit user timezone, then falls back to system default timezone.
+        Raises AnsibleError if neither is set.
         """
         # Use a temporary non-memory-efficient client for this lookup since we need a list result
         temp_client = table.TableClient(self.snow_client, memory_efficient=False)
 
+        # First, try to get the user's explicit timezone
         user_timezone_records = temp_client.list_records(
             table="sys_user",
             query={
@@ -636,20 +642,61 @@ class RecordsSource:
             },
         )
         try:
-            user_timezone_str = user_timezone_records[0]["time_zone"]
-            servicenow_user_name = user_timezone_records[0]["user_name"]
-            logger.info("ServiceNow user timezone is %s", user_timezone_str)
-            if user_timezone_str == "":
-                raise KeyError(
-                    "ServiceNow timezone not set for user %s. Either remote_servicenow_timezone parameter or time_zone in user table must be set."
-                    % servicenow_user_name
-                )
-            python_zone_info = ZoneInfo(user_timezone_str)
+            if not user_timezone_records:
+                raise IndexError("No user record found")
+            user_timezone_str = user_timezone_records[0].get("time_zone", "")
+            servicenow_user_name = user_timezone_records[0].get("user_name", "unknown")
+            
+            # If user has explicit timezone set, use it
+            if user_timezone_str and user_timezone_str != "":
+                logger.info("ServiceNow user timezone is %s", user_timezone_str)
+                try:
+                    return ZoneInfo(user_timezone_str)
+                except ZoneInfoNotFoundError as e:
+                    raise AnsibleError(
+                        "Invalid timezone '%s' set for user %s: %s"
+                        % (user_timezone_str, servicenow_user_name, e)
+                    ) from e
         except (KeyError, IndexError) as e:
             raise AnsibleParserError(
-                "Unable to lookup user timezone in ServiceNow: %s" % e
+                "Unable to lookup user record in ServiceNow: %s" % e
             ) from e
-        return python_zone_info
+
+        # User timezone is not set, try system default timezone
+        logger.info("User %s does not have explicit timezone set, checking system default", servicenow_user_name)
+        system_timezone_records = temp_client.list_records(
+            table="sys_properties",
+            query={
+                "sysparm_query": "name=glide.sys.default.tz",
+                "sysparm_exclude_reference_link": "true",
+            },
+        )
+        try:
+            if not system_timezone_records:
+                # System property not found, fall through to final error
+                pass
+            else:
+                system_timezone_str = system_timezone_records[0].get("value", "")
+                
+                if system_timezone_str and system_timezone_str != "":
+                    logger.info("ServiceNow system default timezone is %s", system_timezone_str)
+                    try:
+                        return ZoneInfo(system_timezone_str)
+                    except ZoneInfoNotFoundError as e:
+                        raise AnsibleError(
+                            "Invalid system default timezone '%s': %s" % (system_timezone_str, e)
+                        ) from e
+        except KeyError as e:
+            raise AnsibleParserError(
+                "Unable to lookup system timezone property in ServiceNow: %s" % e
+            ) from e
+
+        # Neither user nor system timezone is set
+        raise AnsibleError(
+            "ServiceNow timezone not set. Either set remote_servicenow_timezone parameter, "
+            "set time_zone in user table for user %s, or set glide.sys.default.tz system property."
+            % servicenow_user_name
+        )
 
     def should_record_be_sent_to_queue(self, record, reported_records_this_poll):
         """
