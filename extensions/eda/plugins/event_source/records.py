@@ -136,9 +136,9 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError  # noqa: E402
 
 from ansible.errors import AnsibleParserError, AnsibleError  # noqa: E402
 from plugins.module_utils import client, table  # noqa: E402
-from plugins.module_utils.instance_config import (
+from plugins.module_utils.instance_config import (  # noqa: E402
     get_combined_instance_config,
-)  # noqa: E402
+)
 from plugins.module_utils.query import construct_sysparm_query_from_query  # noqa: E402
 
 
@@ -199,7 +199,6 @@ class QueryFormatter:
         # If the user specified a timestamp field or ORDERBY filter, we need to remove it from the query so that we can add our own.
         # Escape special regex characters in the field name
         escaped_timestamp_field = re.escape(timestamp_field)
-        escaped_order_by_field = re.escape(order_by_field)
 
         sysparm_query = re.sub(
             rf"\^?N?Q?{escaped_timestamp_field}[^\^]*(\^?)", r"\1", sysparm_query
