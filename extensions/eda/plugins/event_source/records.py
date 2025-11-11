@@ -11,10 +11,8 @@ description:
     configure the instance connection.
   - If you supply O(query) or O(sysparm_query), the plugin will remove any reference to ORDEREDBY and sys_updated_on
     in the query so that it can add its own.
-  - To interpret the timezone on the ServiceNow side, there are three options: Pass the
-    O(remote_servicenow_timezone) option to the plugin explicitly; set the time_zone field explicitly
-    for the ServiceNow user the plugin will run as; set the system default timezone via system_properties
-    glide.sys.default.tz. If none of these are set, the plugin will error out.
+  - If O(remote_servicenow_timezone) is not set the plugin will query for a user-specific timezone then
+    an explicit system-wide timezone in ServiceNow. If none of these three are set, the plugin will error out.
   - B(NOTE:) This approach is useful for small-scale event handling, but for large-scale event processing we
     recommend using a ServiceNow-side mechanism (such as, but not necssarily limtied to, a Spoke app or business
     rules). The only contetxt this plugin has are the record contents and (possibly) a timestamp. For large and
