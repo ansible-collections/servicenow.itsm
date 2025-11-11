@@ -136,7 +136,9 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError  # noqa: E402
 
 from ansible.errors import AnsibleParserError, AnsibleError  # noqa: E402
 from plugins.module_utils import client, table  # noqa: E402
-from plugins.module_utils.instance_config import get_combined_instance_config  # noqa: E402
+from plugins.module_utils.instance_config import (
+    get_combined_instance_config,
+)  # noqa: E402
 from plugins.module_utils.query import construct_sysparm_query_from_query  # noqa: E402
 
 
