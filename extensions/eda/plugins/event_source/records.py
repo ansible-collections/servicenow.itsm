@@ -11,11 +11,10 @@ description:
     configure the instance connection.
   - If you supply O(query) or O(sysparm_query), the plugin will remove any reference to ORDEREDBY and sys_updated_on
     in the query so that it can add its own.
-  - To interpret the timezone on the ServiceNow side, there are three options:
-    - Pass the O(remote_servicenow_timezone) option to the plugin explicitly
-    - Set the time_zone field explicitly for the ServiceNow user the plugin will run as
-    - Set the system default timezone via system_properties glide.sys.default.tz.
-    If none of these are set, the plugin will error out.
+  - To interpret the timezone on the ServiceNow side, there are three options: Pass the
+    O(remote_servicenow_timezone) option to the plugin explicitly; set the time_zone field explicitly
+    for the ServiceNow user the plugin will run as; set the system default timezone via system_properties
+    glide.sys.default.tz. If none of these are set, the plugin will error out.
   - B(NOTE:) This approach is useful for small-scale event handling, but for large-scale event processing we
     recommend using a ServiceNow-side mechanism (such as, but not necssarily limtied to, a Spoke app or business
     rules). The only contetxt this plugin has are the record contents and (possibly) a timestamp. For large and
@@ -121,26 +120,26 @@ EXAMPLES = r"""
 
 # Need to add the project root to the path so that we can import the module_utils.
 # The EDA team may come up with a better solution for this in the future.
-import os
-import sys
+import os  # noqa: E402
+import sys  # noqa: E402
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-import asyncio
-import gc
-import logging
-import re
-import resource
-from datetime import datetime, timezone, timedelta
-from typing import Any, Dict
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+import asyncio  # noqa: E402
+import gc  # noqa: E402
+import logging  # noqa: E402
+import re  # noqa: E402
+import resource  # noqa: E402
+from datetime import datetime, timezone, timedelta  # noqa: E402
+from typing import Any, Dict  # noqa: E402
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError  # noqa: E402
 
-from ansible.errors import AnsibleParserError, AnsibleError
-from plugins.module_utils import client, table
-from plugins.module_utils.instance_config import get_combined_instance_config
-from plugins.module_utils.query import construct_sysparm_query_from_query
+from ansible.errors import AnsibleParserError, AnsibleError  # noqa: E402
+from plugins.module_utils import client, table  # noqa: E402
+from plugins.module_utils.instance_config import get_combined_instance_config  # noqa: E402
+from plugins.module_utils.query import construct_sysparm_query_from_query  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
