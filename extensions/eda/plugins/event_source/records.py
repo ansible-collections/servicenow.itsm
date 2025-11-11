@@ -646,7 +646,7 @@ class RecordsSource:
                 raise IndexError("No user record found")
             user_timezone_str = user_timezone_records[0].get("time_zone", "")
             servicenow_user_name = user_timezone_records[0].get("user_name", "unknown")
-            
+
             # If user has explicit timezone set, use it
             if user_timezone_str and user_timezone_str != "":
                 logger.info("ServiceNow user timezone is %s", user_timezone_str)
@@ -663,7 +663,10 @@ class RecordsSource:
             ) from e
 
         # User timezone is not set, try system default timezone
-        logger.info("User %s does not have explicit timezone set, checking system default", servicenow_user_name)
+        logger.info(
+            "User %s does not have explicit timezone set, checking system default",
+            servicenow_user_name,
+        )
         system_timezone_records = temp_client.list_records(
             table="sys_properties",
             query={
@@ -677,14 +680,17 @@ class RecordsSource:
                 pass
             else:
                 system_timezone_str = system_timezone_records[0].get("value", "")
-                
+
                 if system_timezone_str and system_timezone_str != "":
-                    logger.info("ServiceNow system default timezone is %s", system_timezone_str)
+                    logger.info(
+                        "ServiceNow system default timezone is %s", system_timezone_str
+                    )
                     try:
                         return ZoneInfo(system_timezone_str)
                     except ZoneInfoNotFoundError as e:
                         raise AnsibleError(
-                            "Invalid system default timezone '%s': %s" % (system_timezone_str, e)
+                            "Invalid system default timezone '%s': %s"
+                            % (system_timezone_str, e)
                         ) from e
         except KeyError as e:
             raise AnsibleParserError(

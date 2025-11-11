@@ -253,7 +253,9 @@ class TestRecordsSource:
         # First call returns user with empty timezone, second call returns system property
         mock_temp_client.list_records.side_effect = [
             [dict(time_zone="", user_name="test_user")],  # User with no timezone
-            [dict(name="glide.sys.default.tz", value="Europe/London")],  # System timezone
+            [
+                dict(name="glide.sys.default.tz", value="Europe/London")
+            ],  # System timezone
         ]
         mock_table_client.return_value = mock_temp_client
 
@@ -270,13 +272,13 @@ class TestRecordsSource:
         ]
         mock_table_client.return_value = mock_temp_client
 
-        with pytest.raises(
-            AnsibleError, match="ServiceNow timezone not set"
-        ):
+        with pytest.raises(AnsibleError, match="ServiceNow timezone not set"):
             source.lookup_snow_user_timezone()
 
     @patch("extensions.eda.plugins.event_source.records.table.TableClient")
-    def test_lookup_snow_user_timezone_invalid_user_timezone(self, mock_table_client, source):
+    def test_lookup_snow_user_timezone_invalid_user_timezone(
+        self, mock_table_client, source
+    ):
         # Mock the temporary client
         mock_temp_client = Mock()
         # Test with invalid user timezone
@@ -285,9 +287,7 @@ class TestRecordsSource:
         ]
         mock_table_client.return_value = mock_temp_client
 
-        with pytest.raises(
-            AnsibleError, match="Invalid timezone"
-        ):
+        with pytest.raises(AnsibleError, match="Invalid timezone"):
             source.lookup_snow_user_timezone()
 
     @patch("extensions.eda.plugins.event_source.records.table.TableClient")
@@ -304,7 +304,9 @@ class TestRecordsSource:
             source.lookup_snow_user_timezone()
 
     @patch("extensions.eda.plugins.event_source.records.table.TableClient")
-    def test_lookup_snow_user_timezone_no_system_property(self, mock_table_client, source):
+    def test_lookup_snow_user_timezone_no_system_property(
+        self, mock_table_client, source
+    ):
         # Mock the temporary client
         mock_temp_client = Mock()
         # First call returns user with empty timezone, second call returns no system property
@@ -314,25 +316,25 @@ class TestRecordsSource:
         ]
         mock_table_client.return_value = mock_temp_client
 
-        with pytest.raises(
-            AnsibleError, match="ServiceNow timezone not set"
-        ):
+        with pytest.raises(AnsibleError, match="ServiceNow timezone not set"):
             source.lookup_snow_user_timezone()
 
     @patch("extensions.eda.plugins.event_source.records.table.TableClient")
-    def test_lookup_snow_user_timezone_invalid_system_timezone(self, mock_table_client, source):
+    def test_lookup_snow_user_timezone_invalid_system_timezone(
+        self, mock_table_client, source
+    ):
         # Mock the temporary client
         mock_temp_client = Mock()
         # First call returns user with empty timezone, second call returns invalid system timezone
         mock_temp_client.list_records.side_effect = [
             [dict(time_zone="", user_name="test_user")],  # User with no timezone
-            [dict(name="glide.sys.default.tz", value="Invalid/Timezone")],  # Invalid system timezone
+            [
+                dict(name="glide.sys.default.tz", value="Invalid/Timezone")
+            ],  # Invalid system timezone
         ]
         mock_table_client.return_value = mock_temp_client
 
-        with pytest.raises(
-            AnsibleError, match="Invalid system default timezone"
-        ):
+        with pytest.raises(AnsibleError, match="Invalid system default timezone"):
             source.lookup_snow_user_timezone()
 
     def test_should_record_be_sent_to_queue_old_record(self, source):
