@@ -1,9 +1,9 @@
-.. Created with antsibull-docs 2.16.3
+.. Created with antsibull-docs 2.22.0
 
 servicenow.itsm.now inventory -- Inventory source for ServiceNow table records.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.13.1).
+This inventory plugin is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.13.2).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -990,6 +990,13 @@ Parameters
 
 
 
+.. note::
+
+    Configuration entries listed above for each entry type (Ansible variable, environment variable, and so on) have a low to high priority order.
+    For example, a variable that is lower in the list will override a variable that is higher up.
+    The entry types are also ordered by precedence from low to high priority order.
+    For example, an ansible.cfg entry (further up in the list) is overwritten by an Ansible variable (further down in the list).
+
 
 Notes
 -----
@@ -1316,9 +1323,6 @@ Authors
 - Tadej Borovsak (@tadeboro)
 - Uros Pascinski (@uscinski)
 
-
-.. hint::
-    Configuration entries for each entry type have a low to high priority order. For example, a variable that is lower in the list will override a variable that is higher up.
 
 Collection links
 ~~~~~~~~~~~~~~~~

@@ -4,6 +4,19 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.13.2
+=======
+
+Release Summary
+---------------
+
+Allow ServiceNow timezone to be passed via parameter (remote_servicenow_timezone) to the plugin. Clarify error message to indicate that it must be set explicitly (either as a user setting or as the system default) in ServiceNow if not passed in via parameter.
+
+Bugfixes
+--------
+
+- records - Timezone lookup now uses a new parameter (remote_servicenow_timezone), then checks explicit user timezone in ServiceNow, then checks system default timezone in ServiceNow. Errors if none of these are set. (https://github.com/ansible-collections/servicenow.itsm/issues/516)
+
 v2.13.1
 =======
 
