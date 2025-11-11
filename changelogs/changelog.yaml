@@ -394,6 +394,20 @@ releases:
     - 511-fix-eda-plugin.yml
     - 513-fix-mem-issues.yml
     release_date: '2025-11-06'
+  2.13.2:
+    changes:
+      bugfixes:
+      - records - Timezone lookup now uses a new parameter (remote_servicenow_timezone),
+        then checks explicit user timezone in ServiceNow, then checks system default
+        timezone in ServiceNow. Errors if none of these are set. (https://github.com/ansible-collections/servicenow.itsm/issues/516)
+      release_summary: Allow ServiceNow timezone to be passed via parameter (remote_servicenow_timezone)
+        to the plugin. Clarify error message to indicate that it must be set explicitly
+        (that is, not to the system default) in the ServiceNow user record if not
+        passed in via parameter.
+    fragments:
+    - 517-fix-timezone-lookup.yml
+    - release_summary.yml
+    release_date: '2025-11-11'
   2.2.0:
     changes:
       minor_changes:

@@ -1,3 +1,0 @@
----
-bugfixes:
- - records - Timezone lookup now uses a new parameter (remote_servicenow_timezone), then checks explicit user timezone in ServiceNow, then checks system default timezone in ServiceNow. Errors if none of these are set. (https://github.com/ansible-collections/servicenow.itsm/issues/516)

@@ -1,9 +1,9 @@
-.. Created with antsibull-docs 2.16.3
+.. Created with antsibull-docs 2.22.0
 
 servicenow.itsm.problem_task module -- Manage ServiceNow problem tasks
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.13.1).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.13.2).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -694,7 +694,6 @@ Authors
 - Manca Bizjak (@mancabizjak)
 - Miha Dolinar (@mdolin)
 - Tadej Borovsak (@tadeboro)
-
 
 
 Collection links

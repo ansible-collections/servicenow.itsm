@@ -1,9 +1,9 @@
-.. Created with antsibull-docs 2.16.3
+.. Created with antsibull-docs 2.22.0
 
 servicenow.itsm.configuration_item_relations module -- Manage ServiceNow relations between configuration items
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.13.1).
+This module is part of the `servicenow.itsm collection <https://galaxy.ansible.com/ui/repo/published/servicenow/itsm/>`_ (version 2.13.2).
 
 It is not included in ``ansible-core``.
 To check whether it is installed, run ``ansible-galaxy collection list``.
@@ -562,7 +562,6 @@ Authors
 ~~~~~~~
 
 - Cosmin Tupangiu (@tupyy)
-
 
 
 Collection links
