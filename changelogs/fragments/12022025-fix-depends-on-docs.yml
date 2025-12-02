@@ -1,0 +1,4 @@
+---
+trivial:
+  - configuration_item_relations - Change 'Depends_On' in examples to 'Depends on::Used by'
+    Fixes https://github.com/ansible-collections/servicenow.itsm/issues/519
