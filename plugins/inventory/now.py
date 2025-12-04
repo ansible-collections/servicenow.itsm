@@ -719,6 +719,9 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         return False
 
     def add_host(self, record, name_source):
+        if not record:
+            return None
+
         if name_source not in record:
             msg = "Inventory hostname source column '{0}' is not present in the record."
             raise AnsibleParserError(msg.format(name_source))
