@@ -112,7 +112,7 @@ class AttachmentClient:
             with open(str(dest), "wb") as f:
                 f.write(binary_data)
         except (IOError, OSError) as e:
-            raise errors.ServiceNowError(str(e))
+            raise errors.ServiceNowError("Error saving attachment: " + str(e))
 
 
 def transform_metadata_list(metadata_list, hashing_method):

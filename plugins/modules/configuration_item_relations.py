@@ -80,7 +80,7 @@ options:
 EXAMPLES = r"""
 - name: Create relation between two ci
   servicenow.itsm.configuration_item_relations:
-    name: Depends_On
+    name: "Depends on::Used by"
     direction: outbound
     state: present
     parent_sys_id: "{{ parent_sys_id }}"
@@ -101,7 +101,7 @@ EXAMPLES = r"""
 
 - name: Update relation by adding one more target
   servicenow.itsm.configuration_item_relations:
-    name: Depends_On
+    name: "Depends on::Used by"
     direction: outbound
     state: present
     parent_sys_id: "{{ owner_sys_id }}"
@@ -335,7 +335,7 @@ def main():
         changed, record, diff = run(module, generic_client)
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
-        module.fail_json(msg=str(e))
+        module.fail_json(**e.to_module_fail_json_output())
 
 
 if __name__ == "__main__":
