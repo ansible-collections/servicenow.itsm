@@ -245,7 +245,8 @@ def main():
         results, changed = update(module, table_client)
         module.exit_json(changed=changed, records_raw=results)
     except errors.ServiceNowError as e:
-        module.fail_json(msg=str(e))
+        module.fail_json(**e.to_module_fail_json_output())
+
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from ansible.module_utils.urls import Request, basic_auth_header
 
-from .errors import AuthError, ServiceNowError, UnexpectedAPIResponse
+from .errors import AuthError, ServiceNowError, UnexpectedAPIResponse, ApiCommunicationError
 
 logger = logging.getLogger(__name__)
 
@@ -278,17 +278,18 @@ class Client:
         if self._should_refresh_connection():
             self._refresh_connection()
 
+        request_kwargs = {
+            "method": method,
+            "url": path,
+            "data": data,
+            "headers": headers,
+            "timeout": self.timeout,
+            "validate_certs": self.validate_certs,
+            "client_cert": self.client_certificate_file,
+            "client_key": self.client_key_file,
+        }
         try:
-            raw_resp = self._client.open(
-                method,
-                path,
-                data=data,
-                headers=headers,
-                timeout=self.timeout,
-                validate_certs=self.validate_certs,
-                client_cert=self.client_certificate_file,
-                client_key=self.client_key_file,
-            )
+            raw_resp = self._client.open(**request_kwargs)
         except HTTPError as e:
             # Wrong username/password, or expired access token
             if e.code == 401:
@@ -301,14 +302,11 @@ class Client:
             # This is for the caller to decide.
             return Response(e.code, e.read(), e.headers)
         except URLError as e:
-            raise ServiceNowError(e.reason)
+            self._handle_request_urlerror(exception=e, request_kwargs=request_kwargs)
         except ssl.SSLError as e:
-            if self.client_certificate_file:
-                raise ServiceNowError(
-                    "Failed to communicate with instance due to SSL error, likely related to the client certificate or key. "
-                    "Ensure the files are accessible on the Ansible host and in the correct format (see module documentation)."
-                )
-            raise
+            self._handle_ssl_error(exception=e, request_kwargs=request_kwargs)
+        except Exception as e:
+            raise ServiceNowError("Unexpected error communicating with instance: %s" % str(e))
 
         # Increment request count for connection management
         self._request_count += 1
@@ -380,3 +378,36 @@ class Client:
         if resp.status in (200, 204):
             return resp
         raise UnexpectedAPIResponse(resp.status, resp.data)
+
+    def _handle_request_urlerror(self, exception, request_kwargs):
+        try:
+            reason = str(exception.reason)
+        except AttributeError:
+            reason = None
+
+        if reason == 'timed out':
+            raise ApiCommunicationError(
+                exception=exception,
+                message="The request to the ServiceNow instance timed out.",
+                method=request_kwargs["method"],
+                path=request_kwargs["url"],
+                timeout_setting=self.timeout
+            )
+
+        raise ApiCommunicationError(
+            exception=exception,
+            message="Unexpected error communicating with ServiceNow instance: %s" % exception,
+            **request_kwargs,
+        )
+
+    def _handle_ssl_error(self, exception, request_kwargs):
+        if self.client_certificate_file:
+            raise ServiceNowError(
+                "Failed to communicate with instance due to SSL error, likely related to the client certificate or key. "
+                "Ensure the files are accessible on the Ansible host and in the correct format (see module documentation)."
+            )
+        raise ApiCommunicationError(
+            exception=exception,
+            message="Unexpected SSL error communicating with ServiceNow instance: %s" % exception,
+            **request_kwargs,
+        )

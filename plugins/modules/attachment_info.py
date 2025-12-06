@@ -146,7 +146,8 @@ def main():
         record = run(module, attachment_client)
         module.exit_json(changed=True, record=record)
     except errors.ServiceNowError as e:
-        module.fail_json(msg=str(e))
+        module.fail_json(**e.to_module_fail_json_output())
+
 
 
 if __name__ == "__main__":
