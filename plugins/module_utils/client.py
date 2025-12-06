@@ -16,7 +16,12 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from ansible.module_utils.urls import Request, basic_auth_header
 
-from .errors import AuthError, ServiceNowError, UnexpectedAPIResponse, ApiCommunicationError
+from .errors import (
+    AuthError,
+    ServiceNowError,
+    UnexpectedAPIResponse,
+    ApiCommunicationError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -279,8 +284,6 @@ class Client:
             self._refresh_connection()
 
         request_kwargs = {
-            "method": method,
-            "url": path,
             "data": data,
             "headers": headers,
             "timeout": self.timeout,
@@ -289,7 +292,7 @@ class Client:
             "client_key": self.client_key_file,
         }
         try:
-            raw_resp = self._client.open(**request_kwargs)
+            raw_resp = self._client.open(method, path, **request_kwargs)
         except HTTPError as e:
             # Wrong username/password, or expired access token
             if e.code == 401:
@@ -302,11 +305,17 @@ class Client:
             # This is for the caller to decide.
             return Response(e.code, e.read(), e.headers)
         except URLError as e:
-            self._handle_request_urlerror(exception=e, request_kwargs=request_kwargs)
+            self._handle_request_urlerror(
+                exception=e, method=method, path=path, request_kwargs=request_kwargs
+            )
         except ssl.SSLError as e:
-            self._handle_ssl_error(exception=e, request_kwargs=request_kwargs)
+            self._handle_ssl_error(
+                exception=e, method=method, path=path, request_kwargs=request_kwargs
+            )
         except Exception as e:
-            raise ServiceNowError("Unexpected error communicating with instance: %s" % str(e))
+            raise ServiceNowError(
+                "Unexpected error communicating with instance: %s" % str(e)
+            )
 
         # Increment request count for connection management
         self._request_count += 1
@@ -379,28 +388,31 @@ class Client:
             return resp
         raise UnexpectedAPIResponse(resp.status, resp.data)
 
-    def _handle_request_urlerror(self, exception, request_kwargs):
+    def _handle_request_urlerror(self, exception, method, path, request_kwargs):
         try:
             reason = str(exception.reason)
         except AttributeError:
             reason = None
 
-        if reason == 'timed out':
+        if reason == "timed out":
             raise ApiCommunicationError(
                 exception=exception,
                 message="The request to the ServiceNow instance timed out.",
-                method=request_kwargs["method"],
-                path=request_kwargs["url"],
-                timeout_setting=self.timeout
+                method=method,
+                path=path,
+                timeout_setting=self.timeout,
             )
 
         raise ApiCommunicationError(
             exception=exception,
-            message="Unexpected error communicating with ServiceNow instance: %s" % exception,
+            message="Unexpected error communicating with ServiceNow instance: %s"
+            % exception,
+            method=method,
+            path=path,
             **request_kwargs,
         )
 
-    def _handle_ssl_error(self, exception, request_kwargs):
+    def _handle_ssl_error(self, exception, method, path, request_kwargs):
         if self.client_certificate_file:
             raise ServiceNowError(
                 "Failed to communicate with instance due to SSL error, likely related to the client certificate or key. "
@@ -408,6 +420,9 @@ class Client:
             )
         raise ApiCommunicationError(
             exception=exception,
-            message="Unexpected SSL error communicating with ServiceNow instance: %s" % exception,
+            message="Unexpected SSL error communicating with ServiceNow instance: %s"
+            % exception,
+            method=method,
+            path=path,
             **request_kwargs,
         )

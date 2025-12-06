@@ -18,7 +18,7 @@ class ServiceNowError(Exception):
 
     def _is_jsonable(self, x):
         try:
-            _ = json.dumps(x)  # pylint: disable=unused-variable
+            _ = json.dumps(x)  # pylint: disable=disallowed-name
             return True
         except Exception:
             return False
@@ -35,9 +35,15 @@ class UnexpectedAPIResponse(ServiceNowError):
 
 
 class ApiCommunicationError(ServiceNowError):
-    def __init__(self, exception, message = None, **kwargs):
-        self.message = message or "An unexpected error occurred while communicating with the ServiceNow API."
+    def __init__(self, exception, message=None, method=None, path=None, **kwargs):
+        self.message = (
+            message
+            or "An unexpected error occurred while communicating with the ServiceNow API."
+        )
+        super().__init__(self.message)
         self.exception = exception
+        self.method = method
+        self.path = path
         self.kwargs = kwargs
 
     def to_module_fail_json_output(self):
@@ -47,5 +53,9 @@ class ApiCommunicationError(ServiceNowError):
                 "message": str(self.exception),
                 "type": self.exception.__class__.__name__,
             },
-            "debug_info": {k: v for k, v in self.kwargs.items() if self._is_jsonable(v)},
+            "debug_info": {
+                "method": self.method,
+                "path": self.path,
+                **{k: v for k, v in self.kwargs.items() if self._is_jsonable(v)},
+            },
         }
