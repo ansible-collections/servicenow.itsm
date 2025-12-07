@@ -11,6 +11,10 @@ import json
 
 
 class ServiceNowError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.is_retryable = False
+
     def to_module_fail_json_output(self):
         return {
             "msg": str(self),
@@ -59,3 +63,9 @@ class ApiCommunicationError(ServiceNowError):
                 **{k: v for k, v in self.kwargs.items() if self._is_jsonable(v)},
             },
         }
+
+
+class ApiHandshakeTimeoutError(ApiCommunicationError):
+    def __init__(self, exception, message=None, method=None, path=None, **kwargs):
+        super().__init__(exception, message, method, path, **kwargs)
+        self.is_retryable = True
