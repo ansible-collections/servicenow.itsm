@@ -121,8 +121,7 @@ class Client:
         self.refresh_token = refresh_token
         self.access_token = access_token
         self.api_key = api_key
-        # self.timeout = timeout
-        self.timeout = 300
+        self.timeout = timeout
         self.validate_certs = validate_certs
         self.json_decoder_hook = json_decoder_hook
         self.connection_timeout = connection_timeout
