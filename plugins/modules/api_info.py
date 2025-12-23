@@ -288,7 +288,7 @@ def main():
         records = run(module, _client)
         module.exit_json(changed=False, record=records)
     except errors.ServiceNowError as e:
-        module.fail_json(msg=str(e))
+        module.fail_json(**e.to_module_fail_json_output())
 
 
 if __name__ == "__main__":

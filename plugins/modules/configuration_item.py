@@ -490,7 +490,7 @@ def main():
         changed, record, diff = run(module, table_client, attachment_client)
         module.exit_json(changed=changed, record=record, diff=diff)
     except errors.ServiceNowError as e:
-        module.fail_json(msg=str(e))
+        module.fail_json(**e.to_module_fail_json_output())
 
 
 if __name__ == "__main__":

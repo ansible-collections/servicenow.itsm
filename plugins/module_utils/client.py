@@ -16,7 +16,12 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from ansible.module_utils.urls import Request, basic_auth_header
 
-from .errors import AuthError, ServiceNowError, UnexpectedAPIResponse
+from .errors import (
+    AuthError,
+    ServiceNowError,
+    UnexpectedAPIResponse,
+    ApiCommunicationError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -278,37 +283,40 @@ class Client:
         if self._should_refresh_connection():
             self._refresh_connection()
 
-        try:
-            raw_resp = self._client.open(
-                method,
-                path,
-                data=data,
-                headers=headers,
-                timeout=self.timeout,
-                validate_certs=self.validate_certs,
-                client_cert=self.client_certificate_file,
-                client_key=self.client_key_file,
-            )
-        except HTTPError as e:
-            # Wrong username/password, or expired access token
-            if e.code == 401:
-                raise AuthError(
-                    "Failed to authenticate with the instance: {0} {1}".format(
-                        e.code, e.reason
-                    ),
+        request_kwargs = {
+            "data": data,
+            "headers": headers,
+            "timeout": self.timeout,
+            "validate_certs": self.validate_certs,
+            "client_cert": self.client_certificate_file,
+            "client_key": self.client_key_file,
+        }
+        request_error_handler = ClientRequestErrorHandler(method, path, request_kwargs)
+        for attempt in range(self.max_retries + 1):
+            try:
+                raw_resp = self._client.open(method, path, **request_kwargs)
+            except HTTPError as e:
+                # Wrong username/password, or expired access token
+                if e.code == 401:
+                    raise AuthError(
+                        "Failed to authenticate with the instance: {0} {1}".format(
+                            e.code, e.reason
+                        ),
+                    )
+                # Other HTTP error codes do not necessarily mean errors.
+                # This is for the caller to decide.
+                return Response(e.code, e.read(), e.headers)
+            except Exception as e:
+                # An exception occurred, and we need to parse it to add additional context
+                # for the user. Some errors may be retryable, in which case the loop will be
+                # if the retry limit has not been reached.
+                request_error_handler.handle_request_error(
+                    exception=e, retry_is_allowed=(attempt < self.max_retries)
                 )
-            # Other HTTP error codes do not necessarily mean errors.
-            # This is for the caller to decide.
-            return Response(e.code, e.read(), e.headers)
-        except URLError as e:
-            raise ServiceNowError(e.reason)
-        except ssl.SSLError as e:
-            if self.client_certificate_file:
-                raise ServiceNowError(
-                    "Failed to communicate with instance due to SSL error, likely related to the client certificate or key. "
-                    "Ensure the files are accessible on the Ansible host and in the correct format (see module documentation)."
-                )
-            raise
+            else:
+                # No exceptions occurred, so the request was successful
+                # and the loop can be exited
+                break
 
         # Increment request count for connection management
         self._request_count += 1
@@ -380,3 +388,149 @@ class Client:
         if resp.status in (200, 204):
             return resp
         raise UnexpectedAPIResponse(resp.status, resp.data)
+
+
+class ClientRequestErrorHandler:
+    """
+    Handles exceptions that occur during HTTP requests to the ServiceNow instance.
+
+    This class centralizes error handling logic for network and SSL-related errors,
+    providing consistent error messages and determining whether errors are retryable.
+    It is used by the Client class's retry mechanism to handle transient network
+    issues such as SSL handshake timeouts.
+
+    Args:
+        method (str): The HTTP method used for the request (e.g., 'GET', 'POST').
+        path (str): The URL path that was requested.
+        request_kwargs (dict): Dictionary containing request parameters such as
+            timeout, validate_certs, client_cert, etc. Used for error context.
+    """
+
+    def __init__(self, method, path, request_kwargs):
+        self.method = method
+        self.path = path
+        self.request_kwargs = request_kwargs
+
+    def handle_request_error(self, exception, retry_is_allowed=False):
+        """
+        Route exception to the appropriate handler based on exception type.
+
+        This method categorizes exceptions and delegates to specific functions.
+        For retryable errors (like SSL handshake timeouts), if retry_is_allowed
+        is True, the method returns None to allow the caller's loop to continue.
+        Otherwise, it raises an appropriate exception.
+
+        Args:
+            exception (Exception): The exception that occurred during the request.
+            retry_is_allowed (bool): Whether retries are still allowed. If True
+                and the error is retryable (e.g., TLS handshake timeout), the
+                method returns None instead of raising, allowing the retry loop
+                to continue. Defaults to False.
+
+        Raises:
+            ServiceNowError or subclass thereof: For non-retryable errors.
+
+        Returns:
+            None: When retry_is_allowed is True and the error is retryable
+                (specifically TLS handshake timeouts). This signals the caller
+                to retry the request.
+        """
+        if isinstance(exception, URLError):
+            self._handle_request_urlerror(exception, retry_is_allowed)
+
+        elif isinstance(exception, ssl.SSLError):
+            self._handle_ssl_error(exception)
+
+        else:
+            self._raise_generic_communication_error(exception)
+
+    def _raise_generic_communication_error(self, exception):
+        """
+        Raise a generic ApiCommunicationError for unexpected exceptions.
+        """
+        raise ApiCommunicationError(
+            exception=exception,
+            message="Unexpected error communicating with ServiceNow instance: %s"
+            % exception,
+            method=self.method,
+            path=self.path,
+            **self.request_kwargs,
+        )
+
+    def _handle_request_urlerror(self, exception, retry_is_allowed=False):
+        """
+        Handle URLError exceptions, including timeouts and handshake failures.
+
+        This method handles various URL-related errors:
+          - General request timeouts: Always raises an error with timeout info.
+          - TLS handshake timeouts: Returns None if retry_is_allowed is True,
+            otherwise raises an error. This allows the retry mechanism to handle
+            intermittent SSL handshake issues.
+          - Other URLErrors: Raises a generic communication error.
+
+        Args:
+            exception (URLError): The URLError that occurred.
+            retry_is_allowed (bool): Whether retries are still allowed. If True
+                and the error is a TLS handshake timeout, returns None to allow
+                retry. Defaults to False.
+
+        Raises:
+            ApiCommunicationError: For non-retryable errors or when retries are
+                exhausted. Includes timeout settings for timeout errors.
+
+        Returns:
+            None: When retry_is_allowed is True and the error is a TLS handshake
+                timeout. This allows the retry loop to continue.
+        """
+        try:
+            reason = str(exception.reason)
+        except AttributeError:
+            reason = None
+
+        if reason == "timed out":
+            raise ApiCommunicationError(
+                exception=exception,
+                message="The request to the ServiceNow instance timed out.",
+                method=self.method,
+                path=self.path,
+                timeout_setting=self.request_kwargs.get("timeout", "unknown"),
+            )
+
+        if reason and reason.endswith("The handshake operation timed out"):
+            if retry_is_allowed:
+                return
+
+            raise ApiCommunicationError(
+                exception=exception,
+                message="Failed to communicate with instance. The TLS handshake operation timed out.",
+                method=self.method,
+                path=self.path,
+            )
+
+        self._raise_generic_communication_error(exception)
+
+    def _handle_ssl_error(self, exception):
+        """
+        Handle SSL/TLS related errors.
+
+        This method provides specific error messages for SSL errors, particularly
+        when client certificates are involved. SSL handshake timeouts are
+        typically handled by _handle_request_urlerror when they manifest as
+        URLErrors, but direct ssl.SSLError exceptions are handled here.
+
+        Args:
+            exception (ssl.SSLError): The SSL error that occurred.
+
+        Raises:
+            ServiceNowError: When client certificates are configured, with a
+                message suggesting certificate/key file issues.
+            ApiCommunicationError: For other SSL errors, with generic error
+                information.
+        """
+        if self.request_kwargs.get("client_cert"):
+            raise ServiceNowError(
+                "Failed to communicate with instance due to SSL error, likely related to the client certificate or key. "
+                "Ensure the files are accessible on the Ansible host and in the correct format (see module documentation)."
+            )
+
+        self._raise_generic_communication_error(exception)

@@ -7,9 +7,25 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import json
+
 
 class ServiceNowError(Exception):
-    pass
+    def __init__(self, message):
+        super().__init__(message)
+        self.is_retryable = False
+
+    def to_module_fail_json_output(self):
+        return {
+            "msg": str(self),
+        }
+
+    def _is_jsonable(self, x):
+        try:
+            _ = json.dumps(x)  # pylint: disable=disallowed-name
+            return True
+        except Exception:
+            return False
 
 
 class AuthError(ServiceNowError):
@@ -20,3 +36,36 @@ class UnexpectedAPIResponse(ServiceNowError):
     def __init__(self, status, data):
         self.message = "Unexpected response - {0} {1}".format(status, data)
         super(UnexpectedAPIResponse, self).__init__(self.message)
+
+
+class ApiCommunicationError(ServiceNowError):
+    def __init__(self, exception, message=None, method=None, path=None, **kwargs):
+        self.message = (
+            message
+            or "An unexpected error occurred while communicating with the ServiceNow API."
+        )
+        super().__init__(self.message)
+        self.exception = exception
+        self.method = method
+        self.path = path
+        self.kwargs = kwargs
+
+    def to_module_fail_json_output(self):
+        return {
+            "msg": self.message,
+            "exception_info": {
+                "message": str(self.exception),
+                "type": self.exception.__class__.__name__,
+            },
+            "debug_info": {
+                "method": self.method,
+                "path": self.path,
+                **{k: v for k, v in self.kwargs.items() if self._is_jsonable(v)},
+            },
+        }
+
+
+class ApiHandshakeTimeoutError(ApiCommunicationError):
+    def __init__(self, exception, message=None, method=None, path=None, **kwargs):
+        super().__init__(exception, message, method, path, **kwargs)
+        self.is_retryable = True
