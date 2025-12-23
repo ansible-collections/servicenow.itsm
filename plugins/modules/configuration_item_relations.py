@@ -80,7 +80,7 @@ options:
 EXAMPLES = r"""
 - name: Create relation between two ci
   servicenow.itsm.configuration_item_relations:
-    name: Depends_On
+    name: "Depends on::Used by"
     direction: outbound
     state: present
     parent_sys_id: "{{ parent_sys_id }}"
@@ -101,7 +101,7 @@ EXAMPLES = r"""
 
 - name: Update relation by adding one more target
   servicenow.itsm.configuration_item_relations:
-    name: Depends_On
+    name: "Depends on::Used by"
     direction: outbound
     state: present
     parent_sys_id: "{{ owner_sys_id }}"
