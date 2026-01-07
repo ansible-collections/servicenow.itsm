@@ -7,7 +7,7 @@ concurrency:
 
 on:
   schedule:
-    - cron: "0 0 * * *"  # timezone is UTC
+    - cron: "0 0 * * *" # timezone is UTC
 
 jobs:
   linters:
@@ -16,16 +16,12 @@ jobs:
     uses: ./.github/workflows/sanity.yml
   units:
     uses: ./.github/workflows/units.yml
-  integrations:
-    uses: ./.github/workflows/integration.yml
-    secrets: inherit
   nightly:
     if: ${{ always() }}
     needs:
       - linters
       - sanity
       - units
-      - integrations
     runs-on: ubuntu-latest
     steps:
       - run: >-

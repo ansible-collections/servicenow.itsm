@@ -30,7 +30,7 @@ jobs:
   units:
     uses: ./.github/workflows/units.yml # use the callable units job to run tests
   integrations:
-    uses: ./.github/workflows/integration.yml
+    uses: ./.github/workflows/integration_source.yml
     secrets: inherit
     needs:
       - safe-to-test
