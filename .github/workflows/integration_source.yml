@@ -66,6 +66,7 @@ on:
 
 jobs:
   integration_source:
+    environment: protected-snow
     env:
       PY_COLORS: "1"
       source_directory: "./source"
