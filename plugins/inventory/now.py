@@ -68,6 +68,15 @@ options:
           - name: SN_PASSWORD
         required: false
         type: str
+      api_key:
+        description:
+          - ServiceNow API key for direct authentication.
+          - Used for direct API keys that require x-sn-apikey headers.
+          - If not set, the value of the C(SN_API_KEY) environment
+            variable will be used.
+        type: str
+        env:
+          - name: SN_API_KEY
       client_id:
         description:
           - ID of the client application used for OAuth authentication.
@@ -828,6 +837,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             host=os.getenv("SN_HOST"),
             username=os.getenv("SN_USERNAME"),
             password=os.getenv("SN_PASSWORD"),
+            api_key=os.getenv("SN_API_KEY"),
             client_id=os.getenv("SN_CLIENT_ID"),
             client_secret=get_secret_from_env(),
             refresh_token=os.getenv("SN_REFRESH_TOKEN"),
