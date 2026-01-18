@@ -1,0 +1,4 @@
+---
+bugfixes:
+  - plugins/inventory/now - Add support for api_key authentication in the inventory plugin.
+    Fixes https://github.com/ansible-collections/servicenow.itsm/issues/527
