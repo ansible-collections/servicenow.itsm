@@ -9,7 +9,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = r"""
-module: api_info
+module: api_info -DUMMY CHANGE
 
 author:
   - Tjaž Eržen (@tjazsch)
