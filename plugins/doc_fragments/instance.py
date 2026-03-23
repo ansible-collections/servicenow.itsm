@@ -128,4 +128,14 @@ options:
         default: True
         type: bool
         version_added: '2.3.0'
+notes:
+  - When a GET request URL exceeds 2048 characters (common with large
+    C(sysparm_query) values containing many SysIDs), the request is automatically
+    shortened via the ServiceNow TinyURL API (C(api/now/tinyurl)).
+    This happens transparently and requires no changes to your playbook.
+  - "Prerequisite: TinyURL support must be enabled on the ServiceNow instance.
+    For instructions, refer to
+    U(https://www.servicenow.com/docs/r/platform-user-interface/t_EnableTinyURLSupport.html)."
+  - If TinyURL support is not enabled and a query exceeds the URL length limit,
+    the request will fail.
 """

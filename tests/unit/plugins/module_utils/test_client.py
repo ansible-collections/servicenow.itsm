@@ -613,6 +613,96 @@ class TestClientDelete:
         )
 
 
+class TestBuildUrl:
+    def test_path_only(self):
+        c = client.Client("https://instance.com", "user", "pass")
+        url = c._build_url("api/now/table/incident")
+        assert url == "https://instance.com/api/now/table/incident"
+
+    def test_path_and_query(self):
+        c = client.Client("https://instance.com", "user", "pass")
+        url = c._build_url(
+            "api/now/table/incident", query=dict(sysparm_query="active=true")
+        )
+        assert url.startswith("https://instance.com/api/now/table/incident?")
+        assert "sysparm_query=active%3Dtrue" in url
+
+
+class TestCreateTinyurl:
+    def test_extracts_sysparm_tiny(self, mocker):
+        c = client.Client("https://instance.com", "user", "pass")
+        tinyurl_response = client.Response(
+            200,
+            '{"result": "incident_list.do?sysparm_tiny=abc123"}',
+            None,
+        )
+        request_mock = mocker.patch.object(c, "request")
+        request_mock.return_value = tinyurl_response
+
+        tiny_value = c._create_tinyurl(
+            "https://instance.com/api/now/table/incident?sysparm_query=x"
+        )
+
+        assert tiny_value == "abc123"
+        request_mock.assert_called_once_with(
+            "POST",
+            "api/now/tinyurl",
+            data={"url": "https://instance.com/api/now/table/incident?sysparm_query=x"},
+        )
+
+    def test_missing_sysparm_tiny_raises(self, mocker):
+        c = client.Client("https://instance.com", "user", "pass")
+        tinyurl_response = client.Response(200, '{"result": "some_path.do"}', None)
+        mocker.patch.object(c, "request", return_value=tinyurl_response)
+
+        with pytest.raises(errors.ServiceNowError, match="missing sysparm_tiny"):
+            c._create_tinyurl("https://instance.com/some/long/url")
+
+    def test_error_propagates(self, mocker):
+        c = client.Client("https://instance.com", "user", "pass")
+        mocker.patch.object(c, "request", return_value=client.Response(500, "error"))
+
+        with pytest.raises(errors.UnexpectedAPIResponse, match="error"):
+            c._create_tinyurl("https://instance.com/some/url")
+
+
+class TestGetTinyurlFallback:
+    def test_short_url_no_tinyurl(self, mocker):
+        c = client.Client("https://instance.com", "user", "pass")
+        mock_response = client.Response(200, '{"result": []}', None)
+        request_mock = mocker.patch.object(c, "request")
+        request_mock.return_value = mock_response
+        create_mock = mocker.patch.object(c, "_create_tinyurl")
+
+        resp = c.get("api/now/table/incident", query=dict(sysparm_query="short"))
+
+        assert resp == mock_response
+        create_mock.assert_not_called()
+        request_mock.assert_called_once_with(
+            "GET",
+            "api/now/table/incident",
+            query=dict(sysparm_query="short"),
+        )
+
+    def test_long_url_uses_tinyurl(self, mocker):
+        c = client.Client("https://instance.com", "user", "pass")
+        long_query = "sys_idIN" + ",".join(["a" * 32] * 100)
+        mock_response = client.Response(200, '{"result": []}', None)
+        request_mock = mocker.patch.object(c, "request")
+        request_mock.return_value = mock_response
+        mocker.patch.object(c, "_create_tinyurl", return_value="xyz789")
+
+        resp = c.get("api/now/table/incident", query=dict(sysparm_query=long_query))
+
+        assert resp == mock_response
+        c._create_tinyurl.assert_called_once()
+        request_mock.assert_called_once_with(
+            "GET",
+            "api/now/table/incident",
+            query={"sysparm_tiny": "xyz789"},
+        )
+
+
 class TestClientValidateCerts:
     @pytest.mark.parametrize("value", [True, False])
     def test_validate_certs(self, create_module, value):
