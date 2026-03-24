@@ -1,0 +1,8 @@
+---
+minor_changes:
+  - client - Automatically use ServiceNow TinyURL API (``api/now/tinyurl``) when
+    a GET request URL exceeds 2048 characters. This allows modules like
+    ``api_info`` to handle complex queries with many SysIDs without hitting
+    ``414 URI Too Long`` errors. TinyURL support must be enabled on the
+    ServiceNow instance
+    (https://www.servicenow.com/docs/r/platform-user-interface/t_EnableTinyURLSupport.html).

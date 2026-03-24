@@ -66,6 +66,19 @@
         that:
           - result.record | length == 1
 
+    - name: Retrieve incident with a long query that triggers tinyurl fallback
+      servicenow.itsm.api_info:
+        resource: incident
+        sysparm_query: "sys_id={{ first_incident.record.sys_id }}{{ '^ORsys_id=00000000000000000000000000000000' * 80 }}"
+        columns:
+          - sys_id
+          - short_description
+      register: tinyurl_result
+    - ansible.builtin.assert:
+        that:
+          - tinyurl_result.record | length == 1
+          - tinyurl_result.record.0.sys_id == first_incident.record.sys_id
+
     - name: Update the incident (check mode)
       servicenow.itsm.api: &api-update-data
         resource: incident

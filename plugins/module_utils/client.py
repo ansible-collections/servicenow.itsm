@@ -13,7 +13,7 @@ import time
 import logging
 
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote, urlencode
+from urllib.parse import quote, urlencode, parse_qsl
 from ansible.module_utils.urls import Request, basic_auth_header
 
 from .errors import (
@@ -26,6 +26,7 @@ from .errors import (
 logger = logging.getLogger(__name__)
 
 DEFAULT_HEADERS = dict(Accept="application/json")
+MAX_URL_LENGTH = 2048
 
 
 class Response:
@@ -359,8 +360,42 @@ class Client:
             data = bytes
         return self._request(method, url, data=data, headers=headers)
 
+    def _build_url(self, path, query=None):
+        escaped_path = quote(path.strip("/"))
+        if escaped_path:
+            escaped_path = f"/{escaped_path}"
+        url = f"{self.host}{escaped_path}"
+        if query:
+            url = f"{url}?{urlencode(query)}"
+        return url
+
+    def _create_tinyurl(self, full_url):
+        """
+        Create a tiny URL for a given full URL
+        """
+        resp = self.request("POST", "api/now/tinyurl", data={"url": full_url})
+        if resp.status not in (200, 201):
+            raise UnexpectedAPIResponse(resp.status, resp.data)
+        result = resp.json.get("result", "")
+        # Response is like "incident_list.do?sysparm_tiny=abc123"
+        # Extract sysparm_tiny value to use with the original REST API path,
+        # because the .do path returns HTML, not JSON.
+        params = dict(parse_qsl(result.split("?", 1)[1])) if "?" in result else {}
+        tiny_value = params.get("sysparm_tiny")
+        if not tiny_value:
+            raise ServiceNowError(
+                f"TinyURL response missing sysparm_tiny parameter: '{result}'"
+            )
+        return tiny_value
+
     def get(self, path, query=None):
-        resp = self.request("GET", path, query=query)
+        url = self._build_url(path, query)
+        if len(url) > MAX_URL_LENGTH:
+            sysparm_tiny = self._create_tinyurl(url)
+            resp = self.request("GET", path, query={"sysparm_tiny": sysparm_tiny})
+        else:
+            self.tinyurl_info = dict(used=False, url_length=len(url))
+            resp = self.request("GET", path, query=query)
         if resp.status in (200, 404):
             return resp
         raise UnexpectedAPIResponse(resp.status, resp.data)
