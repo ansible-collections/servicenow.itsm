@@ -370,6 +370,9 @@ class Client:
         return url
 
     def _create_tinyurl(self, full_url):
+        """
+        Create a tiny URL for a given full URL
+        """
         resp = self.request("POST", "api/now/tinyurl", data={"url": full_url})
         if resp.status not in (200, 201):
             raise UnexpectedAPIResponse(resp.status, resp.data)
