@@ -81,7 +81,7 @@ jobs:
     env:
       PY_COLORS: "1"
       source_directory: "./source"
-      collection_base_dir: "/home/runner/collections"
+      collection_base_dir: "/home/runner/.ansible/collections"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
