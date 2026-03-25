@@ -221,6 +221,12 @@ options:
     description:
       - The column to use for inventory hostnames.
     default: name
+  lowercase_hostname:
+    description:
+      - Whether to convert the inventory hostname to lowercase.
+    type: bool
+    default: false
+    version_added: 2.14.0
   query:
     description:
       - Provides a set of operators for use with filters, condition builders, and encoded queries.
@@ -265,6 +271,24 @@ plugin: servicenow.itsm.now
 #  |  |--INSIGHT-NY-03
 #  |  |--MailServerUS
 #  |  |--VMWARE-SD-04
+
+
+# Lowercase all inventory hostnames for consistency across mixed-case
+# ServiceNow records.
+plugin: servicenow.itsm.now
+lowercase_hostname: true
+columns:
+  - name
+  - ip_address
+
+# `ansible-inventory -i inventory.now.yaml --graph` output:
+# @all:
+#  |--@ungrouped:
+#  |  |--databaseserver1
+#  |  |--databaseserver2
+#  |  |--insight-ny-03
+#  |  |--mailserverus
+#  |  |--vmware-sd-04
 
 
 # Group hosts automatically, according to values of the manufacturer column.
@@ -727,7 +751,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             )
         return False
 
-    def add_host(self, record, name_source):
+    def add_host(self, record, name_source, lowercase=False):
         if not record:
             return None
 
@@ -736,14 +760,19 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             raise AnsibleParserError(msg.format(name_source))
 
         inventory_hostname = record[name_source]
-        if inventory_hostname:
-            host = self.inventory.add_host(inventory_hostname)
-            return host
+        if not inventory_hostname:
+            self.display.warning(
+                "Skipping host {0} due to empty {1}".format(
+                    record["sys_id"], name_source
+                )
+            )
+            return None
 
-        self.display.warning(
-            "Skipping host {0} due to empty {1}".format(record["sys_id"], name_source)
-        )
-        return None
+        if lowercase:
+            inventory_hostname = inventory_hostname.lower()
+
+        host = self.inventory.add_host(inventory_hostname)
+        return host
 
     def set_hostvars(self, host, record, columns):
         missing = set(columns).difference(record)
@@ -771,12 +800,13 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         strict,
         enhanced,
         aggregation,
+        lowercase=False,
     ):
         if aggregation:
             aggregator = Aggregator(columns)
 
         for record in records:
-            host = self.add_host(record, name_source)
+            host = self.add_host(record, name_source, lowercase=lowercase)
             if host:
                 if aggregation:
                     self.set_host_vars_aggregated(host, record, columns, aggregator)
@@ -886,6 +916,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
         enhanced = self.get_option("enhanced")
         aggregation = self.get_option("aggregation")
         name_source = self.get_option("inventory_hostname_source")
+        lowercase = self.get_option("lowercase_hostname")
         columns = self.get_option("columns")
         if not hasattr(self, "_cache"):
             self._cache = dict()
@@ -915,6 +946,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             self.get_option("strict"),
             enhanced,
             aggregation,
+            lowercase=lowercase,
         )
 
     def __ingest_inventory_config(self, path, cache):

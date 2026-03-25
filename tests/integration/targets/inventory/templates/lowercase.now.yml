@@ -1,0 +1,14 @@
+---
+plugin: servicenow.itsm.now
+table: cmdb_ci_server
+lowercase_hostname: true
+
+columns:
+  - name
+  - ip_address
+
+sysparm_query: nameSTARTSWITH{{ unique_test_id }}
+instance:
+  host: "{{ sn_host }}"
+  username: "{{ sn_username }}"
+  password: "{{ sn_password }}"
