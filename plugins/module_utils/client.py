@@ -281,13 +281,16 @@ class Client:
         access_token = resp.json["access_token"]
         return self._login_token(access_token, is_api_key=False)
 
+    def _log(self, msg):
+        if self.display:
+            self.display.vvv(msg)
+
     def _request(self, method, path, data=None, headers=None):
         # Check if connection should be refreshed
         if self._should_refresh_connection():
             self._refresh_connection()
 
-        if self.display:
-            self.display.vvv(f"ServiceNow: {method} {path}")
+        self._log(f"ServiceNow: {method} {path}")
 
         request_kwargs = {
             "data": data,
@@ -326,10 +329,7 @@ class Client:
                 break
 
         request_elapsed = time.perf_counter() - request_start
-        if self.display:
-            self.display.vvv(
-                "ServiceNow: Request completed in {0:.3f}s".format(request_elapsed)
-            )
+        self._log(f"ServiceNow: Request completed in {request_elapsed:.3f}s")
 
         # Increment request count for connection management
         self._request_count += 1
@@ -340,10 +340,7 @@ class Client:
             raw_resp.status, raw_resp.read(), raw_resp.headers, self.json_decoder_hook
         )
         parse_elapsed = time.perf_counter() - parse_start
-        if self.display:
-            self.display.vvv(
-                "ServiceNow: Response parsed in {0:.3f}s".format(parse_elapsed)
-            )
+        self._log(f"ServiceNow: Response parsed in {parse_elapsed:.3f}s")
 
         # Add to response cache and cleanup if needed
         self._response_cache.append(response)

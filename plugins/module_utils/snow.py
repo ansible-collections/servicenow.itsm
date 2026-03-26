@@ -92,7 +92,7 @@ class SNowClient:
                 api_path,
                 query=dict(base_query, sysparm_offset=offset),
             )
-            
+
             # Yield records one by one
             batch = response.json["result"]
             yield from batch
