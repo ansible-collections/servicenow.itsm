@@ -1,0 +1,6 @@
+---
+minor_changes:
+  - now - Add ``display.vvv`` debug logging to the inventory plugin. When
+    running with ``-vvv``, logs the request URL, API response latency, response
+    parse time, and per-batch pagination progress to help diagnose slow
+    inventory syncs.
