@@ -101,6 +101,7 @@ class Client:
         json_decoder_hook=None,
         connection_timeout=300,  # 5 minutes
         max_retries=3,
+        display=None,
     ):
         if not (host or "").startswith(("https://", "http://")):
             raise ServiceNowError(
@@ -127,6 +128,7 @@ class Client:
         self.json_decoder_hook = json_decoder_hook
         self.connection_timeout = connection_timeout
         self.max_retries = max_retries
+        self.display = display
 
         self._auth_header = None
         self._client = Request()
@@ -284,6 +286,9 @@ class Client:
         if self._should_refresh_connection():
             self._refresh_connection()
 
+        if self.display:
+            self.display.vvv(f"ServiceNow: {method} {path}")
+
         request_kwargs = {
             "data": data,
             "headers": headers,
@@ -293,6 +298,7 @@ class Client:
             "client_key": self.client_key_file,
         }
         request_error_handler = ClientRequestErrorHandler(method, path, request_kwargs)
+        request_start = time.perf_counter()
         for attempt in range(self.max_retries + 1):
             try:
                 raw_resp = self._client.open(method, path, **request_kwargs)
@@ -319,13 +325,25 @@ class Client:
                 # and the loop can be exited
                 break
 
+        request_elapsed = time.perf_counter() - request_start
+        if self.display:
+            self.display.vvv(
+                "ServiceNow: Request completed in {0:.3f}s".format(request_elapsed)
+            )
+
         # Increment request count for connection management
         self._request_count += 1
 
         # Create response and track it for cleanup
+        parse_start = time.perf_counter()
         response = Response(
             raw_resp.status, raw_resp.read(), raw_resp.headers, self.json_decoder_hook
         )
+        parse_elapsed = time.perf_counter() - parse_start
+        if self.display:
+            self.display.vvv(
+                "ServiceNow: Response parsed in {0:.3f}s".format(parse_elapsed)
+            )
 
         # Add to response cache and cleanup if needed
         self._response_cache.append(response)

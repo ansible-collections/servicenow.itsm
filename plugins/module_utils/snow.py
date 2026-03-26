@@ -28,6 +28,13 @@ class SNowClient:
         gc.collect()
         logger.debug("Memory cleanup performed")
 
+    def _log_batch(self, batch_size, offset, total):
+        display = getattr(self.client, "display", None)
+        if display:
+            display.vvv(
+                f"ServiceNow: Fetched {batch_size} records (offset={offset}, total={total})"
+            )
+
     def list(self, api_path, query=None):
         if self.memory_efficient:
             return self.list_generator(api_path, query)
@@ -49,7 +56,8 @@ class SNowClient:
                 query=dict(base_query, sysparm_offset=offset),
             )
 
-            result.extend(response.json["result"])
+            batch = response.json["result"]
+            result.extend(batch)
             # This is a header only for Table API.
             # When using this client for generic api, the header is not present anymore
             # and we need to find a new method to break from the loop
@@ -57,8 +65,10 @@ class SNowClient:
             if "x-total-count" in response.headers:
                 total = int(response.headers["x-total-count"])
             else:
-                if len(response.json["result"]) == 0:
+                if len(batch) == 0:
                     break
+
+            self._log_batch(len(batch), offset, total)
 
             offset += self.batch_size
 
@@ -82,9 +92,10 @@ class SNowClient:
                 api_path,
                 query=dict(base_query, sysparm_offset=offset),
             )
-
+            
             # Yield records one by one
-            yield from response.json["result"]
+            batch = response.json["result"]
+            yield from batch
 
             # This is a header only for Table API.
             # When using this client for generic api, the header is not present anymore
@@ -93,8 +104,10 @@ class SNowClient:
             if "x-total-count" in response.headers:
                 total = int(response.headers["x-total-count"])
             else:
-                if len(response.json["result"]) == 0:
+                if len(batch) == 0:
                     break
+
+            self._log_batch(len(batch), offset, total)
 
             offset += self.batch_size
 
