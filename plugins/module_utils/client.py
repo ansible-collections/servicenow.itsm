@@ -218,6 +218,7 @@ class Client:
     @property
     def auth_header(self):
         if not self._auth_header or self._is_oauth_token_expired():
+            self._log("Requesting new OAuth token")
             self._auth_header = self._login()
         return self._auth_header
 
@@ -289,8 +290,7 @@ class Client:
         expires_in = resp.json.get("expires_in")
         if expires_in:
             self._token_expiry_time = time.time() + int(expires_in)
-            # TODO: Replace with display.vvv() after rebase
-            logger.debug("OAuth token expires in %s seconds", expires_in)
+            self._log("OAuth token expires in %s seconds" % expires_in)
         return self._login_token(access_token, is_api_key=False)
 
     def _log(self, msg):
@@ -391,7 +391,7 @@ class Client:
         except AuthError:
             if not (self.client_id and self.client_secret):
                 raise
-            # TODO: ADD display.warning() after rebase
+            self._log("OAuth token rejected (401), attempting re-authentication")
             self._auth_header = None
             self._token_expiry_time = None
             headers.update(self.auth_header)
