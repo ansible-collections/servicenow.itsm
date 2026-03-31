@@ -1027,7 +1027,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
 
     def __create_table_client(self):
         try:
-            client = Client(**self._get_instance())
+            client = Client(**self._get_instance(), display=self.display)
         except ServiceNowError as e:
             raise AnsibleParserError(e)
 

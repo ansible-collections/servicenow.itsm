@@ -101,6 +101,7 @@ class Client:
         json_decoder_hook=None,
         connection_timeout=300,  # 5 minutes
         max_retries=3,
+        display=None,
     ):
         if not (host or "").startswith(("https://", "http://")):
             raise ServiceNowError(
@@ -127,6 +128,7 @@ class Client:
         self.json_decoder_hook = json_decoder_hook
         self.connection_timeout = connection_timeout
         self.max_retries = max_retries
+        self.display = display
 
         self._auth_header = None
         self._client = Request()
@@ -279,10 +281,16 @@ class Client:
         access_token = resp.json["access_token"]
         return self._login_token(access_token, is_api_key=False)
 
+    def _log(self, msg):
+        if self.display:
+            self.display.vvv(msg)
+
     def _request(self, method, path, data=None, headers=None):
         # Check if connection should be refreshed
         if self._should_refresh_connection():
             self._refresh_connection()
+
+        self._log(f"ServiceNow: {method} {path}")
 
         request_kwargs = {
             "data": data,
@@ -293,6 +301,7 @@ class Client:
             "client_key": self.client_key_file,
         }
         request_error_handler = ClientRequestErrorHandler(method, path, request_kwargs)
+        request_start = time.perf_counter()
         for attempt in range(self.max_retries + 1):
             try:
                 raw_resp = self._client.open(method, path, **request_kwargs)
@@ -319,13 +328,19 @@ class Client:
                 # and the loop can be exited
                 break
 
+        request_elapsed = time.perf_counter() - request_start
+        self._log(f"ServiceNow: Request completed in {request_elapsed:.3f}s")
+
         # Increment request count for connection management
         self._request_count += 1
 
         # Create response and track it for cleanup
+        parse_start = time.perf_counter()
         response = Response(
             raw_resp.status, raw_resp.read(), raw_resp.headers, self.json_decoder_hook
         )
+        parse_elapsed = time.perf_counter() - parse_start
+        self._log(f"ServiceNow: Response parsed in {parse_elapsed:.3f}s")
 
         # Add to response cache and cleanup if needed
         self._response_cache.append(response)
