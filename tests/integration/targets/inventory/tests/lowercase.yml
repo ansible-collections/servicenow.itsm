@@ -1,0 +1,36 @@
+---
+- name: Test lowercase_hostname
+  block:
+    - name: Create servers with mixed-case names
+      servicenow.itsm.configuration_item:
+        name: "{{ resource_prefix }}-{{ item }}"
+        sys_class_name: cmdb_ci_server
+        ip_address: 10.1.0.{{ idx }}
+      loop:
+        - UPPER
+        - lower
+        - MiXeD
+      loop_control:
+        index_var: idx
+      register: servers
+
+    - name: Reload inventory
+      ansible.builtin.include_tasks: ../tasks/refresh_inventory.yml
+
+    - name: Verify all hostnames are lowercase
+      ansible.builtin.assert:
+        that:
+          - "(resource_prefix + '-upper') in hostvars"
+          - "(resource_prefix + '-lower') in hostvars"
+          - "(resource_prefix + '-mixed') in hostvars"
+          - "(resource_prefix + '-UPPER') not in hostvars"
+          - "(resource_prefix + '-MiXeD') not in hostvars"
+
+  always:
+    - name: Delete servers
+      servicenow.itsm.configuration_item:
+        state: absent
+        sys_id: "{{ item.record.sys_id }}"
+      loop: "{{ servers.results }}"
+      loop_control:
+        label: "{{ item.record.name }}"

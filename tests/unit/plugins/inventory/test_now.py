@@ -129,6 +129,27 @@ class TestInventoryModuleAddHost:
                 "invalid_name",
             )
 
+    def test_lowercase_hostname(self, inventory_plugin):
+        host = inventory_plugin.add_host(
+            dict(name="SERVER01", sys_id="123"),
+            "name",
+            lowercase=True,
+        )
+
+        assert host == "server01"
+        assert inventory_plugin.inventory.get_host("server01") is not None
+        assert inventory_plugin.inventory.get_host("SERVER01") is None
+
+    def test_lowercase_hostname_false(self, inventory_plugin):
+        host = inventory_plugin.add_host(
+            dict(name="SERVER01", sys_id="123"),
+            "name",
+            lowercase=False,
+        )
+
+        assert host == "SERVER01"
+        assert inventory_plugin.inventory.get_host("SERVER01") is not None
+
 
 class TestInventoryModuleSetHostvars:
     def test_valid(self, inventory_plugin):
@@ -464,6 +485,39 @@ class TestInventoryModuleFillConstructed:
         assert set(a2_groups) == set()
 
         assert a2.vars == dict(inventory_file=None, inventory_dir=None)
+
+    def test_construction_host_lowercase(self, inventory_plugin):
+        records = [
+            dict(sys_id="1", fqdn="ServerA"),
+            dict(sys_id="2", fqdn="SERVERB"),
+            dict(sys_id="3", fqdn="serverc"),
+        ]
+
+        columns = []
+        name_source = "fqdn"
+        compose = {}
+        groups = {}
+        keyed_groups = []
+        strict = False
+        enhanced = False
+        aggregation = False
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+            aggregation,
+            lowercase=True,
+        )
+
+        assert set(inventory_plugin.inventory.hosts) == set(
+            ("servera", "serverb", "serverc")
+        )
 
     def test_construction_hostvars(self, inventory_plugin):
         records = [
