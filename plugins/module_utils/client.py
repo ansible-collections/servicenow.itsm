@@ -296,6 +296,8 @@ class Client:
     def _log(self, msg):
         if self.display:
             self.display.vvv(msg)
+        else:
+            logger.debug(msg)
 
     def _request(self, method, path, data=None, headers=None):
         # Check if connection should be refreshed
