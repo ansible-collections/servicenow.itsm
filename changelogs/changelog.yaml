@@ -408,6 +408,36 @@ releases:
     - 517-fix-timezone-lookup.yml
     - release_summary.yml
     release_date: '2025-11-11'
+  2.14.0:
+    changes:
+      bugfixes:
+      - plugins/inventory/now - Add support for api_key authentication in the inventory
+        plugin. Fixes https://github.com/ansible-collections/servicenow.itsm/issues/527
+      minor_changes:
+      - client - Automatically use ServiceNow TinyURL API (``api/now/tinyurl``) when
+        a GET request URL exceeds 2048 characters. This allows modules like ``api_info``
+        to handle complex queries with many SysIDs without hitting ``414 URI Too Long``
+        errors. TinyURL support must be enabled on the ServiceNow instance (https://www.servicenow.com/docs/r/platform-user-interface/t_EnableTinyURLSupport.html).
+      - now - Add ``display.vvv`` debug logging to the inventory plugin. When running
+        with ``-vvv``, logs the request URL, API response latency, response parse
+        time, and per-batch pagination progress to help diagnose slow inventory syncs.
+      - now - Add ``lowercase_hostname`` option to the inventory plugin to convert
+        hostnames to lowercase for consistent naming across mixed-case ServiceNow
+        records.
+      - now - return nothing in add_host when record is an empty data type or of NoneType
+      release_summary: Add TinyURL fallback for long GET requests, OAuth token auto-refresh
+        for EDA rulebook activations, and an HTTP retry mechanism to the client. The
+        inventory plugin gains a ``lowercase_hostname`` option, ``api_key`` authentication
+        support, and verbose debug logging.
+    fragments:
+    - 01182026-inven.yml
+    - 03222026-tinyurl-fallback.yml
+    - 03252026-inventory-debug-logging.yml
+    - 03252026-lowercase-hostname-inventory.yml
+    - 12022025-fix-depends-on-docs.yml
+    - 521_return_none_on_empty_record.yml
+    - release_summary.yml
+    release_date: '2026-04-13'
   2.2.0:
     changes:
       minor_changes:

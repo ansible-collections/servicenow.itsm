@@ -4,13 +4,34 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.14.0
+=======
+
+Release Summary
+---------------
+
+Add TinyURL fallback for long GET requests, OAuth token auto-refresh for EDA rulebook activations, and an HTTP retry mechanism to the client. The inventory plugin gains a ``lowercase_hostname`` option, ``api_key`` authentication support, and verbose debug logging.
+
+Minor Changes
+-------------
+
+- client - Automatically use ServiceNow TinyURL API (``api/now/tinyurl``) when a GET request URL exceeds 2048 characters. This allows modules like ``api_info`` to handle complex queries with many SysIDs without hitting ``414 URI Too Long`` errors. TinyURL support must be enabled on the ServiceNow instance (https://www.servicenow.com/docs/r/platform-user-interface/t_EnableTinyURLSupport.html).
+- now - Add ``display.vvv`` debug logging to the inventory plugin. When running with ``-vvv``, logs the request URL, API response latency, response parse time, and per-batch pagination progress to help diagnose slow inventory syncs.
+- now - Add ``lowercase_hostname`` option to the inventory plugin to convert hostnames to lowercase for consistent naming across mixed-case ServiceNow records.
+- now - return nothing in add_host when record is an empty data type or of NoneType
+
+Bugfixes
+--------
+
+- plugins/inventory/now - Add support for api_key authentication in the inventory plugin. Fixes https://github.com/ansible-collections/servicenow.itsm/issues/527
+
 v2.13.2
 =======
 
 Release Summary
 ---------------
 
-Allow ServiceNow timezone to be passed via parameter (remote_servicenow_timezone) to the plugin. Clarify error message to indicate that it must be set explicitly (either as a user setting or as the system default) in ServiceNow if not passed in via parameter.
+Allow ServiceNow timezone to be passed via parameter (remote_servicenow_timezone) to the plugin. Clarify error message to indicate that it must be set explicitly (that is, not to the system default) in the ServiceNow user record if not passed in via parameter.
 
 Bugfixes
 --------

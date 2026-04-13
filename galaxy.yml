@@ -1,6 +1,6 @@
 namespace: servicenow
 name: itsm
-version: 2.13.2
+version: 2.14.0
 readme: README.md
 authors:
   - Cosmin Tupangiu <ctupangi@redhat.com>
@@ -17,8 +17,13 @@ repository: https://github.com/ansible-collections/servicenow.itsm
 homepage: https://github.com/ansible-collections/servicenow.itsm
 issues: https://github.com/ansible-collections/servicenow.itsm/issues
 build_ignore:
+  - .ansible
+  - .claude
+  - .cursor
   - .gitignore
+  - .vscode
   - changelogs/.plugin-cache.yaml
   - tests/integration/targets/*/test_session
   - tests/integration/targets/*/roles
   - tests/integration/integration_config.yml
+  - .pytest_cache

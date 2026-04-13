@@ -1,4 +1,0 @@
----
-
-minor_changes:
-  - now - return nothing in add_host when record is an empty data type or of NoneType

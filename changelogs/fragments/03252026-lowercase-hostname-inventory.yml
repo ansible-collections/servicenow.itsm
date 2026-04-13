@@ -1,4 +1,0 @@
----
-minor_changes:
-  - now - Add ``lowercase_hostname`` option to the inventory plugin to convert
-    hostnames to lowercase for consistent naming across mixed-case ServiceNow records.
