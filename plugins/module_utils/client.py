@@ -131,6 +131,8 @@ class Client:
         self.display = display
 
         self._auth_header = None
+        self._token_expiry_time = None
+        self._token_refresh_margin = 60  # seconds before expiry to trigger refresh
         self._client = Request()
         self._connection_created = time.time()
         self._request_count = 0
@@ -208,9 +210,15 @@ class Client:
         if cleaned_count > 0:
             logger.debug("Cleaned up %d unused response objects", cleaned_count)
 
+    def _is_oauth_token_expired(self):
+        if self._token_expiry_time is None:
+            return False
+        return time.time() >= (self._token_expiry_time - self._token_refresh_margin)
+
     @property
     def auth_header(self):
-        if not self._auth_header:
+        if not self._auth_header or self._is_oauth_token_expired():
+            self._log("Requesting new OAuth token")
             self._auth_header = self._login()
         return self._auth_header
 
@@ -279,11 +287,17 @@ class Client:
             raise UnexpectedAPIResponse(resp.status, resp.data)
 
         access_token = resp.json["access_token"]
+        expires_in = resp.json.get("expires_in")
+        if expires_in:
+            self._token_expiry_time = time.time() + int(expires_in)
+            self._log("OAuth token expires in %s seconds" % expires_in)
         return self._login_token(access_token, is_api_key=False)
 
     def _log(self, msg):
         if self.display:
             self.display.vvv(msg)
+        else:
+            logger.debug(msg)
 
     def _request(self, method, path, data=None, headers=None):
         # Check if connection should be refreshed
@@ -373,7 +387,17 @@ class Client:
             headers["Content-type"] = "application/json"
         elif bytes is not None:
             data = bytes
-        return self._request(method, url, data=data, headers=headers)
+
+        try:
+            return self._request(method, url, data=data, headers=headers)
+        except AuthError:
+            if not (self.client_id and self.client_secret):
+                raise
+            self._log("OAuth token rejected (401), attempting re-authentication")
+            self._auth_header = None
+            self._token_expiry_time = None
+            headers.update(self.auth_header)
+            return self._request(method, url, data=data, headers=headers)
 
     def _build_url(self, path, query=None):
         escaped_path = quote(path.strip("/"))

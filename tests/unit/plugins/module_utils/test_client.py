@@ -274,6 +274,99 @@ class TestClientAuthHeader:
         assert c.access_token == "oauth-token-456"
         assert c.auth_header == {"Authorization": "Bearer oauth-token-456"}
 
+    def test_oauth_captures_expires_in(self, mocker):
+        resp_mock = mocker.MagicMock()
+        resp_mock.status = 200
+        resp_mock.read.return_value = '{"access_token": "tok", "expires_in": 1800}'
+
+        mocker.patch.object(client, "Request").return_value.open.return_value = (
+            resp_mock
+        )
+        mocker.patch.object(client.time, "time", return_value=10000.0)
+
+        c = client.Client(
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
+        )
+        c.auth_header
+
+        assert c._token_expiry_time == 11800.0
+
+    def test_oauth_without_expires_in(self, mocker):
+        resp_mock = mocker.MagicMock()
+        resp_mock.status = 200
+        resp_mock.read.return_value = '{"access_token": "tok"}'
+
+        mocker.patch.object(client, "Request").return_value.open.return_value = (
+            resp_mock
+        )
+
+        c = client.Client(
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
+        )
+        c.auth_header
+
+        assert c._token_expiry_time is None
+
+    def test_proactive_refresh_on_expiry(self, mocker):
+        resp_mock = mocker.MagicMock()
+        resp_mock.status = 200
+        resp_mock.read.return_value = '{"access_token": "tok1", "expires_in": 1800}'
+
+        request_mock = mocker.patch.object(client, "Request").return_value
+        request_mock.open.return_value = resp_mock
+
+        time_mock = mocker.patch.object(client.time, "time")
+        time_mock.return_value = 10000.0
+
+        c = client.Client(
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
+        )
+        c.auth_header
+        assert request_mock.open.call_count == 1
+
+        # Advance time past expiry minus margin (11800 - 60 = 11740)
+        resp_mock.read.return_value = '{"access_token": "tok2", "expires_in": 1800}'
+        time_mock.return_value = 11741.0
+        c.auth_header
+
+        assert request_mock.open.call_count == 2
+
+
+class TestOAuthTokenExpiry:
+    def test_not_expired_when_no_expiry_set(self):
+        c = client.Client("https://instance.com", "user", "pass")
+        assert c._is_oauth_token_expired() is False
+
+    def test_not_expired_before_margin(self, mocker):
+        mocker.patch.object(client.time, "time", return_value=10000.0)
+        c = client.Client("https://instance.com", "user", "pass")
+        c._token_expiry_time = 10200.0
+        assert c._is_oauth_token_expired() is False
+
+    def test_expired_within_margin(self, mocker):
+        mocker.patch.object(client.time, "time", return_value=10150.0)
+        c = client.Client("https://instance.com", "user", "pass")
+        c._token_expiry_time = 10200.0
+        assert c._is_oauth_token_expired() is True
+
+    def test_expired_past_expiry(self, mocker):
+        mocker.patch.object(client.time, "time", return_value=10300.0)
+        c = client.Client("https://instance.com", "user", "pass")
+        c._token_expiry_time = 10200.0
+        assert c._is_oauth_token_expired() is True
+
 
 class TestClientRequest:
     def test_request_without_data_success(self, mocker):
@@ -442,6 +535,66 @@ class TestClientRequest:
             },
         )
         assert resp == mock_response
+
+    def test_oauth_401_retries_with_fresh_token(self, mocker):
+        oauth_resp = mocker.MagicMock()
+        oauth_resp.status = 200
+        oauth_resp.read.return_value = '{"access_token": "new_tok", "expires_in": 1800}'
+
+        request_mock = mocker.patch.object(client, "Request").return_value
+        request_mock.open.side_effect = [
+            # First call: OAuth login (returns token)
+            oauth_resp,
+            # Second call: actual API request (returns 401)
+            HTTPError("", 401, "Unauthorized", {}, None),
+            # Third call: OAuth re-login (returns new token)
+            oauth_resp,
+            # Fourth call: retry API request (succeeds)
+            mocker.MagicMock(status=200, read=lambda: '{"result": "ok"}', headers=[]),
+        ]
+
+        c = client.Client(
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
+        )
+        resp = c.request("GET", "api/now/some/path")
+
+        assert resp.status == 200
+        assert request_mock.open.call_count == 4
+
+    def test_basic_auth_401_still_fatal(self, mocker):
+        request_mock = mocker.patch.object(client, "Request").return_value
+        request_mock.open.side_effect = HTTPError("", 401, "Unauthorized", {}, None)
+
+        c = client.Client("https://instance.com", "user", "pass")
+        with pytest.raises(errors.AuthError):
+            c.request("GET", "api/now/some/path")
+
+    def test_oauth_401_retry_fails_raises(self, mocker):
+        oauth_resp = mocker.MagicMock()
+        oauth_resp.status = 200
+        oauth_resp.read.return_value = '{"access_token": "tok", "expires_in": 1800}'
+
+        request_mock = mocker.patch.object(client, "Request").return_value
+        request_mock.open.side_effect = [
+            oauth_resp,
+            HTTPError("", 401, "Unauthorized", {}, None),
+            oauth_resp,
+            HTTPError("", 401, "Unauthorized", {}, None),
+        ]
+
+        c = client.Client(
+            "https://instance.com",
+            "user",
+            "pass",
+            client_id="id",
+            client_secret="secret",
+        )
+        with pytest.raises(errors.AuthError):
+            c.request("GET", "api/now/some/path")
 
 
 class TestClientGet:
