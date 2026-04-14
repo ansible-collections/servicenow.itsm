@@ -1,0 +1,2 @@
+minor_changes:
+  - CI - Add ansible-core stable-2.20 and stable-2.21 to integration and unit test matrices.

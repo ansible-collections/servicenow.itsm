@@ -13,7 +13,9 @@ on:
         # 2.17 supports Python 3.10-3.12
         # 2.18 supports Python 3.11-3.13
         # 2.19 supports Python 3.11-3.13
-        # This structure assumes milestone and devel are 2.19 to-be
+        # 2.20 supports Python 3.12-3.14
+        # 2.21 supports Python 3.12-3.14
+        # This structure assumes milestone and devel are 2.22 to-be
         default: >-
           [
             {
@@ -47,6 +49,30 @@ on:
             {
               "ansible-version": "stable-2.19",
               "python-version": "3.10"
+            },
+            {
+              "ansible-version": "stable-2.20",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "stable-2.20",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "stable-2.20",
+              "python-version": "3.11"
+            },
+            {
+              "ansible-version": "stable-2.21",
+              "python-version": "3.9"
+            },
+            {
+              "ansible-version": "stable-2.21",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "stable-2.21",
+              "python-version": "3.11"
             },
             {
               "ansible-version": "milestone",
@@ -91,6 +117,8 @@ jobs:
           - stable-2.16
           - stable-2.18
           - stable-2.19
+          - stable-2.20
+          - stable-2.21
           - milestone
           - devel
         python-version:
