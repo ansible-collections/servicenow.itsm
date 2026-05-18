@@ -1,0 +1,22 @@
+---
+- name: Create or update AI model CI
+  servicenow.itsm.configuration_item:
+    state: present
+    name: "{{ item.name }}"
+    sys_class_name: "{{ ai_cmdb_class_model }}"
+    category: "{{ ai_cmdb_category }}"
+    environment: "{{ ai_cmdb_environment }}"
+    install_status: "{{ ai_cmdb_install_status }}"
+    operational_status: "{{ ai_cmdb_operational_status }}"
+    short_description: "AI Model - {{ item.name }} v{{ item.version | default('latest') }}"
+    other:
+      u_model_version: "{{ item.version | default('latest') }}"
+      u_framework: "{{ item.framework | default('unknown') }}"
+      u_endpoint: "{{ item.endpoint | default(omit) }}"
+      u_model_owner: "{{ item.owner | default(omit) }}"
+      u_asset_type: "AI Factory - Model"
+      assignment_group: "{{ ai_cmdb_assigned_group }}"
+  loop: "{{ ai_cmdb_ai_models }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _cmdb_models_result

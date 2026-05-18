@@ -1,0 +1,23 @@
+---
+- name: Create or update DGX/GPU server CI
+  servicenow.itsm.configuration_item:
+    state: present
+    name: "{{ item.name }}"
+    sys_class_name: "{{ ai_cmdb_class_server }}"
+    ip_address: "{{ item.ip_address | default(omit) }}"
+    serial_number: "{{ item.serial_number | default(omit) }}"
+    category: "{{ ai_cmdb_category }}"
+    environment: "{{ ai_cmdb_environment }}"
+    install_status: "{{ ai_cmdb_install_status }}"
+    operational_status: "{{ ai_cmdb_operational_status }}"
+    short_description: "AI Factory GPU Server - {{ item.gpu_count | default(8) }}x {{ item.gpu_model | default('NVIDIA H100') }}"
+    other:
+      location: "{{ item.location | default(omit) }}"
+      u_gpu_count: "{{ item.gpu_count | default(8) }}"
+      u_gpu_model: "{{ item.gpu_model | default('NVIDIA H100') }}"
+      u_asset_type: "AI Factory - GPU Server"
+      assignment_group: "{{ ai_cmdb_assigned_group }}"
+  loop: "{{ ai_cmdb_dgx_nodes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _cmdb_nodes_result

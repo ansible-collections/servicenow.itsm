@@ -1,0 +1,40 @@
+---
+- name: Create training job failure incident in ServiceNow
+  servicenow.itsm.incident:
+    state: new
+    caller: "{{ ai_incident_caller }}"
+    short_description: >-
+      Training Job Failure - {{ ai_incident_job_id | default('Unknown Job') }}
+    description: |
+      AI Factory Training Job Failure
+
+      Job ID: {{ ai_incident_job_id | default('Unknown') }}
+      Node: {{ ai_incident_node_name | default('Unknown') }}
+      Timestamp: {{ ansible_date_time.iso8601 | default('N/A') }}
+
+      Error Details:
+      {{ ai_incident_error_details | default('Training job failed unexpectedly.') }}
+
+      Possible Causes:
+      - Out of GPU memory (OOM)
+      - GPU hardware error during training
+      - Data pipeline failure (corrupted batch, missing data)
+      - Network failure (distributed training NCCL timeout)
+      - Checkpoint storage failure
+
+      Recommended Actions:
+      1. Review training job logs for error messages
+      2. Check GPU health on the training node(s)
+      3. Verify data pipeline and storage availability
+      4. Check NCCL/InfiniBand status for multi-node jobs
+      5. Review checkpoint storage capacity
+      6. Restart job from last successful checkpoint if appropriate
+    impact: "{{ ai_incident_training_failure_impact }}"
+    urgency: "{{ ai_incident_training_failure_urgency }}"
+    assignment_group: "{{ ai_incident_assignment_group }}"
+    other:
+      category: "{{ ai_incident_training_failure_category }}"
+      subcategory: "{{ ai_incident_training_failure_subcategory }}"
+      u_job_id: "{{ ai_incident_job_id | default(omit) }}"
+      u_affected_ci: "{{ ai_incident_node_name | default(omit) }}"
+  register: _training_incident_result

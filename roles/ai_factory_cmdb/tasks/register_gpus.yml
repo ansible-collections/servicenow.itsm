@@ -1,0 +1,22 @@
+---
+- name: Create or update GPU allocation CI
+  servicenow.itsm.configuration_item:
+    state: present
+    name: "{{ item.name }}"
+    sys_class_name: "{{ ai_cmdb_class_gpu }}"
+    category: "{{ ai_cmdb_category }}"
+    environment: "{{ ai_cmdb_environment }}"
+    install_status: "{{ ai_cmdb_install_status }}"
+    operational_status: "{{ ai_cmdb_operational_status }}"
+    short_description: "GPU Allocation - {{ item.gpu_id }} on {{ item.node_name }}"
+    other:
+      u_gpu_id: "{{ item.gpu_id }}"
+      u_parent_server: "{{ item.node_name }}"
+      u_allocated_to: "{{ item.allocated_to | default('unassigned') }}"
+      u_model_name: "{{ item.model_name | default(omit) }}"
+      u_asset_type: "AI Factory - GPU"
+      assignment_group: "{{ ai_cmdb_assigned_group }}"
+  loop: "{{ ai_cmdb_gpu_allocations }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _cmdb_gpus_result
