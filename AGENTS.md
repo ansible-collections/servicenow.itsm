@@ -55,6 +55,8 @@ Subagent definitions live in `.agents/subagents/`. When a task matches a subagen
 
 Skills live in `.agents/skills/*/SKILL.md` (YAML frontmatter + instructions). At session start, scan and register all skills. When a request matches a skill's trigger, load and apply it.
 
+- **update-snow-release** — add/drop ServiceNow release support (CI matrix, README, changelog).
+
 ## Lola Skills
 
 These skills are installed by Lola and provide specialized capabilities.

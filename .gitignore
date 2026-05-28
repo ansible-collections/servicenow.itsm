@@ -19,6 +19,6 @@ tests/integration/targets/*/roles
 .opencode
 .lola
 .pytest_cache
-skills/
+/skills/
 CLAUDE.md
 GEMINI.md
