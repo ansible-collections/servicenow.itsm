@@ -1,6 +1,7 @@
 ---
 - environment:
     SN_HOST: "{{ sn_host }}"
+    SN_TIMEOUT: "{{ sn_timeout }}"
 
   block:
     # We dont care if this incident actually exists, we have other tests for that. But

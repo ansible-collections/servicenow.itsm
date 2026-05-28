@@ -2,6 +2,7 @@
     SN_HOST: "{{ sn_host }}"
     SN_USERNAME: "{{ sn_username }}"
     SN_PASSWORD: "{{ sn_password }}"
+    SN_TIMEOUT: "{{ sn_timeout }}"
 
   block:
     - name: Create test incident - check mode

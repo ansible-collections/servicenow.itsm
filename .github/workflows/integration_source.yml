@@ -227,6 +227,5 @@ jobs:
           SN_CLIENT_ID: ${{ secrets[matrix.sn_client_id_secret] }}
           SN_CLIENT_SECRET: ${{ secrets[matrix.sn_client_secret_secret] }}
           SN_API_KEY: ${{ secrets[matrix.sn_api_key_secret] }}
-          SN_TIMEOUT: 30
         run: ansible-test integration
         working-directory: ${{ steps.identify.outputs.collection_path }}
