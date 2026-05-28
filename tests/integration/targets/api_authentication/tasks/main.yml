@@ -202,6 +202,28 @@
         that:
           - bearer_result is success
 
+    - name: Verify client cert files exist
+      ansible.builtin.stat:
+        path: "{{ sn_client_certificate_file }}"
+      register: client_certificate_stat
+
+    # Needed when using ansible-test and --docker, since ansible-test doesnt actually copy the files to the container
+    - name: Setup client cert files
+      when: not client_certificate_stat.stat.exists and sn_client_certificate is defined
+      no_log: true
+      diff: false
+      block:
+        - name: Write client cert file
+          ansible.builtin.copy:
+            content: "{{ sn_client_certificate }}"
+            dest: "{{ sn_client_certificate_file }}"
+            mode: "0600"
+        - name: Write client key file
+          ansible.builtin.copy:
+            content: "{{ sn_client_key }}"
+            dest: "{{ sn_client_key_file }}"
+            mode: "0600"
+
     - name: Client cert authentication success
       servicenow.itsm.incident_info:
         number: "{{ incident_number }}"
