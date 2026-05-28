@@ -115,20 +115,23 @@ jobs:
           - "3.11"
           - "3.12"
           - "3.13"
+        # servicenow-version is the SNOW release label (job names / matrix only).
+        # GitHub secrets use PDI instance IDs (SN_*_<id>) because instances upgrade
+        # in place; when a new release ships, update the label here—not new secrets.
         servicenow-version:
-          - "xanadu"
+          - "australia"
           - "yokohama"
           - "zurich"
         include:
-          - servicenow-version: "xanadu"
-            sn_host_secret: SN_HOST_XANADU
-            sn_username_secret: SN_USERNAME_XANADU
-            sn_password_secret: SN_PASSWORD_XANADU
-            sn_client_id_secret: SN_CLIENT_ID_XANADU
-            sn_client_secret_secret: SN_CLIENT_SECRET_XANADU
-            sn_api_key_secret: SN_API_KEY_XANADU
-            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_XANADU
-            sn_client_key_secret: SN_CLIENT_KEY_XANADU
+          - servicenow-version: "australia"
+            sn_host_secret: SN_HOST_7056
+            sn_username_secret: SN_USERNAME_7056
+            sn_password_secret: SN_PASSWORD_7056
+            sn_client_id_secret: SN_CLIENT_ID_7056
+            sn_client_secret_secret: SN_CLIENT_SECRET_7056
+            sn_api_key_secret: SN_API_KEY_7056
+            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_7056
+            sn_client_key_secret: SN_CLIENT_KEY_7056
           - servicenow-version: "yokohama"
             sn_host_secret: SN_HOST_YOKOHAMA
             sn_username_secret: SN_USERNAME_YOKOHAMA
