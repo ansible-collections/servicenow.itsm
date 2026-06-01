@@ -6,101 +6,6 @@ on:
         required: false
         type: string
         default: ""
-      matrix_exclude:
-        # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
-        # 2.15 supports Python 3.9-3.11
-        # 2.16 supports Python 3.10-3.12
-        # 2.17 supports Python 3.10-3.12
-        # 2.18 supports Python 3.11-3.13
-        # 2.19 supports Python 3.11-3.13
-        # 2.20 supports Python 3.12-3.14
-        # 2.21 supports Python 3.12-3.14
-        # This structure assumes milestone and devel are 2.22 to-be
-        default: >-
-          [
-            {
-              "ansible-version": "stable-2.15",
-              "python-version": "3.12"
-            },
-            {
-              "ansible-version": "stable-2.15",
-              "python-version": "3.13"
-            },
-            {
-              "ansible-version": "stable-2.16",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.16",
-              "python-version": "3.13"
-            },
-            {
-              "ansible-version": "stable-2.18",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.18",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.19",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.19",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.20",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.20",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.20",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "stable-2.21",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.21",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.21",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.11"
-            },
-          ]
-        required: false
-        type: string
 
 jobs:
   unit_source:
@@ -112,22 +17,53 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ansible-version:
-          - stable-2.15
-          - stable-2.16
-          - stable-2.18
-          - stable-2.19
-          - stable-2.20
-          - stable-2.21
-          - milestone
-          - devel
-        python-version:
-          - "3.9"
-          - "3.10"
-          - "3.11"
-          - "3.12"
-          - "3.13"
-        exclude: ${{ fromJSON(inputs.matrix_exclude) }}
+        # Placeholder axes excluded below; valid ansible-core × Python pairs are in include.
+        # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
+        ansible-version: [""]
+        python-version: [""]
+        exclude:
+          - ansible-version: ""
+        include:
+          # ansible-core 2.15 — Python 3.9-3.11
+          - ansible-version: stable-2.15
+            python-version: "3.9"
+          - ansible-version: stable-2.15
+            python-version: "3.11"
+          # ansible-core 2.16 — Python 3.10-3.12
+          - ansible-version: stable-2.16
+            python-version: "3.10"
+          - ansible-version: stable-2.16
+            python-version: "3.12"
+          # ansible-core 2.17 — Python 3.10-3.12
+          - ansible-version: stable-2.17
+            python-version: "3.10"
+          - ansible-version: stable-2.17
+            python-version: "3.12"
+          # ansible-core 2.18 — Python 3.11-3.13
+          - ansible-version: stable-2.18
+            python-version: "3.11"
+          - ansible-version: stable-2.18
+            python-version: "3.13"
+          # ansible-core 2.19 — Python 3.11-3.13
+          - ansible-version: stable-2.19
+            python-version: "3.11"
+          - ansible-version: stable-2.19
+            python-version: "3.13"
+          # ansible-core 2.20 — Python 3.12-3.14
+          - ansible-version: stable-2.20
+            python-version: "3.12"
+          - ansible-version: stable-2.20
+            python-version: "3.14"
+          # ansible-core 2.21 — Python 3.12-3.14
+          - ansible-version: stable-2.21
+            python-version: "3.12"
+          - ansible-version: stable-2.21
+            python-version: "3.14"
+          # devel (~2.22) — Python 3.12-3.14
+          - ansible-version: devel
+            python-version: "3.12"
+          - ansible-version: devel
+            python-version: "3.14"
     continue-on-error: ${{ matrix.ansible-version == 'devel' }}
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"

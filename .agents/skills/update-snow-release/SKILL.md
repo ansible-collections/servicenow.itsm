@@ -21,8 +21,8 @@ This collection does **not** branch module code on SNOW release names. Support i
 
 | Scenario | Workflow change | GitHub secrets |
 |----------|-----------------|----------------|
-| **Upgrade existing newest PDI** (usual) | Change `servicenow-version` label only; keep `SN_*_<instance_id>` | Rename existing secrets to instance ID if still on codename; **do not** create new secrets |
-| **Add a new PDI** to the matrix | Add matrix entry + full `include` block | The user will need to create eight secrets in Github once: `SN_HOST_<id>`, `SN_USERNAME_<id>`, `SN_PASSWORD_<id>`, `SN_CLIENT_ID_<id>`, `SN_CLIENT_SECRET_<id>`, `SN_API_KEY_<id>`, `SN_CLIENT_CERTIFICATE_<id>`, `SN_CLIENT_KEY_<id>` |
+| **Upgrade existing newest PDI** (usual) | Change `servicenow-version` label only; keep `SN_*_<instance_id>` | **Do not** create or rename secrets — instances upgrade in place |
+| **Add a new PDI** to the matrix | Add matrix entry + full `include` block | Create eight secrets once in the `protected-snow` environment: `SN_HOST_<id>`, `SN_USERNAME_<id>`, `SN_PASSWORD_<id>`, `SN_CLIENT_ID_<id>`, `SN_CLIENT_SECRET_<id>`, `SN_API_KEY_<id>`, `SN_CLIENT_CERTIFICATE_<id>`, `SN_CLIENT_KEY_<id>` |
 
 Instance ID = numeric suffix from the PDI hostname (e.g. `dev7056` → `7056`).
 
@@ -57,9 +57,17 @@ include:
     # ... same pattern for all eight SN_*_<instance_id> secrets
 ```
 
-**Do not** switch secrets back to `SN_*_<RELEASE_CODENAME>` — instances upgrade in place.
+**Do not** name secrets by release codename (e.g. `SN_HOST_YOKOHAMA`) — always use the PDI instance ID suffix.
 
 Leave workflow comments above `servicenow-version` intact (they document the instance-ID convention).
+
+**Current matrix → instance mapping** (update this table when the matrix changes):
+
+| `servicenow-version` | PDI instance | Secret suffix |
+| -------------------- | ------------ | ------------- |
+| `australia`          | `dev7056`    | `_7056`       |
+| `yokohama`           | `dev7054`    | `_7054`       |
+| `zurich`             | `dev7055`    | `_7055`       |
 
 ### 2. README — compatibility table
 
@@ -111,6 +119,6 @@ The user should be able to confirm the new version is valid via the CI running i
 | Added | `australia` on instance `7056` (`SN_*_7056`) |
 | Dropped from CI | `xanadu` (same instance, upgraded in place) |
 | README | Australia `2.15.0+`; Xanadu `2.7.0 - 2.14.0`, EOL Q2 2026 |
-| Legacy secrets | Yokohama/Zurich rows may still use `SN_*_YOKOHAMA` / `SN_*_ZURICH` until migrated to instance IDs |
+| Secret naming | All matrix legs use instance ID suffixes (`SN_*_7054`, `SN_*_7055`, `SN_*_7056`), not release codenames |
 
-Prior art: upstream PR adding Zurich (dropped Washington from matrix); commit adding Xanadu to matrix.
+Prior art: upstream PR adding Zurich (dropped Washington from matrix); commit adding Xanadu to matrix; migration from `SN_*_YOKOHAMA` / `SN_*_ZURICH` to instance IDs.
