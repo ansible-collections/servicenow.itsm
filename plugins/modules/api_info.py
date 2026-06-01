@@ -239,9 +239,11 @@ from ..module_utils.api import (
 def run(module, client):
     search_dict = dict(module.params)
     if module.params["normalize_column_names"]:
-        columns = ','.join([field.lower() for field in module.params[FIELD_COLUMNS_NAME]])
+        columns = ",".join(
+            [field.lower() for field in module.params[FIELD_COLUMNS_NAME]]
+        )
     else:
-        columns = ','.join(module.params[FIELD_COLUMNS_NAME])
+        columns = ",".join(module.params[FIELD_COLUMNS_NAME])
     search_dict.update(columns=columns)
     query = utils.filter_dict(search_dict, *POSSIBLE_FILTER_PARAMETERS)
     servicenow_query = transform_query_to_servicenow_query(query)
