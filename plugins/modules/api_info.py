@@ -65,6 +65,13 @@ options:
     type: list
     elements: str
     default: []
+  normalize_column_names:
+    description:
+      - If true, the column names in O(columns) will be normalized to lowercase.
+      - This is a legacy behavior. If your column names are not lowercase, set this to false to
+        preserve the original case in the response.
+    type: bool
+    default: True
   query_category:
     description:
       - Name of the query category to use for queries.
@@ -231,7 +238,10 @@ from ..module_utils.api import (
 
 def run(module, client):
     search_dict = dict(module.params)
-    columns = ",".join(module.params[FIELD_COLUMNS_NAME])
+    if module.params["normalize_column_names"]:
+        columns = [field.lower() for field in module.params[FIELD_COLUMNS_NAME]]
+    else:
+        columns = module.params[FIELD_COLUMNS_NAME]
     search_dict.update(columns=columns)
     query = utils.filter_dict(search_dict, *POSSIBLE_FILTER_PARAMETERS)
     servicenow_query = transform_query_to_servicenow_query(query)
@@ -257,6 +267,10 @@ def main():
         columns=dict(
             type="list", default=[], elements="str"
         ),  # A comma-separated list of fields to return in the response
+        normalize_column_names=dict(
+            type="bool",
+            default=True,
+        ),  # If true, the column names in O(columns) will be normalized to lowercase.
         query_category=dict(
             type="str"
         ),  # Name of the query category (read replica category) to use for queries
