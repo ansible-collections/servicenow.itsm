@@ -44,6 +44,7 @@ class TestMain:
             display_value="false",
             exclude_reference_link="false",
             columns=["parent", "watch_list"],
+            normalize_column_names="true",
             query_category="cat",
             query_no_domain="true",
             no_count="true",
@@ -69,6 +70,7 @@ class TestRun:
             ),
             resource="sys_user",
             columns=["upon_reject", "state", "cmdb_ci"],
+            normalize_column_names="true",
         )
 
         module = create_module(params=params)
