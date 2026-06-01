@@ -6,93 +6,18 @@ on:
         required: false
         type: string
         default: ""
-      matrix_exclude:
-        # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
-        # 2.15 supports Python 3.9-3.11
-        # 2.16 supports Python 3.10-3.12
-        # 2.17 supports Python 3.10-3.12
-        # 2.18 supports Python 3.11-3.13
-        # 2.19 supports Python 3.11-3.13
-        # 2.20 supports Python 3.12-3.14
-        # 2.21 supports Python 3.12-3.14
-        # devel will be 2.22
-        default: >-
-          [
-            {
-              "ansible-version": "stable-2.15",
-              "python-version": "3.12"
-            },
-            {
-              "ansible-version": "stable-2.15",
-              "python-version": "3.13",
-            },
-            {
-              "ansible-version": "stable-2.16",
-              "python-version": "3.9",
-            },
-            {
-              "ansible-version": "stable-2.16",
-              "python-version": "3.13",
-            },
-            {
-              "ansible-version": "stable-2.18",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.18",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.19",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.19",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.20",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.20",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.20",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "stable-2.21",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.21",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.21",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.11"
-            }
-          ]
-        required: false
-        type: string
 
 jobs:
-  integration_source:
+  wait_for_approval:
+    runs-on: ubuntu-latest
     environment: protected-snow
+    steps:
+      - name: Wait for run to be approved
+        run: |
+          echo "Run approved"
+
+  integration_source:
+    needs: [wait_for_approval]
     env:
       PY_COLORS: "1"
       source_directory: "./source"
@@ -100,21 +25,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      # because we have so many combinations of python/ansible-core/ServiceNow versions,
+      # we only test the oldest and newest python versions for each ansible-core version.
+      # This requires some GH matrix magic.
       matrix:
-        ansible-version:
-          - stable-2.15
-          - stable-2.16
-          - stable-2.18
-          - stable-2.19
-          - stable-2.20
-          - stable-2.21
-          - devel
-        python-version:
-          - "3.9"
-          - "3.10"
-          - "3.11"
-          - "3.12"
-          - "3.13"
+        # Placeholder axes excluded below; valid ansible-core × Python pairs are in include.
+        # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
+        ansible-version: [""]
+        python-version: [""]
         # servicenow-version is the SNOW release label (job names / matrix only).
         # GitHub secrets use PDI instance IDs (SN_*_<id>) because instances upgrade
         # in place; when a new release ships, update the label here—not new secrets.
@@ -122,7 +40,12 @@ jobs:
           - "australia"
           - "yokohama"
           - "zurich"
+        exclude:
+          # This exclude entry removes junk jobs where ansible or python versions are empty.
+          - ansible-version: ""
         include:
+          # begin tested ServiceNow versions matrix
+          # If you want to add a new ServiceNow version, add a new entry here.
           - servicenow-version: "australia"
             sn_host_secret: SN_HOST_7056
             sn_username_secret: SN_USERNAME_7056
@@ -133,25 +56,68 @@ jobs:
             sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_7056
             sn_client_key_secret: SN_CLIENT_KEY_7056
           - servicenow-version: "yokohama"
-            sn_host_secret: SN_HOST_YOKOHAMA
-            sn_username_secret: SN_USERNAME_YOKOHAMA
-            sn_password_secret: SN_PASSWORD_YOKOHAMA
-            sn_client_id_secret: SN_CLIENT_ID_YOKOHAMA
-            sn_client_secret_secret: SN_CLIENT_SECRET_YOKOHAMA
-            sn_api_key_secret: SN_API_KEY_YOKOHAMA
-            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_YOKOHAMA
-            sn_client_key_secret: SN_CLIENT_KEY_YOKOHAMA
+            sn_host_secret: SN_HOST_7054
+            sn_username_secret: SN_USERNAME_7054
+            sn_password_secret: SN_PASSWORD_7054
+            sn_client_id_secret: SN_CLIENT_ID_7054
+            sn_client_secret_secret: SN_CLIENT_SECRET_7054
+            sn_api_key_secret: SN_API_KEY_7054
+            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_7054
+            sn_client_key_secret: SN_CLIENT_KEY_7054
           - servicenow-version: "zurich"
-            sn_host_secret: SN_HOST_ZURICH
-            sn_username_secret: SN_USERNAME_ZURICH
-            sn_password_secret: SN_PASSWORD_ZURICH
-            sn_client_id_secret: SN_CLIENT_ID_ZURICH
-            sn_client_secret_secret: SN_CLIENT_SECRET_ZURICH
-            sn_api_key_secret: SN_API_KEY_ZURICH
-            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_ZURICH
-            sn_client_key_secret: SN_CLIENT_KEY_ZURICH
-        exclude: ${{ fromJSON(inputs.matrix_exclude) }}
-    continue-on-error: ${{ matrix.ansible-version == 'devel' || matrix.ansible-version == 'milestone' }}
+            sn_host_secret: SN_HOST_7055
+            sn_username_secret: SN_USERNAME_7055
+            sn_password_secret: SN_PASSWORD_7055
+            sn_client_id_secret: SN_CLIENT_ID_7055
+            sn_client_secret_secret: SN_CLIENT_SECRET_7055
+            sn_api_key_secret: SN_API_KEY_7055
+            sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_7055
+            sn_client_key_secret: SN_CLIENT_KEY_7055
+          # end tested ServiceNow versions matrix
+
+          # begin tested python/ansible-core matrix
+          # If you want to add a new python/ansible-core version, add a new entry here.
+          # ansible-core 2.15 — Python 3.9-3.11
+          - ansible-version: stable-2.15
+            python-version: "3.9"
+          - ansible-version: stable-2.15
+            python-version: "3.11"
+          # ansible-core 2.16 — Python 3.10-3.12
+          - ansible-version: stable-2.16
+            python-version: "3.10"
+          - ansible-version: stable-2.16
+            python-version: "3.12"
+          # ansible-core 2.17 — Python 3.10-3.12
+          - ansible-version: stable-2.17
+            python-version: "3.10"
+          - ansible-version: stable-2.17
+            python-version: "3.12"
+          # ansible-core 2.18 — Python 3.11-3.13
+          - ansible-version: stable-2.18
+            python-version: "3.11"
+          - ansible-version: stable-2.18
+            python-version: "3.13"
+          # ansible-core 2.19 — Python 3.11-3.13
+          - ansible-version: stable-2.19
+            python-version: "3.11"
+          - ansible-version: stable-2.19
+            python-version: "3.13"
+          # ansible-core 2.20 — Python 3.12-3.14
+          - ansible-version: stable-2.20
+            python-version: "3.12"
+          - ansible-version: stable-2.20
+            python-version: "3.14"
+          # ansible-core 2.21 — Python 3.12-3.14
+          - ansible-version: stable-2.21
+            python-version: "3.12"
+          - ansible-version: stable-2.21
+            python-version: "3.14"
+          # devel (~2.22) — Python 3.12-3.14
+          - ansible-version: devel
+            python-version: "3.12"
+          - ansible-version: devel
+            python-version: "3.14"
+    continue-on-error: ${{ matrix.ansible-version == 'devel' }}
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.servicenow-version }}"
     steps:

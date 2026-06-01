@@ -37,15 +37,23 @@ Integration tests run in `.github/workflows/integration_source.yml` against thre
 - **Matrix label** (`servicenow-version`): the SNOW release codename under test (e.g. `australia`). Used for job names only.
 - **GitHub secrets**: named by **PDI instance ID**, not release codename — `SN_HOST_<id>`, `SN_USERNAME_<id>`, etc. (e.g. `SN_HOST_7056` for instance `dev7056`). Instances are upgraded in place; credentials stay the same.
 
+Each matrix leg uses eight secrets: `SN_HOST_<id>`, `SN_USERNAME_<id>`, `SN_PASSWORD_<id>`, `SN_CLIENT_ID_<id>`, `SN_CLIENT_SECRET_<id>`, `SN_API_KEY_<id>`, `SN_CLIENT_CERTIFICATE_<id>`, `SN_CLIENT_KEY_<id>`.
+
+Current matrix → instance mapping (see `integration_source.yml` `include` block):
+
+| `servicenow-version` | PDI instance | Secret suffix |
+| -------------------- | ------------ | ------------- |
+| `australia`          | `dev7056`    | `_7056`       |
+| `yokohama`           | `dev7054`    | `_7054`       |
+| `zurich`             | `dev7055`    | `_7055`       |
+
 When supporting a new SNOW release on an existing instance:
 
 1. Upgrade the instance in ServiceNow.
 2. Change the `servicenow-version` string in the workflow matrix (and update `README.md` compatibility table + changelog fragment).
-3. Do **not** create new GitHub secrets.
+3. Do **not** create or rename GitHub secrets.
 
 When adding a **new** PDI to the matrix, create the eight `SN_*_<instance_id>` secrets once, then add a new `include` block with that instance ID.
-
-Legacy rows may still reference `SN_*_YOKOHAMA` / `SN_*_ZURICH` until those secrets are renamed in GitHub to instance IDs and the workflow is updated to match.
 
 ## Subagents
 
