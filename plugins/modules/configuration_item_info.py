@@ -116,7 +116,7 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-record:
+records:
   description:
     - A list of configuration item records.
     - Note that the fields of the returned records depend on the configuration

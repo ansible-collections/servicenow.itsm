@@ -121,7 +121,7 @@ EXAMPLES = """
 """
 
 RETURN = r"""
-records:
+record:
   description:
     - A list of records from the specified table.
   returned: success
