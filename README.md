@@ -157,10 +157,11 @@ Known exceptions or compatibility issues will be tracked via the GitHub Issues p
 
 | ServiceNow Release | Collection Release |   EOL   |
 | ------------------ | ------------------ | ------- |
+| Australia          | 2.15.0+            |   TBA   |
 | Zurich             | 2.13.0+            |   TBA   |
 | Yokohama           | 2.9.0+             |   TBA   |
-| Xanadu             | 2.7.0+             |   TBA   |
-| Washington DC      | 2.5.0+             | Q4 2025 |
+| Xanadu             | 2.7.0 - 2.14.0     | Q2 2026 |
+| Washington DC      | 2.5.0 - 2.13.0     | Q4 2025 |
 | Vancouver          | 2.5.0 - 2.8.0      | Q2 2025 |
 | Utah               | 2.1.0 - 2.8.0      | Q2 2025 |
 | Tokyo              | 2.1.0 - 2.6.1      | Q2 2024 |

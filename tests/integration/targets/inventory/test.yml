@@ -9,6 +9,7 @@
     SN_HOST: "{{ sn_host }}"
     SN_USERNAME: "{{ sn_username }}"
     SN_PASSWORD: "{{ sn_password }}"
+    SN_TIMEOUT: "{{ sn_timeout }}"
 
   vars:
     resource_prefix: "{{ unique_test_id }}-inven-{{ test_name }}"

@@ -3,6 +3,7 @@
     SN_HOST: "{{ sn_host }}"
     SN_USERNAME: "{{ sn_username }}"
     SN_PASSWORD: "{{ sn_password }}"
+    SN_TIMEOUT: "{{ sn_timeout }}"
 
   block:
     - name: Get all catalogs
@@ -12,12 +13,25 @@
     - debug: var=catalogs
     - ansible.builtin.assert:
         that:
-          - catalogs | length > 1
-    
+          - catalogs.records | length > 0
+
+    # Pin a stable OOTB catalog. Do not use records[0]: on Australia, Admin Home
+    # is listed first and items_info: full can hit platform bugs on admin items.
+    - name: Select Technical Catalog for single-catalog tests
+      ansible.builtin.set_fact:
+        test_catalog: "{{ item }}"
+      when: item.title == "Technical Catalog"
+      loop: "{{ catalogs.records }}"
+
+    - ansible.builtin.assert:
+        that:
+          - test_catalog is defined
+          - test_catalog.title != "Admin Home"
+
     - name: Get one catalog only
       servicenow.itsm.service_catalog_info:
         categories: true
-        sys_id: "{{ catalogs.records[0].sys_id }}"
+        sys_id: "{{ test_catalog.sys_id }}"
       register: catalog
 
     - ansible.builtin.assert:
@@ -30,7 +44,7 @@
       servicenow.itsm.service_catalog_info:
         categories: true
         items_info: brief
-        sys_id: "{{ catalogs.records[0].sys_id }}"
+        sys_id: "{{ test_catalog.sys_id }}"
       register: catalog
 
     - ansible.builtin.assert:
@@ -39,13 +53,13 @@
           - catalog.records[0].categories | length > 0
           - catalog.records[0].sn_items is defined
           - catalog.records[0].sn_items | length > 0
-    
+
     - name: Get one catalog with item filtered -- should return none --
       servicenow.itsm.service_catalog_info:
         categories: false
         items_info: brief
         items_query: some_not_existent_field
-        sys_id: "{{ catalogs.records[0].sys_id }}"
+        sys_id: "{{ test_catalog.sys_id }}"
       register: catalog
 
     - ansible.builtin.assert:
@@ -59,7 +73,7 @@
       servicenow.itsm.service_catalog_info:
         categories: true
         items_info: full
-        sys_id: "{{ catalogs.records[0].sys_id }}"
+        sys_id: "{{ test_catalog.sys_id }}"
       register: catalog
 
     - ansible.builtin.assert:

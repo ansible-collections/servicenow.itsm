@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - add support for SNOW AUSTRALIA release
+  - tests - Drop testing of Xanadu, as it is no longer supported by the collection

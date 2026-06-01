@@ -22,6 +22,13 @@ description:
   - For more information, refer to ServiceNow service catalog documentation at
     U(https://developer.servicenow.com/dev.do#!/reference/api/utah/rest/c_ServiceCatalogAPI)
 
+notes:
+  - In the AUSTRALIA release, SNOW exposed a 'Admin Home' service catalog. When attempting to gather
+    full information about this catalog, the module will fail with a 500 error. This is due to a null
+    pointer bug in a SNOW owned script included by the catalog, UIPolicyBuilder. If you need to
+    gather full information about all catalogs in your instance, you should consider contacting
+    SNOW support to discuss the best way to proceed in your environment.
+
 version_added: 2.6.0
 
 extends_documentation_fragment:

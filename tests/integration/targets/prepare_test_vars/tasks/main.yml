@@ -13,3 +13,9 @@
 - name: Generate unique test ID
   ansible.builtin.set_fact:
     unique_test_id: "test-{{ lookup('password', '/dev/null chars=ascii_letters,digit length=6') | lower }}"
+
+# A higher timeout is needed for CI integration tests, since so many are running in parallel.
+- name: Set timeout
+  ansible.builtin.set_fact:
+    sn_timeout: 30
+  when: sn_timeout is not defined

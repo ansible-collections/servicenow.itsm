@@ -11,3 +11,14 @@ venv/
 .venv/
 tests/integration/targets/*/test_session
 tests/integration/targets/*/roles
+
+# AI and lola stuff
+.claude
+.cursor
+.gemini
+.opencode
+.lola
+.pytest_cache
+/skills/
+CLAUDE.md
+GEMINI.md
