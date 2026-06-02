@@ -1,5 +1,0 @@
----
-minor_changes:
-  - api_info - Added option to preserve column names in the response.
-    - This is a legacy behavior. If your column names are not lowercase, set this to false to
-    preserve the original case in the response.

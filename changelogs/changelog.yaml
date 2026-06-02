@@ -438,6 +438,21 @@ releases:
     - 521_return_none_on_empty_record.yml
     - release_summary.yml
     release_date: '2026-04-13'
+  2.15.0:
+    changes:
+      minor_changes:
+      - CI - Add ansible-core stable-2.20 and stable-2.21 to integration and unit
+        test matrices.
+      - add support for SNOW AUSTRALIA release
+      - api_info - Added option to preserve column names in the response. - This is
+        a legacy behavior. If your column names are not lowercase, set this to false
+        to preserve the original case in the response.
+      - tests - Drop testing of Xanadu, as it is no longer supported by the collection
+    fragments:
+    - 537-add-option-to-preserve-column-names.yml
+    - add-stable-2.20-2.21-ci.yml
+    - add-support-for-australia.yml
+    release_date: '2026-06-01'
   2.2.0:
     changes:
       minor_changes:
