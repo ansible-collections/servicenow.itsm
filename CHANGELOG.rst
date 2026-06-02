@@ -4,6 +4,17 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.15.0
+=======
+
+Minor Changes
+-------------
+
+- CI - Add ansible-core stable-2.20 and stable-2.21 to integration and unit test matrices.
+- add support for SNOW AUSTRALIA release
+- api_info - Added option to preserve column names in the response. - This is a legacy behavior. If your column names are not lowercase, set this to false to preserve the original case in the response.
+- tests - Drop testing of Xanadu, as it is no longer supported by the collection
+
 v2.14.0
 =======
 
