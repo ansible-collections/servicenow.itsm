@@ -43,14 +43,14 @@ notes:
 """
 
 EXAMPLES = """
-  - name: ServiceNow download attachment module
-    servicenow.itsm.attachment:
-      instance:
-        host: https://instance_id.service-now.com
-        username: user
-        password: pass
-      dest: /tmp/sn-attachment
-      sys_id: 003a3ef24ff1120031577d2ca310c74b
+- name: ServiceNow download attachment module
+  servicenow.itsm.attachment:
+    instance:
+      host: https://instance_id.service-now.com
+      username: user
+      password: pass
+    dest: /tmp/sn-attachment
+    sys_id: 003a3ef24ff1120031577d2ca310c74b
 """
 
 
