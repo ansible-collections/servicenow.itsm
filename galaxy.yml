@@ -28,4 +28,4 @@ build_ignore:
   - tests/integration/integration_config.yml
   - .pytest_cache
   - .lola
-  - .ansible
+  - .ansible-lint
