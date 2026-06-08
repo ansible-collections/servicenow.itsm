@@ -261,6 +261,7 @@ EXAMPLES = r"""
 # ServiceNow cmdb_ci_server table. The ip_address column is used for
 # for ansible host, and server name for inventory hostname.
 # No groups will be created - all the resulting hosts are ungrouped.
+---
 plugin: servicenow.itsm.now
 
 # `ansible-inventory -i inventory.now.yaml --graph` output:
@@ -275,6 +276,7 @@ plugin: servicenow.itsm.now
 
 # Lowercase all inventory hostnames for consistency across mixed-case
 # ServiceNow records.
+---
 plugin: servicenow.itsm.now
 lowercase_hostname: true
 columns:
@@ -292,6 +294,7 @@ columns:
 
 
 # Group hosts automatically, according to values of the manufacturer column.
+---
 plugin: servicenow.itsm.now
 keyed_groups:
   - key: manufacturer
@@ -310,6 +313,7 @@ keyed_groups:
 
 # Group hosts automatically, according to values of the os column. Filtering ensures
 # that we only see selected operating systems.
+---
 plugin: servicenow.itsm.now
 query:
   - os: = Linux Red Hat
@@ -330,6 +334,7 @@ keyed_groups:
 
 # Group hosts into named according to the specified criteria. Here, we created a group
 # of non-Windows production servers.
+---
 plugin: servicenow.itsm.now
 groups:
   non_windows_prod_servers: >-
@@ -348,6 +353,7 @@ groups:
 # Add composed variables to hosts. In the following example, we created a cost variable
 # that contains an amount and a currency, and set the ansible_host variable to the fqdn
 # listed in the record.
+---
 plugin: servicenow.itsm.now
 inventory_hostname_source: asset_tag
 columns:
@@ -355,8 +361,8 @@ columns:
   - classification
   - cpu_type
 compose:
-    cost: cost ~ " " ~ cost_cc
-    ansible_host: fqdn
+  cost: cost ~ " " ~ cost_cc
+  ansible_host: fqdn
 
 # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
 # @all:
@@ -369,6 +375,7 @@ compose:
 #  |  |  |--{name = SAP-SD-02}
 
 # Similar to the example above, but use enhanced groups with relationship information instead.
+---
 plugin: servicenow.itsm.now
 enhanced: true
 strict: true
@@ -379,8 +386,8 @@ columns:
   - cpu_type
   - cost
 compose:
-    cost: cost ~ " " ~ cost_cc
-    ansible_host: fqdn
+  cost: cost ~ " " ~ cost_cc
+  ansible_host: fqdn
 
 # `ansible-inventory -i inventory.now.yaml --graph --vars` output:
 # @all:
@@ -391,7 +398,7 @@ compose:
 # |  |  |--{cost = 2,160 USD}
 # |  |  |--{cpu_type = Intel}
 # |  |  |--{name = INSIGHT-NY-03}
-
+---
 plugin: servicenow.itsm.now
 enhanced: false
 strict: true
@@ -426,7 +433,7 @@ compose:
 # Limit query to only return columns that we expressly include.
 # By default we retrieve all columns from a table, which can be
 # very ineffectient with tables with many rows and lots of columns.
-
+---
 plugin: servicenow.itsm.now
 query_limit_columns: true
 query:
@@ -514,14 +521,12 @@ columns:
 
 # Note that when limiting columns, any variables that are needed in compose, but
 # not included in columns, must be explicitly included using query_additional_columns:
-
+---
 plugin: servicenow.itsm.now
 query_limit_columns: true
 
 query:
   - os: = OS/400
-
-query_limit_columns: true
 
 columns:
   - name
@@ -559,6 +564,7 @@ compose:
 #   return cis;
 # }
 # Other examples in https://docs.servicenow.com/bundle/tokyo-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html
+---
 plugin: servicenow.itsm.now
 table: cmdb_ci_server
 query:

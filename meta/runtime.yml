@@ -1,5 +1,5 @@
 ---
-requires_ansible: ">=2.15.0"
+requires_ansible: ">=2.16.0"
 
 plugin_routing:
   modules:
@@ -8,4 +8,4 @@ plugin_routing:
       deprecation:
         removal_version: 3.0.0
         warning_text: Attachment will be removed in a future release of this
-                      collection. Use attachment_info instead.
+          collection. Use attachment_info instead.

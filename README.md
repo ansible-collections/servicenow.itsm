@@ -6,7 +6,7 @@ This collection is ideal for IT administrators, DevOps engineers, and automation
 
 ## Requirements
 
-- **Ansible-Core**: >= 2.15.0
+- **Ansible-Core**: >= 2.16.0
 - **Python**: With ansible-core, as listed for control nodes [here](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
 - No additional Python libraries or external Ansible collections are required.
 - A ServiceNow instance and user credentials are required for module authentication.
@@ -149,7 +149,7 @@ Using environment:
 ## Testing
 
 This collection is tested with:
-- Ansible-Core >= 2.15.0, except 2.17
+- Ansible-Core >= 2.16.0
 - Python, as specified for control nodes [here](https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix)
 - Supported ServiceNow versions according to the table below
 
@@ -182,10 +182,11 @@ More: [Ansible Community Guide](https://docs.ansible.com/ansible/latest/communit
 
 ## Support
 
-Support is provided via:
-- GitHub issues: https://github.com/ansible-collections/servicenow.itsm/issues
-- Community channels listed above
-- Maintained versions are clearly indicated in the release table
+As Red Hat Ansible Certified Content, this collection is entitled to support through the Ansible Automation Platform (AAP) using the **Create issue** button on the top right corner.
+
+If a support case cannot be opened with Red Hat and the collection has been obtained either from Galaxy or GitHub, there may community help available via:
+- GitHub issues for bugs or feature requests: https://github.com/ansible-collections/servicenow.itsm/issues
+- the [Ansible Forum](https://forum.ansible.com/) for general inqueries or workflow questions
 
 ## Release Notes and Roadmap
 

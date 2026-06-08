@@ -1,0 +1,1 @@
+plugins/inventory/now.py yamllint:unparsable-with-libyaml   # inventory examples are technically multiple yaml docs, which the linter in versions <2.17 does not like
