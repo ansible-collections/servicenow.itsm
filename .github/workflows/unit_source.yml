@@ -38,9 +38,8 @@ jobs:
           # ansible-core 2.21 — controller Python 3.12, 3.14
           - { ansible-version: stable-2.21, python-version: "3.12" }
           - { ansible-version: stable-2.21, python-version: "3.14" }
-          # devel (~2.22) — controller Python 3.12, 3.14
-          - { ansible-version: devel, python-version: "3.12" }
-          - { ansible-version: devel, python-version: "3.14" }
+          # devel (~2.22) — controller Python 3.13 to unknown https://github.com/ansible/ansible/blob/devel/pyproject.toml#L6
+          - { ansible-version: devel, python-version: "3.13" }
     continue-on-error: ${{ matrix.ansible-version == 'devel' }}
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
