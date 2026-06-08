@@ -49,12 +49,12 @@ jobs:
           - { ansible: "stable-2.21", python: "3.14" }
           # devel (~2.22) — controller Python 3.13 to unknown https://github.com/ansible/ansible/blob/devel/pyproject.toml#L6
           - { ansible: "devel", python: "3.13" }
-        # This is required so the include block below is applied appropriately
-        servicenow-versions:
+        # servicenow-version is the SNOW release label (job names / matrix only).
+        # Cross-product with versions above yields 42 jobs (14 ansible/python pairs × 3 SNOW).
+        servicenow-version:
           - australia
           - yokohama
           - zurich
-        # servicenow-version is the SNOW release label (job names / matrix only).
         # GitHub secrets use PDI instance IDs (SN_*_<id>) because instances upgrade
         # in place; when a new release ships, update the label here—not new secrets.
         include:
