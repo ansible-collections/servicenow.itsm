@@ -17,54 +17,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Test oldest + newest Python per ansible-core (16 jobs).
-        #   2.15 → 3.9, 3.11  |  2.16 → 3.10, 3.12  |  2.17 → 3.10, 3.12
-        #   2.18 → 3.11, 3.13  |  2.19 → 3.11, 3.13  |  2.20 → 3.12, 3.14
-        #   2.21 → 3.12, 3.14  |  devel → 3.12, 3.14
+        # Oldest + newest controller Python per ansible-core (14 jobs).
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
-        ansible-version:
-          - stable-2.16
-          - stable-2.17
-          - stable-2.18
-          - stable-2.19
-          - stable-2.20
-          - stable-2.21
-          - devel
-        python-version:
-          - "3.10"
-          - "3.11"
-          - "3.12"
-          - "3.13"
-          - "3.14"
-        exclude:
-          # ansible-core 2.16 — Python 3.10-3.12; keep 3.10, 3.12
-          - { ansible-version: stable-2.16, python-version: "3.11" }
-          - { ansible-version: stable-2.16, python-version: "3.13" }
-          - { ansible-version: stable-2.16, python-version: "3.14" }
-          # ansible-core 2.17 — Python 3.10-3.12; keep 3.10, 3.12
-          - { ansible-version: stable-2.17, python-version: "3.11" }
-          - { ansible-version: stable-2.17, python-version: "3.13" }
-          - { ansible-version: stable-2.17, python-version: "3.14" }
-          # ansible-core 2.18 — Python 3.11-3.13; keep 3.11, 3.13
-          - { ansible-version: stable-2.18, python-version: "3.10" }
-          - { ansible-version: stable-2.18, python-version: "3.12" }
-          - { ansible-version: stable-2.18, python-version: "3.14" }
-          # ansible-core 2.19 — Python 3.11-3.13; keep 3.11, 3.13
-          - { ansible-version: stable-2.19, python-version: "3.10" }
-          - { ansible-version: stable-2.19, python-version: "3.12" }
-          - { ansible-version: stable-2.19, python-version: "3.14" }
-          # ansible-core 2.20 — Python 3.12-3.14; keep 3.12, 3.14
-          - { ansible-version: stable-2.20, python-version: "3.10" }
-          - { ansible-version: stable-2.20, python-version: "3.11" }
-          - { ansible-version: stable-2.20, python-version: "3.13" }
-          # ansible-core 2.21 — Python 3.12-3.14; keep 3.12, 3.14
-          - { ansible-version: stable-2.21, python-version: "3.10" }
-          - { ansible-version: stable-2.21, python-version: "3.11" }
-          - { ansible-version: stable-2.21, python-version: "3.13" }
-          # devel (~2.22) — Python 3.12-3.14; keep 3.12, 3.14
-          - { ansible-version: devel, python-version: "3.10" }
-          - { ansible-version: devel, python-version: "3.11" }
-          - { ansible-version: devel, python-version: "3.13" }
+        include:
+          # ansible-core 2.16 — controller Python 3.10, 3.12
+          - { ansible-version: stable-2.16, python-version: "3.10" }
+          - { ansible-version: stable-2.16, python-version: "3.12" }
+          # ansible-core 2.17 — controller Python 3.10, 3.12
+          - { ansible-version: stable-2.17, python-version: "3.10" }
+          - { ansible-version: stable-2.17, python-version: "3.12" }
+          # ansible-core 2.18 — controller Python 3.11, 3.13
+          - { ansible-version: stable-2.18, python-version: "3.11" }
+          - { ansible-version: stable-2.18, python-version: "3.13" }
+          # ansible-core 2.19 — controller Python 3.11, 3.13
+          - { ansible-version: stable-2.19, python-version: "3.11" }
+          - { ansible-version: stable-2.19, python-version: "3.13" }
+          # ansible-core 2.20 — controller Python 3.12, 3.14
+          - { ansible-version: stable-2.20, python-version: "3.12" }
+          - { ansible-version: stable-2.20, python-version: "3.14" }
+          # ansible-core 2.21 — controller Python 3.12, 3.14
+          - { ansible-version: stable-2.21, python-version: "3.12" }
+          - { ansible-version: stable-2.21, python-version: "3.14" }
+          # devel (~2.22) — controller Python 3.12, 3.14
+          - { ansible-version: devel, python-version: "3.12" }
+          - { ansible-version: devel, python-version: "3.14" }
     continue-on-error: ${{ matrix.ansible-version == 'devel' }}
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
