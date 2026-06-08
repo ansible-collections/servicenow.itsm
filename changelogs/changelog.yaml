@@ -453,6 +453,8 @@ releases:
     - add-stable-2.20-2.21-ci.yml
     - add-support-for-australia.yml
     release_date: '2026-06-01'
+  2.15.1:
+    release_date: '2026-06-08'
   2.2.0:
     changes:
       minor_changes:
