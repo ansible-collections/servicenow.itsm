@@ -1,0 +1,7 @@
+bugfixes:
+  - table - ``TableClient.path()`` was hardcoding ``api/now/table`` as the base path,
+    silently ignoring the ``instance.api_path`` parameter introduced in 2.5.0. This
+    caused all Table API modules (incident, change_request, problem, etc.) to fail when
+    routing through an API gateway that uses a custom base path (e.g.
+    ``servicenow/v1/now``). The fix aligns ``TableClient.path()`` with the existing
+    correct pattern already used in ``attachment.py`` (github.com/ansible-collections/servicenow.itsm/issues/TODO).
