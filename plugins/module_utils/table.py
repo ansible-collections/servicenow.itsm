@@ -59,7 +59,11 @@ class TableClient(snow.SNowClient):
             self.delete(self.path(table), record["sys_id"])
 
     def path(self, table, *subpaths):
-        return "/".join(list(self.client.api_path) + ["table", table] + list(itertools.chain(subpaths)))
+        return "/".join(
+            list(self.client.api_path)
+            + ["table", table]
+            + list(itertools.chain(subpaths))
+        )
 
 
 def find_user(table_client, user_id):
