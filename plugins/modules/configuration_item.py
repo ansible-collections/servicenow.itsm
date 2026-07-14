@@ -113,6 +113,17 @@ options:
       - Expected value for I(assigned_to) is user id (usually in the form of
         C(first_name.last_name)).
     type: str
+  id_column_set:
+    description:
+      - Columns that should be used to identify an existing record.
+      - When not specified, records are identified by C(sys_id) or C(name).
+      - Use this for CMDB tables where C(name) is not a unique identifier, such as C(cmdb_rel_ci),
+        where records are identified by a combination of columns like C(parent), C(child), and
+        C(type).
+      - The column values are sourced from the I(other) parameter or from top-level module parameters.
+    type: list
+    elements: str
+    version_added: "2.7.0"
   other:
     description:
       - Any of the remaining configuration parameters.
@@ -153,6 +164,18 @@ EXAMPLES = r"""
   servicenow.itsm.configuration_item:
     sys_id: "{{ server.record.sys_id }}"
     state: absent
+
+- name: Create a CI relationship using id_column_set
+  servicenow.itsm.configuration_item:
+    sys_class_name: cmdb_rel_ci
+    id_column_set:
+      - parent
+      - child
+      - type
+    other:
+      parent: "{{ parent_ci_sys_id }}"
+      child: "{{ child_ci_sys_id }}"
+      type: "{{ relationship_type_sys_id }}"
 """
 
 RETURN = r"""
@@ -288,9 +311,31 @@ DIRECT_PAYLOAD_FIELDS = (
 )
 
 
+def build_identity_query(module):
+    id_column_set = module.params.get("id_column_set")
+    if not id_column_set:
+        return None
+
+    query = {}
+    other = module.params.get("other") or {}
+    for col in id_column_set:
+        if col in module.params and module.params[col] is not None:
+            query[col] = module.params[col]
+        elif col in other:
+            query[col] = other[col]
+        else:
+            raise errors.ServiceNowError(
+                "id_column_set column '{0}' is not provided in module "
+                "parameters or 'other'.".format(col)
+            )
+    return query
+
+
 def ensure_absent(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
-    query = utils.filter_dict(module.params, "sys_id", "name")
+    query = build_identity_query(module)
+    if query is None:
+        query = utils.filter_dict(module.params, "sys_id", "name")
     cmdb_table = module.params["sys_class_name"]
     configuration_item = table_client.get_record(cmdb_table, query)
 
@@ -327,13 +372,16 @@ def ensure_present(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
     query_sys_id = utils.filter_dict(module.params, "sys_id")
     query_name = utils.filter_dict(module.params, "name")
+    identity_query = build_identity_query(module)
     payload = build_payload(module, table_client)
     attachments = attachment.transform_metadata_list(
         module.params["attachments"], module.sha256
     )
 
+    lookup_query = identity_query or query_name
+
     if not query_sys_id:
-        configuration_item = table_client.get_record(cmdb_table, query_name)
+        configuration_item = table_client.get_record(cmdb_table, lookup_query)
         # User did not specify existing CI, so we need to create a new one.
         if not configuration_item:
             new = mapper.to_ansible(
@@ -353,7 +401,7 @@ def ensure_present(module, table_client, attachment_client):
             return True, new, dict(before=None, after=new)
 
         else:
-            # Get existing record using provided name
+            # Get existing record using provided name or identity query
             old = mapper.to_ansible(configuration_item)
 
     else:
@@ -361,8 +409,8 @@ def ensure_present(module, table_client, attachment_client):
         old = mapper.to_ansible(
             table_client.get_record(cmdb_table, query_sys_id, must_exist=True)
         )
-        # Check if provided name already exists
-        if query_name:
+        # Check if provided name already exists (skip when using id_column_set)
+        if query_name and not identity_query:
             configuration_item = table_client.get_record(
                 old["sys_class_name"], query_name
             )
@@ -381,7 +429,7 @@ def ensure_present(module, table_client, attachment_client):
     if cmdb_table != "cmdb_ci":
         old = mapper.to_ansible(
             table_client.get_record(
-                cmdb_table, query_sys_id or query_name, must_exist=True
+                cmdb_table, query_sys_id or lookup_query, must_exist=True
             )
         )
 
@@ -467,6 +515,10 @@ def main():
         assigned_to=dict(
             type="str",
         ),
+        id_column_set=dict(
+            type="list",
+            elements="str",
+        ),
         other=dict(
             type="dict",
         ),
@@ -479,6 +531,7 @@ def main():
             (
                 "sys_id",
                 "name",
+                "id_column_set",
             ),
         ],
     )
