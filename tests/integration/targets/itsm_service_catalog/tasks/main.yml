@@ -27,13 +27,11 @@
       register: user
 
     - name: Get snc_basic_auth_api_access role
-      servicenow.itsm.api:
+      servicenow.itsm.api_info:
         resource: sys_user_role
-        action: get
-        query_params:
-          sysparm_query: "name=snc_basic_auth_api_access"
-          sysparm_fields: "sys_id"
-          sysparm_limit: "1"
+        sysparm_query: "name=snc_basic_auth_api_access"
+        columns:
+          - sys_id
       register: basic_auth_role
 
     - name: Assign snc_basic_auth_api_access role to user
