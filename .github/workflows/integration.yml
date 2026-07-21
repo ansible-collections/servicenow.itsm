@@ -106,30 +106,14 @@ jobs:
       - name: Install ansible-core (${{ matrix.versions.ansible }})
         run: python${{ matrix.versions.python }} -m pip install https://github.com/ansible/ansible/archive/${{ matrix.versions.ansible }}.tar.gz --disable-pip-version-check
 
-      - name: Pre install collections dependencies first so the collection install does not
-        run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p ${{ env.collection_base_dir }}
-        if: inputs.collection_pre_install != ''
-
-      - name: Read collection metadata from galaxy.yml
-        id: identify
-        uses: ansible-network/github_actions/.github/actions/identify_collection@main
-        with:
-          source_path: ${{ env.source_directory }}
-
-      - name: Build and install the collection
-        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
-        with:
-          install_python_dependencies: true
-          source_path: ${{ env.source_directory }}
-          collection_path: ${{ steps.identify.outputs.collection_path }}
-          tar_file: ${{ steps.identify.outputs.tar_file }}
-          ansible_version: ${{ matrix.versions.ansible }}
+      - name: Install the collection
+        run: ansible-galaxy collection install . --force
 
       - name: Print the ansible version
         run: ansible --version
 
       - name: Print the python dependencies
-        run: python${{ matrix.versions.python }} -m pip list
+        run: python${{ matrix.versions.python }} -m pip freeze
 
       - name: Create integration_config.yml
         env:
@@ -169,7 +153,7 @@ jobs:
   # This job does nothing and is only used for the branch protection
   # or multi-stage CI jobs, like making sure that all tests pass before
   # a publishing job is started.
-  all_green:
+  integration_all_green:
     if: always()
     needs:
       - integration
