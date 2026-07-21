@@ -1,0 +1,5 @@
+bugfixes:
+  - configuration_item - Added ``id_column_set`` parameter to specify which columns
+    identify an existing record, fixing failures when using tables like ``cmdb_rel_ci``
+    where ``name`` is not a unique identifier
+    (https://github.com/ansible-collections/servicenow.itsm/issues/507).

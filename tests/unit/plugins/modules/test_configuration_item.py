@@ -123,7 +123,7 @@ class TestEnsureAbsent:
         )
 
         table_client.get_record.assert_called_once_with(
-            "cmdb_ci", {"name": "my_name", "sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"}
+            "cmdb_ci", {"sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"}
         )
         table_client.delete_record.assert_called_once()
         assert result == (
@@ -196,6 +196,49 @@ class TestEnsureAbsent:
 
         table_client.delete_record.assert_not_called()
         assert result == (False, None, dict(before=None, after=None))
+
+    def test_delete_configuration_item_using_id_column_set(
+        self, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="absent",
+                name=None,
+                sys_id=None,
+                sys_class_name="cmdb_rel_ci",
+                id_column_set=["parent", "child", "type"],
+                other=dict(
+                    parent="parent_sys_id",
+                    child="child_sys_id",
+                    type="rel_type_sys_id",
+                ),
+            )
+        )
+        table_client.get_record.return_value = dict(
+            sys_class_name="cmdb_rel_ci",
+            sys_id="rel_record_sys_id",
+            parent="parent_sys_id",
+            child="child_sys_id",
+            type="rel_type_sys_id",
+        )
+
+        result = configuration_item.ensure_absent(
+            module, table_client, attachment_client
+        )
+
+        table_client.get_record.assert_called_once_with(
+            "cmdb_rel_ci",
+            {
+                "parent": "parent_sys_id",
+                "child": "child_sys_id",
+                "type": "rel_type_sys_id",
+            },
+        )
+        table_client.delete_record.assert_called_once()
+        assert result[0] is True
 
 
 class TestBuildPayload:
@@ -316,7 +359,7 @@ class TestEnsurePresent:
         )
 
         table_client.get_record.assert_called_once_with(
-            "cmdb_ci", {"name": "test.name"}
+            "cmdb_ci", {"name": "test.name"}, must_exist=False
         )
         table_client.create_record.assert_called_once()
         assert result == (
@@ -762,6 +805,162 @@ class TestEnsurePresent:
         ):
             configuration_item.ensure_present(module, table_client, attachment_client)
 
+    def test_ensure_present_create_new_with_id_column_set(
+        self, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="present",
+                sys_id=None,
+                name=None,
+                short_description=None,
+                sys_class_name="cmdb_rel_ci",
+                assigned_to=None,
+                asset_tag=None,
+                install_status=None,
+                operational_status=None,
+                serial_number=None,
+                ip_address=None,
+                mac_address=None,
+                category=None,
+                environment=None,
+                id_column_set=["parent", "child", "type"],
+                other=dict(
+                    parent="parent_sys_id",
+                    child="child_sys_id",
+                    type="rel_type_sys_id",
+                ),
+                attachments=None,
+            ),
+        )
+        table_client.get_record.return_value = {}
+        table_client.create_record.return_value = dict(
+            sys_class_name="cmdb_rel_ci",
+            sys_id="new_rel_sys_id",
+            parent="parent_sys_id",
+            child="child_sys_id",
+            type="rel_type_sys_id",
+        )
+        attachment_client.upload_records.return_value = []
+
+        result = configuration_item.ensure_present(
+            module, table_client, attachment_client
+        )
+
+        table_client.get_record.assert_called_once_with(
+            "cmdb_rel_ci",
+            {
+                "parent": "parent_sys_id",
+                "child": "child_sys_id",
+                "type": "rel_type_sys_id",
+            },
+            must_exist=False,
+        )
+        table_client.create_record.assert_called_once()
+        assert result[0] is True
+
+    def test_ensure_present_update_with_id_column_set(
+        self, mocker, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="present",
+                sys_id=None,
+                name=None,
+                short_description=None,
+                sys_class_name="cmdb_rel_ci",
+                assigned_to=None,
+                asset_tag=None,
+                install_status=None,
+                operational_status=None,
+                serial_number=None,
+                ip_address=None,
+                mac_address=None,
+                category=None,
+                environment=None,
+                id_column_set=["parent", "child", "type"],
+                other=dict(
+                    parent="parent_sys_id",
+                    child="child_sys_id",
+                    type="rel_type_sys_id",
+                ),
+                attachments=None,
+            ),
+        )
+        payload_mocker = mocker.patch.object(configuration_item, "build_payload")
+        payload_mocker.return_value = dict(
+            parent="parent_sys_id",
+            child="child_sys_id",
+            type="rel_type_sys_id",
+            sys_class_name="cmdb_rel_ci",
+        )
+        table_client.get_record.return_value = dict(
+            sys_id="existing_rel_sys_id",
+            sys_class_name="cmdb_rel_ci",
+            parent="parent_sys_id",
+            child="child_sys_id",
+            type="rel_type_sys_id",
+        )
+        table_client.update_record.return_value = dict(
+            sys_id="existing_rel_sys_id",
+            sys_class_name="cmdb_rel_ci",
+            parent="parent_sys_id",
+            child="child_sys_id",
+            type="rel_type_sys_id",
+        )
+        attachment_client.update_records.return_value = []
+        attachment_client.list_records.return_value = []
+
+        result = configuration_item.ensure_present(
+            module, table_client, attachment_client
+        )
+
+        table_client.get_record.assert_called()
+        assert result[0] is False
+
+    def test_ensure_present_id_column_set_missing_column(
+        self, create_module, table_client, attachment_client
+    ):
+        module = create_module(
+            params=dict(
+                instance=dict(
+                    host="https://my.host.name", username="user", password="pass"
+                ),
+                state="present",
+                sys_id=None,
+                name=None,
+                short_description=None,
+                sys_class_name="cmdb_rel_ci",
+                assigned_to=None,
+                asset_tag=None,
+                install_status=None,
+                operational_status=None,
+                serial_number=None,
+                ip_address=None,
+                mac_address=None,
+                category=None,
+                environment=None,
+                id_column_set=["parent", "child", "type"],
+                other=dict(
+                    parent="parent_sys_id",
+                    child="child_sys_id",
+                ),
+                attachments=None,
+            ),
+        )
+
+        with pytest.raises(
+            errors.ServiceNowError,
+            match="id_column_set column 'type' is not provided",
+        ):
+            configuration_item.ensure_present(module, table_client, attachment_client)
+
 
 class TestMain:
     def test_minimal_set_of_params_sys_id(self, run_main):
@@ -815,12 +1014,33 @@ class TestMain:
 
         assert success is True
 
+    def test_minimal_set_of_params_id_column_set(self, run_main):
+        params = dict(
+            instance=dict(
+                host="https://my.host.name", username="user", password="pass"
+            ),
+            id_column_set=["parent", "child", "type"],
+            sys_class_name="cmdb_rel_ci",
+            other=dict(
+                parent="parent_sys_id",
+                child="child_sys_id",
+                type="rel_type_sys_id",
+            ),
+        )
+        with set_module_args(args=params):
+            success, result = run_main(configuration_item, params)
+
+        assert success is True
+
     def test_fail(self, run_main):
         with set_module_args(args={}):
             success, result = run_main(configuration_item)
 
         assert success is False
-        assert "one of the following is required: sys_id, name" in result["msg"]
+        assert (
+            "one of the following is required: sys_id, name, id_column_set"
+            in result["msg"]
+        )
 
 
 class TestRun:

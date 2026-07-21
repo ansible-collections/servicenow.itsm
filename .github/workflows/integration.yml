@@ -1,11 +1,14 @@
 name: Integration tests, dependencies from source
 on:
-  workflow_call:
-    inputs:
-      collection_pre_install:
-        required: false
-        type: string
-        default: ""
+  pull_request_target:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+      - "release-\\d.\\d"
+
+permissions:
+  contents: read
 
 jobs:
   wait_for_approval:
@@ -97,7 +100,7 @@ jobs:
           fetch-depth: "0"
 
       - name: Set up Python ${{ matrix.versions.python }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.versions.python }}
 

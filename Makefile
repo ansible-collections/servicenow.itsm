@@ -10,6 +10,7 @@ TARGET ?=
 # Integration or unit test python version. Specify to test with a specific python type. Default is the ansible-test default
 PYTHON_VERSION ?= default
 
+COLLECTION_ROOT ?= $(HOME)/.ansible/collections/ansible_collections/servicenow/itsm
 
 .PHONY: help
 help:
@@ -46,22 +47,28 @@ linters:
 ## Run sanity tests
 .PHONY: sanity
 sanity: install-collection linters
-	cd ~/.ansible/collections/ansible_collections/servicenow/itsm; \
+	cd $(COLLECTION_ROOT); \
 	ansible-test sanity --docker
 
  ## Run unit tests
 .PHONY: units
 units: install-collection
-	cd ~/.ansible/collections/ansible_collections/servicenow/itsm; \
+	cd $(COLLECTION_ROOT); \
 	ansible-test units --docker --coverage --python "$(PYTHON_VERSION)" $(TARGET); \
-	ansible-test coverage combine --export tests/output/coverage/; \
-	ansible-test coverage report --docker --omit 'tests/*' --show-missing
+	ansible-test coverage combine --requirements --export tests/output/coverage/; \
+	ansible-test coverage report --requirements --docker --omit 'tests/*' --show-missing
+
+.PHONY: units-coverage
+units-coverage: units
+	cd $(COLLECTION_ROOT); \
+	ansible-test coverage xml --requirements; \
+	cp tests/output/reports/coverage.xml $(CURDIR)/coverage-units.xml;
 
 ## Run integration tests
 .PHONY: integration
 integration: install-collection
-	cd ~/.ansible/collections/ansible_collections/servicenow/itsm; \
+	cd $(COLLECTION_ROOT); \
 	./tests/integration/generate_integration_config.sh; \
-	ANSIBLE_ROLES_PATH=~/.ansible/collections/ansible_collections/servicenow/itsm/tests/integration/targets \
+	ANSIBLE_ROLES_PATH=$(COLLECTION_ROOT)/tests/integration/targets \
 		ANSIBLE_COLLECTIONS_PATH=~/.ansible/collections/ansible_collections \
 		ansible-test integration --docker --diff --python "$(PYTHON_VERSION)" $(TARGET)

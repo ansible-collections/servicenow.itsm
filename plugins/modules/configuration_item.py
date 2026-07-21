@@ -113,6 +113,17 @@ options:
       - Expected value for I(assigned_to) is user id (usually in the form of
         C(first_name.last_name)).
     type: str
+  id_column_set:
+    description:
+      - Columns that should be used to identify an existing record.
+      - When not specified, records are identified by C(sys_id) or C(name).
+      - Use this for CMDB tables where C(name) is not a unique identifier, such as C(cmdb_rel_ci),
+        where records are identified by a combination of columns like C(parent), C(child), and
+        C(type).
+      - The column values are sourced from the I(other) parameter or from top-level module parameters.
+    type: list
+    elements: str
+    version_added: "2.15.0"
   other:
     description:
       - Any of the remaining configuration parameters.
@@ -153,6 +164,18 @@ EXAMPLES = r"""
   servicenow.itsm.configuration_item:
     sys_id: "{{ server.record.sys_id }}"
     state: absent
+
+- name: Create a CI relationship using id_column_set
+  servicenow.itsm.configuration_item:
+    sys_class_name: cmdb_rel_ci
+    id_column_set:
+      - parent
+      - child
+      - type
+    other:
+      parent: "{{ parent_ci_sys_id }}"
+      child: "{{ child_ci_sys_id }}"
+      type: "{{ relationship_type_sys_id }}"
 """
 
 RETURN = r"""
@@ -288,9 +311,34 @@ DIRECT_PAYLOAD_FIELDS = (
 )
 
 
+def build_identity_query(module):
+    # sys_id is always unique, so prefer it
+    if module.params.get("sys_id"):
+        return utils.filter_dict(module.params, "sys_id")
+
+    id_column_set = module.params.get("id_column_set")
+    # if the user provided a id_column_set, we want to use it. Otherwise, fallback to the name
+    if not id_column_set:
+        return utils.filter_dict(module.params, "name")
+
+    query = {}
+    other = module.params.get("other") or {}
+    for col in id_column_set:
+        if col in module.params and module.params[col] is not None:
+            query[col] = module.params[col]
+        elif col in other:
+            query[col] = other[col]
+        else:
+            raise errors.ServiceNowError(
+                "id_column_set column '{0}' is not provided in module "
+                "parameters or 'other'.".format(col)
+            )
+    return query
+
+
 def ensure_absent(module, table_client, attachment_client):
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
-    query = utils.filter_dict(module.params, "sys_id", "name")
+    query = build_identity_query(module)
     cmdb_table = module.params["sys_class_name"]
     configuration_item = table_client.get_record(cmdb_table, query)
 
@@ -322,67 +370,60 @@ def build_payload(module, table_client):
     return payload
 
 
+def _validate_name_is_not_in_use(module, table_client, desired_record):
+    # When updating by sys_id with a name provided, verify no other record has that name
+    if (
+        module.params.get("sys_id")
+        and module.params.get("name")
+        and not module.params.get("id_column_set")
+    ):
+        existing_record = table_client.get_record(
+            desired_record["sys_class_name"], utils.filter_dict(module.params, "name")
+        )
+        if existing_record and existing_record["sys_id"] != desired_record["sys_id"]:
+            raise errors.ServiceNowError(
+                "Record with the name {0} already exists.".format(module.params["name"])
+            )
+
+
 def ensure_present(module, table_client, attachment_client):
     cmdb_table = module.params["sys_class_name"]
     mapper = get_mapper(module, "configuration_item_mapping", PAYLOAD_FIELDS_MAPPING)
-    query_sys_id = utils.filter_dict(module.params, "sys_id")
-    query_name = utils.filter_dict(module.params, "name")
+    query = build_identity_query(module)
     payload = build_payload(module, table_client)
     attachments = attachment.transform_metadata_list(
         module.params["attachments"], module.sha256
     )
 
-    if not query_sys_id:
-        configuration_item = table_client.get_record(cmdb_table, query_name)
-        # User did not specify existing CI, so we need to create a new one.
-        if not configuration_item:
-            new = mapper.to_ansible(
-                table_client.create_record(
-                    cmdb_table, mapper.to_snow(payload), module.check_mode
-                )
-            )
-            # When we execute in check mode, new["sys_id"] is not defined.
-            # In order to give users back as much info as possible, we fake the sys_id in the
-            # next call.
-            new["attachments"] = attachment_client.upload_records(
-                cmdb_table,
-                new.get("sys_id", "N/A"),
-                attachments,
-                module.check_mode,
-            )
-            return True, new, dict(before=None, after=new)
+    # When looking up by sys_id, the record must already exist
+    must_exist = bool(module.params.get("sys_id"))
+    configuration_item = table_client.get_record(
+        cmdb_table, query, must_exist=must_exist
+    )
 
-        else:
-            # Get existing record using provided name
-            old = mapper.to_ansible(configuration_item)
-
-    else:
-        # Get existing record using provided sys_id
-        old = mapper.to_ansible(
-            table_client.get_record(cmdb_table, query_sys_id, must_exist=True)
+    if not configuration_item:
+        new = mapper.to_ansible(
+            table_client.create_record(
+                cmdb_table, mapper.to_snow(payload), module.check_mode
+            )
         )
-        # Check if provided name already exists
-        if query_name:
-            configuration_item = table_client.get_record(
-                old["sys_class_name"], query_name
-            )
-            if configuration_item:
-                old2 = mapper.to_ansible(configuration_item)
-                if old["sys_id"] != old2["sys_id"]:
-                    raise errors.ServiceNowError(
-                        "Record with the name {0} already exists.".format(
-                            module.params["name"]
-                        )
-                    )
+        # When we execute in check mode, new["sys_id"] is not defined.
+        new["attachments"] = attachment_client.upload_records(
+            cmdb_table,
+            new.get("sys_id", "N/A"),
+            attachments,
+            module.check_mode,
+        )
+        return True, new, dict(before=None, after=new)
+
+    old = mapper.to_ansible(configuration_item)
+    _validate_name_is_not_in_use(module, table_client, old)
 
     # Update existing record
     cmdb_table = old["sys_class_name"]
-    # If necessary, fetch the record from the table for the extended CI class
     if cmdb_table != "cmdb_ci":
         old = mapper.to_ansible(
-            table_client.get_record(
-                cmdb_table, query_sys_id or query_name, must_exist=True
-            )
+            table_client.get_record(cmdb_table, query, must_exist=True)
         )
 
     old["attachments"] = attachment_client.list_records(
@@ -392,7 +433,6 @@ def ensure_present(module, table_client, attachment_client):
     if utils.is_superset(old, payload) and not any(
         attachment.are_changed(old["attachments"], attachments)
     ):
-        # No change in parameters we are interested in - nothing to do.
         return False, old, dict(before=old, after=old)
 
     new = mapper.to_ansible(
@@ -467,6 +507,10 @@ def main():
         assigned_to=dict(
             type="str",
         ),
+        id_column_set=dict(
+            type="list",
+            elements="str",
+        ),
         other=dict(
             type="dict",
         ),
@@ -479,6 +523,7 @@ def main():
             (
                 "sys_id",
                 "name",
+                "id_column_set",
             ),
         ],
     )

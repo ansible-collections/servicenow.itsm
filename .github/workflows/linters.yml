@@ -1,19 +1,16 @@
 ---
 name: changelog and linters
 
-on: [workflow_call] # allow this workflow to be called from other workflows
+on:
+  pull_request:
 
 jobs:
   linters:
     name: Run custom linters
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the collection repository
-        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
-        with:
-          path: ${{ env.source_directory }}
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: "0"
+      - name: Checkout repo
+        uses: actions/checkout@v7
 
       - name: Run linters
         run: CI=true make linters

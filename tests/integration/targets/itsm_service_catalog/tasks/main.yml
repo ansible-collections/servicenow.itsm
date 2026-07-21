@@ -26,6 +26,22 @@
           title: Demo user
       register: user
 
+    - name: Get snc_basic_auth_api_access role
+      servicenow.itsm.api_info:
+        resource: sys_user_role
+        sysparm_query: "name=snc_basic_auth_api_access"
+        columns:
+          - sys_id
+      register: basic_auth_role
+
+    - name: Assign snc_basic_auth_api_access role to user
+      servicenow.itsm.api:
+        resource: sys_user_has_role
+        action: post
+        data:
+          user: "{{ user.record.sys_id }}"
+          role: "{{ basic_auth_role.record[0].sys_id }}"
+
     - name: Get all catalogs
       servicenow.itsm.service_catalog_info:
       environment:
