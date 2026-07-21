@@ -77,7 +77,7 @@ jobs:
   # This job does nothing and is only used for the branch protection
   # or multi-stage CI jobs, like making sure that all tests pass before
   # a publishing job is started.
-  all_green:
+  units_all_green:
     if: always()
     needs:
       - units
