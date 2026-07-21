@@ -49,6 +49,8 @@ options:
     description:
       - The name of the configuration item.
       - Required if the configuration item does not yet exist.
+      - If both I(sys_id) and name are provided during C(absent) operations, the name is ignored since
+        sys_id is a unique identifier.
     type: str
   short_description:
     description:
