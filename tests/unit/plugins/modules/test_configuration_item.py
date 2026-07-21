@@ -123,7 +123,7 @@ class TestEnsureAbsent:
         )
 
         table_client.get_record.assert_called_once_with(
-            "cmdb_ci", {"name": "my_name", "sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"}
+            "cmdb_ci", {"sys_id": "01a9ec0d3790200044e0bfc8bcbe5dc3"}
         )
         table_client.delete_record.assert_called_once()
         assert result == (
@@ -359,7 +359,7 @@ class TestEnsurePresent:
         )
 
         table_client.get_record.assert_called_once_with(
-            "cmdb_ci", {"name": "test.name"}
+            "cmdb_ci", {"name": "test.name"}, must_exist=False
         )
         table_client.create_record.assert_called_once()
         assert result == (
@@ -857,6 +857,7 @@ class TestEnsurePresent:
                 "child": "child_sys_id",
                 "type": "rel_type_sys_id",
             },
+            must_exist=False,
         )
         table_client.create_record.assert_called_once()
         assert result[0] is True
