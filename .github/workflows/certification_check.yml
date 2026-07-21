@@ -71,9 +71,10 @@ jobs:
           pull-request-change-detection: false
           coverage: never # coverage is always very low for sanity tests, and doesn't make much sense
 
-  check: # This job does nothing and is only used for the branch protection
-    # or multi-stage CI jobs, like making sure that all tests pass before
-    # a publishing job is started.
+  # This job does nothing and is only used for the branch protection
+  # or multi-stage CI jobs, like making sure that all tests pass before
+  # a publishing job is started.
+  all_green:
     if: always()
 
     needs:

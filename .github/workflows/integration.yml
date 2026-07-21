@@ -19,7 +19,7 @@ jobs:
         run: |
           echo "Run approved"
 
-  integration_source:
+  integration:
     needs: [wait_for_approval]
     env:
       PY_COLORS: "1"
@@ -92,12 +92,11 @@ jobs:
 
     name: "py${{ matrix.versions.python }} / ${{ matrix.versions.ansible }} / ${{ matrix.servicenow-version }}"
     steps:
-      - name: Checkout the collection repository
-        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+      - name: Checkout repo
+        uses: actions/checkout@v7
         with:
-          path: ${{ env.source_directory }}
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: "0"
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          allow-unsafe-pr-checkout: true
 
       - name: Set up Python ${{ matrix.versions.python }}
         uses: actions/setup-python@v7
@@ -166,3 +165,17 @@ jobs:
           SN_API_KEY: ${{ secrets[matrix.sn_api_key_secret] }}
         run: ansible-test integration
         working-directory: ${{ steps.identify.outputs.collection_path }}
+
+  # This job does nothing and is only used for the branch protection
+  # or multi-stage CI jobs, like making sure that all tests pass before
+  # a publishing job is started.
+  all_green:
+    if: always()
+    needs:
+      - integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}

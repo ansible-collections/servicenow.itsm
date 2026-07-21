@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  linters:
+  custom-linters:
     name: Run custom linters
     runs-on: ubuntu-latest
     steps:
