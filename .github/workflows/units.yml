@@ -60,12 +60,12 @@ jobs:
 
       - name: Perform unit tests
         run: |
-          make units UNIT_PYTHON_VERSION=${{ matrix.versions.python }};
+          make units PYTHON_VERSION=${{ matrix.versions.python }};
 
       - name: Publish coverage report
         if: ${{ matrix.versions.publish_coverage }}
         run: |
-          make units-coverage UNIT_PYTHON_VERSION=${{ matrix.versions.python }};
+          make units-coverage PYTHON_VERSION=${{ matrix.versions.python }};
 
       - name: Upload coverage artifact
         if: ${{ matrix.versions.publish_coverage }}

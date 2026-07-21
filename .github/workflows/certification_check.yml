@@ -29,7 +29,6 @@ concurrency:
 # those files and directories to the root of your
 # repository; for example:
 # https://github.com/ansible-collections/partner-certification-checker/blob/main/.ansible-lint
-# https://github.com/ansible-collections/partner-certification-checker/blob/main/.ansible-lint
 
 # If there are sanity test failures that cannot be fixed and are allowed to ignore
 # https://docs.ansible.com/projects/lint/rules/sanity/, create a sanity ignore file
