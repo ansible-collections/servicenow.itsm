@@ -123,7 +123,7 @@ options:
       - The column values are sourced from the I(other) parameter or from top-level module parameters.
     type: list
     elements: str
-    version_added: "2.15.1"
+    version_added: "2.15.0"
   other:
     description:
       - Any of the remaining configuration parameters.
@@ -371,7 +371,7 @@ def build_payload(module, table_client):
 
 
 def _validate_name_is_not_in_use(module, table_client, desired_record):
-      # When updating by sys_id with a name provided, verify no other record has that name
+    # When updating by sys_id with a name provided, verify no other record has that name
     if (
         module.params.get("sys_id")
         and module.params.get("name")
@@ -382,9 +382,7 @@ def _validate_name_is_not_in_use(module, table_client, desired_record):
         )
         if existing_record and existing_record["sys_id"] != desired_record["sys_id"]:
             raise errors.ServiceNowError(
-                "Record with the name {0} already exists.".format(
-                    module.params["name"]
-                )
+                "Record with the name {0} already exists.".format(module.params["name"])
             )
 
 
