@@ -1,8 +1,89 @@
 ---
 name: unit tests
+on:
+  # Run CI against all pushes (direct commits, also merged PRs), Pull Requests
+  push:
+    branches:
+      - main
+      - stable-*
+  pull_request:
+  schedule:
+    - cron: "0 0 1 * *" # timezone is UTC
 
-on: [workflow_call]  # allow this workflow to be called from other workflows
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{
+      github.event.pull_request.number || github.sha
+    }}
+  cancel-in-progress: true
 
 jobs:
-  unit-source:
-    uses: ./.github/workflows/unit_source.yml
+  units:
+    name: Units (Ⓐ${{ matrix.versions.ansible }} - ${{ matrix.versions.python }})
+    env:
+      PY_COLORS: "1"
+    continue-on-error: ${{ matrix.ansible-version == 'devel' }}
+    strategy:
+      matrix:
+        versions:
+          # Testing all ansible-core and controller Python versions is impractical. Only test the
+          # newest and oldest controller Python versions supported by each ansible-core we support.
+          # https://endoflife.date/ansible-core (Control node Python column)
+          # Add publish_coverage: true to the version you want to publish coverage for, usually latest.
+          - { python: "3.13", ansible: devel }
+          - { python: "3.14", ansible: stable-2.21, publish_coverage: true }
+          - { python: "3.12", ansible: stable-2.21 }
+          - { python: "3.14", ansible: stable-2.20 }
+          - { python: "3.12", ansible: stable-2.20 }
+          - { python: "3.13", ansible: stable-2.19 }
+          - { python: "3.11", ansible: stable-2.19 }
+          - { python: "3.12", ansible: stable-2.16 }
+          - { python: "3.10", ansible: stable-2.16 }
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Install python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.versions.python }}
+
+      - name: Install ansible-core
+        run: |
+          python -m pip install https://github.com/ansible/ansible/archive/${{ matrix.versions.ansible }}.tar.gz;
+
+      - name: Install collection and python requirements
+        run: |
+          ansible-galaxy collection install . --force;
+
+      - name: Perform unit tests
+        run: |
+          make units UNIT_PYTHON_VERSION=${{ matrix.versions.python }};
+
+      - name: Publish coverage report
+        if: ${{ matrix.versions.publish_coverage }}
+        run: |
+          make units-coverage UNIT_PYTHON_VERSION=${{ matrix.versions.python }};
+
+      - name: Upload coverage artifact
+        if: ${{ matrix.versions.publish_coverage }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: units-coverage
+          path: ${{ github.workspace }}/coverage-units.xml
+
+  # This job does nothing and is only used for the branch protection
+  # or multi-stage CI jobs, like making sure that all tests pass before
+  # a publishing job is started.
+  unit-check:
+    if: always()
+    needs:
+      - units
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
