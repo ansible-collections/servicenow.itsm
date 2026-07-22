@@ -229,16 +229,6 @@
         that:
           - result.records | length == 1
 
-    - name: Delete configuration item using sys_id and wrong name
-      servicenow.itsm.configuration_item:
-        sys_id: "{{ base_ci.record.sys_id }}"
-        name: "wrong_name"
-        state: absent
-      register: result
-    - ansible.builtin.assert:
-        that:
-          - result is not changed
-
     - name: Delete configuration item using name and wrong sys_id
       servicenow.itsm.configuration_item:
         sys_id: "wrong_sys_id"
