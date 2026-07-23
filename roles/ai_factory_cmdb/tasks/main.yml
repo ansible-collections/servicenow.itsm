@@ -1,0 +1,16 @@
+---
+- name: Register DGX / GPU server nodes as CIs
+  ansible.builtin.include_tasks: register_nodes.yml
+  when: ai_cmdb_dgx_nodes | length > 0
+
+- name: Register GPU allocations as CIs
+  ansible.builtin.include_tasks: register_gpus.yml
+  when: ai_cmdb_gpu_allocations | length > 0
+
+- name: Register AI models as CIs
+  ansible.builtin.include_tasks: register_models.yml
+  when: ai_cmdb_ai_models | length > 0
+
+- name: Register inference endpoints as CIs
+  ansible.builtin.include_tasks: register_endpoints.yml
+  when: ai_cmdb_inference_endpoints | length > 0

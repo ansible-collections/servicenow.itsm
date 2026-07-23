@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  role_name: ai_factory_cmdb
+  author: Ansible Cloud Team
+  description: >-
+    Register AI Factory components as Configuration Items in ServiceNow CMDB.
+    Creates CIs for DGX nodes, GPU allocations, AI models, and inference endpoints
+    with proper relationships and classification.
+  company: Red Hat
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.14"
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - servicenow
+    - cmdb
+    - ai
+    - gpu
+    - itsm
+
+dependencies: []

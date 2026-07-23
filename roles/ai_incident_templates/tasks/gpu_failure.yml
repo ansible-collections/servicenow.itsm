@@ -1,0 +1,37 @@
+---
+- name: Create GPU failure incident in ServiceNow
+  servicenow.itsm.incident:
+    state: new
+    caller: "{{ ai_incident_caller }}"
+    short_description: >-
+      GPU Failure - {{ ai_incident_gpu_id | default('Unknown GPU') }}
+      on {{ ai_incident_node_name | default('Unknown Node') }}
+    description: |
+      AI Factory GPU Failure Detected
+
+      Node: {{ ai_incident_node_name | default('Unknown') }}
+      GPU ID: {{ ai_incident_gpu_id | default('Unknown') }}
+      Timestamp: {{ ansible_date_time.iso8601 | default('N/A') }}
+
+      Error Details:
+      {{ ai_incident_error_details | default('GPU hardware failure detected by monitoring system.') }}
+
+      Impact:
+      - GPU is no longer available for AI workloads
+      - Running jobs on this GPU may have failed
+      - Model serving endpoints using this GPU may be degraded
+
+      Recommended Actions:
+      1. Check GPU health via nvidia-smi on the affected node
+      2. Review DCGM logs for error codes
+      3. Verify InfiniBand connectivity if multi-GPU workload
+      4. Drain affected GPU from scheduling pool
+      5. Engage hardware support if physical failure confirmed
+    impact: "{{ ai_incident_gpu_failure_impact }}"
+    urgency: "{{ ai_incident_gpu_failure_urgency }}"
+    assignment_group: "{{ ai_incident_assignment_group }}"
+    other:
+      category: "{{ ai_incident_gpu_failure_category }}"
+      subcategory: "{{ ai_incident_gpu_failure_subcategory }}"
+      u_affected_ci: "{{ ai_incident_node_name | default(omit) }}"
+  register: _gpu_incident_result

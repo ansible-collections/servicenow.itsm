@@ -1,0 +1,12 @@
+---
+- name: Create GPU failure incident
+  ansible.builtin.include_tasks: gpu_failure.yml
+  when: ai_incident_template_type in ['gpu_failure', 'all']
+
+- name: Create model degradation incident
+  ansible.builtin.include_tasks: model_degradation.yml
+  when: ai_incident_template_type in ['model_degradation', 'all']
+
+- name: Create training job failure incident
+  ansible.builtin.include_tasks: training_failure.yml
+  when: ai_incident_template_type in ['training_failure', 'all']
