@@ -1,0 +1,3 @@
+bugfixes:
+  - not reading environment variables SN_API_KEY and SN_ACCESS_KEY for authentication
+  - updated module_utils/instance_config.py
