@@ -305,6 +305,8 @@ class Client:
             self._refresh_connection()
 
         self._log(f"ServiceNow: {method} {path}")
+        if self.custom_headers:
+            headers = dict(headers or {}, **self.custom_headers)
 
         request_kwargs = {
             "data": data,
@@ -380,8 +382,6 @@ class Client:
         if query:
             url = "{0}?{1}".format(url, urlencode(query))
         headers = dict(headers or DEFAULT_HEADERS, **self.auth_header)
-        if self.custom_headers:
-            headers = dict(headers, **self.custom_headers)
         if data is not None:
             data = json.dumps(data, separators=(",", ":"))
             headers["Content-type"] = "application/json"
