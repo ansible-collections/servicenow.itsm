@@ -115,31 +115,22 @@ options:
       - If this is unset, the value of the O(sysparm_limit) and its relevant defaults will be used.
     type: int
     version_added: 2.11.0
-  enhanced_multihop:
-    description:
-      - Enable multi-hop relationship traversal when building enhanced inventory groups.
-      - When enabled, the plugin walks the CMDB relationship graph beyond immediate (single-hop)
-        relationships to discover ancestor or descendant CIs and create groups for them.
-      - This is useful for CSDM / Tag-Based Application Service models where the automation target
-        (e.g. Application Service) is two or more hops above the server CI.
-      - Requires I(enhanced=true).
-      - Single-hop groups are always created; multi-hop groups are added on top.
-    type: bool
-    default: false
-    version_added: 2.16.0
   enhanced_multihop_max_depth:
     description:
       - Maximum number of relationship hops to traverse when I(enhanced) is enabled.
-      - A value of 1 is equivalent to the default (single-hop) behavior.
+      - When greater than 1, the plugin walks the CMDB relationship graph beyond immediate (single-hop)
+        relationships to discover ancestor or descendant CIs and create groups for them.
+      - This is useful for CSDM / Tag-Based Application Service models where the automation target
+        (e.g. Application Service) is two or more hops above the server CI.
       - Higher values allow deeper graph traversal but may increase processing time or memory
         usage for large CMDBs.
-      - Must be greater than 1.
+      - Must be greater than 0.
     type: int
     default: 1
     version_added: 2.16.0
   enhanced_multihop_direction:
     description:
-      - Direction to walk the relationship graph when I(enhanced_multihop) is enabled.
+      - Direction to walk the relationship graph when I(enhanced_multihop_max_depth) is greater than 1.
       - V(up) follows parent edges (child to parent to grandparent). This is the typical
         CSDM use case where servers need to be grouped by ancestor Application Services.
       - V(down) follows child edges (parent to child to grandchild).
@@ -215,7 +206,6 @@ options:
     type: int
     default: 1000
     version_added: 2.5.0
-
 """
 
 EXAMPLES = r"""
@@ -551,7 +541,6 @@ keyed_groups:
 plugin: servicenow.itsm.now
 table: cmdb_ci_server
 enhanced: true
-enhanced_multihop: true
 enhanced_multihop_max_depth: 3
 enhanced_multihop_direction: up
 enhanced_multihop_target_classes:
@@ -576,7 +565,7 @@ columns:
 plugin: servicenow.itsm.now
 table: cmdb_ci_server
 enhanced: true
-enhanced_multihop: true
+enhanced_multihop_depth: 3
 enhanced_multihop_relationship_types:
   - "Contains::Contained by"
 columns:
@@ -604,8 +593,7 @@ from ..module_utils.relations import (
     REL_FIELDS,
     REL_QUERY,
     REL_TABLE,
-    enhance_records_with_rel_groups,
-    enhance_records_with_multihop_groups,
+    RecordRelationshipEnhancer,
 )
 from ..module_utils.table import TableClient
 from ..module_utils.instance_config import merge_env_with_param_instance
@@ -990,22 +978,21 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             ),
             is_encoded_query=bool(enhanced_sysparm_query),
         )
-        enhance_records_with_rel_groups(records, rel_records)
 
         max_depth = self.get_option("enhanced_multihop_max_depth")
         if max_depth < 1:
             raise AnsibleParserError(
                 "Option 'enhanced_multihop_max_depth' must be greater than 0."
             )
-        elif max_depth > 1:
-            enhance_records_with_multihop_groups(
-                records,
-                rel_records,
-                direction=self.get_option("enhanced_multihop_direction"),
-                max_depth=max_depth,
-                ci_classes=self.get_option("enhanced_multihop_target_classes"),
-                rel_types=self.get_option("enhanced_multihop_relationship_types"),
-            )
+
+        record_enhancer = RecordRelationshipEnhancer(
+            relationship_records=rel_records,
+            max_hop_depth=max_depth,
+            multi_hop_direction=self.get_option("enhanced_multihop_direction"),
+            multi_hop_relationship_types=self.get_option("enhanced_multihop_relationship_types"),
+            multi_hop_ci_classes=self.get_option("enhanced_multihop_target_classes"),
+        )
+        record_enhancer.enhance_records_with_relationship_groups(records=records)
 
     def __create_table_client(self):
         try:
