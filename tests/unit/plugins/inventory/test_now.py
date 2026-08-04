@@ -1075,10 +1075,16 @@ class TestConstructCacheSuffix:
 
 class TestInventoryModuleEnhancedQueryFeatures:
     def setup_get_option_side_effect(self, **options):
+        defaults = dict(
+            enhanced_multihop_max_depth=1,
+        )
+
         def get_option(option_name):
             if option_name == "enhanced":
                 return options.get("enhanced", True)
-            return options.get(option_name, None)
+            if option_name in options:
+                return options[option_name]
+            return defaults.get(option_name)
 
         return get_option
 
@@ -1088,8 +1094,8 @@ class TestInventoryModuleEnhancedQueryFeatures:
         )
         self.mock_fetch_records.return_value = []
 
-        self.mock_enhance_records_with_rel_groups = mocker.patch(
-            "ansible_collections.servicenow.itsm.plugins.inventory.now.enhance_records_with_rel_groups"
+        self.mock_enhancer_class = mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.inventory.now.RecordRelationshipEnhancer"
         )
 
         self.mock_table_client = mocker.Mock()
@@ -1132,9 +1138,15 @@ class TestInventoryModuleEnhancedQueryFeatures:
             is_encoded_query=False,
         )
 
-        # Verify enhance_records_with_rel_groups was called
-        self.mock_enhance_records_with_rel_groups.assert_called_once_with(
-            self.mock_records, []
+        self.mock_enhancer_class.assert_called_once_with(
+            relationship_records=[],
+            max_hop_depth=1,
+            multi_hop_direction=None,
+            multi_hop_relationship_types=None,
+            multi_hop_ci_classes=None,
+        )
+        self.mock_enhancer_class.return_value.enhance_records_with_relationship_groups.assert_called_once_with(
+            records=self.mock_records
         )
 
     def test_populate_enhanced_records_with_enhanced_sysparm_query(
@@ -1164,9 +1176,15 @@ class TestInventoryModuleEnhancedQueryFeatures:
             is_encoded_query=True,
         )
 
-        # Verify enhance_records_with_rel_groups was called
-        self.mock_enhance_records_with_rel_groups.assert_called_once_with(
-            self.mock_records, []
+        self.mock_enhancer_class.assert_called_once_with(
+            relationship_records=[],
+            max_hop_depth=1,
+            multi_hop_direction=None,
+            multi_hop_relationship_types=None,
+            multi_hop_ci_classes=None,
+        )
+        self.mock_enhancer_class.return_value.enhance_records_with_relationship_groups.assert_called_once_with(
+            records=self.mock_records
         )
 
     def test_populate_enhanced_records_with_default_query(
@@ -1218,6 +1236,38 @@ class TestInventoryModuleEnhancedQueryFeatures:
             inventory_plugin._InventoryModule__populate_enhanced_records_from_remote(
                 self.mock_table_client, self.mock_records
             )
+
+    def test_populate_enhanced_records_uses_multihop_for_depth_gt_1(
+        self, inventory_plugin, mocker
+    ):
+        """Test that max_depth > 1 passes multihop params to RecordRelationshipEnhancer"""
+        mocker.patch.object(
+            inventory_plugin,
+            "get_option",
+            side_effect=self.setup_get_option_side_effect(
+                enhanced_additional_columns=[],
+                enhanced_multihop_max_depth=3,
+                enhanced_multihop_direction="up",
+                enhanced_multihop_target_classes=["cmdb_ci_server"],
+                enhanced_multihop_relationship_types=["Runs on::Runs"],
+            ),
+        )
+        self.setup_mocks(mocker)
+
+        inventory_plugin._InventoryModule__populate_enhanced_records_from_remote(
+            self.mock_table_client, self.mock_records
+        )
+
+        self.mock_enhancer_class.assert_called_once_with(
+            relationship_records=[],
+            max_hop_depth=3,
+            multi_hop_direction="up",
+            multi_hop_relationship_types=["Runs on::Runs"],
+            multi_hop_ci_classes=["cmdb_ci_server"],
+        )
+        self.mock_enhancer_class.return_value.enhance_records_with_relationship_groups.assert_called_once_with(
+            records=self.mock_records
+        )
 
     def test_get_query_columns_with_enhanced(self, inventory_plugin, mocker):
         """Test __get_query_columns includes REL_FIELDS when enhanced is enabled"""
