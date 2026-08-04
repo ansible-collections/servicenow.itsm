@@ -115,6 +115,63 @@ options:
       - If this is unset, the value of the O(sysparm_limit) and its relevant defaults will be used.
     type: int
     version_added: 2.11.0
+  enhanced_multihop:
+    description:
+      - Enable multi-hop relationship traversal when building enhanced inventory groups.
+      - When enabled, the plugin walks the CMDB relationship graph beyond immediate (single-hop)
+        relationships to discover ancestor or descendant CIs and create groups for them.
+      - This is useful for CSDM / Tag-Based Application Service models where the automation target
+        (e.g. Application Service) is two or more hops above the server CI.
+      - Requires I(enhanced=true).
+      - Single-hop groups are always created; multi-hop groups are added on top.
+    type: bool
+    default: false
+    version_added: 2.16.0
+  enhanced_multihop_max_depth:
+    description:
+      - Maximum number of relationship hops to traverse when I(enhanced) is enabled.
+      - A value of 1 is equivalent to the default (single-hop) behavior.
+      - Higher values allow deeper graph traversal but may increase processing time or memory
+        usage for large CMDBs.
+      - Must be greater than 1.
+    type: int
+    default: 1
+    version_added: 2.16.0
+  enhanced_multihop_direction:
+    description:
+      - Direction to walk the relationship graph when I(enhanced_multihop) is enabled.
+      - V(up) follows parent edges (child to parent to grandparent). This is the typical
+        CSDM use case where servers need to be grouped by ancestor Application Services.
+      - V(down) follows child edges (parent to child to grandchild).
+      - V(both) walks in both directions.
+    type: str
+    choices: ['up', 'down', 'both']
+    default: up
+    version_added: 2.16.0
+  enhanced_multihop_target_classes:
+    description:
+      - When non-empty, only create multi-hop groups for CIs whose C(sys_class_name) matches one of
+        these values.
+      - Traversal continues through non-matching intermediate CIs so that ancestors beyond them
+        can still be reached.
+      - For example, setting this to V(["cmdb_ci_service_auto"]) would only create groups for
+        Application Service CIs, skipping intermediate Application CIs.
+      - When empty (the default), groups are created for all CIs found during traversal.
+    type: list
+    elements: str
+    default: []
+    version_added: 2.16.0
+  enhanced_multihop_relationship_types:
+    description:
+      - When non-empty, only follow relationship edges whose C(type.name) matches one of these values
+        during multi-hop traversal.
+      - This restricts which relationship types are walked, for example
+        V(["Contains::Contained by", "Depends on::Used by"]).
+      - When empty (the default), all relationship types are followed.
+    type: list
+    elements: str
+    default: []
+    version_added: 2.16.0
   aggregation:
     description:
       - Enable multiple variable values aggregations.
@@ -485,6 +542,46 @@ keyed_groups:
 # |  |--node2
 # |  |--node3
 # |  |--node1
+
+# Multi-hop CMDB relationship traversal for CSDM / Tag-Based Application Services.
+# Groups servers by their Application Service (2 hops up: Server -> Application -> Service).
+# Only creates groups for Application Service CIs (cmdb_ci_service_auto), skipping
+# intermediate Application CIs during traversal.
+---
+plugin: servicenow.itsm.now
+table: cmdb_ci_server
+enhanced: true
+enhanced_multihop: true
+enhanced_multihop_max_depth: 3
+enhanced_multihop_direction: up
+enhanced_multihop_target_classes:
+  - cmdb_ci_service_auto
+columns:
+  - name
+  - ip_address
+
+# `ansible-inventory -i inventory.now.yaml --graph` output:
+# @all:
+#  |--@TAG_Finance_Core_Contains:
+#  |  |--srv-prod-chat-01
+#  |  |--srv-prod-chat-02
+#  |--@APP_Cisco_Chat_Used_by:
+#  |  |--srv-prod-chat-01
+#  |  |--srv-prod-chat-02
+#  |--@ungrouped:
+
+# Multi-hop traversal with relationship type filtering.
+# Only follows "Contains::Contained by" relationships during traversal.
+---
+plugin: servicenow.itsm.now
+table: cmdb_ci_server
+enhanced: true
+enhanced_multihop: true
+enhanced_multihop_relationship_types:
+  - "Contains::Contained by"
+columns:
+  - name
+  - ip_address
 """
 
 
@@ -508,6 +605,7 @@ from ..module_utils.relations import (
     REL_QUERY,
     REL_TABLE,
     enhance_records_with_rel_groups,
+    enhance_records_with_multihop_groups,
 )
 from ..module_utils.table import TableClient
 from ..module_utils.instance_config import merge_env_with_param_instance
@@ -816,9 +914,14 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
     def __ingest_inventory_config(self, path, cache):
         self._read_config_data(path)
         self.cache_key = self.get_cache_key(path)
+        host = self._get_instance()["host"]
+        if not host:
+            raise AnsibleParserError(
+                "Instance parameter 'host' is required but is not set."
+            )
         self._cache_sub_key = "/".join(
             [
-                self._get_instance()["host"].rstrip("/"),
+                host.rstrip("/"),
                 "table",
                 self.get_option("table"),
                 self._construct_cache_suffix(),
@@ -888,6 +991,21 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             is_encoded_query=bool(enhanced_sysparm_query),
         )
         enhance_records_with_rel_groups(records, rel_records)
+
+        max_depth = self.get_option("enhanced_multihop_max_depth")
+        if max_depth < 1:
+            raise AnsibleParserError(
+                "Option 'enhanced_multihop_max_depth' must be greater than 0."
+            )
+        elif max_depth > 1:
+            enhance_records_with_multihop_groups(
+                records,
+                rel_records,
+                direction=self.get_option("enhanced_multihop_direction"),
+                max_depth=max_depth,
+                ci_classes=self.get_option("enhanced_multihop_target_classes"),
+                rel_types=self.get_option("enhanced_multihop_relationship_types"),
+            )
 
     def __create_table_client(self):
         try:
