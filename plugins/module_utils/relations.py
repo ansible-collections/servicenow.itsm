@@ -102,7 +102,9 @@ class RecordRelationshipEnhancer:
         self.multi_hop_relationship_types = (
             set(multi_hop_relationship_types) if multi_hop_relationship_types else None
         )
-        self.multi_hop_ci_classes = set(multi_hop_ci_classes) if multi_hop_ci_classes else None
+        self.multi_hop_ci_classes = (
+            set(multi_hop_ci_classes) if multi_hop_ci_classes else None
+        )
         self.max_hop_depth = max_hop_depth
         self.multi_hop_direction = multi_hop_direction
 
@@ -187,7 +189,10 @@ class RecordRelationshipEnhancer:
             return
 
         type_name = relationship.get(RelationshipFields.TYPE_NAME.value, "")
-        if self.multi_hop_relationship_types and type_name not in self.multi_hop_relationship_types:
+        if (
+            self.multi_hop_relationship_types
+            and type_name not in self.multi_hop_relationship_types
+        ):
             return
 
         if self.multi_hop_direction in ("up", "both"):
@@ -236,7 +241,10 @@ class RecordRelationshipEnhancer:
                 if not all([neighbor_name, rel_type, neighbor_class]):
                     continue
 
-                if self.multi_hop_ci_classes and neighbor_class not in self.multi_hop_ci_classes:
+                if (
+                    self.multi_hop_ci_classes
+                    and neighbor_class not in self.multi_hop_ci_classes
+                ):
                     continue
 
                 groups.add(_format_group_name(neighbor_name, rel_type))
