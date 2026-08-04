@@ -989,7 +989,9 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             relationship_records=rel_records,
             max_hop_depth=max_depth,
             multi_hop_direction=self.get_option("enhanced_multihop_direction"),
-            multi_hop_relationship_types=self.get_option("enhanced_multihop_relationship_types"),
+            multi_hop_relationship_types=self.get_option(
+                "enhanced_multihop_relationship_types"
+            ),
             multi_hop_ci_classes=self.get_option("enhanced_multihop_target_classes"),
         )
         record_enhancer.enhance_records_with_relationship_groups(records=records)
