@@ -271,7 +271,7 @@ class RecordRelationshipEnhancer:
         visited = {starting_sys_id}
         ids_at_current_depth = [starting_sys_id]
 
-        for _ in range(self.max_hop_depth):
+        for _ in range(self.max_hop_depth):  # pylint: disable=disallowed-name
             if not ids_at_current_depth:
                 break
             ids_at_current_depth, new_groups = self._process_ids_at_depth(
