@@ -9,6 +9,7 @@ plugins/module_utils/errors.py import-2.7
 plugins/module_utils/generic.py import-2.7
 plugins/module_utils/instance_config.py import-2.7
 plugins/module_utils/relations.py import-2.7
+plugins/module_utils/relations.py compile-2.7
 plugins/module_utils/service_catalog.py import-2.7
 plugins/module_utils/snow.py import-2.7
 plugins/module_utils/table.py import-2.7
