@@ -1,0 +1,35 @@
+---
+# Default assignment group for AI Factory incidents
+ai_incident_assignment_group: "AI Platform Team"
+
+# Caller identity for automated incident creation
+ai_incident_caller: "AI Factory Automation"
+
+# Incident template type to create
+# Choices: gpu_failure, model_degradation, training_failure, all
+ai_incident_template_type: all
+
+# GPU failure incident defaults
+ai_incident_gpu_failure_impact: high
+ai_incident_gpu_failure_urgency: high
+ai_incident_gpu_failure_category: hardware
+ai_incident_gpu_failure_subcategory: gpu
+
+# Model degradation incident defaults
+ai_incident_model_degradation_impact: medium
+ai_incident_model_degradation_urgency: medium
+ai_incident_model_degradation_category: software
+ai_incident_model_degradation_subcategory: ai_model
+
+# Training job failure incident defaults
+ai_incident_training_failure_impact: medium
+ai_incident_training_failure_urgency: high
+ai_incident_training_failure_category: software
+ai_incident_training_failure_subcategory: ai_training
+
+# Context variables passed when creating incidents from alerts
+ai_incident_gpu_id: ""
+ai_incident_node_name: ""
+ai_incident_model_name: ""
+ai_incident_job_id: ""
+ai_incident_error_details: ""

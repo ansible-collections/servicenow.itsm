@@ -1,0 +1,24 @@
+---
+galaxy_info:
+  role_name: ai_incident_templates
+  author: Ansible Cloud Team
+  description: >-
+    Pre-configured incident templates for AI Factory failure scenarios including
+    GPU failures, model degradation, and training job failures. Creates
+    ServiceNow incidents with proper categorization and priority.
+  company: Red Hat
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.14"
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - servicenow
+    - incident
+    - ai
+    - gpu
+    - itsm
+
+dependencies: []

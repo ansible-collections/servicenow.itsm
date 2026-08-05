@@ -1,0 +1,22 @@
+---
+- name: Create or update inference endpoint CI
+  servicenow.itsm.configuration_item:
+    state: present
+    name: "{{ item.name }}"
+    sys_class_name: "{{ ai_cmdb_class_endpoint }}"
+    category: "{{ ai_cmdb_category }}"
+    environment: "{{ ai_cmdb_environment }}"
+    install_status: "{{ ai_cmdb_install_status }}"
+    operational_status: "{{ ai_cmdb_operational_status }}"
+    short_description: "Inference Endpoint - {{ item.name }}"
+    other:
+      url: "{{ item.url }}"
+      u_model_name: "{{ item.model_name | default(omit) }}"
+      u_host_server: "{{ item.node_name | default(omit) }}"
+      u_port: "{{ item.port | default(8000) }}"
+      u_asset_type: "AI Factory - Inference Endpoint"
+      assignment_group: "{{ ai_cmdb_assigned_group }}"
+  loop: "{{ ai_cmdb_inference_endpoints }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _cmdb_endpoints_result

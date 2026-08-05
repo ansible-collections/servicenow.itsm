@@ -1,0 +1,32 @@
+---
+# ServiceNow instance connection (inherits from collection defaults)
+# ai_cmdb_sn_instance: see servicenow.itsm connection docs
+
+# DGX / GPU Server nodes to register as CIs
+# Each item: { name, ip_address, serial_number, gpu_count, gpu_model, location }
+ai_cmdb_dgx_nodes: []
+
+# GPU allocations to register
+# Each item: { name, gpu_id, node_name, allocated_to, model_name }
+ai_cmdb_gpu_allocations: []
+
+# AI Models to register as CIs
+# Each item: { name, version, framework, endpoint, owner }
+ai_cmdb_ai_models: []
+
+# Inference endpoints to register
+# Each item: { name, url, model_name, node_name, port }
+ai_cmdb_inference_endpoints: []
+
+# CI class names (ServiceNow sys_class_name values)
+ai_cmdb_class_server: cmdb_ci_server
+ai_cmdb_class_gpu: cmdb_ci_hardware
+ai_cmdb_class_model: cmdb_ci_service
+ai_cmdb_class_endpoint: cmdb_ci_endpoint_http
+
+# Default CI attributes
+ai_cmdb_environment: production
+ai_cmdb_category: "AI Infrastructure"
+ai_cmdb_install_status: installed
+ai_cmdb_operational_status: operational
+ai_cmdb_assigned_group: "AI Platform Team"
