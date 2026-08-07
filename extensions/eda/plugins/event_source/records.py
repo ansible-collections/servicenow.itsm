@@ -137,7 +137,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError  # noqa: E402
 from ansible.errors import AnsibleParserError, AnsibleError  # noqa: E402
 from plugins.module_utils import client, table  # noqa: E402
 from plugins.module_utils.instance_config import (  # noqa: E402
-    get_combined_instance_config,
+    merge_env_with_param_instance,
 )
 from plugins.module_utils.query import construct_sysparm_query_from_query  # noqa: E402
 
@@ -252,7 +252,7 @@ class QueryFormatter:
 class RecordsSource:
     def __init__(self, queue: asyncio.Queue, args: Dict[str, Any]):
         self.queue = queue
-        self.instance_config = get_combined_instance_config(
+        self.instance_config = merge_env_with_param_instance(
             config_from_params=args.get("instance")
         )
         self.table_name = args.get("table")

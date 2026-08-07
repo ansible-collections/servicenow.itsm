@@ -30,6 +30,7 @@ version_added: 1.0.0
 extends_documentation_fragment:
   - ansible.builtin.constructed
   - inventory_cache
+  - servicenow.itsm.instance
 notes:
   - Query feature and constructed groups were added in version 1.2.0.
   - Caching feature added in version 2.5.0.
@@ -41,102 +42,6 @@ options:
     required: true
     type: str
     choices: [ servicenow.itsm.now ]
-  instance:
-    description:
-      - ServiceNow instance information.
-    type: dict
-    default: {}
-    suboptions:
-      host:
-        description:
-          - The ServiceNow host name.
-        env:
-          - name: SN_HOST
-        required: true
-        type: str
-      username:
-        description:
-          - Username used for authentication.
-        env:
-          - name: SN_USERNAME
-        required: false
-        type: str
-      password:
-        description:
-          - Password used for authentication.
-        env:
-          - name: SN_PASSWORD
-        required: false
-        type: str
-      api_key:
-        description:
-          - ServiceNow API key for direct authentication.
-          - Used for direct API keys that require x-sn-apikey headers.
-          - If not set, the value of the C(SN_API_KEY) environment
-            variable will be used.
-        type: str
-        env:
-          - name: SN_API_KEY
-      client_id:
-        description:
-          - ID of the client application used for OAuth authentication.
-          - If provided, it requires I(client_secret).
-        env:
-          - name: SN_CLIENT_ID
-        type: str
-      client_secret:
-        description:
-          - Secret associated with I(client_id). Used for OAuth authentication.
-          - If provided, it requires I(client_id).
-        env:
-          - name: SN_CLIENT_SECRET
-        type: str
-      client_certificate_file:
-        description:
-          - The path to the PEM certificate file that should be used for authentication.
-          - The file must be local and accessible to the Ansible controller.
-          - I(client_certificate_file) and I(client_key_file) must be provided together.
-          - If client certificate parameters are provided, they will be used instead of other
-            authentication methods.
-        env:
-          - name: SN_CLIENT_CERTIFICATE_FILE
-        type: str
-      client_key_file:
-        description:
-          - The path to the certificate key file that should be used for authentication.
-          - The file must be local and accessible to the Ansible controller.
-          - I(client_certificate_file) and I(client_key_file) must be provided together.
-          - If client certificate parameters are provided, they will be used instead of other
-            authentication methods.
-        env:
-          - name: SN_CLIENT_KEY_FILE
-        type: str
-      grant_type:
-        description:
-          - Grant type used for OAuth authentication.
-          - If not set, the value of the C(SN_GRANT_TYPE) environment variable will be used.
-        choices: [ 'password', 'refresh_token', 'client_credentials' ]
-        default: password
-        env:
-          - name: SN_GRANT_TYPE
-        type: str
-        version_added: 1.4.0
-      refresh_token:
-        description:
-          - Refresh token used for OAuth authentication.
-          - If not set, the value of the C(SN_REFRESH_TOKEN) environment
-            variable will be used.
-          - Required when I(grant_type=refresh_token).
-        env:
-          - name: SN_REFRESH_TOKEN
-        type: str
-        version_added: 1.4.0
-      timeout:
-        description:
-          - Timeout in seconds for the connection with the ServiceNow instance.
-        env:
-          - name: SN_TIMEOUT
-        type: float
   table:
     description: The ServiceNow table to use as the inventory source.
     type: str
@@ -583,7 +488,6 @@ keyed_groups:
 """
 
 
-import os
 import hashlib
 
 from ansible.errors import AnsibleParserError
@@ -606,6 +510,7 @@ from ..module_utils.relations import (
     enhance_records_with_rel_groups,
 )
 from ..module_utils.table import TableClient
+from ..module_utils.instance_config import merge_env_with_param_instance
 
 try:
     from ansible.template import trust_as_template as _trust_as_template
@@ -837,56 +742,9 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             self.inventory.add_group(rel_group)
             self.inventory.add_child(rel_group, host)
 
-    def _merge_instance_config(self, instance_config, instance_env):
-        # Pulls the values from the environment, and if necessary, overrides
-        # with configuration provided in the inventory source.
-        instance = instance_env.copy()
-        given_keys = instance_config.keys()
-        to_override = set(instance.keys()).intersection(given_keys)
-        for option in to_override:
-            instance[option] = instance_config[option]
-        return instance
-
-    def _get_instance_from_env(self):
-        def get_secret_from_env():
-            for arg in ("SN_CLIENT_SECRET", "SN_SECRET_ID"):
-                value = os.getenv(arg)
-                if value is not None:
-                    if arg == "SN_SECRET_ID":
-                        # Remove this in 3.0.0
-                        self.display.deprecated(
-                            "Setting environment variable 'SN_SECRET_ID' is being removed "
-                            "in favor of 'SN_CLIENT_SECRET'",
-                            version="3.0.0",
-                            collection_name="servicenow.itsm",
-                        )
-                    return value
-            return None
-
-        def get_timeout_from_env(default=120):
-            try:
-                return float(os.getenv("SN_TIMEOUT"))
-            except (ValueError, TypeError):
-                return default
-
-        return dict(
-            host=os.getenv("SN_HOST"),
-            username=os.getenv("SN_USERNAME"),
-            password=os.getenv("SN_PASSWORD"),
-            api_key=os.getenv("SN_API_KEY"),
-            client_id=os.getenv("SN_CLIENT_ID"),
-            client_secret=get_secret_from_env(),
-            refresh_token=os.getenv("SN_REFRESH_TOKEN"),
-            grant_type=os.getenv("SN_GRANT_TYPE"),
-            timeout=get_timeout_from_env(),
-            client_certificate_file=os.getenv("SN_CLIENT_CERTIFICATE_FILE"),
-            client_key_file=os.getenv("SN_CLIENT_KEY_FILE"),
-        )
-
     def _get_instance(self):
         instance_config = self.get_option("instance")
-        instance_env = self._get_instance_from_env()
-        return self._merge_instance_config(instance_config, instance_env)
+        return merge_env_with_param_instance(instance_config)
 
     def _construct_cache_suffix(self):
         """

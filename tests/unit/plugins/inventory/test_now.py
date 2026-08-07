@@ -176,44 +176,28 @@ class TestInventoryModuleSetHostvars:
 
 
 class TestInstance:
-    @pytest.mark.parametrize(
-        "instance_conf,instance_env,expected",
-        [
-            (dict(), dict(), dict()),
-            (dict(a="a"), dict(), dict()),
-            (dict(), dict(a="a"), dict(a="a")),
-            (dict(a="a", b="b"), dict(a="c"), dict(a="a")),
-            (dict(a="a"), dict(a="c", b="b"), dict(a="a", b="b")),
-        ],
-    )
-    def test_merge_instance_config(
-        self, inventory_plugin, instance_conf, instance_env, expected
-    ):
-        merged_conf = inventory_plugin._merge_instance_config(
-            instance_conf, instance_env
+    def test_get_instance_from_env(self, mocker):
+        from ansible_collections.servicenow.itsm.plugins.module_utils import (
+            instance_config,
         )
 
-        assert merged_conf == expected
+        env = dict(
+            SN_HOST="host",
+            SN_USERNAME="username",
+            SN_PASSWORD="password",
+            SN_API_KEY="api_key",
+            SN_CLIENT_ID="client_id",
+            SN_CLIENT_SECRET="client_secret",
+            SN_REFRESH_TOKEN="refresh_token",
+            SN_ACCESS_TOKEN="access_token",
+            SN_GRANT_TYPE="grant_type",
+            SN_CLIENT_CERTIFICATE_FILE="client_certificate_file",
+            SN_CLIENT_KEY_FILE="client_key_file",
+            SN_TIMEOUT="100",
+        )
+        mocker.patch("os.getenv", side_effect=lambda key, *a: env.get(key))
 
-    def test_get_instance_from_env(self, inventory_plugin, mocker):
-        def getenv(key):
-            return dict(
-                SN_HOST="host",
-                SN_USERNAME="username",
-                SN_PASSWORD="password",
-                SN_API_KEY="api_key",
-                SN_CLIENT_ID="client_id",
-                SN_CLIENT_SECRET="client_secret",
-                SN_REFRESH_TOKEN="refresh_token",
-                SN_GRANT_TYPE="grant_type",
-                SN_CLIENT_CERTIFICATE_FILE="client_certificate_file",
-                SN_CLIENT_KEY_FILE="client_key_file",
-                SN_TIMEOUT="100",
-            ).get(key)
-
-        mocker.patch("os.getenv", new=getenv)
-
-        config = inventory_plugin._get_instance_from_env()
+        config = instance_config.get_instance_config_from_env()
         assert config == dict(
             host="host",
             username="username",
@@ -222,132 +206,64 @@ class TestInstance:
             client_id="client_id",
             client_secret="client_secret",
             refresh_token="refresh_token",
+            access_token="access_token",
             grant_type="grant_type",
             client_certificate_file="client_certificate_file",
             client_key_file="client_key_file",
-            timeout=100,
+            timeout="100",
         )
+
+    def test_get_instance_from_env_missing_vars(self, mocker):
+        from ansible_collections.servicenow.itsm.plugins.module_utils import (
+            instance_config,
+        )
+
+        mocker.patch("os.getenv", return_value=None)
+
+        config = instance_config.get_instance_config_from_env()
+        assert all(v is None for v in config.values())
+
+    def test_merge_env_with_param_instance(self, mocker):
+        from ansible_collections.servicenow.itsm.plugins.module_utils import (
+            instance_config,
+        )
+
+        env = dict(
+            SN_HOST="env_host",
+            SN_USERNAME="env_user",
+        )
+        mocker.patch("os.getenv", side_effect=lambda key, *a: env.get(key))
+
+        config = instance_config.merge_env_with_param_instance(
+            dict(host="param_host", password="param_pass")
+        )
+
+        assert config["host"] == "param_host"
+        assert config["username"] == "env_user"
+        assert config["password"] == "param_pass"
+
+    def test_merge_env_with_param_instance_no_params(self, mocker):
+        from ansible_collections.servicenow.itsm.plugins.module_utils import (
+            instance_config,
+        )
+
+        env = dict(SN_HOST="env_host")
+        mocker.patch("os.getenv", side_effect=lambda key, *a: env.get(key))
+
+        config = instance_config.merge_env_with_param_instance()
+        assert config["host"] == "env_host"
 
     def test_get_instance(self, inventory_plugin, mocker):
-        def get_option(*args):
-            return dict(a="a", password="b", host="host")
-
-        mocker.patch("os.getenv", new=lambda x: x)
-        mocker.patch.object(inventory_plugin, "get_option", new=get_option)
+        mocker.patch(
+            "ansible_collections.servicenow.itsm.plugins.inventory.now.merge_env_with_param_instance",
+            return_value=dict(host="host", username="user"),
+        )
+        mocker.patch.object(
+            inventory_plugin, "get_option", return_value=dict(host="host")
+        )
 
         instance = inventory_plugin._get_instance()
-
-        assert instance == dict(
-            host="host",
-            username="SN_USERNAME",
-            password="b",
-            api_key="SN_API_KEY",
-            client_id="SN_CLIENT_ID",
-            client_secret="SN_CLIENT_SECRET",
-            refresh_token="SN_REFRESH_TOKEN",
-            grant_type="SN_GRANT_TYPE",
-            timeout=120,
-            client_certificate_file="SN_CLIENT_CERTIFICATE_FILE",
-            client_key_file="SN_CLIENT_KEY_FILE",
-        )
-
-    def test_get_timeout_default_value(self, inventory_plugin, mocker):
-        def getenv(key):
-            return dict(
-                SN_HOST="host",
-                SN_USERNAME="username",
-                SN_PASSWORD="password",
-                SN_API_KEY="api_key",
-                SN_CLIENT_ID="client_id",
-                SN_CLIENT_SECRET="client_secret",
-                SN_REFRESH_TOKEN="refresh_token",
-                SN_GRANT_TYPE="grant_type",
-                SN_TIMEOUT="wrong_timeout",
-                SN_CLIENT_CERTIFICATE_FILE="client_certificate_file",
-                SN_CLIENT_KEY_FILE="client_key_file",
-            ).get(key)
-
-        mocker.patch("os.getenv", new=getenv)
-
-        config = inventory_plugin._get_instance_from_env()
-        assert config == dict(
-            host="host",
-            username="username",
-            password="password",
-            api_key="api_key",
-            client_id="client_id",
-            client_secret="client_secret",
-            refresh_token="refresh_token",
-            grant_type="grant_type",
-            timeout=120,
-            client_certificate_file="client_certificate_file",
-            client_key_file="client_key_file",
-        )
-
-    def test_get_timeout_missing_env_value(self, inventory_plugin, mocker):
-        def getenv(key):
-            return dict(
-                SN_HOST="host",
-                SN_USERNAME="username",
-                SN_PASSWORD="password",
-                SN_API_KEY="api_key",
-                SN_CLIENT_ID="client_id",
-                SN_CLIENT_SECRET="client_secret",
-                SN_REFRESH_TOKEN="refresh_token",
-                SN_GRANT_TYPE="grant_type",
-                SN_CLIENT_CERTIFICATE_FILE="client_certificate_file",
-                SN_CLIENT_KEY_FILE="client_key_file",
-            ).get(key)
-
-        mocker.patch("os.getenv", new=getenv)
-
-        config = inventory_plugin._get_instance_from_env()
-        assert config == dict(
-            host="host",
-            username="username",
-            password="password",
-            api_key="api_key",
-            client_id="client_id",
-            client_secret="client_secret",
-            refresh_token="refresh_token",
-            grant_type="grant_type",
-            timeout=120,
-            client_certificate_file="client_certificate_file",
-            client_key_file="client_key_file",
-        )
-
-    def test_get_timeout(self, inventory_plugin, mocker):
-        def getenv(key):
-            return dict(
-                SN_HOST="host",
-                SN_USERNAME="username",
-                SN_PASSWORD="password",
-                SN_API_KEY="api_key",
-                SN_CLIENT_ID="client_id",
-                SN_CLIENT_SECRET="client_secret",
-                SN_REFRESH_TOKEN="refresh_token",
-                SN_GRANT_TYPE="grant_type",
-                SN_TIMEOUT="50",
-                SN_CLIENT_CERTIFICATE_FILE="client_certificate_file",
-                SN_CLIENT_KEY_FILE="client_key_file",
-            ).get(key)
-
-        mocker.patch("os.getenv", new=getenv)
-
-        config = inventory_plugin._get_instance_from_env()
-        assert config == dict(
-            host="host",
-            username="username",
-            password="password",
-            api_key="api_key",
-            client_id="client_id",
-            client_secret="client_secret",
-            refresh_token="refresh_token",
-            grant_type="grant_type",
-            timeout=50,
-            client_certificate_file="client_certificate_file",
-            client_key_file="client_key_file",
-        )
+        assert instance == dict(host="host", username="user")
 
 
 class TestInventoryModuleFillEnhancedAutoGroups:
