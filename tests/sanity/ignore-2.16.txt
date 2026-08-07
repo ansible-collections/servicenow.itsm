@@ -1,13 +1,11 @@
 plugins/inventory/now.py yamllint:unparsable-with-libyaml   # inventory examples are technically multiple yaml docs, which the linter in versions <2.17 does not like
 plugins/module_utils/client.py compile-2.7
 plugins/module_utils/errors.py compile-2.7
-plugins/module_utils/instance_config.py compile-2.7
 plugins/module_utils/snow.py compile-2.7
 plugins/module_utils/attachment.py import-2.7
 plugins/module_utils/client.py import-2.7
 plugins/module_utils/errors.py import-2.7
 plugins/module_utils/generic.py import-2.7
-plugins/module_utils/instance_config.py import-2.7
 plugins/module_utils/service_catalog.py import-2.7
 plugins/module_utils/snow.py import-2.7
 plugins/module_utils/table.py import-2.7
