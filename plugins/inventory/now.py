@@ -744,7 +744,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
 
     def _get_instance(self):
         instance_config = self.get_option("instance")
-        return merge_env_with_param_instance(instance_config)
+        return merge_env_with_param_instance(instance_config, display=self.display)
 
     def _construct_cache_suffix(self):
         """

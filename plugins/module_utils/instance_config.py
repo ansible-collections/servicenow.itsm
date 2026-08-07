@@ -85,7 +85,7 @@ INSTANCE_OPTIONS = {
 }
 
 
-def merge_env_with_param_instance(config_from_params=None):
+def merge_env_with_param_instance(config_from_params=None, display=None):
     """
     Build a complete instance config by layering parameter values on top of environment variables.
 
@@ -95,7 +95,7 @@ def merge_env_with_param_instance(config_from_params=None):
     if config_from_params is None:
         config_from_params = {}
 
-    config_from_env = get_instance_config_from_env()
+    config_from_env = get_instance_config_from_env(display=display)
     instance = {}
     for k, v in config_from_env.items():
         if v is not None:
@@ -107,9 +107,12 @@ def merge_env_with_param_instance(config_from_params=None):
     return instance
 
 
-def get_instance_config_from_env():
+def get_instance_config_from_env(display=None):
     """
     Read instance config values from environment variables defined in INSTANCE_OPTIONS.
+
+    Handles deprecated SN_SECRET_ID fallback for client_secret. If display is
+    provided, a deprecation warning is emitted when SN_SECRET_ID is used.
     """
     config_from_env = {}
     for config_key, attributes in INSTANCE_OPTIONS.items():
@@ -117,6 +120,19 @@ def get_instance_config_from_env():
             continue
 
         config_from_env[config_key] = os.getenv(attributes["env_var"])
+
+    # Remove this fallback in 3.0.0
+    if config_from_env.get("client_secret") is None:
+        secret_id = os.getenv("SN_SECRET_ID")
+        if secret_id is not None:
+            config_from_env["client_secret"] = secret_id
+            if display:
+                display.deprecated(
+                    "Setting environment variable 'SN_SECRET_ID' is being removed "
+                    "in favor of 'SN_CLIENT_SECRET'",
+                    version="3.0.0",
+                    collection_name="servicenow.itsm",
+                )
 
     return config_from_env
 
