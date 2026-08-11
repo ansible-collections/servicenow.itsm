@@ -1,0 +1,4 @@
+---
+bugfixes:
+  - now - consolidate instance config definitions across all plugins so all options are supported.
+    Fixes https://github.com/ansible-collections/servicenow.itsm/issues/569

@@ -83,7 +83,7 @@ class Response:
 class Client:
     def __init__(
         self,
-        host,
+        host=None,
         username=None,
         password=None,
         grant_type=None,
