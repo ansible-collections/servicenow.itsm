@@ -743,7 +743,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
             self.inventory.add_child(rel_group, host)
 
     def _get_instance(self):
-        instance_config = self.get_option("instance")
+        instance_config = self.get_option("instance") or dict()
         return merge_env_with_param_instance(instance_config, display=self.display)
 
     def _construct_cache_suffix(self):
