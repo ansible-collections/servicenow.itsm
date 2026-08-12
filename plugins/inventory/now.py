@@ -565,7 +565,7 @@ columns:
 plugin: servicenow.itsm.now
 table: cmdb_ci_server
 enhanced: true
-enhanced_multihop_depth: 3
+enhanced_multihop_max_depth: 3
 enhanced_multihop_relationship_types:
   - "Contains::Contained by"
 columns:
