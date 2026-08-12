@@ -11,7 +11,7 @@ name: SonarCloud
 on:
   workflow_run:
     workflows:
-      - Units
+      - unit tests
     types:
       - completed
 
