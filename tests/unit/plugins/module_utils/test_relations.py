@@ -11,75 +11,13 @@ import sys
 
 import pytest
 from ansible_collections.servicenow.itsm.plugins.module_utils import relations
+from ansible_collections.servicenow.itsm.plugins.module_utils.relations import (
+    RecordRelationshipEnhancer,
+)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (2, 7), reason="requires python2.7 or higher"
 )
-
-
-class TestAddRelationsToRecords:
-    def test_add_empty_relations_to_records(self):
-        records = [dict(sys_id="s1", name="abc")]
-        rels = dict()
-
-        relations._extend_records_with_groups(records, rels)
-
-        assert records == [dict(sys_id="s1", name="abc", relationship_groups=set())]
-
-    def test_add_relations_to_empty_records(self):
-        records = []
-        rels = dict()
-
-        relations._extend_records_with_groups(records, rels)
-
-        assert records == []
-
-    def test_add_relations_to_records(self):
-        records = [dict(sys_id="s1", name="abc")]
-        rels = dict(s1=set(("g1", "g2")), s2=set(("g3",)))
-
-        relations._extend_records_with_groups(records, rels)
-
-        assert records == [
-            dict(sys_id="s1", name="abc", relationship_groups=set(("g1", "g2")))
-        ]
-
-
-class TestGroupRelations:
-    def test_group_empty_relations(self):
-        records = []
-        rels = relations._relations_to_groups(records)
-        assert rels == dict()
-
-    def test_group_relations(self):
-        records = [
-            {
-                "parent.sys_id": "p1",
-                "child.name": "cn1",
-                "child.sys_class_name": "cscn1",
-                "child.sys_id": "c1",
-                "parent.name": "pn1",
-                "parent.sys_class_name": "pscn1",
-                "type.name": "parent1::child1",
-            },
-            {
-                "parent.sys_id": "p1",
-                "child.name": "cn2",
-                "child.sys_class_name": "cscn2",
-                "child.sys_id": "c2",
-                "parent.name": "pn1",
-                "parent.sys_class_name": "pscn1",
-                "type.name": "parent1::child2",
-            },
-        ]
-
-        actual = relations._relations_to_groups(records)
-
-        assert actual == dict(
-            p1=set(("cn1_child1", "cn2_child2")),
-            c1=set(("pn1_parent1",)),
-            c2=set(("pn1_parent1",)),
-        )
 
 
 class TestExtractRelation:
@@ -150,44 +88,180 @@ class TestGetRelationType:
         assert actual == expected
 
 
-class TestEnhanceRecordsWithRelationGroups:
-    def test_enhance_empty_records_with_empty_rel_groups(self):
+class TestRecordRelationshipEnhancer:
+    REL_RECORDS = [
+        {
+            "parent.sys_id": "p1",
+            "child.name": "cn1",
+            "child.sys_class_name": "cscn1",
+            "child.sys_id": "c1",
+            "parent.name": "pn1",
+            "parent.sys_class_name": "pscn1",
+            "type.name": "parent1::child1",
+        },
+        {
+            "parent.sys_id": "p1",
+            "child.name": "cn2",
+            "child.sys_class_name": "cscn2",
+            "child.sys_id": "c2",
+            "parent.name": "pn1",
+            "parent.sys_class_name": "pscn1",
+            "type.name": "parent1::child2",
+        },
+    ]
+
+    MULTIHOP_REL_RECORDS = [
+        {
+            "parent.sys_id": "p1",
+            "child.name": "cn1",
+            "child.sys_class_name": "cmdb_ci_server",
+            "child.sys_id": "c1",
+            "parent.name": "pn1",
+            "parent.sys_class_name": "cmdb_ci_app",
+            "type.name": "Runs on::Runs",
+        },
+        {
+            "parent.sys_id": "c1",
+            "child.name": "cn2",
+            "child.sys_class_name": "cmdb_ci_db",
+            "child.sys_id": "c2",
+            "parent.name": "cn1",
+            "parent.sys_class_name": "cmdb_ci_server",
+            "type.name": "Runs on::Runs",
+        },
+    ]
+
+    def test_empty_inputs(self):
+        enhancer = RecordRelationshipEnhancer(relationship_records=[], max_hop_depth=1)
         records = []
-        rel_records = []
+        result = enhancer.enhance_records_with_relationship_groups(records=records)
+        assert result == []
 
-        relations.enhance_records_with_rel_groups(records, rel_records)
+    def test_single_hop_groups(self):
+        enhancer = RecordRelationshipEnhancer(
+            relationship_records=self.REL_RECORDS, max_hop_depth=1
+        )
+        records = [dict(sys_id="p1"), dict(sys_id="c1"), dict(sys_id="c2")]
+        enhancer.enhance_records_with_relationship_groups(records=records)
 
-        assert records == []
+        assert records[0]["relationship_groups"] == {"cn1_child1", "cn2_child2"}
+        assert records[1]["relationship_groups"] == {"pn1_parent1"}
+        assert records[2]["relationship_groups"] == {"pn1_parent1"}
 
-    def test_enhance_empty_records_with_rel_groups(self):
-        records = []
+    def test_record_without_matching_sys_id(self):
+        enhancer = RecordRelationshipEnhancer(
+            relationship_records=self.REL_RECORDS, max_hop_depth=1
+        )
+        records = [dict(sys_id="unknown")]
+        enhancer.enhance_records_with_relationship_groups(records=records)
+
+        assert records[0]["relationship_groups"] == set()
+
+    def test_record_without_sys_id_skipped(self):
+        enhancer = RecordRelationshipEnhancer(
+            relationship_records=self.REL_RECORDS, max_hop_depth=1
+        )
+        records = [dict(name="no_sys_id")]
+        enhancer.enhance_records_with_relationship_groups(records=records)
+
+        assert "relationship_groups" not in records[0]
+
+    def test_multihop_direction_up(self):
+        enhancer = RecordRelationshipEnhancer(
+            relationship_records=self.MULTIHOP_REL_RECORDS,
+            max_hop_depth=3,
+            multi_hop_direction="up",
+        )
+        records = [dict(sys_id="c2")]
+        enhancer.enhance_records_with_relationship_groups(records=records)
+
+        groups = records[0]["relationship_groups"]
+        assert "cn1_Runs_on" in groups
+        assert "pn1_Runs_on" in groups
+
+    def test_multihop_direction_down(self):
+        enhancer = RecordRelationshipEnhancer(
+            relationship_records=self.MULTIHOP_REL_RECORDS,
+            max_hop_depth=3,
+            multi_hop_direction="down",
+        )
+        records = [dict(sys_id="p1")]
+        enhancer.enhance_records_with_relationship_groups(records=records)
+
+        groups = records[0]["relationship_groups"]
+        assert "cn1_Runs" in groups
+        assert "cn2_Runs" in groups
+
+    def test_multihop_direction_both(self):
+        enhancer = RecordRelationshipEnhancer(
+            relationship_records=self.MULTIHOP_REL_RECORDS,
+            max_hop_depth=3,
+            multi_hop_direction="both",
+        )
+        records = [dict(sys_id="c1")]
+        enhancer.enhance_records_with_relationship_groups(records=records)
+
+        groups = records[0]["relationship_groups"]
+        assert "pn1_Runs_on" in groups
+        assert "cn2_Runs" in groups
+
+    def test_multihop_relationship_types_filter(self):
+        mixed_rel_records = self.MULTIHOP_REL_RECORDS + [
+            {
+                "parent.sys_id": "c1",
+                "child.name": "cn3",
+                "child.sys_class_name": "cmdb_ci_net",
+                "child.sys_id": "c3",
+                "parent.name": "cn1",
+                "parent.sys_class_name": "cmdb_ci_server",
+                "type.name": "Contains::Contained by",
+            },
+        ]
+
+        enhancer = RecordRelationshipEnhancer(
+            relationship_records=mixed_rel_records,
+            max_hop_depth=3,
+            multi_hop_direction="down",
+            multi_hop_relationship_types=["Runs on::Runs"],
+        )
+        records = [dict(sys_id="p1")]
+        enhancer.enhance_records_with_relationship_groups(records=records)
+
+        groups = records[0]["relationship_groups"]
+        assert "cn1_Runs" in groups
+        assert "cn2_Runs" in groups
+        assert "cn3_Contained_by" not in groups
+
+    def test_multihop_ci_classes_filter(self):
+        enhancer = RecordRelationshipEnhancer(
+            relationship_records=self.MULTIHOP_REL_RECORDS,
+            max_hop_depth=3,
+            multi_hop_direction="up",
+            multi_hop_ci_classes=["cmdb_ci_app"],
+        )
+        records = [dict(sys_id="c2")]
+        enhancer.enhance_records_with_relationship_groups(records=records)
+
+        groups = records[0]["relationship_groups"]
+        assert "pn1_Runs_on" in groups
+        assert "cn1_Runs_on" in groups
+
+    def test_one_sided_sys_id_produces_single_hop_group(self):
         rel_records = [
             {
-                "parent.sys_id": "s1",
-                "child.name": "child_name",
-                "child.sys_class_name": "child_sys_class_name",
-                "type.name": "Parent desc::Child desc",
-            }
+                "parent.sys_id": "p1",
+                "child.name": "cn1",
+                "child.sys_class_name": "cscn1",
+                "child.sys_id": "",
+                "parent.name": "pn1",
+                "parent.sys_class_name": "pscn1",
+                "type.name": "parent1::child1",
+            },
         ]
+        enhancer = RecordRelationshipEnhancer(
+            relationship_records=rel_records, max_hop_depth=2
+        )
+        records = [dict(sys_id="p1")]
+        enhancer.enhance_records_with_relationship_groups(records=records)
 
-        relations.enhance_records_with_rel_groups(records, rel_records)
-
-        assert records == []
-
-    def test_enhance_records_with_rel_groups(self):
-        records = [dict(sys_id="s1"), dict(sys_id="s2")]
-        rel_records = [
-            {
-                "parent.sys_id": "s1",
-                "child.name": "child_name",
-                "child.sys_class_name": "child_sys_class_name",
-                "type.name": "Parent desc::Child desc",
-            }
-        ]
-
-        relations.enhance_records_with_rel_groups(records, rel_records)
-
-        assert records == [
-            dict(sys_id="s1", relationship_groups=set(("child_name_Child_desc",))),
-            dict(sys_id="s2", relationship_groups=set()),
-        ]
+        assert "cn1_child1" in records[0]["relationship_groups"]
