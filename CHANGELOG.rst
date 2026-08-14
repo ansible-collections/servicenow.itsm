@@ -4,6 +4,24 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.16.0
+=======
+
+Minor Changes
+-------------
+
+- now inventory - Added multi-hop enhanced logic to group hosts based on distant relationships
+
+Bugfixes
+--------
+
+- client - Ensures that any specified instance.custom_headers are added to all requests, not just some
+- configuration_item - Added ``id_column_set`` parameter to specify which columns identify an existing record, fixing failures when using tables like ``cmdb_rel_ci`` where ``name`` is not a unique identifier (https://github.com/ansible-collections/servicenow.itsm/issues/507).
+- not reading environment variables SN_API_KEY and SN_ACCESS_KEY for authentication
+- now - consolidate instance config definitions across all plugins so all options are supported. Fixes https://github.com/ansible-collections/servicenow.itsm/issues/569
+- table - ``TableClient.path()`` was hardcoding ``api/now/table`` as the base path, silently ignoring the ``instance.api_path`` parameter introduced in 2.4.0. This caused all Table API modules (incident, change_request, problem, etc.) to fail when routing through an API gateway that uses a custom base path (e.g. ``servicenow/v1/now``). The fix aligns ``TableClient.path()`` with the existing correct pattern already used in ``attachment.py``
+- updated module_utils/instance_config.py
+
 v2.15.1
 =======
 

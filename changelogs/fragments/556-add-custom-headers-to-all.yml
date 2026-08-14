@@ -1,3 +1,0 @@
----
-bugfixes:
-  - client - Ensures that any specified instance.custom_headers are added to all requests, not just some
