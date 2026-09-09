@@ -186,12 +186,18 @@ options:
       - The data type of a field determines what operators are available for it.
         Refer to the ServiceNow Available Filters Queries documentation at
         U(https://docs.servicenow.com/bundle/tokyo-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
+      - Each field name can appear only once per list entry. To apply multiple conditions
+        to the same field (AND logic), use C(sysparm_query) with ServiceNow encoded query
+        syntax instead. Separate list entries under C(query) produce OR conditions.
       - Mutually exclusive with C(sysparm_query).
     type: list
     elements: dict
   sysparm_query:
     description:
       - An encoded query string used to filter the results as an alternative to C(query).
+      - Supports the full ServiceNow encoded query syntax including multiple conditions on
+        the same field (AND with C(^)), OR conditions (C(^OR) or C(^NQ)), and all operators
+        listed in the ServiceNow documentation.
       - Refer to the ServiceNow Available Filters Queries documentation at
         U(https://docs.servicenow.com/bundle/tokyo-platform-user-interface/page/use/common-ui-elements/reference/r_OpAvailableFiltersQueries.html).
       - If not set, the value of the C(SN_SYSPARM_QUERY) environment, if specified.
@@ -283,6 +289,28 @@ keyed_groups:
 #  |  |--FileServerFloor2
 #  |  |--INSIGHT-NY-03
 #  |--@ungrouped:
+
+# Use sysparm_query for multiple AND conditions on the same field.
+# sysparm_query uses ServiceNow encoded query syntax where ^ separates AND conditions.
+---
+plugin: servicenow.itsm.now
+table: cmdb_ci_server
+sysparm_query: "nameSTARTSWITHDatabase^nameENDSWITH1"
+columns:
+  - name
+  - ip_address
+
+# the query param can do OR conditions, but cannot do AND
+---
+plugin: servicenow.itsm.now
+table: cmdb_ci_server
+query:
+  - os: = Linux Red Hat   # match Linux Red Hat hosts
+  - os: = Windows XP      # OR match Windows XP hosts
+  # The following is WRONG and will be neither AND nor OR. It will only maintain the last
+  # instance of the duplicated key (`name` in this example)
+  # - name: STARTSWITH Database
+  #   name: ENDSWITH 1
 
 # Group hosts into named according to the specified criteria. Here, we created a group
 # of non-Windows production servers.
