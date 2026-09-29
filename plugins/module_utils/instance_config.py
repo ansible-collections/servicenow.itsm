@@ -9,6 +9,7 @@ __metaclass__ = type
 
 import os
 from ansible.module_utils.basic import env_fallback
+from ansible.module_utils.parsing.convert_bool import boolean
 
 # These are all the instance options that the collection supports. They are defined here for all plugin
 # types, although the resulting "spec" or how the plugin uses them is defined via methods below.
@@ -107,9 +108,34 @@ def merge_env_with_param_instance(config_from_params=None, display=None):
     return instance
 
 
+def _coerce_env_value(value, option_type):
+    """
+    Coerce a raw environment-variable string to an option's declared type.
+
+    Environment variables are always read as strings. Modules get this coercion
+    for free from the argument spec (see get_instance_module_spec), but the
+    inventory plugin reads the environment directly, so non-string options such
+    as ``timeout`` (SN_TIMEOUT, type float) must be coerced here. Without it, a
+    value like ``SN_TIMEOUT=120`` reaches the HTTP client as a string and the
+    request fails with "'str' object cannot be interpreted as an integer".
+    """
+    if value is None:
+        return None
+    if option_type == "int":
+        return int(value)
+    if option_type == "float":
+        return float(value)
+    if option_type == "bool":
+        return boolean(value, strict=False)
+    return value
+
+
 def get_instance_config_from_env(display=None):
     """
     Read instance config values from environment variables defined in INSTANCE_OPTIONS.
+
+    Values are coerced to their declared type so that non-string options (for
+    example ``timeout``) are not passed downstream as strings.
 
     Handles deprecated SN_SECRET_ID fallback for client_secret. If display is
     provided, a deprecation warning is emitted when SN_SECRET_ID is used.
@@ -119,7 +145,9 @@ def get_instance_config_from_env(display=None):
         if "env_var" not in attributes:
             continue
 
-        config_from_env[config_key] = os.getenv(attributes["env_var"])
+        config_from_env[config_key] = _coerce_env_value(
+            os.getenv(attributes["env_var"]), attributes.get("type", "str")
+        )
 
     # Remove this fallback in 3.0.0
     if config_from_env.get("client_secret") is None:
