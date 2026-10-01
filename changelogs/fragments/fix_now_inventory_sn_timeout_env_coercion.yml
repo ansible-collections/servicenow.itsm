@@ -1,0 +1,7 @@
+---
+bugfixes:
+  - now inventory plugin - coerce ``instance`` configuration values read from
+    environment variables to their declared types, fixing a regression in 2.16.0
+    where setting the ``SN_TIMEOUT`` environment variable caused inventory syncs
+    to fail with ``'str' object cannot be interpreted as an integer``
+    (https://github.com/ansible-collections/servicenow.itsm/issues/583).
