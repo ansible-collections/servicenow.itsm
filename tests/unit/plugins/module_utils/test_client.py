@@ -439,6 +439,92 @@ class TestClientRequest:
         with pytest.raises(errors.ServiceNowError, match="some error"):
             c.request("GET", "api/now/some/path")
 
+    def test_url_error_does_not_expose_oauth_credentials(self, mocker):
+        request_mock = mocker.patch.object(client, "Request").return_value
+        request_mock.open.side_effect = URLError("connection refused")
+
+        c = client.Client(
+            "https://instance.com",
+            username="user",
+            password="p@ss/word!",
+            client_id="id",
+            client_secret="sec+ret=",
+        )
+
+        with pytest.raises(errors.ApiCommunicationError) as exc_info:
+            c.request("GET", "api/now/some/path")
+
+        output = exc_info.value.to_module_fail_json_output()
+        debug_info = output["debug_info"]
+        assert "data" not in debug_info
+        assert "headers" not in debug_info
+        dumped = str(output)
+        assert "p%40ss%2Fword%21" not in dumped
+        assert "sec%2Bret%3D" not in dumped
+        assert debug_info["method"] == "POST"
+        assert debug_info["path"] == "https://instance.com/oauth_token.do"
+
+    def test_url_error_does_not_expose_custom_headers_or_token(self, mocker):
+        request_mock = mocker.patch.object(client, "Request").return_value
+        request_mock.open.side_effect = URLError("connection reset")
+
+        c = client.Client(
+            "https://instance.com",
+            access_token="tok3n",
+            custom_headers={"x-api-key": "gateway-key"},
+        )
+
+        with pytest.raises(errors.ApiCommunicationError) as exc_info:
+            c.request("GET", "api/now/some/path")
+
+        dumped = str(exc_info.value.to_module_fail_json_output())
+        assert "tok3n" not in dumped
+        assert "gateway-key" not in dumped
+
+    def test_url_error_includes_sensitive_headers_when_requested(self, mocker):
+        request_mock = mocker.patch.object(client, "Request").return_value
+        request_mock.open.side_effect = URLError("connection reset")
+
+        c = client.Client(
+            "https://instance.com",
+            access_token="tok3n",
+            custom_headers={"x-api-key": "gateway-key"},
+            include_sensitive_headers=True,
+        )
+
+        with pytest.raises(errors.ApiCommunicationError) as exc_info:
+            c.request("GET", "api/now/some/path")
+
+        debug_info = exc_info.value.to_module_fail_json_output()["debug_info"]
+        assert "headers" in debug_info
+        assert debug_info["headers"]["Authorization"] == "Bearer tok3n"
+        assert debug_info["headers"]["x-api-key"] == "gateway-key"
+
+    def test_url_error_includes_oauth_body_when_sensitive_headers_requested(
+        self, mocker
+    ):
+        request_mock = mocker.patch.object(client, "Request").return_value
+        request_mock.open.side_effect = URLError("connection refused")
+
+        c = client.Client(
+            "https://instance.com",
+            username="user",
+            password="p@ss/word!",
+            client_id="id",
+            client_secret="sec+ret=",
+            include_sensitive_headers=True,
+        )
+
+        with pytest.raises(errors.ApiCommunicationError) as exc_info:
+            c.request("GET", "api/now/some/path")
+
+        debug_info = exc_info.value.to_module_fail_json_output()["debug_info"]
+        assert "data" in debug_info
+        assert "p%40ss%2Fword%21" in debug_info["data"]
+        assert "sec%2Bret%3D" in debug_info["data"]
+        assert debug_info["method"] == "POST"
+        assert debug_info["path"] == "https://instance.com/oauth_token.do"
+
     def test_path_escaping(self, mocker):
         request_mock = mocker.patch.object(client, "Request").return_value
         raw_request = mocker.MagicMock(status=200)

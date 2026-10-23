@@ -83,6 +83,11 @@ INSTANCE_OPTIONS = {
         "type": "bool",
         "default": True,
     },
+    "include_sensitive_headers": {
+        "type": "bool",
+        "default": False,
+        "env_var": "SN_INCLUDE_SENSITIVE_HEADERS",
+    },
 }
 
 

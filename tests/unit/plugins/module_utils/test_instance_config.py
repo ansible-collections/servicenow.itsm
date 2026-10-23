@@ -55,6 +55,13 @@ class TestGetInstanceConfigFromEnv:
         assert config["host"] == "https://example.service-now.com"
         assert isinstance(config["host"], str)
 
+    def test_include_sensitive_headers_from_env_is_coerced_to_bool(self, clean_sn_env):
+        clean_sn_env.setenv("SN_INCLUDE_SENSITIVE_HEADERS", "true")
+
+        config = instance_config.get_instance_config_from_env()
+
+        assert config["include_sensitive_headers"] is True
+
     def test_unset_env_var_is_none(self, clean_sn_env):
         config = instance_config.get_instance_config_from_env()
 
