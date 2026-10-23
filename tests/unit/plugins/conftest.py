@@ -11,7 +11,7 @@ import json
 
 import pytest
 from ansible.module_utils import basic
-from ansible.module_utils._text import to_bytes
+from ansible.module_utils.common.text.converters import to_bytes
 from ansible_collections.servicenow.itsm.plugins.module_utils.attachment import (
     AttachmentClient,
 )
