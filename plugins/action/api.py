@@ -17,7 +17,7 @@ from ansible.errors import (
     AnsibleError,
     AnsibleFileNotFound,
 )
-from ansible.module_utils._text import to_bytes, to_text
+from ansible.module_utils.common.text.converters import to_bytes, to_text
 from ansible.module_utils.common.validation import check_mutually_exclusive
 from ansible.plugins.action import ActionBase
 from yaml import Loader

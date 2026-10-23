@@ -1,0 +1,4 @@
+---
+bugfixes:
+  - Replace deprecated ansible.module_utils._text with ansible.module_utils.common.text.converters
+    (Fixes https://github.com/ansible-collections/servicenow.itsm/issues/587)
