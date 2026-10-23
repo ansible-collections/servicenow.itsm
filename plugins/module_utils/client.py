@@ -102,6 +102,7 @@ class Client:
         connection_timeout=300,  # 5 minutes
         max_retries=3,
         display=None,
+        include_sensitive_headers=False,
     ):
         if not (host or "").startswith(("https://", "http://")):
             raise ServiceNowError(
@@ -129,6 +130,7 @@ class Client:
         self.connection_timeout = connection_timeout
         self.max_retries = max_retries
         self.display = display
+        self.include_sensitive_headers = include_sensitive_headers
 
         self._auth_header = None
         self._token_expiry_time = None
@@ -316,7 +318,12 @@ class Client:
             "client_cert": self.client_certificate_file,
             "client_key": self.client_key_file,
         }
-        request_error_handler = ClientRequestErrorHandler(method, path, request_kwargs)
+        request_error_handler = ClientRequestErrorHandler(
+            method,
+            path,
+            request_kwargs,
+            include_sensitive_headers=self.include_sensitive_headers,
+        )
         request_start = time.perf_counter()
         for attempt in range(self.max_retries + 1):
             try:
@@ -480,10 +487,23 @@ class ClientRequestErrorHandler:
             timeout, validate_certs, client_cert, etc. Used for error context.
     """
 
-    def __init__(self, method, path, request_kwargs):
+    # Request arguments that may hold credentials (Authorization or API key
+    # headers, custom headers, OAuth form data with password and client
+    # secret). They are omitted from error output unless the user opts in
+    # via instance.include_sensitive_headers.
+    SENSITIVE_REQUEST_KWARGS = ("data", "headers")
+
+    def __init__(self, method, path, request_kwargs, include_sensitive_headers=False):
         self.method = method
         self.path = path
-        self.request_kwargs = request_kwargs
+        if include_sensitive_headers:
+            self.request_kwargs = dict(request_kwargs)
+        else:
+            self.request_kwargs = {
+                k: v
+                for k, v in request_kwargs.items()
+                if k not in self.SENSITIVE_REQUEST_KWARGS
+            }
 
     def handle_request_error(self, exception, retry_is_allowed=False):
         """

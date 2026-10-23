@@ -32,3 +32,11 @@ class TestGetSpec:
         result = arguments.get_spec("instance")
 
         assert result["instance"]["options"]["validate_certs"]["default"] is True
+
+    def test_instance_include_sensitive_headers_default_value(self):
+        result = arguments.get_spec("instance")
+
+        assert (
+            result["instance"]["options"]["include_sensitive_headers"]["default"]
+            is False
+        )

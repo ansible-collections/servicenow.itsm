@@ -128,6 +128,21 @@ options:
         default: True
         type: bool
         version_added: '2.3.0'
+      include_sensitive_headers:
+        description:
+          - If C(true), include the request headers and body in the
+            C(debug_info) of communication errors (for example connection,
+            DNS, or TLS failures).
+          - These values may contain credentials such as Authorization
+            bearer tokens, API keys, OAuth token request form data, and
+            I(custom_headers).
+          - Defaults to C(false) so credentials are not written to the task
+            result. Enable only when debugging connectivity issues.
+          - If not set, the value of the C(SN_INCLUDE_SENSITIVE_HEADERS)
+            environment variable will be used.
+        default: False
+        type: bool
+        version_added: '2.17.0'
 notes:
   - When a GET request URL exceeds 2048 characters (common with large
     C(sysparm_query) values containing many SysIDs), the request is automatically
