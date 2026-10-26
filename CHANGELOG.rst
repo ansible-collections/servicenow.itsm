@@ -4,6 +4,25 @@ servicenow.itsm Release Notes
 
 .. contents:: Topics
 
+v2.17.0
+=======
+
+Minor Changes
+-------------
+
+- Document the ServiceNow roles and permissions required to use the collection. Added a ``docs/servicenow_permissions.md`` reference page with a per-module role matrix, a note to every module's documentation, and a summary in the README (https://github.com/ansible-collections/servicenow.itsm/issues/245).
+
+Security Fixes
+--------------
+
+- client - do not include the request body and headers in the ``debug_info`` of communication errors by default. They carried the OAuth token request form data (URL encoded password, client secret and refresh token), bearer tokens and ``instance.custom_headers`` values, which were printed in the task result when the instance could not be reached or the TLS certificate check failed. Set ``instance.include_sensitive_headers`` (or ``SN_INCLUDE_SENSITIVE_HEADERS``) to ``true`` to opt in when debugging connectivity issues.
+
+Bugfixes
+--------
+
+- Replace deprecated ansible.module_utils._text with ansible.module_utils.common.text.converters (Fixes https://github.com/ansible-collections/servicenow.itsm/issues/587)
+- now inventory plugin - coerce ``instance`` configuration values read from environment variables to their declared types, fixing a regression in 2.16.0 where setting the ``SN_TIMEOUT`` environment variable caused inventory syncs to fail with ``'str' object cannot be interpreted as an integer`` (https://github.com/ansible-collections/servicenow.itsm/issues/583).
+
 v2.16.0
 =======
 

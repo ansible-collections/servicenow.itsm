@@ -1,6 +1,6 @@
 namespace: servicenow
 name: itsm
-version: 2.16.0
+version: 2.17.0
 readme: README.md
 authors:
   - Ansible Eco Content Team (github.com/eco-ansible-content)
