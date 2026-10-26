@@ -10,7 +10,7 @@ __metaclass__ = type
 import sys
 
 import pytest
-from ansible.module_utils._text import to_bytes, to_text
+from ansible.module_utils.common.text.converters import to_bytes, to_text
 from ansible_collections.servicenow.itsm.plugins.module_utils import attachment, errors
 from ansible_collections.servicenow.itsm.plugins.module_utils.client import Response
 
