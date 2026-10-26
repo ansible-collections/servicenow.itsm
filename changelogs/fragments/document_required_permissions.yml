@@ -1,6 +1,0 @@
----
-minor_changes:
-  - Document the ServiceNow roles and permissions required to use the collection.
-    Added a ``docs/servicenow_permissions.md`` reference page with a per-module
-    role matrix, a note to every module's documentation, and a summary in the
-    README (https://github.com/ansible-collections/servicenow.itsm/issues/245).
