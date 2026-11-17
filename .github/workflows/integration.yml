@@ -54,7 +54,7 @@ jobs:
         # Cross-product with versions above yields 42 jobs (14 ansible/python pairs × 3 SNOW).
         servicenow-version:
           - australia
-          - yokohama
+          - brazil
           - zurich
         # GitHub secrets use PDI instance IDs (SN_*_<id>) because instances upgrade
         # in place; when a new release ships, update the label here—not new secrets.
@@ -68,7 +68,7 @@ jobs:
             sn_api_key_secret: SN_API_KEY_7056
             sn_client_certificate_secret: SN_CLIENT_CERTIFICATE_7056
             sn_client_key_secret: SN_CLIENT_KEY_7056
-          - servicenow-version: yokohama
+          - servicenow-version: brazil
             sn_host_secret: SN_HOST_7054
             sn_username_secret: SN_USERNAME_7054
             sn_password_secret: SN_PASSWORD_7054

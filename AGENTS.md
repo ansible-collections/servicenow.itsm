@@ -44,7 +44,7 @@ Current matrix → instance mapping (see `integration_source.yml` `include` bloc
 | `servicenow-version` | PDI instance | Secret suffix |
 | -------------------- | ------------ | ------------- |
 | `australia`          | `dev7056`    | `_7056`       |
-| `yokohama`           | `dev7054`    | `_7054`       |
+| `brazil`             | `dev7054`    | `_7054`       |
 | `zurich`             | `dev7055`    | `_7055`       |
 
 When supporting a new SNOW release on an existing instance:
