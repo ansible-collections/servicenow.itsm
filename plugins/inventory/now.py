@@ -930,7 +930,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
     def __ingest_inventory_config(self, path, cache):
         self._read_config_data(path)
         self.cache_key = self.get_cache_key(path)
-        host = self._get_instance()["host"]
+        host = self._get_instance().get("host", None)
         if not host:
             raise AnsibleParserError(
                 "Instance parameter 'host' is required but is not set."
