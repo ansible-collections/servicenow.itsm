@@ -1,0 +1,7 @@
+---
+bugfixes:
+  - now inventory plugin - resolved a deprecation warning about accessing the
+    templating environment. (Fixes https://github.com/ansible-collections/servicenow.itsm/issues/595)
+  - now inventory plugin - raise a clear ``AnsibleParserError`` instead of a
+    ``KeyError`` when the instance ``host`` is not set through the inventory file or
+    the ``SN_HOST`` environment variable.

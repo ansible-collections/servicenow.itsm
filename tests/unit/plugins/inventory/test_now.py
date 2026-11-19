@@ -90,6 +90,48 @@ class TestFetchRecords:
         )
 
 
+class TestConstructableWithLookup:
+    """
+    The plugin overrides Constructable._compose so that lookups stay enabled.
+    Only one of the two branches is reachable on any given ansible-core, so both
+    are exercised here by toggling the HAS_DATATAGGING feature flag.
+    """
+
+    def test_compose_trusts_template_when_datatagging(self, inventory_plugin, mocker):
+        base_compose = mocker.patch.object(
+            now.Constructable, "_compose", return_value="composed"
+        )
+        mocker.patch.object(now, "HAS_DATATAGGING", True)
+        trust = mocker.patch.object(
+            now, "_trust_as_template", create=True, return_value="trusted_template"
+        )
+
+        result = inventory_plugin._compose("a_template", dict(a=1))
+
+        assert result == "composed"
+        trust.assert_called_once_with("a_template")
+        # disable_lookups must not be passed: it is a no-op on 2.19+ and emits
+        # a deprecation warning.
+        base_compose.assert_called_once_with(
+            template="trusted_template", variables=dict(a=1)
+        )
+
+    def test_compose_enables_lookups_without_datatagging(
+        self, inventory_plugin, mocker
+    ):
+        base_compose = mocker.patch.object(
+            now.Constructable, "_compose", return_value="composed"
+        )
+        mocker.patch.object(now, "HAS_DATATAGGING", False)
+
+        result = inventory_plugin._compose("a_template", dict(a=1))
+
+        assert result == "composed"
+        base_compose.assert_called_once_with(
+            template="a_template", variables=dict(a=1), disable_lookups=False
+        )
+
+
 class TestInventoryModuleVerifyFile:
     @pytest.mark.parametrize(
         "name,valid",
@@ -194,6 +236,7 @@ class TestInstance:
             SN_CLIENT_CERTIFICATE_FILE="client_certificate_file",
             SN_CLIENT_KEY_FILE="client_key_file",
             SN_TIMEOUT="100",
+            SN_INCLUDE_SENSITIVE_HEADERS="true",
         )
         mocker.patch("os.getenv", side_effect=lambda key, *a: env.get(key))
 
@@ -210,7 +253,8 @@ class TestInstance:
             grant_type="grant_type",
             client_certificate_file="client_certificate_file",
             client_key_file="client_key_file",
-            timeout="100",
+            timeout=100.0,
+            include_sensitive_headers=True,
         )
 
     def test_get_instance_from_env_missing_vars(self, mocker):
@@ -559,6 +603,72 @@ class TestInventoryModuleFillConstructed:
             amortized_cost=("47"),
             sys_updated_on_date=("2021-08-30"),
             sys_updated_on_time=("01:47:03"),
+        )
+
+    def test_construction_composite_vars_lookup(self, inventory_plugin):
+        # Columns with a dot in the name cannot be referenced directly in jinja,
+        # so they are reachable through the vars lookup. This only works because
+        # ConstructableWithLookup._compose keeps lookups enabled.
+        records = [
+            {"sys_id": "1", "fqdn": "a1", "location.country": "SI"},
+            {"sys_id": "2", "fqdn": "a2", "location.country": "US"},
+        ]
+
+        columns = []
+        name_source = "fqdn"
+        compose = dict(country="lookup('ansible.builtin.vars', 'location.country')")
+        groups = {}
+        keyed_groups = []
+        strict = True
+        enhanced = False
+        aggregation = False
+
+        inventory_plugin.fill_constructed(
+            records,
+            columns,
+            name_source,
+            compose,
+            groups,
+            keyed_groups,
+            strict,
+            enhanced,
+            aggregation,
+        )
+
+        assert set(inventory_plugin.inventory.hosts) == set(("a1", "a2"))
+        assert inventory_plugin.inventory.get_host("a1").vars == dict(
+            inventory_file=None,
+            inventory_dir=None,
+            country="SI",
+        )
+        assert inventory_plugin.inventory.get_host("a2").vars == dict(
+            inventory_file=None,
+            inventory_dir=None,
+            country="US",
+        )
+
+    def test_construction_composite_vars_dotted_column_alias(self, inventory_plugin):
+        # fill_constructed also exposes dotted columns under an underscored alias.
+        records = [
+            {"sys_id": "1", "fqdn": "a1", "location.country": "SI"},
+        ]
+
+        inventory_plugin.fill_constructed(
+            records,
+            [],
+            "fqdn",
+            dict(country="location_country"),
+            {},
+            [],
+            True,
+            False,
+            False,
+        )
+
+        assert inventory_plugin.inventory.get_host("a1").vars == dict(
+            inventory_file=None,
+            inventory_dir=None,
+            country="SI",
         )
 
     def test_construction_composite_vars_strict(self, inventory_plugin):
@@ -1217,3 +1327,53 @@ class TestInventoryModuleEnhancedQueryFeatures:
         result = inventory_plugin._InventoryModule__get_query_columns(columns)
 
         assert result is None
+
+
+class TestInventoryModuleIngestInventoryConfig:
+    @staticmethod
+    def _prepare(inventory_plugin, mocker, instance, **options):
+        mocker.patch.object(inventory_plugin, "_read_config_data")
+        mocker.patch.object(inventory_plugin, "get_cache_key", return_value="cache_key")
+        mocker.patch.object(inventory_plugin, "_get_instance", return_value=instance)
+        all_options = dict(
+            table="cmdb_ci_server", cache=True, query=None, sysparm_query=None
+        )
+        all_options.update(options)
+        mocker.patch.object(inventory_plugin, "get_option", side_effect=all_options.get)
+
+    def test_valid(self, inventory_plugin, mocker):
+        self._prepare(
+            inventory_plugin, mocker, dict(host="https://instance.service-now.com/")
+        )
+
+        inventory_plugin._InventoryModule__ingest_inventory_config(
+            "path.now.yml", False
+        )
+
+        assert inventory_plugin.cache_key == "cache_key"
+        assert (
+            inventory_plugin._cache_sub_key
+            == "https://instance.service-now.com/table/cmdb_ci_server/"
+        )
+        assert inventory_plugin.use_cache is False
+        assert inventory_plugin.update_cache is True
+
+    @pytest.mark.parametrize(
+        "instance",
+        [
+            # 'host' is absent altogether: neither the instance option nor
+            # SN_HOST was set, which used to raise a KeyError.
+            dict(username="user"),
+            dict(host=None),
+            dict(host=""),
+        ],
+    )
+    def test_missing_host(self, inventory_plugin, mocker, instance):
+        self._prepare(inventory_plugin, mocker, instance)
+
+        with pytest.raises(
+            AnsibleParserError, match="Instance parameter 'host' is required"
+        ):
+            inventory_plugin._InventoryModule__ingest_inventory_config(
+                "path.now.yml", False
+            )

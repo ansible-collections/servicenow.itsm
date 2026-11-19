@@ -612,7 +612,6 @@ from ansible.plugins.inventory import (
     Cacheable,
     to_safe_group_name,
 )
-from ansible.utils.vars import combine_vars
 
 from ..module_utils.client import Client
 from ..module_utils.errors import ServiceNowError
@@ -728,33 +727,24 @@ def fetch_records(table_client, table, query, fields=None, is_encoded_query=Fals
 
 class ConstructableWithLookup(Constructable):
     def _compose(self, template, variables):
-        """helper method for plugins to compose variables for Ansible based on jinja2 expression and inventory vars"""
-        t = self.templar
-
-        try:
-            use_extra = self.get_option("use_extra_vars")
-        except Exception:
-            use_extra = False
-
-        if use_extra:
-            t.available_variables = combine_vars(variables, self._vars)
-        else:
-            t.available_variables = variables
-
-        template_string = "%s%s%s" % (
-            t.environment.variable_start_string,
-            template,
-            t.environment.variable_end_string,
-        )
-
+        """
+        Overload the _compose method to trust templates in ansible-core >2.19, and whitelist lookups in <2.19.
+        This is due to column names in SNOW being difficult to parse as jinja, specifically due to dots being
+        allowed in names.
+        For example, a column named "location.country" is incorrectly evaluated by jinja. A user must use a lookup,
+        like
+        compose:
+          country: lookup('ansible.builtin.vars', 'location.country')
+        """
+        kwargs = dict(template=template, variables=variables)
+        # datatagging was introduced in 2.19
         if HAS_DATATAGGING:
-            template_string = _trust_as_template(template_string)
+            kwargs["template"] = _trust_as_template(template)
+        else:
+            # in 2.19+, this setting has no effect and a warning is emitted
+            kwargs["disable_lookups"] = False
 
-        """ Only change that we have overridden is that we do not disable lookups"""
-        return t.template(
-            template_string,
-            disable_lookups=False,
-        )
+        return super()._compose(**kwargs)
 
 
 class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
@@ -930,7 +920,7 @@ class InventoryModule(BaseInventoryPlugin, ConstructableWithLookup, Cacheable):
     def __ingest_inventory_config(self, path, cache):
         self._read_config_data(path)
         self.cache_key = self.get_cache_key(path)
-        host = self._get_instance()["host"]
+        host = self._get_instance().get("host", None)
         if not host:
             raise AnsibleParserError(
                 "Instance parameter 'host' is required but is not set."
