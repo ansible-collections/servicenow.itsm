@@ -54,8 +54,8 @@ sanity: install-collection linters
 .PHONY: units
 units: install-collection
 	cd $(COLLECTION_ROOT); \
-	ansible-test units --docker --coverage --python "$(PYTHON_VERSION)" $(TARGET); \
-	ansible-test coverage combine --requirements --export tests/output/coverage/; \
+	ansible-test units --docker --coverage --python "$(PYTHON_VERSION)" $(TARGET) && \
+	ansible-test coverage combine --requirements --export tests/output/coverage/ && \
 	ansible-test coverage report --requirements --docker --omit 'tests/*' --show-missing
 
 .PHONY: units-coverage
