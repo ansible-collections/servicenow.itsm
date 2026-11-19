@@ -66,7 +66,7 @@ Leave workflow comments above `servicenow-version` intact (they document the ins
 | `servicenow-version` | PDI instance | Secret suffix |
 | -------------------- | ------------ | ------------- |
 | `australia`          | `dev7056`    | `_7056`       |
-| `yokohama`           | `dev7054`    | `_7054`       |
+| `brazil`             | `dev7054`    | `_7054`       |
 | `zurich`             | `dev7055`    | `_7055`       |
 
 ### 2. README — compatibility table
